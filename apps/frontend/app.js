@@ -69,7 +69,7 @@ function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "Never";
 }
 
-function renderBuoys(buoys, analyses) {
+function renderBuoys(buoys, analyses, sensorHealth) {
   document.querySelector("#total-buoys").textContent = buoys.length;
   document.querySelector("#active-buoys").textContent = buoys.filter(
     ({ buoy }) => buoy.status === "active",
@@ -86,7 +86,9 @@ function renderBuoys(buoys, analyses) {
     .map(({ buoy, latest_temperature, latest_pressure, latest_salinity }, index) => {
       const status = buoy.status.toLowerCase();
       const analysis = analyses[index];
+      const health = sensorHealth[index];
       const seaState = analysis?.sea_state ?? "unknown";
+      const sensorStatus = health?.status ?? "unknown";
       return `
         <article class="card">
           <div class="card-top">
@@ -94,6 +96,7 @@ function renderBuoys(buoys, analyses) {
             <span class="buoy-id">${buoy.id}</span>
           </div>
           <h3>${buoy.name}</h3>
+          <p class="sensor-health sensor-health-${sensorStatus}">Sensors A/B: ${sensorStatus}</p>
           <p class="temperature">${formatTemperature(latest_temperature)}</p>
           <dl>
             <div><dt>Pressure</dt><dd>${formatPressure(latest_pressure)}</dd></div>
@@ -122,7 +125,15 @@ async function loadBuoys() {
         return analysisResponse.ok ? analysisResponse.json() : null;
       }),
     );
-    renderBuoys(buoys, analyses);
+    const sensorHealth = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const healthResponse = await fetch(
+          `/api/v1/buoys/${buoy.id}/sensor-health`,
+        );
+        return healthResponse.ok ? healthResponse.json() : null;
+      }),
+    );
+    renderBuoys(buoys, analyses, sensorHealth);
   } catch (error) {
     errorMessage.textContent = `Unable to load fleet data: ${error.message}`;
     errorMessage.hidden = false;
