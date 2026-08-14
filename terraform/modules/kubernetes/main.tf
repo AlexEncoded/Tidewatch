@@ -4,8 +4,11 @@ resource "azurerm_kubernetes_cluster" "main" {
   resource_group_name               = var.resource_group_name
   dns_prefix                        = var.dns_prefix
   private_cluster_enabled           = false
-  api_server_authorized_ip_ranges   = var.api_server_authorized_ip_ranges
   role_based_access_control_enabled = true
+
+  api_server_access_profile {
+    authorized_ip_ranges = var.api_server_authorized_ip_ranges
+  }
 
   default_node_pool {
     name           = "system"
