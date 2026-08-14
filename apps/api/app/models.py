@@ -47,9 +47,21 @@ class TemperatureReading(TemperatureReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class PressureReadingCreate(BaseModel):
+    pressure_kpa: float = Field(ge=80, le=130)
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PressureReading(PressureReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None
+    latest_pressure: PressureReading | None = None
 
 
 class TemperatureAnalysis(BaseModel):

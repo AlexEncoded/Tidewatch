@@ -17,6 +17,8 @@ from .models import (
     BuoyHealth,
     BuoyStatusUpdate,
     BuoySummary,
+    PressureReading,
+    PressureReadingCreate,
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
@@ -79,7 +81,11 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
 def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
     repository = BuoyRepository(db)
     return [
-        BuoySummary(buoy=buoy, latest_temperature=repository.latest_temperature(buoy.id))
+        BuoySummary(
+            buoy=buoy,
+            latest_temperature=repository.latest_temperature(buoy.id),
+            latest_pressure=repository.latest_pressure(buoy.id),
+        )
         for buoy in repository.list_buoys()
     ]
 
@@ -164,6 +170,39 @@ def list_temperatures(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_temperatures(buoy_id, limit)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/pressures",
+    response_model=PressureReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["pressure"],
+)
+def record_pressure(
+    buoy_id: str,
+    payload: PressureReadingCreate,
+    db: Session = Depends(get_db),
+) -> PressureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.add_pressure(PressureReading(buoy_id=buoy_id, **payload.model_dump()))
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/pressures",
+    response_model=list[PressureReading],
+    tags=["pressure"],
+)
+def list_pressures(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[PressureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_pressures(buoy_id, limit)
 
 
 @app.get(

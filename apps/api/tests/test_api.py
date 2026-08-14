@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables
-from app.entities import BuoyEntity, TemperatureReadingEntity
+from app.entities import BuoyEntity, PressureReadingEntity, TemperatureReadingEntity
 from app.main import app
 
 client = TestClient(app)
@@ -13,6 +13,7 @@ create_tables()
 
 def setup_function() -> None:
     with SessionLocal() as db:
+        db.execute(delete(PressureReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(BuoyEntity))
         db.commit()
@@ -102,6 +103,33 @@ def test_unknown_buoy_returns_not_found() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_pressure_reading_is_recorded_and_returned_in_buoy_summary() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Pressure Buoy"}).json()
+    response = client.post(
+        f"/api/v1/buoys/{buoy['id']}/pressures",
+        json={"pressure_kpa": 101.325},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["buoy_id"] == buoy["id"]
+    assert response.json()["pressure_kpa"] == 101.325
+
+    summary = client.get("/api/v1/buoys")
+    assert summary.status_code == 200
+    assert summary.json()[0]["latest_pressure"]["pressure_kpa"] == 101.325
+
+
+def test_pressure_must_be_in_sensor_range() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Pressure Range Buoy"}).json()
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy['id']}/pressures",
+        json={"pressure_kpa": 200},
+    )
+
+    assert response.status_code == 422
 
 
 def test_temperature_analysis_detects_anomaly() -> None:

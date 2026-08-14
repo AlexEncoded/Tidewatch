@@ -3,8 +3,19 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .entities import BuoyEntity, TemperatureAlertEntity, TemperatureReadingEntity
-from .models import Buoy, BuoyStatusUpdate, TemperatureAlert, TemperatureReading
+from .entities import (
+    BuoyEntity,
+    PressureReadingEntity,
+    TemperatureAlertEntity,
+    TemperatureReadingEntity,
+)
+from .models import (
+    Buoy,
+    BuoyStatusUpdate,
+    PressureReading,
+    TemperatureAlert,
+    TemperatureReading,
+)
 
 
 class BuoyRepository:
@@ -70,6 +81,36 @@ class BuoyRepository:
 
     def latest_temperature(self, buoy_id: str) -> TemperatureReadingEntity | None:
         readings = self.list_temperatures(buoy_id, limit=1)
+        return readings[0] if readings else None
+
+    def add_pressure(self, reading: PressureReading) -> PressureReadingEntity:
+        entity = PressureReadingEntity(
+            buoy_id=reading.buoy_id,
+            pressure_kpa=reading.pressure_kpa,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_pressures(self, buoy_id: str, limit: int) -> list[PressureReadingEntity]:
+        query = (
+            select(PressureReadingEntity)
+            .where(PressureReadingEntity.buoy_id == buoy_id)
+            .order_by(PressureReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        return list(self.db.scalars(query).all())
+
+    def latest_pressure(self, buoy_id: str) -> PressureReadingEntity | None:
+        readings = self.list_pressures(buoy_id, limit=1)
         return readings[0] if readings else None
 
     def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertEntity | None:

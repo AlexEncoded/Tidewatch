@@ -21,12 +21,13 @@ una señal desde el dispositivo hasta una operación en producción.
 
 ## Capacidades actuales
 
-- API para registrar boyas y lecturas de temperatura.
+- API para registrar boyas y lecturas de temperatura y presión.
 - Persistencia PostgreSQL con migraciones Alembic.
 - Simulador de telemetría de boyas.
 - Análisis de media, rango, tendencia y anomalías.
 - Alertas derivadas y alertas persistidas con resolución.
 - Ubicación, estado operativo y última comunicación de cada boya.
+- Presión en kPa como base para el futuro cálculo de altura de ola.
 - Métricas Prometheus y dashboard Grafana.
 - Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
 - Infraestructura Azure preparada con Terraform.
@@ -56,7 +57,7 @@ esta fase de aprendizaje.
 
 - [ ] Añadir soporte para sensores duplicados A/B.
 - [ ] Modelar calidad y procedencia de cada lectura.
-- [ ] Añadir salinidad, presión, oleaje y posición dinámica.
+- [ ] Añadir salinidad, oleaje derivado de presión y posición dinámica.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
@@ -184,9 +185,10 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 
 ## Estado del proyecto
 
-Fase actual: **fundación de plataforma**. La API de temperatura funciona en
-local, la persistencia y el pipeline de CI están preparados, y la infraestructura
-Azure está definida como código pendiente de validación y despliegue controlado.
+Fase actual: **fundación de plataforma**. La API de temperatura y presión
+funciona en local, la persistencia y el pipeline de CI están preparados, y la
+infraestructura Azure está definida como código pendiente de despliegue
+controlado.
 
 ## Licencia
 

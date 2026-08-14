@@ -19,6 +19,9 @@ class BuoyEntity(Base):
     temperature_readings: Mapped[list["TemperatureReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    pressure_readings: Mapped[list["PressureReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
 
 
 class TemperatureReadingEntity(Base):
@@ -29,6 +32,16 @@ class TemperatureReadingEntity(Base):
     temperature_celsius: Mapped[float] = mapped_column(Float, nullable=False)
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="temperature_readings")
+
+
+class PressureReadingEntity(Base):
+    __tablename__ = "pressure_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    pressure_kpa: Mapped[float] = mapped_column(Float, nullable=False)
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="pressure_readings")
 
 
 class TemperatureAlertEntity(Base):
