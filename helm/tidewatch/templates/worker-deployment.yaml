@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tidewatch.fullname" . }}-worker
+  labels:
+    {{- include "tidewatch.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tidewatch.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "tidewatch.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      containers:
+        - name: buoy-simulator
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          env:
+            - name: API_URL
+              value: "http://{{ include "tidewatch.fullname" . }}-api"
+            - name: INTERVAL_SECONDS
+              value: {{ .Values.worker.intervalSeconds | quote }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}

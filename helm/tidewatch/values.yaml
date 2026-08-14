@@ -1,0 +1,39 @@
+replicaCount: 1
+
+api:
+  image:
+    repository: tidewatch/api
+    tag: dev
+    pullPolicy: IfNotPresent
+  port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+worker:
+  image:
+    repository: tidewatch/worker
+    tag: dev
+    pullPolicy: IfNotPresent
+  intervalSeconds: 10
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+database:
+  existingSecret: tidewatch-database
+  existingSecretKey: DATABASE_URL
+
+service:
+  type: ClusterIP
+
+nameOverride: ""
+fullnameOverride: ""

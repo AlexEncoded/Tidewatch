@@ -2,3 +2,6 @@
 
 Charts de la plataforma y de las aplicaciones desplegadas en AKS. Los valores
 por entorno no deben incluir secretos: estos se obtendrán desde Azure Key Vault.
+
+El primer chart funcional está en [`tidewatch/`](tidewatch/README.md) e incluye
+la API y el simulador de boyas.
