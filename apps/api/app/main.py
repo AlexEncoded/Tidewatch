@@ -32,7 +32,12 @@ from .models import (
 from .repository import BuoyRepository
 from .metrics import (
     buoy_last_seen_timestamp_seconds,
+    current_pressure_kpa,
+    current_salinity_psu,
     current_temperature_celsius,
+    pressure_readings_total,
+    salinity_readings_total,
+    sensor_degraded,
     temperature_readings_total,
 )
 
@@ -155,8 +160,12 @@ def record_temperature(
 
     reading = TemperatureReading(buoy_id=buoy_id, **payload.model_dump())
     saved_reading = repository.add_temperature(reading)
-    temperature_readings_total.labels(buoy_id=buoy_id).inc()
-    current_temperature_celsius.labels(buoy_id=buoy_id).set(reading.temperature_celsius)
+    temperature_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_temperature_celsius.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.temperature_celsius)
     buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(reading.measured_at.timestamp())
     return saved_reading
 
@@ -192,7 +201,15 @@ def record_pressure(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.add_pressure(PressureReading(buoy_id=buoy_id, **payload.model_dump()))
+    reading = PressureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_pressure(reading)
+    pressure_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_pressure_kpa.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.pressure_kpa)
+    return saved_reading
 
 
 @app.get(
@@ -247,7 +264,15 @@ def record_salinity(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.add_salinity(SalinityReading(buoy_id=buoy_id, **payload.model_dump()))
+    reading = SalinityReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_salinity(reading)
+    salinity_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_salinity_psu.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.salinity_psu)
+    return saved_reading
 
 
 @app.get(
@@ -311,6 +336,11 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
     status_value = "insufficient_data"
     if available:
         status_value = "degraded" if degraded_sensors else "consistent"
+
+    for sensor in thresholds:
+        sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
+            1 if sensor in degraded_sensors else 0
+        )
 
     return SensorHealth(
         buoy_id=buoy_id,

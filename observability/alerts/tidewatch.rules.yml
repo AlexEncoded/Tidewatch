@@ -9,3 +9,11 @@ groups:
         annotations:
           summary: "Tidewatch buoy is not sending readings"
           description: "The buoy has not reported a temperature reading for more than 30 minutes."
+      - alert: TidewatchSensorDegraded
+        expr: tidewatch_sensor_degraded == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch redundant sensor is degraded"
+          description: "One sensor family is reporting a significant difference between channels A and B."

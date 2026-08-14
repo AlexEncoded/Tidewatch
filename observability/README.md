@@ -12,8 +12,8 @@ Los dashboards, reglas y alertas deben mantenerse como código siempre que sea
 posible.
 
 La API expone `/metrics` y ya existe una configuración inicial en
-`prometheus/prometheus.yml`, junto con una regla para detectar boyas silenciosas
-en `alerts/tidewatch.rules.yml`.
+`prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y
+sensores redundantes degradados en `alerts/tidewatch.rules.yml`.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.
