@@ -7,12 +7,14 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
+from .analytics import analyze_temperatures
 from .models import (
     Buoy,
     BuoyCreate,
     BuoySummary,
     TemperatureReading,
     TemperatureReadingCreate,
+    TemperatureAnalysis,
 )
 from .repository import BuoyRepository
 
@@ -88,3 +90,25 @@ def list_temperatures(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_temperatures(buoy_id, limit)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/temperature-analysis",
+    response_model=TemperatureAnalysis,
+    tags=["temperature"],
+)
+def temperature_analysis(
+    buoy_id: str,
+    threshold: float = Query(default=2.0, gt=0, le=20),
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> TemperatureAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+
+    readings = [
+        TemperatureReading.model_validate(reading)
+        for reading in repository.list_temperatures(buoy_id, window)
+    ]
+    return analyze_temperatures(buoy_id, readings, threshold)

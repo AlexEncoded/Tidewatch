@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
@@ -56,3 +58,26 @@ def test_unknown_buoy_returns_not_found() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_temperature_analysis_detects_anomaly() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Analysis Buoy"}).json()["id"]
+
+    measured_at = datetime.now(timezone.utc)
+    for index, temperature in enumerate((20, 20.1, 19.9, 25)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+            },
+        )
+        assert response.status_code == 201
+
+    analysis = client.get(
+        f"/api/v1/buoys/{buoy_id}/temperature-analysis?threshold=2"
+    )
+
+    assert analysis.status_code == 200
+    assert analysis.json()["sample_count"] == 4
+    assert analysis.json()["is_anomaly"] is True

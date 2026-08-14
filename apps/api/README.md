@@ -46,9 +46,14 @@ Documentación interactiva: <http://localhost:8000/docs>
 | `GET` | `/api/v1/buoys` | Listar boyas y última temperatura |
 | `POST` | `/api/v1/buoys/{id}/temperatures` | Registrar temperatura |
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
+| `GET` | `/api/v1/buoys/{id}/temperature-analysis` | Analizar anomalías |
 
 Las lecturas aceptan temperaturas entre `-5 °C` y `45 °C`. Las boyas y lecturas
 se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
+
+El análisis necesita al menos tres lecturas y compara la más reciente con la
+media de la ventana solicitada. El umbral por defecto es `2 °C` y se puede
+ajustar con `threshold`.
 
 ## Tests
 

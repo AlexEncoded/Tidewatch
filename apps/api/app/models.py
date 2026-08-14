@@ -29,3 +29,14 @@ class TemperatureReading(TemperatureReadingCreate):
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None
+
+
+class TemperatureAnalysis(BaseModel):
+    buoy_id: str
+    sample_count: int
+    latest_temperature: float | None = None
+    average_temperature: float | None = None
+    minimum_temperature: float | None = None
+    maximum_temperature: float | None = None
+    is_anomaly: bool = False
+    anomaly_reason: str | None = None
