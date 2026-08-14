@@ -13,3 +13,6 @@ Los manifiestos están destinados a Azure Kubernetes Service.
 La base de Kustomize aplica límites de recursos y una cuota por namespace. El
 overlay `overlays/dev` crea el namespace de desarrollo con etiquetas de Pod
 Security. Los Deployments de API y worker los gestiona Helm.
+
+Los charts Helm y overlays Kustomize se renderizan en GitHub Actions como parte
+de la validación de plataforma.

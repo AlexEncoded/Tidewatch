@@ -1,0 +1,47 @@
+name: Tidewatch platform validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "helm/**"
+      - "kubernetes/**"
+      - "argocd/**"
+  pull_request:
+    paths:
+      - "helm/**"
+      - "kubernetes/**"
+      - "argocd/**"
+
+permissions:
+  contents: read
+
+jobs:
+  helm:
+    name: Validate Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint Tidewatch chart
+        run: helm lint helm/tidewatch -f helm/tidewatch/values-dev.yaml
+
+      - name: Render Tidewatch chart
+        run: helm template tidewatch helm/tidewatch -f helm/tidewatch/values-dev.yaml > /tmp/tidewatch-rendered.yaml
+
+  kustomize:
+    name: Validate Kustomize overlays
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Render dev overlay
+        run: kubectl kustomize kubernetes/overlays/dev > /tmp/tidewatch-kustomize.yaml

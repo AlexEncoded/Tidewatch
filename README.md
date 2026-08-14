@@ -151,6 +151,9 @@ Terraform para `dev`.
 También se ejecutan análisis de secretos, configuración y vulnerabilidades con
 Gitleaks y Trivy.
 
+La configuración de Helm y Kustomize también se renderiza automáticamente en
+CI para detectar errores de despliegue antes de llegar a AKS.
+
 ## Puesta en marcha local
 
 Requisitos iniciales:
