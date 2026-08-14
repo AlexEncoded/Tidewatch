@@ -181,6 +181,47 @@ def test_salinity_reading_is_recorded_and_validated() -> None:
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_channels() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Redundant Buoy"}).json()["id"]
+
+    for channel, temperature, pressure, salinity in (
+        ("A", 20.0, 101.3, 35.2),
+        ("B", 20.1, 101.4, 35.25),
+    ):
+        measured_at = datetime.now(timezone.utc).isoformat()
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            },
+        )
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/pressures",
+            json={
+                "pressure_kpa": pressure,
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            },
+        )
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/salinity",
+            json={
+                "salinity_psu": salinity,
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            },
+        )
+
+    health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health")
+
+    assert health.status_code == 200
+    assert health.json()["status"] == "consistent"
+    assert health.json()["temperature_delta_celsius"] == 0.1
+    assert health.json()["pressure_delta_kpa"] == 0.1
+
+
 def test_temperature_analysis_detects_anomaly() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Analysis Buoy"}).json()["id"]
 

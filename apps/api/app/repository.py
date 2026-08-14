@@ -58,6 +58,7 @@ class BuoyRepository:
         entity = TemperatureReadingEntity(
             buoy_id=reading.buoy_id,
             temperature_celsius=reading.temperature_celsius,
+            sensor_channel=reading.sensor_channel,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
@@ -72,23 +73,28 @@ class BuoyRepository:
             self.db.refresh(buoy)
         return entity
 
-    def list_temperatures(self, buoy_id: str, limit: int) -> list[TemperatureReadingEntity]:
+    def list_temperatures(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[TemperatureReadingEntity]:
         query = (
             select(TemperatureReadingEntity)
             .where(TemperatureReadingEntity.buoy_id == buoy_id)
             .order_by(TemperatureReadingEntity.measured_at.desc())
             .limit(limit)
         )
+        if sensor_channel is not None:
+            query = query.where(TemperatureReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
     def latest_temperature(self, buoy_id: str) -> TemperatureReadingEntity | None:
-        readings = self.list_temperatures(buoy_id, limit=1)
+        readings = self.list_temperatures(buoy_id, limit=1, sensor_channel="A")
         return readings[0] if readings else None
 
     def add_pressure(self, reading: PressureReading) -> PressureReadingEntity:
         entity = PressureReadingEntity(
             buoy_id=reading.buoy_id,
             pressure_kpa=reading.pressure_kpa,
+            sensor_channel=reading.sensor_channel,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
@@ -102,23 +108,28 @@ class BuoyRepository:
             self.db.commit()
         return entity
 
-    def list_pressures(self, buoy_id: str, limit: int) -> list[PressureReadingEntity]:
+    def list_pressures(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[PressureReadingEntity]:
         query = (
             select(PressureReadingEntity)
             .where(PressureReadingEntity.buoy_id == buoy_id)
             .order_by(PressureReadingEntity.measured_at.desc())
             .limit(limit)
         )
+        if sensor_channel is not None:
+            query = query.where(PressureReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
     def latest_pressure(self, buoy_id: str) -> PressureReadingEntity | None:
-        readings = self.list_pressures(buoy_id, limit=1)
+        readings = self.list_pressures(buoy_id, limit=1, sensor_channel="A")
         return readings[0] if readings else None
 
     def add_salinity(self, reading: SalinityReading) -> SalinityReadingEntity:
         entity = SalinityReadingEntity(
             buoy_id=reading.buoy_id,
             salinity_psu=reading.salinity_psu,
+            sensor_channel=reading.sensor_channel,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
@@ -132,17 +143,21 @@ class BuoyRepository:
             self.db.commit()
         return entity
 
-    def list_salinity(self, buoy_id: str, limit: int) -> list[SalinityReadingEntity]:
+    def list_salinity(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[SalinityReadingEntity]:
         query = (
             select(SalinityReadingEntity)
             .where(SalinityReadingEntity.buoy_id == buoy_id)
             .order_by(SalinityReadingEntity.measured_at.desc())
             .limit(limit)
         )
+        if sensor_channel is not None:
+            query = query.where(SalinityReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
     def latest_salinity(self, buoy_id: str) -> SalinityReadingEntity | None:
-        readings = self.list_salinity(buoy_id, limit=1)
+        readings = self.list_salinity(buoy_id, limit=1, sensor_channel="A")
         return readings[0] if readings else None
 
     def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertEntity | None:

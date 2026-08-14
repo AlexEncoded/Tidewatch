@@ -38,6 +38,7 @@ class BuoyHealth(BaseModel):
 
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(ge=-5, le=45)
+    sensor_channel: Literal["A", "B"] = "A"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -49,6 +50,7 @@ class TemperatureReading(TemperatureReadingCreate):
 
 class PressureReadingCreate(BaseModel):
     pressure_kpa: float = Field(ge=80, le=130)
+    sensor_channel: Literal["A", "B"] = "A"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -60,6 +62,7 @@ class PressureReading(PressureReadingCreate):
 
 class SalinityReadingCreate(BaseModel):
     salinity_psu: float = Field(ge=0, le=45)
+    sensor_channel: Literal["A", "B"] = "A"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -80,6 +83,15 @@ class PressureAnalysis(BaseModel):
     estimated_wave_height_m: float | None = None
     confidence: str = "insufficient_data"
     sea_state: str = "unknown"
+
+
+class SensorHealth(BaseModel):
+    buoy_id: str
+    status: str
+    temperature_delta_celsius: float | None = None
+    pressure_delta_kpa: float | None = None
+    salinity_delta_psu: float | None = None
+    checked_at: datetime
 
 
 class BuoySummary(BaseModel):

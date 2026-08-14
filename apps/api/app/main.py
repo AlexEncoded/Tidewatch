@@ -22,6 +22,7 @@ from .models import (
     PressureAnalysis,
     SalinityReading,
     SalinityReadingCreate,
+    SensorHealth,
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
@@ -168,12 +169,13 @@ def record_temperature(
 def list_temperatures(
     buoy_id: str,
     limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     db: Session = Depends(get_db),
 ) -> list[TemperatureReading]:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_temperatures(buoy_id, limit)
+    return repository.list_temperatures(buoy_id, limit, sensor_channel)
 
 
 @app.post(
@@ -201,12 +203,13 @@ def record_pressure(
 def list_pressures(
     buoy_id: str,
     limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     db: Session = Depends(get_db),
 ) -> list[PressureReading]:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_pressures(buoy_id, limit)
+    return repository.list_pressures(buoy_id, limit, sensor_channel)
 
 
 @app.get(
@@ -255,12 +258,62 @@ def record_salinity(
 def list_salinity(
     buoy_id: str,
     limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     db: Session = Depends(get_db),
 ) -> list[SalinityReading]:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_salinity(buoy_id, limit)
+    return repository.list_salinity(buoy_id, limit, sensor_channel)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/sensor-health",
+    response_model=SensorHealth,
+    tags=["sensors"],
+)
+def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+
+    temperature_a = repository.list_temperatures(buoy_id, 1, "A")
+    temperature_b = repository.list_temperatures(buoy_id, 1, "B")
+    pressure_a = repository.list_pressures(buoy_id, 1, "A")
+    pressure_b = repository.list_pressures(buoy_id, 1, "B")
+    salinity_a = repository.list_salinity(buoy_id, 1, "A")
+    salinity_b = repository.list_salinity(buoy_id, 1, "B")
+
+    deltas = {
+        "temperature": (
+            round(abs(temperature_a[0].temperature_celsius - temperature_b[0].temperature_celsius), 3)
+            if temperature_a and temperature_b
+            else None
+        ),
+        "pressure": (
+            round(abs(pressure_a[0].pressure_kpa - pressure_b[0].pressure_kpa), 3)
+            if pressure_a and pressure_b
+            else None
+        ),
+        "salinity": (
+            round(abs(salinity_a[0].salinity_psu - salinity_b[0].salinity_psu), 3)
+            if salinity_a and salinity_b
+            else None
+        ),
+    }
+    available = [value for value in deltas.values() if value is not None]
+    status_value = "insufficient_data"
+    if available:
+        status_value = "consistent" if max(available) <= 0.5 else "degraded"
+
+    return SensorHealth(
+        buoy_id=buoy_id,
+        status=status_value,
+        temperature_delta_celsius=deltas["temperature"],
+        pressure_delta_kpa=deltas["pressure"],
+        salinity_delta_psu=deltas["salinity"],
+        checked_at=datetime.now(timezone.utc),
+    )
 
 
 @app.get(

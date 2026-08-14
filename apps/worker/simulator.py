@@ -71,27 +71,49 @@ def run() -> None:
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
             measured_at = datetime.now(timezone.utc).isoformat()
-            payload = {
-                "temperature_celsius": current_temperature,
-                "measured_at": measured_at,
+            readings = {
+                "A": {
+                    "temperature_celsius": current_temperature,
+                    "pressure_kpa": current_pressure,
+                    "salinity_psu": current_salinity,
+                },
+                "B": {
+                    "temperature_celsius": round(current_temperature + random.uniform(-0.04, 0.04), 2),
+                    "pressure_kpa": round(current_pressure + random.uniform(-0.12, 0.12), 3),
+                    "salinity_psu": round(current_salinity + random.uniform(-0.04, 0.04), 3),
+                },
             }
-            response = client.post(
-                f"{API_URL}/api/v1/buoys/{buoy_id}/temperatures", json=payload
-            )
-            response.raise_for_status()
-            pressure_response = client.post(
-                f"{API_URL}/api/v1/buoys/{buoy_id}/pressures",
-                json={"pressure_kpa": current_pressure, "measured_at": measured_at},
-            )
-            pressure_response.raise_for_status()
-            salinity_response = client.post(
-                f"{API_URL}/api/v1/buoys/{buoy_id}/salinity",
-                json={"salinity_psu": current_salinity, "measured_at": measured_at},
-            )
-            salinity_response.raise_for_status()
+            for channel, values in readings.items():
+                response = client.post(
+                    f"{API_URL}/api/v1/buoys/{buoy_id}/temperatures",
+                    json={
+                        "temperature_celsius": values["temperature_celsius"],
+                        "sensor_channel": channel,
+                        "measured_at": measured_at,
+                    },
+                )
+                response.raise_for_status()
+                pressure_response = client.post(
+                    f"{API_URL}/api/v1/buoys/{buoy_id}/pressures",
+                    json={
+                        "pressure_kpa": values["pressure_kpa"],
+                        "sensor_channel": channel,
+                        "measured_at": measured_at,
+                    },
+                )
+                pressure_response.raise_for_status()
+                salinity_response = client.post(
+                    f"{API_URL}/api/v1/buoys/{buoy_id}/salinity",
+                    json={
+                        "salinity_psu": values["salinity_psu"],
+                        "sensor_channel": channel,
+                        "measured_at": measured_at,
+                    },
+                )
+                salinity_response.raise_for_status()
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
-                f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU"
+                f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | sensors A/B"
             )
             time.sleep(INTERVAL_SECONDS)
 
