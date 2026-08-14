@@ -25,6 +25,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  buoy-simulator:
+    build:
+      context: ./apps/worker
+    environment:
+      API_URL: http://api:8000
+      INTERVAL_SECONDS: 10
+      BUOY_NAME: Mediterranean Sentinel
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   tidewatch-postgres:
