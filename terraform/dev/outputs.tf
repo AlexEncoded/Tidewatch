@@ -27,3 +27,13 @@ output "postgres_server_fqdn" {
   description = "Private PostgreSQL server hostname."
   value       = module.postgres.fully_qualified_domain_name
 }
+
+output "aks_cluster_name" {
+  description = "AKS cluster name."
+  value       = module.aks.cluster_name
+}
+
+output "aks_oidc_issuer_url" {
+  description = "AKS OIDC issuer URL for Workload Identity."
+  value       = module.aks.oidc_issuer_url
+}

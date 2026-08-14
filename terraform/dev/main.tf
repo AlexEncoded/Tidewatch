@@ -57,3 +57,22 @@ module "postgres" {
   virtual_network_id     = module.network.virtual_network_id
   tags                   = local.common_tags
 }
+
+module "aks" {
+  source = "../modules/kubernetes"
+
+  name                = "aks-${local.name_prefix}"
+  dns_prefix          = local.name_prefix
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  subnet_id           = module.network.aks_subnet_id
+  node_count          = var.aks_node_count
+  node_vm_size        = var.aks_node_vm_size
+  tags                = local.common_tags
+}
+
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  scope                = azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = module.aks.kubelet_identity_object_id
+}

@@ -42,3 +42,15 @@ variable "postgres_admin_password" {
   default     = null
   nullable    = true
 }
+
+variable "aks_node_count" {
+  description = "Initial AKS system node count."
+  type        = number
+  default     = 1
+}
+
+variable "aks_node_vm_size" {
+  description = "AKS system node VM size."
+  type        = string
+  default     = "Standard_B2s"
+}
