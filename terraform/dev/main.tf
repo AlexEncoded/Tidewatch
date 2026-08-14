@@ -31,3 +31,15 @@ resource "azurerm_log_analytics_workspace" "main" {
   retention_in_days   = 30
   tags                = local.common_tags
 }
+
+module "network" {
+  source = "../modules/network"
+
+  name                   = "vnet-${local.name_prefix}"
+  location               = azurerm_resource_group.main.location
+  resource_group_name    = azurerm_resource_group.main.name
+  address_space          = ["10.20.0.0/16"]
+  aks_subnet_prefixes    = ["10.20.0.0/20"]
+  postgres_subnet_prefixes = ["10.20.16.0/24"]
+  tags                   = local.common_tags
+}

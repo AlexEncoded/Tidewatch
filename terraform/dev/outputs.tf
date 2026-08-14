@@ -12,3 +12,13 @@ output "log_analytics_workspace_id" {
   description = "Log Analytics workspace resource ID."
   value       = azurerm_log_analytics_workspace.main.id
 }
+
+output "aks_subnet_id" {
+  description = "Subnet reserved for AKS."
+  value       = module.network.aks_subnet_id
+}
+
+output "postgres_subnet_id" {
+  description = "Subnet reserved for PostgreSQL Flexible Server."
+  value       = module.network.postgres_subnet_id
+}
