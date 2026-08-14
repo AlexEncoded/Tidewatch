@@ -11,6 +11,8 @@ class BuoyEntity(Base):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     temperature_readings: Mapped[list["TemperatureReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"

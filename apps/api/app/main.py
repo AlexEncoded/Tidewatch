@@ -45,6 +45,8 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
     buoy = Buoy(
         id=f"TW-{uuid4().hex[:8].upper()}",
         name=payload.name,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
         created_at=datetime.now(timezone.utc),
     )
     return BuoyRepository(db).create_buoy(buoy)

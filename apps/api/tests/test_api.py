@@ -26,7 +26,14 @@ def test_health() -> None:
 
 
 def test_create_buoy_and_record_temperature() -> None:
-    buoy = client.post("/api/v1/buoys", json={"name": "Mediterranean Sentinel"})
+    buoy = client.post(
+        "/api/v1/buoys",
+        json={
+            "name": "Mediterranean Sentinel",
+            "latitude": 36.7,
+            "longitude": 3.1,
+        },
+    )
     buoy_id = buoy.json()["id"]
 
     reading = client.post(
@@ -35,6 +42,8 @@ def test_create_buoy_and_record_temperature() -> None:
     )
 
     assert buoy.status_code == 201
+    assert buoy.json()["latitude"] == 36.7
+    assert buoy.json()["longitude"] == 3.1
     assert reading.status_code == 201
     assert reading.json()["buoy_id"] == buoy_id
     assert reading.json()["temperature_celsius"] == 19.7

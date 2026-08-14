@@ -5,11 +5,15 @@ from pydantic import BaseModel, Field
 
 class BuoyCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
 
 
 class Buoy(BaseModel):
     id: str
     name: str
+    latitude: float | None = None
+    longitude: float | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

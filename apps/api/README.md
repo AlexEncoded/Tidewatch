@@ -42,7 +42,7 @@ Documentación interactiva: <http://localhost:8000/docs>
 | Método | Ruta | Uso |
 |---|---|---|
 | `GET` | `/health` | Health check |
-| `POST` | `/api/v1/buoys` | Registrar una boya |
+| `POST` | `/api/v1/buoys` | Registrar una boya y su ubicación |
 | `GET` | `/api/v1/buoys` | Listar boyas y última temperatura |
 | `POST` | `/api/v1/buoys/{id}/temperatures` | Registrar temperatura |
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
@@ -54,6 +54,9 @@ Documentación interactiva: <http://localhost:8000/docs>
 
 Las lecturas aceptan temperaturas entre `-5 °C` y `45 °C`. Las boyas y lecturas
 se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
+
+La ubicación es opcional en esta fase. Si se proporciona, `latitude` debe estar
+entre `-90` y `90`, y `longitude` entre `-180` y `180`.
 
 El análisis compara la lectura más reciente con la media de la ventana
 solicitada, calcula el cambio entre la primera y la última lectura e identifica

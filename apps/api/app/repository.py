@@ -12,7 +12,13 @@ class BuoyRepository:
         self.db = db
 
     def create_buoy(self, buoy: Buoy) -> BuoyEntity:
-        entity = BuoyEntity(id=buoy.id, name=buoy.name, created_at=buoy.created_at)
+        entity = BuoyEntity(
+            id=buoy.id,
+            name=buoy.name,
+            latitude=buoy.latitude,
+            longitude=buoy.longitude,
+            created_at=buoy.created_at,
+        )
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
