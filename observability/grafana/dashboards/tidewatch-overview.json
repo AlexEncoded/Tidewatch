@@ -35,6 +35,30 @@
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
       "targets": [{"expr": "time() - tidewatch_buoy_last_seen_timestamp_seconds", "legendFormat": "{{buoy_id}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "s", "decimals": 0}, "overrides": []}
+    },
+    {
+      "id": 5,
+      "title": "Current pressure",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [{"expr": "tidewatch_current_pressure_kpa", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "pressurekpa", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 6,
+      "title": "Current salinity",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [{"expr": "tidewatch_current_salinity_psu", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 7,
+      "title": "Degraded sensors",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 24},
+      "targets": [{"expr": "sum(tidewatch_sensor_degraded)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
     }
   ],
   "schemaVersion": 39,
@@ -43,5 +67,5 @@
   "time": {"from": "now-6h", "to": "now"},
   "title": "Tidewatch overview",
   "uid": "tidewatch-overview",
-  "version": 1
+  "version": 2
 }
