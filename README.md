@@ -21,18 +21,19 @@ una señal desde el dispositivo hasta una operación en producción.
 
 ## Capacidades actuales
 
-- API para registrar boyas y lecturas de temperatura, presión y salinidad.
+- API para registrar boyas y lecturas de temperatura, presión, salinidad y batería.
 - Persistencia PostgreSQL con migraciones Alembic.
 - Simulador de telemetría de boyas.
 - Análisis de media, rango, tendencia y anomalías.
 - Alertas derivadas y alertas persistidas con resolución.
 - Ubicación, estado operativo y última comunicación de cada boya.
-- Presión en kPa como base para el futuro cálculo de altura de ola.
+- Presión en kPa como base para el cálculo experimental de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
 - Clasificación operativa inicial del estado del mar.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Canales redundantes A/B y endpoint de comparación de salud de sensores.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
+- Cola operativa de incidencias para mantenimiento.
 - Métricas Prometheus y dashboard Grafana.
 - Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
 - Infraestructura Azure preparada con Terraform.
@@ -64,9 +65,10 @@ esta fase de aprendizaje.
 - [ ] Modelar calidad y procedencia de cada lectura.
 - [x] Añadir salinidad y primera estimación experimental de oleaje derivada de presión.
 - [x] Mostrar condiciones oceánicas y estado del mar en el frontend.
+- [x] Añadir batería y cola interna de mantenimiento.
 - [ ] Calibrar el oleaje con datos reales y añadir posición dinámica.
 - [ ] Crear procesamiento asíncrono real para telemetría.
-- [ ] Incorporar notificaciones de mantenimiento.
+- [ ] Incorporar notificaciones externas de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
 - [ ] Implementar blue/green o canary deployments.
 - [ ] Añadir backups, restauración y disaster recovery probado.
@@ -192,10 +194,10 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 
 ## Estado del proyecto
 
-Fase actual: **fundación de plataforma**. La API de temperatura, presión y
-salinidad funciona en local, la persistencia y el pipeline de CI están
-preparados, y la infraestructura Azure está definida como código pendiente de
-despliegue controlado.
+Fase actual: **fundación de plataforma**. La API de temperatura, presión,
+salinidad y batería funciona en local, con frontend operativo, redundancia A/B,
+observabilidad y cola de mantenimiento. La infraestructura Azure está definida
+como código pendiente de despliegue controlado.
 
 ## Licencia
 
