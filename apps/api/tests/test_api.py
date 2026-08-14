@@ -105,3 +105,26 @@ def test_temperature_alerts_returns_anomalous_buoy() -> None:
     assert len(alerts.json()) == 1
     assert alerts.json()[0]["buoy_id"] == buoy_id
     assert alerts.json()[0]["severity"] == "warning"
+
+
+def test_temperature_alert_can_be_persisted_and_resolved() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Persistent Alert Buoy"}).json()["id"]
+
+    measured_at = datetime.now(timezone.utc)
+    for index, temperature in enumerate((18, 18.1, 17.9, 24)):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+            },
+        )
+
+    evaluated = client.post("/api/v1/alerts/temperature/evaluate?threshold=2")
+    assert evaluated.status_code == 200
+    assert len(evaluated.json()) == 1
+    alert_id = evaluated.json()[0]["id"]
+
+    resolved = client.post(f"/api/v1/alerts/temperature/{alert_id}/resolve")
+    assert resolved.status_code == 200
+    assert resolved.json()["status"] == "resolved"

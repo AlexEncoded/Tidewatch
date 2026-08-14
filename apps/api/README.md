@@ -48,6 +48,9 @@ Documentación interactiva: <http://localhost:8000/docs>
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
 | `GET` | `/api/v1/buoys/{id}/temperature-analysis` | Analizar anomalías |
 | `GET` | `/api/v1/alerts/temperature` | Listar alertas de temperatura |
+| `POST` | `/api/v1/alerts/temperature/evaluate` | Persistir anomalías actuales |
+| `GET` | `/api/v1/alerts/temperature/stored` | Consultar alertas persistidas |
+| `POST` | `/api/v1/alerts/temperature/{id}/resolve` | Resolver una alerta |
 
 Las lecturas aceptan temperaturas entre `-5 °C` y `45 °C`. Las boyas y lecturas
 se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
@@ -58,9 +61,10 @@ la tendencia como `rising`, `falling` o `stable`. Para marcar anomalías necesit
 al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
 `threshold`.
 
-Las alertas se calculan bajo demanda y todavía no se persisten. Más adelante
-podrán tener ciclo de vida (`open`, `acknowledged`, `resolved`) y conectarse con
-notificaciones o Azure Monitor.
+Las alertas calculadas bajo demanda se pueden persistir explícitamente mediante
+`evaluate`. La misma lectura no crea duplicados gracias a la restricción única
+por boya y fecha de medición. Las alertas persistidas empiezan en estado `open`
+y pueden pasar a `resolved`.
 
 ## Tests
 

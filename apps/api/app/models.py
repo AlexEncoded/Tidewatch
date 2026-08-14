@@ -52,3 +52,9 @@ class TemperatureAlert(BaseModel):
     average_temperature: float
     created_at: datetime
     message: str
+
+
+class StoredTemperatureAlert(TemperatureAlert):
+    id: int
+    status: str
+    resolved_at: datetime | None = None
