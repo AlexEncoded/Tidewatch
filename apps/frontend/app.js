@@ -89,6 +89,9 @@ function renderBuoys(buoys, analyses, sensorHealth) {
       const health = sensorHealth[index];
       const seaState = analysis?.sea_state ?? "unknown";
       const sensorStatus = health?.status ?? "unknown";
+      const degradedSensors = health?.degraded_sensors?.length
+        ? ` (${health.degraded_sensors.join(", ")})`
+        : "";
       return `
         <article class="card">
           <div class="card-top">
@@ -96,7 +99,7 @@ function renderBuoys(buoys, analyses, sensorHealth) {
             <span class="buoy-id">${buoy.id}</span>
           </div>
           <h3>${buoy.name}</h3>
-          <p class="sensor-health sensor-health-${sensorStatus}">Sensors A/B: ${sensorStatus}</p>
+          <p class="sensor-health sensor-health-${sensorStatus}">Sensors A/B: ${sensorStatus}${degradedSensors}</p>
           <p class="temperature">${formatTemperature(latest_temperature)}</p>
           <dl>
             <div><dt>Pressure</dt><dd>${formatPressure(latest_pressure)}</dd></div>

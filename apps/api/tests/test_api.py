@@ -220,6 +220,27 @@ def test_sensor_health_compares_redundant_channels() -> None:
     assert health.json()["status"] == "consistent"
     assert health.json()["temperature_delta_celsius"] == 0.1
     assert health.json()["pressure_delta_kpa"] == 0.1
+    assert health.json()["degraded_sensors"] == []
+
+
+def test_sensor_health_identifies_degraded_sensor() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Degraded Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc).isoformat()
+    for channel, temperature in (("A", 20.0), ("B", 21.0)):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            },
+        )
+
+    health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health")
+
+    assert health.status_code == 200
+    assert health.json()["status"] == "degraded"
+    assert health.json()["degraded_sensors"] == ["temperature"]
 
 
 def test_temperature_analysis_detects_anomaly() -> None:

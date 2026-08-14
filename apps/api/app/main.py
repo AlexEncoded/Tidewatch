@@ -302,9 +302,15 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         ),
     }
     available = [value for value in deltas.values() if value is not None]
+    thresholds = {"temperature": 0.5, "pressure": 0.25, "salinity": 0.2}
+    degraded_sensors = [
+        sensor
+        for sensor, value in deltas.items()
+        if value is not None and value > thresholds[sensor]
+    ]
     status_value = "insufficient_data"
     if available:
-        status_value = "consistent" if max(available) <= 0.5 else "degraded"
+        status_value = "degraded" if degraded_sensors else "consistent"
 
     return SensorHealth(
         buoy_id=buoy_id,
@@ -312,6 +318,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         temperature_delta_celsius=deltas["temperature"],
         pressure_delta_kpa=deltas["pressure"],
         salinity_delta_psu=deltas["salinity"],
+        degraded_sensors=degraded_sensors,
         checked_at=datetime.now(timezone.utc),
     )
 
