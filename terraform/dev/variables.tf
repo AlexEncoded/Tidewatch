@@ -28,3 +28,17 @@ variable "owner" {
   type        = string
   default     = "tidewatch-team"
 }
+
+variable "postgres_admin_login" {
+  description = "PostgreSQL administrator login."
+  type        = string
+  default     = "tidewatchadmin"
+}
+
+variable "postgres_admin_password" {
+  description = "PostgreSQL administrator password. Store only in secure tfvars or CI secrets."
+  type        = string
+  sensitive   = true
+  default     = null
+  nullable    = true
+}

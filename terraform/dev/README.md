@@ -8,6 +8,7 @@ producción. La configuración sensible se inyectará desde el entorno de ejecuc
 - Resource Group `rg-tidewatch-dev`.
 - Azure Container Registry para las imágenes de API y worker.
 - Log Analytics Workspace para la futura observabilidad de AKS.
+- PostgreSQL Flexible Server privado con Private DNS y backup.
 
 ## Uso
 
@@ -23,4 +24,5 @@ terraform plan -out dev.tfplan
 
 El `apply` se hará después de revisar nombres, región y presupuesto. El ACR
 está configurado sin usuario administrador; el acceso futuro se realizará con
-Managed Identity.
+Managed Identity. PostgreSQL requiere una contraseña sensible y puede generar
+costes, por lo que no debe desplegarse hasta confirmar el presupuesto.

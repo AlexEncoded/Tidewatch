@@ -43,3 +43,17 @@ module "network" {
   postgres_subnet_prefixes = ["10.20.16.0/24"]
   tags                   = local.common_tags
 }
+
+module "postgres" {
+  source = "../modules/postgres"
+
+  name                   = "${var.project_name}-${var.environment}-postgres"
+  database_name          = var.project_name
+  administrator_login    = var.postgres_admin_login
+  administrator_password = var.postgres_admin_password
+  location               = azurerm_resource_group.main.location
+  resource_group_name    = azurerm_resource_group.main.name
+  delegated_subnet_id    = module.network.postgres_subnet_id
+  virtual_network_id     = module.network.virtual_network_id
+  tags                   = local.common_tags
+}

@@ -22,3 +22,8 @@ output "postgres_subnet_id" {
   description = "Subnet reserved for PostgreSQL Flexible Server."
   value       = module.network.postgres_subnet_id
 }
+
+output "postgres_server_fqdn" {
+  description = "Private PostgreSQL server hostname."
+  value       = module.postgres.fully_qualified_domain_name
+}
