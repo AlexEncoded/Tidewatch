@@ -24,10 +24,6 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
-            buoy.last_seen_at = reading.measured_at
-            self.db.commit()
         return entity
 
     def update_status(self, buoy_id: str, update: BuoyStatusUpdate) -> BuoyEntity | None:
@@ -54,6 +50,13 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+            self.db.refresh(buoy)
         return entity
 
     def list_temperatures(self, buoy_id: str, limit: int) -> list[TemperatureReadingEntity]:

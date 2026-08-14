@@ -8,5 +8,9 @@ resource "azurerm_key_vault" "main" {
   purge_protection_enabled      = false
   rbac_authorization_enabled    = true
   public_network_access_enabled = true
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+  }
   tags                          = var.tags
 }

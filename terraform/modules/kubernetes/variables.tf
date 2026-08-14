@@ -35,6 +35,12 @@ variable "node_vm_size" {
   default     = "Standard_B2s"
 }
 
+variable "api_server_authorized_ip_ranges" {
+  description = "CIDR ranges allowed to reach the public AKS API server. Replace the example before applying."
+  type        = list(string)
+  default     = ["203.0.113.0/24"]
+}
+
 variable "tags" {
   description = "Tags applied to AKS resources."
   type        = map(string)

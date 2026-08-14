@@ -10,6 +10,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
+RUN addgroup --system --gid 10001 tidewatch \
+    && adduser --system --uid 10001 --ingroup tidewatch tidewatch \
+    && chown -R tidewatch:tidewatch /app
+
+USER 10001:10001
+
 EXPOSE 8000
 
 CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
