@@ -10,6 +10,7 @@ producción. La configuración sensible se inyectará desde el entorno de ejecuc
 - Log Analytics Workspace para la futura observabilidad de AKS.
 - PostgreSQL Flexible Server privado con Private DNS y backup.
 - AKS con Azure CNI, Workload Identity y acceso de lectura al ACR.
+- Azure Key Vault con autorización RBAC.
 
 ## Uso
 
@@ -27,3 +28,6 @@ El `apply` se hará después de revisar nombres, región y presupuesto. El ACR
 está configurado sin usuario administrador; el acceso futuro se realizará con
 Managed Identity. PostgreSQL y AKS requieren recursos con coste, por lo que no
 deben desplegarse hasta confirmar el presupuesto.
+
+Los secretos de PostgreSQL no se crean desde este módulo. El siguiente paso será
+conectar Key Vault con AKS mediante Workload Identity y Secrets Store CSI Driver.

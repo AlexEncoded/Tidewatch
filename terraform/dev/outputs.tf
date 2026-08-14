@@ -37,3 +37,8 @@ output "aks_oidc_issuer_url" {
   description = "AKS OIDC issuer URL for Workload Identity."
   value       = module.aks.oidc_issuer_url
 }
+
+output "key_vault_uri" {
+  description = "Key Vault URI for application secrets."
+  value       = module.key_vault.key_vault_uri
+}
