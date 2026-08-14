@@ -20,6 +20,8 @@ from .models import (
     PressureReading,
     PressureReadingCreate,
     PressureAnalysis,
+    SalinityReading,
+    SalinityReadingCreate,
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
@@ -86,6 +88,7 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             buoy=buoy,
             latest_temperature=repository.latest_temperature(buoy.id),
             latest_pressure=repository.latest_pressure(buoy.id),
+            latest_salinity=repository.latest_salinity(buoy.id),
         )
         for buoy in repository.list_buoys()
     ]
@@ -225,6 +228,39 @@ def pressure_analysis(
         for reading in repository.list_pressures(buoy_id, window)
     ]
     return analyze_pressure(buoy_id, readings)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/salinity",
+    response_model=SalinityReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["salinity"],
+)
+def record_salinity(
+    buoy_id: str,
+    payload: SalinityReadingCreate,
+    db: Session = Depends(get_db),
+) -> SalinityReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.add_salinity(SalinityReading(buoy_id=buoy_id, **payload.model_dump()))
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/salinity",
+    response_model=list[SalinityReading],
+    tags=["salinity"],
+)
+def list_salinity(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[SalinityReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_salinity(buoy_id, limit)
 
 
 @app.get(

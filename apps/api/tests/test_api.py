@@ -4,7 +4,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables
-from app.entities import BuoyEntity, PressureReadingEntity, TemperatureReadingEntity
+from app.entities import (
+    BuoyEntity,
+    PressureReadingEntity,
+    SalinityReadingEntity,
+    TemperatureReadingEntity,
+)
 from app.main import app
 
 client = TestClient(app)
@@ -14,6 +19,7 @@ create_tables()
 def setup_function() -> None:
     with SessionLocal() as db:
         db.execute(delete(PressureReadingEntity))
+        db.execute(delete(SalinityReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(BuoyEntity))
         db.commit()
@@ -153,6 +159,25 @@ def test_pressure_analysis_estimates_wave_height() -> None:
     assert analysis.json()["pressure_range_kpa"] == 1
     assert analysis.json()["estimated_wave_height_m"] == 0.102
     assert analysis.json()["confidence"] == "experimental"
+
+
+def test_salinity_reading_is_recorded_and_validated() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Salinity Buoy"}).json()
+    response = client.post(
+        f"/api/v1/buoys/{buoy['id']}/salinity",
+        json={"salinity_psu": 35.2},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["salinity_psu"] == 35.2
+    summary = client.get("/api/v1/buoys").json()[0]
+    assert summary["latest_salinity"]["salinity_psu"] == 35.2
+
+    invalid = client.post(
+        f"/api/v1/buoys/{buoy['id']}/salinity",
+        json={"salinity_psu": 60},
+    )
+    assert invalid.status_code == 422
 
 
 def test_temperature_analysis_detects_anomaly() -> None:

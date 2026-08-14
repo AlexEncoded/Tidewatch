@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .entities import (
     BuoyEntity,
     PressureReadingEntity,
+    SalinityReadingEntity,
     TemperatureAlertEntity,
     TemperatureReadingEntity,
 )
@@ -13,6 +14,7 @@ from .models import (
     Buoy,
     BuoyStatusUpdate,
     PressureReading,
+    SalinityReading,
     TemperatureAlert,
     TemperatureReading,
 )
@@ -111,6 +113,36 @@ class BuoyRepository:
 
     def latest_pressure(self, buoy_id: str) -> PressureReadingEntity | None:
         readings = self.list_pressures(buoy_id, limit=1)
+        return readings[0] if readings else None
+
+    def add_salinity(self, reading: SalinityReading) -> SalinityReadingEntity:
+        entity = SalinityReadingEntity(
+            buoy_id=reading.buoy_id,
+            salinity_psu=reading.salinity_psu,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_salinity(self, buoy_id: str, limit: int) -> list[SalinityReadingEntity]:
+        query = (
+            select(SalinityReadingEntity)
+            .where(SalinityReadingEntity.buoy_id == buoy_id)
+            .order_by(SalinityReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        return list(self.db.scalars(query).all())
+
+    def latest_salinity(self, buoy_id: str) -> SalinityReadingEntity | None:
+        readings = self.list_salinity(buoy_id, limit=1)
         return readings[0] if readings else None
 
     def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertEntity | None:

@@ -11,6 +11,7 @@ BUOY_NAME = os.getenv("BUOY_NAME", "Mediterranean Sentinel")
 INTERVAL_SECONDS = float(os.getenv("INTERVAL_SECONDS", "10"))
 BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
+BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
 
 
 def temperature_reading(previous: float) -> float:
@@ -23,6 +24,12 @@ def pressure_reading(previous: float) -> float:
     """Generate a realistic pressure change for the future wave model."""
     drift = random.uniform(-0.08, 0.08)
     return round(max(80, min(130, previous + drift)), 3)
+
+
+def salinity_reading(previous: float) -> float:
+    """Generate a small salinity change in practical salinity units."""
+    drift = random.uniform(-0.03, 0.03)
+    return round(max(0, min(45, previous + drift)), 3)
 
 
 def wait_for_api(client: httpx.Client) -> None:
@@ -56,11 +63,13 @@ def run() -> None:
         buoy_id = find_or_create_buoy(client)
         current_temperature = BASE_TEMPERATURE
         current_pressure = BASE_PRESSURE
+        current_salinity = BASE_SALINITY
         print(f"Simulating buoy {buoy_id} every {INTERVAL_SECONDS:g}s")
 
         while True:
             current_temperature = temperature_reading(current_temperature)
             current_pressure = pressure_reading(current_pressure)
+            current_salinity = salinity_reading(current_salinity)
             measured_at = datetime.now(timezone.utc).isoformat()
             payload = {
                 "temperature_celsius": current_temperature,
@@ -75,7 +84,15 @@ def run() -> None:
                 json={"pressure_kpa": current_pressure, "measured_at": measured_at},
             )
             pressure_response.raise_for_status()
-            print(f"{buoy_id}: {current_temperature:.2f} °C | {current_pressure:.3f} kPa")
+            salinity_response = client.post(
+                f"{API_URL}/api/v1/buoys/{buoy_id}/salinity",
+                json={"salinity_psu": current_salinity, "measured_at": measured_at},
+            )
+            salinity_response.raise_for_status()
+            print(
+                f"{buoy_id}: {current_temperature:.2f} °C | "
+                f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU"
+            )
             time.sleep(INTERVAL_SECONDS)
 
 
