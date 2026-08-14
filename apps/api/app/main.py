@@ -11,6 +11,7 @@ from .analytics import analyze_temperatures
 from .models import (
     Buoy,
     BuoyCreate,
+    BuoyStatusUpdate,
     BuoySummary,
     TemperatureReading,
     TemperatureReadingCreate,
@@ -59,6 +60,18 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
         BuoySummary(buoy=buoy, latest_temperature=repository.latest_temperature(buoy.id))
         for buoy in repository.list_buoys()
     ]
+
+
+@app.patch("/api/v1/buoys/{buoy_id}/status", response_model=Buoy, tags=["buoys"])
+def update_buoy_status(
+    buoy_id: str,
+    payload: BuoyStatusUpdate,
+    db: Session = Depends(get_db),
+) -> Buoy:
+    buoy = BuoyRepository(db).update_status(buoy_id, payload)
+    if buoy is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return buoy
 
 
 @app.post(

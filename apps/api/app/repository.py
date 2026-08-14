@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .entities import BuoyEntity, TemperatureAlertEntity, TemperatureReadingEntity
-from .models import Buoy, TemperatureAlert, TemperatureReading
+from .models import Buoy, BuoyStatusUpdate, TemperatureAlert, TemperatureReading
 
 
 class BuoyRepository:
@@ -17,12 +17,27 @@ class BuoyRepository:
             name=buoy.name,
             latitude=buoy.latitude,
             longitude=buoy.longitude,
+            status=buoy.status,
+            last_seen_at=buoy.last_seen_at,
             created_at=buoy.created_at,
         )
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
         return entity
+
+    def update_status(self, buoy_id: str, update: BuoyStatusUpdate) -> BuoyEntity | None:
+        buoy = self.get_buoy(buoy_id)
+        if buoy is None:
+            return None
+        buoy.status = update.status
+        self.db.commit()
+        self.db.refresh(buoy)
+        return buoy
 
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
         return self.db.get(BuoyEntity, buoy_id)

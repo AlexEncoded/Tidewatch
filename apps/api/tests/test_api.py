@@ -44,9 +44,26 @@ def test_create_buoy_and_record_temperature() -> None:
     assert buoy.status_code == 201
     assert buoy.json()["latitude"] == 36.7
     assert buoy.json()["longitude"] == 3.1
+    assert buoy.json()["status"] == "active"
     assert reading.status_code == 201
     assert reading.json()["buoy_id"] == buoy_id
     assert reading.json()["temperature_celsius"] == 19.7
+
+
+def test_temperature_updates_buoy_last_seen_and_status_can_change() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Operational Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20},
+    )
+
+    updated = client.patch(
+        f"/api/v1/buoys/{buoy_id}/status",
+        json={"status": "maintenance"},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["status"] == "maintenance"
+    assert updated.json()["last_seen_at"] is not None
 
 
 def test_temperature_must_be_in_valid_range() -> None:

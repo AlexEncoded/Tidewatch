@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -9,11 +11,17 @@ class BuoyCreate(BaseModel):
     longitude: float | None = Field(default=None, ge=-180, le=180)
 
 
+class BuoyStatusUpdate(BaseModel):
+    status: Literal["active", "maintenance", "inactive"]
+
+
 class Buoy(BaseModel):
     id: str
     name: str
     latitude: float | None = None
     longitude: float | None = None
+    status: str = "active"
+    last_seen_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

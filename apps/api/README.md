@@ -44,6 +44,7 @@ Documentación interactiva: <http://localhost:8000/docs>
 | `GET` | `/health` | Health check |
 | `POST` | `/api/v1/buoys` | Registrar una boya y su ubicación |
 | `GET` | `/api/v1/buoys` | Listar boyas y última temperatura |
+| `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
 | `POST` | `/api/v1/buoys/{id}/temperatures` | Registrar temperatura |
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
 | `GET` | `/api/v1/buoys/{id}/temperature-analysis` | Analizar anomalías |
@@ -57,6 +58,9 @@ se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
 
 La ubicación es opcional en esta fase. Si se proporciona, `latitude` debe estar
 entre `-90` y `90`, y `longitude` entre `-180` y `180`.
+
+Cada lectura actualiza `last_seen_at`. El estado operativo puede ser `active`,
+`maintenance` o `inactive`.
 
 El análisis compara la lectura más reciente con la media de la ventana
 solicitada, calcula el cambio entre la primera y la última lectura e identifica
