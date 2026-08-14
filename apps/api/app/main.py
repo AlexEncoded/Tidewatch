@@ -14,6 +14,7 @@ from .analytics import analyze_temperatures
 from .models import (
     Buoy,
     BuoyCreate,
+    BuoyHealth,
     BuoyStatusUpdate,
     BuoySummary,
     TemperatureReading,

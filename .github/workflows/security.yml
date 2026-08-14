@@ -23,7 +23,7 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -46,7 +46,7 @@ jobs:
         run: docker build --tag tidewatch-worker:security apps/worker
 
       - name: Scan API image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: tidewatch-api:security
           severity: HIGH,CRITICAL
@@ -54,7 +54,7 @@ jobs:
           exit-code: 1
 
       - name: Scan worker image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: tidewatch-worker:security
           severity: HIGH,CRITICAL
