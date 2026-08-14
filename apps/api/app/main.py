@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from .database import create_tables, get_db
+from .database import get_db
 from .models import (
     Buoy,
     BuoyCreate,
@@ -19,7 +19,6 @@ from .repository import BuoyRepository
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    create_tables()
     yield
 
 

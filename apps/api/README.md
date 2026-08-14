@@ -27,6 +27,14 @@ uvicorn app.main:app --reload
 Por defecto, la ejecución local usa SQLite (`tidewatch.db`). Para conectar a
 PostgreSQL, define `DATABASE_URL` usando el formato de `.env.example`.
 
+Las migraciones del esquema se ejecutan con:
+
+```bash
+alembic upgrade head
+```
+
+El contenedor de la API ejecuta este comando automáticamente antes de arrancar.
+
 Documentación interactiva: <http://localhost:8000/docs>
 
 ## Endpoints iniciales
