@@ -53,7 +53,7 @@ esta fase de aprendizaje.
 - [ ] Completar el flujo Azure Key Vault + Workload Identity.
 - [ ] Publicar API y worker en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
-- [ ] Añadir mapa operativo de boyas al frontend.
+- [x] Añadir mapa operativo de boyas al frontend.
 - [ ] Crear tests de carga para la ingesta.
 
 ### Evolución de la plataforma

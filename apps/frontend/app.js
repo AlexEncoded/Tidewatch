@@ -1,6 +1,8 @@
 const grid = document.querySelector("#buoy-grid");
 const errorMessage = document.querySelector("#error");
 const refreshButton = document.querySelector("#refresh");
+let fleetMap;
+let buoyMarkers;
 
 function formatTemperature(reading) {
   return reading ? `${reading.temperature_celsius.toFixed(1)} °C` : "No reading";
@@ -20,6 +22,49 @@ function formatWave(analysis) {
     : `${analysis.estimated_wave_height_m.toFixed(2)} m`;
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;",
+  })[character]);
+}
+
+function renderMap(buoys) {
+  if (typeof L === "undefined") return;
+
+  const locatedBuoys = buoys.filter(
+    ({ buoy }) => buoy.latitude != null && buoy.longitude != null,
+  );
+
+  if (!fleetMap) {
+    fleetMap = L.map("fleet-map").setView([38.5, 1.5], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(fleetMap);
+    buoyMarkers = L.layerGroup().addTo(fleetMap);
+  }
+
+  buoyMarkers.clearLayers();
+  locatedBuoys.forEach(({ buoy }) => {
+    const marker = L.marker([buoy.latitude, buoy.longitude]);
+    marker.bindPopup(
+      `<strong>${escapeHtml(buoy.name)}</strong><br>Status: ${escapeHtml(buoy.status)}<br>${escapeHtml(buoy.id)}`,
+    );
+    marker.addTo(buoyMarkers);
+  });
+
+  if (locatedBuoys.length) {
+    fleetMap.fitBounds(
+      locatedBuoys.map(({ buoy }) => [buoy.latitude, buoy.longitude]),
+      { padding: [24, 24], maxZoom: 9 },
+    );
+  }
+}
+
 function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "Never";
 }
@@ -30,6 +75,7 @@ function renderBuoys(buoys, analyses) {
     ({ buoy }) => buoy.status === "active",
   ).length;
   document.querySelector("#last-refresh").textContent = new Date().toLocaleTimeString();
+  renderMap(buoys);
 
   if (!buoys.length) {
     grid.innerHTML = '<p class="empty">No buoys registered yet.</p>';

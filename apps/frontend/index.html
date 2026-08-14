@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tidewatch Fleet</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -25,6 +29,13 @@
 
       <section>
         <div class="section-heading">
+          <h2>Buoy positions</h2>
+        </div>
+        <div id="fleet-map" class="map" aria-label="Map of buoy positions"></div>
+      </section>
+
+      <section>
+        <div class="section-heading">
           <h2>Fleet status</h2>
           <button id="refresh" type="button">Refresh now</button>
         </div>
@@ -32,6 +43,9 @@
         <div id="buoy-grid" class="grid" aria-live="polite"></div>
       </section>
     </main>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
     <script src="/app.js" defer></script>
   </body>
 </html>
