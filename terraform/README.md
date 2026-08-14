@@ -33,3 +33,7 @@ terraform plan
 
 Antes de ejecutar `apply` hay que crear el Storage Account del estado remoto y
 configurar el backend según el entorno.
+
+La base de datos local de desarrollo se ejecuta mediante el `docker-compose.yml`
+de la raíz. En Azure se sustituirá por PostgreSQL Flexible Server sin cambiar el
+contrato de conexión de la aplicación.

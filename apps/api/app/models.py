@@ -12,6 +12,8 @@ class Buoy(BaseModel):
     name: str
     created_at: datetime
 
+    model_config = {"from_attributes": True}
+
 
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(ge=-5, le=45)
@@ -20,6 +22,8 @@ class TemperatureReadingCreate(BaseModel):
 
 class TemperatureReading(TemperatureReadingCreate):
     buoy_id: str
+
+    model_config = {"from_attributes": True}
 
 
 class BuoySummary(BaseModel):

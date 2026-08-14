@@ -1,13 +1,19 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import delete
 
-from app.main import app, store
+from app.database import SessionLocal, create_tables
+from app.entities import BuoyEntity, TemperatureReadingEntity
+from app.main import app
 
 client = TestClient(app)
+create_tables()
 
 
 def setup_function() -> None:
-    store.buoys.clear()
-    store.readings.clear()
+    with SessionLocal() as db:
+        db.execute(delete(TemperatureReadingEntity))
+        db.execute(delete(BuoyEntity))
+        db.commit()
 
 
 def test_health() -> None:
