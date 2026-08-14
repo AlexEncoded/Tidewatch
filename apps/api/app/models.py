@@ -38,5 +38,7 @@ class TemperatureAnalysis(BaseModel):
     average_temperature: float | None = None
     minimum_temperature: float | None = None
     maximum_temperature: float | None = None
+    change_celsius: float | None = None
+    trend: str = "insufficient_data"
     is_anomaly: bool = False
     anomaly_reason: str | None = None

@@ -81,3 +81,5 @@ def test_temperature_analysis_detects_anomaly() -> None:
     assert analysis.status_code == 200
     assert analysis.json()["sample_count"] == 4
     assert analysis.json()["is_anomaly"] is True
+    assert analysis.json()["trend"] == "rising"
+    assert analysis.json()["change_celsius"] == 5

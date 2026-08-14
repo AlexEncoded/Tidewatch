@@ -51,9 +51,11 @@ Documentación interactiva: <http://localhost:8000/docs>
 Las lecturas aceptan temperaturas entre `-5 °C` y `45 °C`. Las boyas y lecturas
 se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
 
-El análisis necesita al menos tres lecturas y compara la más reciente con la
-media de la ventana solicitada. El umbral por defecto es `2 °C` y se puede
-ajustar con `threshold`.
+El análisis compara la lectura más reciente con la media de la ventana
+solicitada, calcula el cambio entre la primera y la última lectura e identifica
+la tendencia como `rising`, `falling` o `stable`. Para marcar anomalías necesita
+al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
+`threshold`.
 
 ## Tests
 
