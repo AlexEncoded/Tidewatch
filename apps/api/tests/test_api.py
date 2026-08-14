@@ -159,6 +159,7 @@ def test_pressure_analysis_estimates_wave_height() -> None:
     assert analysis.json()["pressure_range_kpa"] == 1
     assert analysis.json()["estimated_wave_height_m"] == 0.102
     assert analysis.json()["confidence"] == "experimental"
+    assert analysis.json()["sea_state"] == "calm"
 
 
 def test_salinity_reading_is_recorded_and_validated() -> None:

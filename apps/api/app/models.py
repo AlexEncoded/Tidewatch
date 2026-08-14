@@ -79,6 +79,7 @@ class PressureAnalysis(BaseModel):
     pressure_range_kpa: float | None = None
     estimated_wave_height_m: float | None = None
     confidence: str = "insufficient_data"
+    sea_state: str = "unknown"
 
 
 class BuoySummary(BaseModel):

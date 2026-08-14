@@ -70,6 +70,17 @@ def analyze_pressure(
     maximum = max(values)
     pressure_range = maximum - minimum
     has_enough_samples = len(values) >= 3
+    estimated_wave_height = (
+        pressure_range * KPA_TO_METRES_OF_WATER if has_enough_samples else None
+    )
+    sea_state = "unknown"
+    if estimated_wave_height is not None:
+        if estimated_wave_height < 0.3:
+            sea_state = "calm"
+        elif estimated_wave_height < 1.0:
+            sea_state = "moderate"
+        else:
+            sea_state = "rough"
 
     return PressureAnalysis(
         buoy_id=buoy_id,
@@ -80,9 +91,8 @@ def analyze_pressure(
         maximum_pressure_kpa=round(maximum, 3),
         pressure_range_kpa=round(pressure_range, 3),
         estimated_wave_height_m=(
-            round(pressure_range * KPA_TO_METRES_OF_WATER, 3)
-            if has_enough_samples
-            else None
+            round(estimated_wave_height, 3) if estimated_wave_height is not None else None
         ),
         confidence="experimental" if has_enough_samples else "insufficient_data",
+        sea_state=sea_state,
     )

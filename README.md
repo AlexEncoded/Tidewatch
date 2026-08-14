@@ -29,6 +29,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Ubicación, estado operativo y última comunicación de cada boya.
 - Presión en kPa como base para el futuro cálculo de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
+- Clasificación operativa inicial del estado del mar.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Métricas Prometheus y dashboard Grafana.
 - Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
@@ -59,7 +60,7 @@ esta fase de aprendizaje.
 
 - [ ] Añadir soporte para sensores duplicados A/B.
 - [ ] Modelar calidad y procedencia de cada lectura.
-- [ ] Añadir calibración real del oleaje y posición dinámica.
+- [ ] Añadir calibración real del oleaje, estado del mar y posición dinámica.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
