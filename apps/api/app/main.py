@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .analytics import analyze_temperatures
+from .analytics import analyze_pressure, analyze_temperatures
 from .models import (
     Buoy,
     BuoyCreate,
@@ -19,6 +19,7 @@ from .models import (
     BuoySummary,
     PressureReading,
     PressureReadingCreate,
+    PressureAnalysis,
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
@@ -203,6 +204,27 @@ def list_pressures(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_pressures(buoy_id, limit)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/pressure-analysis",
+    response_model=PressureAnalysis,
+    tags=["pressure"],
+)
+def pressure_analysis(
+    buoy_id: str,
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> PressureAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+
+    readings = [
+        PressureReading.model_validate(reading)
+        for reading in repository.list_pressures(buoy_id, window)
+    ]
+    return analyze_pressure(buoy_id, readings)
 
 
 @app.get(

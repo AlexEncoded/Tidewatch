@@ -58,6 +58,18 @@ class PressureReading(PressureReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class PressureAnalysis(BaseModel):
+    buoy_id: str
+    sample_count: int
+    latest_pressure_kpa: float | None = None
+    average_pressure_kpa: float | None = None
+    minimum_pressure_kpa: float | None = None
+    maximum_pressure_kpa: float | None = None
+    pressure_range_kpa: float | None = None
+    estimated_wave_height_m: float | None = None
+    confidence: str = "insufficient_data"
+
+
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None

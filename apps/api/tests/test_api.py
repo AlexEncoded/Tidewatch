@@ -132,6 +132,29 @@ def test_pressure_must_be_in_sensor_range() -> None:
     assert response.status_code == 422
 
 
+def test_pressure_analysis_estimates_wave_height() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Wave Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+
+    for index, pressure in enumerate((101.3, 101.8, 100.8)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/pressures",
+            json={
+                "pressure_kpa": pressure,
+                "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+            },
+        )
+        assert response.status_code == 201
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/pressure-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["sample_count"] == 3
+    assert analysis.json()["pressure_range_kpa"] == 1
+    assert analysis.json()["estimated_wave_height_m"] == 0.102
+    assert analysis.json()["confidence"] == "experimental"
+
+
 def test_temperature_analysis_detects_anomaly() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Analysis Buoy"}).json()["id"]
 
