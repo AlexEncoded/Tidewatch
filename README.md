@@ -53,14 +53,16 @@ esta fase de aprendizaje.
 - [ ] Completar el flujo Azure Key Vault + Workload Identity.
 - [ ] Publicar API y worker en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
-- [ ] Añadir frontend operativo con mapa de boyas.
+- [ ] Añadir mapa operativo de boyas al frontend.
 - [ ] Crear tests de carga para la ingesta.
 
 ### Evolución de la plataforma
 
 - [ ] Añadir soporte para sensores duplicados A/B.
 - [ ] Modelar calidad y procedencia de cada lectura.
-- [ ] Añadir calibración real del oleaje, estado del mar y posición dinámica.
+- [x] Añadir salinidad y primera estimación experimental de oleaje derivada de presión.
+- [x] Mostrar condiciones oceánicas y estado del mar en el frontend.
+- [ ] Calibrar el oleaje con datos reales y añadir posición dinámica.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
@@ -188,10 +190,10 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 
 ## Estado del proyecto
 
-Fase actual: **fundación de plataforma**. La API de temperatura y presión
-funciona en local, la persistencia y el pipeline de CI están preparados, y la
-infraestructura Azure está definida como código pendiente de despliegue
-controlado.
+Fase actual: **fundación de plataforma**. La API de temperatura, presión y
+salinidad funciona en local, la persistencia y el pipeline de CI están
+preparados, y la infraestructura Azure está definida como código pendiente de
+despliegue controlado.
 
 ## Licencia
 
