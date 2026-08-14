@@ -7,3 +7,6 @@
 - Trivy para imágenes y dependencias.
 - Kyverno para políticas de admisión en Kubernetes.
 - Private Endpoints y Azure Policy cuando el entorno lo requiera.
+
+El workflow `security.yml` ejecuta Gitleaks y Trivy sobre el repositorio y las
+imágenes Docker antes de que puedan publicarse en ACR.

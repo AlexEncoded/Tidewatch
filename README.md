@@ -101,6 +101,9 @@ GitHub Actions valida automáticamente la API, ejecuta los tests, compila el
 código Python, construye las imágenes Docker y valida la configuración de
 Terraform para `dev`.
 
+También se ejecutan análisis de secretos, configuración y vulnerabilidades con
+Gitleaks y Trivy.
+
 ## Puesta en marcha local
 
 Requisitos iniciales:
