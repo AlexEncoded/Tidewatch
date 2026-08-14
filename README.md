@@ -95,6 +95,12 @@ Cada cambio deberá atravesar, como mínimo:
 La infraestructura se tratará como código y los despliegues de Kubernetes se
 gestionarán mediante GitOps.
 
+## Continuous integration
+
+GitHub Actions valida automáticamente la API, ejecuta los tests, compila el
+código Python, construye las imágenes Docker y valida la configuración de
+Terraform para `dev`.
+
 ## Puesta en marcha local
 
 Requisitos iniciales:
