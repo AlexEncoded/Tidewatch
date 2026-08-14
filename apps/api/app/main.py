@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -20,6 +22,11 @@ from .models import (
     StoredTemperatureAlert,
 )
 from .repository import BuoyRepository
+from .metrics import (
+    buoy_last_seen_timestamp_seconds,
+    current_temperature_celsius,
+    temperature_readings_total,
+)
 
 
 @asynccontextmanager
@@ -39,6 +46,11 @@ app = FastAPI(
 def health(db: Session = Depends(get_db)) -> dict[str, str]:
     db.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.post("/api/v1/buoys", response_model=Buoy, status_code=status.HTTP_201_CREATED, tags=["buoys"])
@@ -121,7 +133,11 @@ def record_temperature(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     reading = TemperatureReading(buoy_id=buoy_id, **payload.model_dump())
-    return repository.add_temperature(reading)
+    saved_reading = repository.add_temperature(reading)
+    temperature_readings_total.labels(buoy_id=buoy_id).inc()
+    current_temperature_celsius.labels(buoy_id=buoy_id).set(reading.temperature_celsius)
+    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(reading.measured_at.timestamp())
+    return saved_reading
 
 
 @app.get(

@@ -37,6 +37,8 @@ El contenedor de la API ejecuta este comando automáticamente antes de arrancar.
 
 Documentación interactiva: <http://localhost:8000/docs>
 
+Métricas Prometheus: <http://localhost:8000/metrics>
+
 ## Endpoints iniciales
 
 | Método | Ruta | Uso |
@@ -72,6 +74,9 @@ solicitada, calcula el cambio entre la primera y la última lectura e identifica
 la tendencia como `rising`, `falling` o `stable`. Para marcar anomalías necesita
 al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
 `threshold`.
+
+La API expone métricas Prometheus de lecturas aceptadas, temperatura actual y
+última comunicación de cada boya.
 
 Las alertas calculadas bajo demanda se pueden persistir explícitamente mediante
 `evaluate`. La misma lectura no crea duplicados gracias a la restricción única

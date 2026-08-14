@@ -1,0 +1,11 @@
+groups:
+  - name: tidewatch-buoys
+    rules:
+      - alert: TidewatchBuoySilent
+        expr: time() - tidewatch_buoy_last_seen_timestamp_seconds > 1800
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch buoy is not sending readings"
+          description: "The buoy has not reported a temperature reading for more than 30 minutes."

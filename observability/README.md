@@ -10,3 +10,7 @@ La observabilidad combinará:
 
 Los dashboards, reglas y alertas deben mantenerse como código siempre que sea
 posible.
+
+La API expone `/metrics` y ya existe una configuración inicial en
+`prometheus/prometheus.yml`, junto con una regla para detectar boyas silenciosas
+en `alerts/tidewatch.rules.yml`.
