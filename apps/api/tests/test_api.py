@@ -83,3 +83,25 @@ def test_temperature_analysis_detects_anomaly() -> None:
     assert analysis.json()["is_anomaly"] is True
     assert analysis.json()["trend"] == "rising"
     assert analysis.json()["change_celsius"] == 5
+
+
+def test_temperature_alerts_returns_anomalous_buoy() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Alert Buoy"}).json()["id"]
+
+    measured_at = datetime.now(timezone.utc)
+    for index, temperature in enumerate((18, 18.1, 17.9, 24)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+            },
+        )
+        assert response.status_code == 201
+
+    alerts = client.get("/api/v1/alerts/temperature?threshold=2")
+
+    assert alerts.status_code == 200
+    assert len(alerts.json()) == 1
+    assert alerts.json()[0]["buoy_id"] == buoy_id
+    assert alerts.json()[0]["severity"] == "warning"

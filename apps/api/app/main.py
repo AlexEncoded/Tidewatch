@@ -15,6 +15,7 @@ from .models import (
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
+    TemperatureAlert,
 )
 from .repository import BuoyRepository
 
@@ -112,3 +113,38 @@ def temperature_analysis(
         for reading in repository.list_temperatures(buoy_id, window)
     ]
     return analyze_temperatures(buoy_id, readings, threshold)
+
+
+@app.get(
+    "/api/v1/alerts/temperature",
+    response_model=list[TemperatureAlert],
+    tags=["alerts"],
+)
+def temperature_alerts(
+    threshold: float = Query(default=2.0, gt=0, le=20),
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[TemperatureAlert]:
+    repository = BuoyRepository(db)
+    alerts: list[TemperatureAlert] = []
+
+    for buoy in repository.list_buoys():
+        readings = [
+            TemperatureReading.model_validate(reading)
+            for reading in repository.list_temperatures(buoy.id, window)
+        ]
+        analysis = analyze_temperatures(buoy.id, readings, threshold)
+        if analysis.is_anomaly and analysis.latest_temperature is not None:
+            alerts.append(
+                TemperatureAlert(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    severity="warning",
+                    temperature_celsius=analysis.latest_temperature,
+                    average_temperature=analysis.average_temperature or 0,
+                    created_at=readings[0].measured_at,
+                    message=analysis.anomaly_reason or "Temperature anomaly detected",
+                )
+            )
+
+    return alerts

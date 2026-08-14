@@ -42,3 +42,13 @@ class TemperatureAnalysis(BaseModel):
     trend: str = "insufficient_data"
     is_anomaly: bool = False
     anomaly_reason: str | None = None
+
+
+class TemperatureAlert(BaseModel):
+    buoy_id: str
+    buoy_name: str
+    severity: str
+    temperature_celsius: float
+    average_temperature: float
+    created_at: datetime
+    message: str
