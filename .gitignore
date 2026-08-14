@@ -1,0 +1,21 @@
+# Documentación privada del proceso de aprendizaje y planificación
+/PLANNING/
+
+# Terraform: nunca versionar estado, variables sensibles ni planes
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+crash.log
+crash.*.log
+
+# Azure CLI y credenciales locales
+.azure/
+azureProfile.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
