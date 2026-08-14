@@ -35,6 +35,9 @@ alembic upgrade head
 
 El contenedor de la API ejecuta este comando automáticamente antes de arrancar.
 
+El pipeline de CI ejecuta las migraciones contra PostgreSQL antes de lanzar los
+tests de la API.
+
 Documentación interactiva: <http://localhost:8000/docs>
 
 Métricas Prometheus: <http://localhost:8000/metrics>
