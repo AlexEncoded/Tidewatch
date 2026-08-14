@@ -14,3 +14,6 @@ posible.
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con una regla para detectar boyas silenciosas
 en `alerts/tidewatch.rules.yml`.
+
+El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
+con la configuración de `grafana/provisioning/`.
