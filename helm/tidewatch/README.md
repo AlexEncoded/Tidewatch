@@ -1,6 +1,6 @@
 # Tidewatch Helm chart
 
-Chart para desplegar la API y el simulador de boyas en AKS.
+Chart para desplegar el frontend, la API y el simulador de boyas en AKS.
 
 ## Requisito
 

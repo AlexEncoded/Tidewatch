@@ -18,5 +18,10 @@ worker:
     tag: dev
   intervalSeconds: 15
 
+frontend:
+  image:
+    repository: tidewatch/frontend
+    tag: dev
+
 service:
   type: ClusterIP
