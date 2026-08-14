@@ -49,5 +49,12 @@ database:
 service:
   type: ClusterIP
 
+ingress:
+  enabled: false
+  className: nginx
+  host: tidewatch.local
+  annotations: {}
+  tls: []
+
 nameOverride: ""
 fullnameOverride: ""

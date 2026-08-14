@@ -31,3 +31,13 @@ helm upgrade --install tidewatch ./helm/tidewatch \
   --set worker.image.repository=<ACR_NAME>.azurecr.io/tidewatch-worker \
   --set worker.image.tag=<IMAGE_TAG>
 ```
+
+El Ingress está desactivado por defecto. Para activarlo cuando exista un
+controller compatible:
+
+```bash
+helm upgrade --install tidewatch ./helm/tidewatch \
+  --set ingress.enabled=true \
+  --set ingress.className=nginx \
+  --set ingress.host=tidewatch.example.com
+```
