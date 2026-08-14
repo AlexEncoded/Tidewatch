@@ -18,6 +18,13 @@ h1 { font-size: clamp(2.4rem, 6vw, 4.8rem); letter-spacing: -0.06em; line-height
 .summary div, .card { background: rgba(12, 31, 49, 0.84); border: 1px solid #1d3b51; border-radius: 16px; padding: 22px; }
 .summary span, dt { color: #8aa3b8; font-size: 0.82rem; }
 .summary strong { display: block; font-size: 2rem; margin-top: 8px; }
+.maintenance-panel { margin-bottom: 42px; }
+.maintenance-list { display: grid; gap: 10px; }
+.maintenance-item { background: rgba(67, 35, 45, 0.7); border: 1px solid #75404c; border-radius: 12px; padding: 14px 16px; }
+.maintenance-item strong { margin-right: 10px; }
+.maintenance-item p { color: #ffd9de; margin: 8px 0 0; }
+.severity { border-radius: 999px; color: #ffcf86; float: right; font-size: 0.68rem; padding: 4px 8px; text-transform: uppercase; }
+.severity-warning { background: #47371a; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 h2 { font-size: 1.4rem; margin: 0; }
 button { background: #66d9ef; border: 0; border-radius: 8px; color: #07111f; cursor: pointer; font-weight: 700; padding: 10px 15px; }

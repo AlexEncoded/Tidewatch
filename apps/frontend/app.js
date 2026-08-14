@@ -114,6 +114,25 @@ function renderBuoys(buoys, analyses, sensorHealth) {
     .join("");
 }
 
+function renderMaintenanceIssues(issues) {
+  const panel = document.querySelector("#maintenance-panel");
+  const list = document.querySelector("#maintenance-list");
+  panel.hidden = !issues.length;
+  list.innerHTML = issues
+    .map(
+      (issue) => `
+        <article class="maintenance-item">
+          <div>
+            <strong>${escapeHtml(issue.buoy_name)}</strong>
+            <span class="buoy-id">${escapeHtml(issue.buoy_id)}</span>
+          </div>
+          <span class="severity severity-${escapeHtml(issue.severity)}">${escapeHtml(issue.severity)}</span>
+          <p>${escapeHtml(issue.message)}</p>
+        </article>`,
+    )
+    .join("");
+}
+
 async function loadBuoys() {
   errorMessage.hidden = true;
   try {
@@ -125,6 +144,7 @@ async function loadBuoys() {
       ? await maintenanceResponse.json()
       : [];
     document.querySelector("#maintenance-issues").textContent = maintenanceIssues.length;
+    renderMaintenanceIssues(maintenanceIssues);
     const analyses = await Promise.all(
       buoys.map(async ({ buoy }) => {
         const analysisResponse = await fetch(
