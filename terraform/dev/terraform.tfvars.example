@@ -1,0 +1,5 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "westeurope"
+project_name    = "tidewatch"
+environment     = "dev"
+owner           = "your-name"
