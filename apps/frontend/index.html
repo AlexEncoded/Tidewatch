@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tidewatch Fleet</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">TIDEWATCH / OPERATIONS</p>
+          <h1>Ocean buoy fleet</h1>
+          <p class="subtitle">Live temperature and communication overview.</p>
+        </div>
+        <div class="pulse"><span></span> Live polling</div>
+      </header>
+
+      <section class="summary" aria-label="Fleet summary">
+        <div><span>Total buoys</span><strong id="total-buoys">—</strong></div>
+        <div><span>Active</span><strong id="active-buoys">—</strong></div>
+        <div><span>Last refresh</span><strong id="last-refresh">—</strong></div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Fleet status</h2>
+          <button id="refresh" type="button">Refresh now</button>
+        </div>
+        <p id="error" class="error" hidden></p>
+        <div id="buoy-grid" class="grid" aria-live="polite"></div>
+      </section>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

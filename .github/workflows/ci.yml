@@ -67,3 +67,6 @@ jobs:
 
       - name: Build worker image
         run: docker build --tag tidewatch-worker:ci apps/worker
+
+      - name: Build frontend image
+        run: docker build --tag tidewatch-frontend:ci apps/frontend

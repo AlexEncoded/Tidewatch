@@ -42,5 +42,14 @@ services:
       api:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ./apps/frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   tidewatch-postgres:
