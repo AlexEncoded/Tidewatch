@@ -243,6 +243,21 @@ def test_sensor_health_identifies_degraded_sensor() -> None:
     assert health.json()["degraded_sensors"] == ["temperature"]
 
 
+def test_maintenance_issues_reports_degraded_sensor() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
+    for channel, temperature in (("A", 20.0), ("B", 21.0)):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={"temperature_celsius": temperature, "sensor_channel": channel},
+        )
+
+    issues = client.get("/api/v1/maintenance/issues")
+
+    assert issues.status_code == 200
+    assert issues.json()[0]["issue_type"] == "degraded_sensor"
+    assert issues.json()[0]["buoy_id"] == buoy_id
+
+
 def test_temperature_analysis_detects_anomaly() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Analysis Buoy"}).json()["id"]
 

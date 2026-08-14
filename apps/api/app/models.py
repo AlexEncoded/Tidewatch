@@ -95,6 +95,14 @@ class SensorHealth(BaseModel):
     checked_at: datetime
 
 
+class MaintenanceIssue(BaseModel):
+    buoy_id: str
+    buoy_name: str
+    issue_type: str
+    severity: str
+    message: str
+
+
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None

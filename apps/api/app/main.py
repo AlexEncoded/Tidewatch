@@ -17,6 +17,7 @@ from .models import (
     BuoyHealth,
     BuoyStatusUpdate,
     BuoySummary,
+    MaintenanceIssue,
     PressureReading,
     PressureReadingCreate,
     PressureAnalysis,
@@ -351,6 +352,51 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         degraded_sensors=degraded_sensors,
         checked_at=datetime.now(timezone.utc),
     )
+
+
+@app.get(
+    "/api/v1/maintenance/issues",
+    response_model=list[MaintenanceIssue],
+    tags=["maintenance"],
+)
+def maintenance_issues(
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> list[MaintenanceIssue]:
+    repository = BuoyRepository(db)
+    now = datetime.now(timezone.utc)
+    max_age_seconds = max_age_minutes * 60
+    issues: list[MaintenanceIssue] = []
+
+    for buoy in repository.list_buoys():
+        if buoy.status == "active" and buoy.last_seen_at is not None:
+            last_seen = buoy.last_seen_at
+            if last_seen.tzinfo is None:
+                last_seen = last_seen.replace(tzinfo=timezone.utc)
+            if (now - last_seen).total_seconds() > max_age_seconds:
+                issues.append(
+                    MaintenanceIssue(
+                        buoy_id=buoy.id,
+                        buoy_name=buoy.name,
+                        issue_type="silent_buoy",
+                        severity="warning",
+                        message=f"No telemetry received for more than {max_age_minutes:g} minutes",
+                    )
+                )
+
+        health = sensor_health(buoy.id, db)
+        if health.status == "degraded":
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="degraded_sensor",
+                    severity="warning",
+                    message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+                )
+            )
+
+    return issues
 
 
 @app.get(

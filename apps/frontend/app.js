@@ -120,6 +120,11 @@ async function loadBuoys() {
     const response = await fetch("/api/v1/buoys");
     if (!response.ok) throw new Error(`API returned ${response.status}`);
     const buoys = await response.json();
+    const maintenanceResponse = await fetch("/api/v1/maintenance/issues");
+    const maintenanceIssues = maintenanceResponse.ok
+      ? await maintenanceResponse.json()
+      : [];
+    document.querySelector("#maintenance-issues").textContent = maintenanceIssues.length;
     const analyses = await Promise.all(
       buoys.map(async ({ buoy }) => {
         const analysisResponse = await fetch(
