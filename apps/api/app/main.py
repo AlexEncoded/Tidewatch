@@ -62,6 +62,37 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
     ]
 
 
+@app.get("/api/v1/buoys/stale", response_model=list[BuoyHealth], tags=["buoys"])
+def stale_buoys(
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> list[BuoyHealth]:
+    now = datetime.now(timezone.utc)
+    max_age_seconds = max_age_minutes * 60
+    stale: list[BuoyHealth] = []
+
+    for buoy in BuoyRepository(db).list_buoys():
+        if buoy.status != "active" or buoy.last_seen_at is None:
+            continue
+        last_seen = buoy.last_seen_at
+        if last_seen.tzinfo is None:
+            last_seen = last_seen.replace(tzinfo=timezone.utc)
+        age_seconds = (now - last_seen).total_seconds()
+        if age_seconds > max_age_seconds:
+            stale.append(
+                BuoyHealth(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    status=buoy.status,
+                    last_seen_at=last_seen,
+                    age_seconds=round(age_seconds, 2),
+                    is_stale=True,
+                )
+            )
+
+    return stale
+
+
 @app.patch("/api/v1/buoys/{buoy_id}/status", response_model=Buoy, tags=["buoys"])
 def update_buoy_status(
     buoy_id: str,

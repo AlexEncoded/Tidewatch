@@ -44,6 +44,7 @@ Documentación interactiva: <http://localhost:8000/docs>
 | `GET` | `/health` | Health check |
 | `POST` | `/api/v1/buoys` | Registrar una boya y su ubicación |
 | `GET` | `/api/v1/buoys` | Listar boyas y última temperatura |
+| `GET` | `/api/v1/buoys/stale` | Detectar boyas sin comunicación |
 | `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
 | `POST` | `/api/v1/buoys/{id}/temperatures` | Registrar temperatura |
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
@@ -61,6 +62,10 @@ entre `-90` y `90`, y `longitude` entre `-180` y `180`.
 
 Cada lectura actualiza `last_seen_at`. El estado operativo puede ser `active`,
 `maintenance` o `inactive`.
+
+`/api/v1/buoys/stale` devuelve boyas activas cuya última lectura supera el
+`max_age_minutes` indicado. Las boyas en mantenimiento o inactivas no se
+consideran silenciosas.
 
 El análisis compara la lectura más reciente con la media de la ventana
 solicitada, calcula el cambio entre la primera y la última lectura e identifica

@@ -27,6 +27,15 @@ class Buoy(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class BuoyHealth(BaseModel):
+    buoy_id: str
+    buoy_name: str
+    status: str
+    last_seen_at: datetime | None = None
+    age_seconds: float | None = None
+    is_stale: bool
+
+
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(ge=-5, le=45)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -66,6 +66,24 @@ def test_temperature_updates_buoy_last_seen_and_status_can_change() -> None:
     assert updated.json()["last_seen_at"] is not None
 
 
+def test_stale_buoy_is_reported_for_maintenance() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Silent Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={
+            "temperature_celsius": 20,
+            "measured_at": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+        },
+    )
+
+    stale = client.get("/api/v1/buoys/stale?max_age_minutes=30")
+
+    assert stale.status_code == 200
+    assert len(stale.json()) == 1
+    assert stale.json()[0]["buoy_id"] == buoy_id
+    assert stale.json()[0]["is_stale"] is True
+
+
 def test_temperature_must_be_in_valid_range() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Test Buoy"}).json()
 
