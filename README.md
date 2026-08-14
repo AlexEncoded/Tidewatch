@@ -19,15 +19,62 @@ El producto de negocio es deliberadamente acotado. El foco del repositorio está
 en construir una plataforma reproducible, segura y observable capaz de llevar
 una señal desde el dispositivo hasta una operación en producción.
 
-## Capacidades previstas
+## Capacidades actuales
 
-- Vista operativa de la flota y estado de cada boya.
-- Ingesta de telemetría y procesamiento asíncrono.
-- Detección de anomalías y generación de incidencias.
-- Historial de mediciones y trazabilidad de eventos.
-- Simulación de dispositivos para desarrollo y pruebas de carga.
-- Despliegues progresivos con rollback.
-- Métricas de producto y métricas DORA.
+- API para registrar boyas y lecturas de temperatura.
+- Persistencia PostgreSQL con migraciones Alembic.
+- Simulador de telemetría de boyas.
+- Análisis de media, rango, tendencia y anomalías.
+- Alertas derivadas y alertas persistidas con resolución.
+- Ubicación, estado operativo y última comunicación de cada boya.
+- Métricas Prometheus y dashboard Grafana.
+- Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
+- Infraestructura Azure preparada con Terraform.
+
+## Dirección del proyecto
+
+Tidewatch crecerá por iteraciones pequeñas. Cada nueva capacidad deberá aportar
+valor a la operación de las boyas y, al mismo tiempo, mejorar la plataforma:
+reproducibilidad, seguridad, observabilidad, resiliencia o automatización.
+
+La infraestructura Azure está definida como código, pero los recursos con coste
+(PostgreSQL Flexible Server y AKS) no se despliegan automáticamente durante
+esta fase de aprendizaje.
+
+## Roadmap y TODO
+
+### Próximos pasos
+
+- [ ] Validar el chart Helm con `helm lint` y desplegarlo en un clúster local.
+- [ ] Completar el flujo Azure Key Vault + Workload Identity.
+- [ ] Publicar API y worker en ACR desde GitHub Actions.
+- [ ] Desplegar AKS `dev` con aprobación explícita.
+- [ ] Añadir frontend operativo con mapa de boyas.
+- [ ] Crear tests de carga para la ingesta.
+
+### Evolución de la plataforma
+
+- [ ] Añadir soporte para sensores duplicados A/B.
+- [ ] Modelar calidad y procedencia de cada lectura.
+- [ ] Añadir salinidad, presión, oleaje y posición dinámica.
+- [ ] Crear procesamiento asíncrono real para telemetría.
+- [ ] Incorporar notificaciones de mantenimiento.
+- [ ] Añadir entornos `staging` y `production`.
+- [ ] Implementar blue/green o canary deployments.
+- [ ] Añadir backups, restauración y disaster recovery probado.
+- [ ] Introducir load tests y chaos engineering.
+- [ ] Medir métricas DORA y coste por entorno.
+
+### Futuro experimental: datos y ML
+
+- [ ] Acumular histórico suficiente de las boyas.
+- [ ] Procesar ventanas recientes mediante un flujo continuo.
+- [ ] Distribuir trabajos entre workers.
+- [ ] Probar un modelo simulado en CPU.
+- [ ] Levantar GPUs en Azure solo cuando el experimento lo justifique.
+- [ ] Versionar datasets, modelos y predicciones.
+
+El detalle de estas ideas, decisiones y aprendizajes se mantiene en `PLANNING/`.
 
 ## Arquitectura
 
@@ -134,7 +181,9 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 
 ## Estado del proyecto
 
-En fase de definición de plataforma y arquitectura base.
+Fase actual: **fundación de plataforma**. La API de temperatura funciona en
+local, la persistencia y el pipeline de CI están preparados, y la infraestructura
+Azure está definida como código pendiente de validación y despliegue controlado.
 
 ## Licencia
 
