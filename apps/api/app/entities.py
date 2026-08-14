@@ -25,6 +25,9 @@ class BuoyEntity(Base):
     salinity_readings: Mapped[list["SalinityReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
 
 
 class TemperatureReadingEntity(Base):
@@ -58,6 +61,16 @@ class SalinityReadingEntity(Base):
     sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="salinity_readings")
+
+
+class BatteryReadingEntity(Base):
+    __tablename__ = "battery_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    battery_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="battery_readings")
 
 
 class TemperatureAlertEntity(Base):

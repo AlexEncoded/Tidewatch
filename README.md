@@ -32,6 +32,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Clasificación operativa inicial del estado del mar.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Canales redundantes A/B y endpoint de comparación de salud de sensores.
+- Telemetría de batería y avisos de carga baja para mantenimiento.
 - Métricas Prometheus y dashboard Grafana.
 - Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
 - Infraestructura Azure preparada con Terraform.

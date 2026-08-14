@@ -17,6 +17,8 @@ from .models import (
     BuoyHealth,
     BuoyStatusUpdate,
     BuoySummary,
+    BatteryReading,
+    BatteryReadingCreate,
     MaintenanceIssue,
     PressureReading,
     PressureReadingCreate,
@@ -96,6 +98,7 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_temperature=repository.latest_temperature(buoy.id),
             latest_pressure=repository.latest_pressure(buoy.id),
             latest_salinity=repository.latest_salinity(buoy.id),
+            latest_battery=repository.latest_battery(buoy.id),
         )
         for buoy in repository.list_buoys()
     ]
@@ -293,6 +296,35 @@ def list_salinity(
     return repository.list_salinity(buoy_id, limit, sensor_channel)
 
 
+@app.post(
+    "/api/v1/buoys/{buoy_id}/battery",
+    response_model=BatteryReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["battery"],
+)
+def record_battery(
+    buoy_id: str,
+    payload: BatteryReadingCreate,
+    db: Session = Depends(get_db),
+) -> BatteryReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.add_battery(BatteryReading(buoy_id=buoy_id, **payload.model_dump()))
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/battery",
+    response_model=BatteryReading | None,
+    tags=["battery"],
+)
+def latest_battery(buoy_id: str, db: Session = Depends(get_db)) -> BatteryReading | None:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.latest_battery(buoy_id)
+
+
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
@@ -393,6 +425,18 @@ def maintenance_issues(
                     issue_type="degraded_sensor",
                     severity="warning",
                     message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+                )
+            )
+
+        battery = repository.latest_battery(buoy.id)
+        if battery is not None and battery.battery_percent < 20:
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="low_battery",
+                    severity="critical" if battery.battery_percent < 10 else "warning",
+                    message=f"Battery level is {battery.battery_percent:.1f}%",
                 )
             )
 

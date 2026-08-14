@@ -72,6 +72,17 @@ class SalinityReading(SalinityReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class BatteryReadingCreate(BaseModel):
+    battery_percent: float = Field(ge=0, le=100)
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BatteryReading(BatteryReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class PressureAnalysis(BaseModel):
     buoy_id: str
     sample_count: int
@@ -108,6 +119,7 @@ class BuoySummary(BaseModel):
     latest_temperature: TemperatureReading | None = None
     latest_pressure: PressureReading | None = None
     latest_salinity: SalinityReading | None = None
+    latest_battery: BatteryReading | None = None
 
 
 class TemperatureAnalysis(BaseModel):

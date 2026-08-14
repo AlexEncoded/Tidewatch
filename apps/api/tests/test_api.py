@@ -6,6 +6,7 @@ from sqlalchemy import delete
 from app.database import SessionLocal, create_tables
 from app.entities import (
     BuoyEntity,
+    BatteryReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureReadingEntity,
@@ -20,6 +21,7 @@ def setup_function() -> None:
     with SessionLocal() as db:
         db.execute(delete(PressureReadingEntity))
         db.execute(delete(SalinityReadingEntity))
+        db.execute(delete(BatteryReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(BuoyEntity))
         db.commit()
@@ -256,6 +258,20 @@ def test_maintenance_issues_reports_degraded_sensor() -> None:
     assert issues.status_code == 200
     assert issues.json()[0]["issue_type"] == "degraded_sensor"
     assert issues.json()[0]["buoy_id"] == buoy_id
+
+
+def test_low_battery_creates_maintenance_issue() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Low Battery Buoy"}).json()["id"]
+    battery = client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={"battery_percent": 12.5},
+    )
+
+    assert battery.status_code == 201
+    assert battery.json()["battery_percent"] == 12.5
+    issues = client.get("/api/v1/maintenance/issues")
+
+    assert any(issue["issue_type"] == "low_battery" for issue in issues.json())
 
 
 def test_temperature_analysis_detects_anomaly() -> None:

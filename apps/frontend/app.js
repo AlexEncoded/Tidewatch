@@ -16,6 +16,10 @@ function formatSalinity(reading) {
   return reading ? `${reading.salinity_psu.toFixed(2)} PSU` : "No reading";
 }
 
+function formatBattery(reading) {
+  return reading ? `${reading.battery_percent.toFixed(1)}%` : "No reading";
+}
+
 function formatWave(analysis) {
   return analysis?.estimated_wave_height_m == null
     ? "Insufficient data"
@@ -83,7 +87,7 @@ function renderBuoys(buoys, analyses, sensorHealth) {
   }
 
   grid.innerHTML = buoys
-    .map(({ buoy, latest_temperature, latest_pressure, latest_salinity }, index) => {
+    .map(({ buoy, latest_temperature, latest_pressure, latest_salinity, latest_battery }, index) => {
       const status = buoy.status.toLowerCase();
       const analysis = analyses[index];
       const health = sensorHealth[index];
@@ -104,6 +108,7 @@ function renderBuoys(buoys, analyses, sensorHealth) {
           <dl>
             <div><dt>Pressure</dt><dd>${formatPressure(latest_pressure)}</dd></div>
             <div><dt>Salinity</dt><dd>${formatSalinity(latest_salinity)}</dd></div>
+            <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Wave estimate</dt><dd>${formatWave(analysis)}</dd></div>
             <div><dt>Sea state</dt><dd><span class="sea-state sea-state-${seaState}">${seaState}</span></dd></div>
             <div><dt>Last reading</dt><dd>${formatDate(buoy.last_seen_at)}</dd></div>

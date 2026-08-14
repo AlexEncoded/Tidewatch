@@ -12,6 +12,7 @@ INTERVAL_SECONDS = float(os.getenv("INTERVAL_SECONDS", "10"))
 BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
 BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
+BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 
 
 def temperature_reading(previous: float) -> float:
@@ -64,12 +65,14 @@ def run() -> None:
         current_temperature = BASE_TEMPERATURE
         current_pressure = BASE_PRESSURE
         current_salinity = BASE_SALINITY
+        current_battery = BASE_BATTERY
         print(f"Simulating buoy {buoy_id} every {INTERVAL_SECONDS:g}s")
 
         while True:
             current_temperature = temperature_reading(current_temperature)
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
+            current_battery = max(0, round(current_battery - random.uniform(0.01, 0.05), 2))
             measured_at = datetime.now(timezone.utc).isoformat()
             readings = {
                 "A": {
@@ -111,9 +114,15 @@ def run() -> None:
                     },
                 )
                 salinity_response.raise_for_status()
+            battery_response = client.post(
+                f"{API_URL}/api/v1/buoys/{buoy_id}/battery",
+                json={"battery_percent": current_battery, "measured_at": measured_at},
+            )
+            battery_response.raise_for_status()
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
-                f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | sensors A/B"
+                f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
+                f"battery {current_battery:.1f}% | sensors A/B"
             )
             time.sleep(INTERVAL_SECONDS)
 
