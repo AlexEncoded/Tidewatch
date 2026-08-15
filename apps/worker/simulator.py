@@ -13,6 +13,8 @@ BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
 BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
+TELEMETRY_RETRIES = max(0, int(os.getenv("TELEMETRY_RETRIES", "3")))
+RETRY_BACKOFF_SECONDS = max(0, float(os.getenv("RETRY_BACKOFF_SECONDS", "1")))
 
 
 def temperature_reading(previous: float) -> float:
@@ -56,6 +58,32 @@ def find_or_create_buoy(client: httpx.Client) -> str:
     response = client.post(f"{API_URL}/api/v1/buoys", json={"name": BUOY_NAME})
     response.raise_for_status()
     return response.json()["id"]
+
+
+def send_telemetry(client: httpx.Client, buoy_id: str, payload: dict) -> None:
+    for attempt in range(TELEMETRY_RETRIES + 1):
+        try:
+            response = client.post(
+                f"{API_URL}/api/v1/buoys/{buoy_id}/telemetry",
+                json=payload,
+            )
+            if response.status_code < 500:
+                response.raise_for_status()
+                return
+            error = httpx.HTTPStatusError(
+                f"Server returned {response.status_code}",
+                request=response.request,
+                response=response,
+            )
+        except httpx.RequestError as error:
+            if attempt >= TELEMETRY_RETRIES:
+                raise
+
+        delay = RETRY_BACKOFF_SECONDS * (2**attempt)
+        print(f"Telemetry send failed ({error}); retrying in {delay:g}s")
+        time.sleep(delay)
+
+    raise error
 
 
 def run() -> None:
@@ -116,11 +144,7 @@ def run() -> None:
                     "measured_at": measured_at,
                 },
             }
-            response = client.post(
-                f"{API_URL}/api/v1/buoys/{buoy_id}/telemetry",
-                json=payload,
-            )
-            response.raise_for_status()
+            send_telemetry(client, buoy_id, payload)
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "

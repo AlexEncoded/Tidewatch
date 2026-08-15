@@ -14,5 +14,9 @@ extremo a extremo.
 | `BUOY_NAME` | `Mediterranean Sentinel` | Nombre de la boya simulada |
 | `INTERVAL_SECONDS` | `10` | Frecuencia de lecturas |
 | `BASE_TEMPERATURE_CELSIUS` | `19.5` | Temperatura inicial |
+| `TELEMETRY_RETRIES` | `3` | Reintentos ante red o errores `5xx` |
+| `RETRY_BACKOFF_SECONDS` | `1` | Espera inicial entre reintentos |
 
 El simulador crea la boya automáticamente si todavía no existe.
+Los errores de validación `4xx` no se reintentan; los errores temporales de red
+o del servidor usan backoff exponencial.
