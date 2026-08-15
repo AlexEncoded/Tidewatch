@@ -142,6 +142,22 @@ def test_batch_telemetry_rejects_duplicate_battery_devices() -> None:
     assert response.status_code == 422
 
 
+def test_batch_telemetry_rejects_duplicate_sensor_channels() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Duplicate Sensor Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "temperatures": [
+                {"temperature_celsius": 20, "sensor_channel": "A"},
+                {"temperature_celsius": 20.1, "sensor_channel": "A"},
+            ]
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_empty_telemetry_batch_is_rejected() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Empty Batch Buoy"}).json()["id"]
 

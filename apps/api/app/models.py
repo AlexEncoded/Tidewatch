@@ -133,6 +133,14 @@ class TelemetryBatchCreate(BaseModel):
         battery_devices = [reading.device_id for reading in self.battery]
         if len(battery_devices) != len(set(battery_devices)):
             raise ValueError("Telemetry batch cannot contain duplicate battery devices")
+        for family, readings in (
+            ("temperature", self.temperatures),
+            ("pressure", self.pressures),
+            ("salinity", self.salinity),
+        ):
+            channels = [reading.sensor_channel for reading in readings]
+            if len(channels) != len(set(channels)):
+                raise ValueError(f"Telemetry batch cannot contain duplicate {family} channels")
         return self
 
 

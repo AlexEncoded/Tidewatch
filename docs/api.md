@@ -65,7 +65,8 @@ procesado. El lote puede incluir opcionalmente `location` para actualizar las
 coordenadas de la boya en la misma operación. También puede incluir hasta dos
 objetos `battery`, uno por `device_id` A/B; el formato antiguo de un único
 objeto sigue siendo compatible. Un lote no puede repetir el mismo
-`device_id`. Cada posición se conserva con su marca temporal para reconstruir
+`device_id` ni el mismo `sensor_channel` dentro de una familia ambiental.
+Cada posición se conserva con su marca temporal para reconstruir
 desplazamientos.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
