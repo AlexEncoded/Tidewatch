@@ -18,6 +18,14 @@ Endpoints locales:
 The simulator creates the configured buoy and emits channels A/B for the
 environmental sensors plus battery readings every ten seconds.
 
+Run it from the repository root with:
+
+```bash
+python scripts/telemetry_simulator.py
+```
+
+Use `--once` for a smoke test or `--buoy-id` to send data to an existing buoy.
+
 ## Useful checks
 
 ```bash
