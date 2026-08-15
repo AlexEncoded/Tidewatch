@@ -599,6 +599,10 @@ def test_low_battery_creates_maintenance_issue() -> None:
     latest_backup = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=B")
     assert latest_backup.status_code == 200
     assert latest_backup.json()["battery_percent"] == 96
+    health = client.get(f"/api/v1/buoys/{buoy_id}/battery-health")
+    assert health.status_code == 200
+    assert health.json()["status"] == "degraded"
+    assert health.json()["degraded_devices"] == ["A"]
     metrics = client.get("/metrics")
     assert metrics.status_code == 200
     assert "tidewatch_battery_percent" in metrics.text

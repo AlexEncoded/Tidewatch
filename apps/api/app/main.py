@@ -12,7 +12,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .analytics import analyze_movement, analyze_pressure, analyze_temperatures
+from .analytics import (
+    analyze_battery_health,
+    analyze_movement,
+    analyze_pressure,
+    analyze_temperatures,
+)
 from .models import (
     Buoy,
     BuoyCreate,
@@ -23,6 +28,7 @@ from .models import (
     BuoySummary,
     BatteryReading,
     BatteryReadingCreate,
+    BatteryHealth,
     MaintenanceIssue,
     MovementAnalysis,
     PressureReading,
@@ -589,6 +595,26 @@ def latest_battery(
 
 
 @app.get(
+    "/api/v1/buoys/{buoy_id}/battery-health",
+    response_model=BatteryHealth,
+    tags=["battery"],
+)
+def battery_health(
+    buoy_id: str,
+    threshold: float = Query(default=10, gt=0, le=100),
+    db: Session = Depends(get_db),
+) -> BatteryHealth:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    readings = {}
+    for device_id in ("A", "B"):
+        reading = repository.latest_battery(buoy_id, device_id)
+        readings[device_id] = BatteryReading.model_validate(reading) if reading else None
+    return analyze_battery_health(buoy_id, readings, threshold)
+
+
+@app.get(
     "/api/v1/buoys/{buoy_id}/quality-summary",
     response_model=QualitySummary,
     tags=["quality"],
@@ -757,6 +783,25 @@ def maintenance_issues(
                     issue_type="low_battery",
                     severity="critical" if battery.battery_percent < 10 else "warning",
                     message=f"Battery level is {battery.battery_percent:.1f}%",
+                )
+            )
+
+        battery_readings = {}
+        for device_id in ("A", "B"):
+            reading = repository.latest_battery(buoy.id, device_id)
+            battery_readings[device_id] = BatteryReading.model_validate(reading) if reading else None
+        battery_health_result = analyze_battery_health(buoy.id, battery_readings, 10)
+        if battery_health_result.status == "degraded":
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="degraded_battery",
+                    severity="warning",
+                    message=(
+                        f"Battery units diverge by {battery_health_result.delta_percent:.1f}% "
+                        f"(unit {', '.join(battery_health_result.degraded_devices)} suspected)"
+                    ),
                 )
             )
 

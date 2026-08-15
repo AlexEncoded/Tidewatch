@@ -102,6 +102,16 @@ class BatteryReading(BatteryReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class BatteryHealth(BaseModel):
+    buoy_id: str
+    status: str
+    device_a_percent: float | None = None
+    device_b_percent: float | None = None
+    delta_percent: float | None = None
+    degraded_devices: list[str] = []
+    checked_at: datetime
+
+
 class TelemetryBatchCreate(BaseModel):
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)

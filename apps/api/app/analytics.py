@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from math import asin, cos, radians, sin, sqrt
 from statistics import fmean
 
@@ -7,6 +8,8 @@ from .models import (
     TemperatureAnalysis,
     TemperatureReading,
     MovementAnalysis,
+    BatteryHealth,
+    BatteryReading,
 )
 
 
@@ -63,6 +66,40 @@ def analyze_movement(buoy_id: str, locations: list) -> MovementAnalysis:
         displacement_m=round(displacement, 2),
         average_speed_mps=(round(distance / elapsed_seconds, 3) if elapsed_seconds > 0 else None),
         confidence="experimental",
+    )
+
+
+def analyze_battery_health(
+    buoy_id: str,
+    readings: dict[str, BatteryReading | None],
+    threshold: float,
+) -> BatteryHealth:
+    device_a = readings.get("A")
+    device_b = readings.get("B")
+    if device_a is None or device_b is None:
+        return BatteryHealth(
+            buoy_id=buoy_id,
+            status="insufficient_data",
+            device_a_percent=device_a.battery_percent if device_a else None,
+            device_b_percent=device_b.battery_percent if device_b else None,
+            checked_at=datetime.now(timezone.utc),
+        )
+
+    delta = round(abs(device_a.battery_percent - device_b.battery_percent), 2)
+    degraded_devices = []
+    if delta > threshold:
+        degraded_devices = [
+            "A" if device_a.battery_percent < device_b.battery_percent else "B"
+        ]
+
+    return BatteryHealth(
+        buoy_id=buoy_id,
+        status="degraded" if degraded_devices else "consistent",
+        device_a_percent=device_a.battery_percent,
+        device_b_percent=device_b.battery_percent,
+        delta_percent=delta,
+        degraded_devices=degraded_devices,
+        checked_at=datetime.now(timezone.utc),
     )
 
 
