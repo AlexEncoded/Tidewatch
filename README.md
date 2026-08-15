@@ -159,7 +159,6 @@ scripts/          Automatización operativa
 runbooks/         Procedimientos de operación
 postmortems/      Análisis de incidentes
 docs/             Documentación pública
-PLANNING/         Diario privado de aprendizaje y decisiones
 ```
 
 ## Integración y entrega
