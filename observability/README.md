@@ -18,6 +18,8 @@ sensores redundantes degradados y lecturas inválidas recientes en
 permite separar la calidad por boya, familia de sensor y canal.
 También publica `tidewatch_buoy_movement_speed_mps` para observar deriva y
 alertar cuando supera el umbral experimental configurado.
+La salud energética dual se expone con `tidewatch_battery_device_percent` y
+`tidewatch_battery_delta_percent`.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

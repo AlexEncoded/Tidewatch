@@ -49,6 +49,8 @@ from .models import (
 from .repository import BuoyRepository
 from .metrics import (
     battery_percent,
+    battery_delta_percent,
+    battery_device_percent,
     buoy_movement_speed_mps,
     buoy_last_seen_timestamp_seconds,
     current_pressure_kpa,
@@ -611,7 +613,15 @@ def battery_health(
     for device_id in ("A", "B"):
         reading = repository.latest_battery(buoy_id, device_id)
         readings[device_id] = BatteryReading.model_validate(reading) if reading else None
-    return analyze_battery_health(buoy_id, readings, threshold)
+    result = analyze_battery_health(buoy_id, readings, threshold)
+    for device_id, reading in readings.items():
+        if reading is not None:
+            battery_device_percent.labels(
+                buoy_id=buoy_id, device_id=device_id
+            ).set(reading.battery_percent)
+    if result.delta_percent is not None:
+        battery_delta_percent.labels(buoy_id=buoy_id).set(result.delta_percent)
+    return result
 
 
 @app.get(
@@ -791,6 +801,15 @@ def maintenance_issues(
             reading = repository.latest_battery(buoy.id, device_id)
             battery_readings[device_id] = BatteryReading.model_validate(reading) if reading else None
         battery_health_result = analyze_battery_health(buoy.id, battery_readings, 10)
+        for device_id, reading in battery_readings.items():
+            if reading is not None:
+                battery_device_percent.labels(
+                    buoy_id=buoy.id, device_id=device_id
+                ).set(reading.battery_percent)
+        if battery_health_result.delta_percent is not None:
+            battery_delta_percent.labels(buoy_id=buoy.id).set(
+                battery_health_result.delta_percent
+            )
         if battery_health_result.status == "degraded":
             issues.append(
                 MaintenanceIssue(

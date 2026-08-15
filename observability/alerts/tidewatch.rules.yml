@@ -33,6 +33,14 @@ groups:
         annotations:
           summary: "Tidewatch buoy battery is low"
           description: "The buoy battery is below 20 percent and requires maintenance planning."
+      - alert: TidewatchRedundantBatteryDegraded
+        expr: tidewatch_battery_delta_percent > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch redundant batteries are diverging"
+          description: "The battery levels of the two physical buoy devices differ by more than 10 percentage points."
       - alert: TidewatchBuoyDrifting
         expr: tidewatch_buoy_movement_speed_mps > 1
         for: 10m
