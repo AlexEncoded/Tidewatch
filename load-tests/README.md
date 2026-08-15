@@ -12,6 +12,8 @@ Con la API local levantada:
 k6 run -e BASE_URL=http://localhost:8000 load-tests/telemetry.js
 ```
 
-El escenario empieza con lecturas de salud y de flota, y después consulta
-incidencias de mantenimiento. No crea datos ni debe ejecutarse contra
-producción sin una ventana aprobada.
+El escenario crea una boya efímera al comenzar y envía siete lecturas por
+iteración mediante el endpoint batch: dos canales por sensor ambiental y una
+lectura de batería. Después consulta salud, flota e incidencias de
+mantenimiento. Genera datos de prueba y no debe ejecutarse contra producción
+sin una ventana aprobada.
