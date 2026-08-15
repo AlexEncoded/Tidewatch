@@ -37,6 +37,7 @@ class TemperatureReadingEntity(Base):
     buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
     temperature_celsius: Mapped[float] = mapped_column(Float, nullable=False)
     sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="temperature_readings")
 
@@ -48,6 +49,7 @@ class PressureReadingEntity(Base):
     buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
     pressure_kpa: Mapped[float] = mapped_column(Float, nullable=False)
     sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="pressure_readings")
 
@@ -59,6 +61,7 @@ class SalinityReadingEntity(Base):
     buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
     salinity_psu: Mapped[float] = mapped_column(Float, nullable=False)
     sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="salinity_readings")
 

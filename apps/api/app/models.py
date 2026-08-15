@@ -39,6 +39,7 @@ class BuoyHealth(BaseModel):
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(ge=-5, le=45)
     sensor_channel: Literal["A", "B"] = "A"
+    quality: Literal["good", "suspect", "invalid"] = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -51,6 +52,7 @@ class TemperatureReading(TemperatureReadingCreate):
 class PressureReadingCreate(BaseModel):
     pressure_kpa: float = Field(ge=80, le=130)
     sensor_channel: Literal["A", "B"] = "A"
+    quality: Literal["good", "suspect", "invalid"] = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -63,6 +65,7 @@ class PressureReading(PressureReadingCreate):
 class SalinityReadingCreate(BaseModel):
     salinity_psu: float = Field(ge=0, le=45)
     sensor_channel: Literal["A", "B"] = "A"
+    quality: Literal["good", "suspect", "invalid"] = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

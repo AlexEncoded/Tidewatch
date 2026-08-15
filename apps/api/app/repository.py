@@ -61,6 +61,7 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             temperature_celsius=reading.temperature_celsius,
             sensor_channel=reading.sensor_channel,
+            quality=reading.quality,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
@@ -97,6 +98,7 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             pressure_kpa=reading.pressure_kpa,
             sensor_channel=reading.sensor_channel,
+            quality=reading.quality,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
@@ -132,6 +134,7 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             salinity_psu=reading.salinity_psu,
             sensor_channel=reading.sensor_channel,
+            quality=reading.quality,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)

@@ -32,6 +32,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Clasificación operativa inicial del estado del mar.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Canales redundantes A/B y endpoint de comparación de salud de sensores.
+- Metadatos básicos de calidad (`good`, `suspect`, `invalid`) por lectura.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
 - Cola operativa de incidencias para mantenimiento.
 - Métricas Prometheus y dashboard Grafana.
@@ -62,7 +63,7 @@ esta fase de aprendizaje.
 ### Evolución de la plataforma
 
 - [x] Añadir soporte inicial para sensores duplicados A/B.
-- [ ] Modelar calidad y procedencia de cada lectura.
+- [x] Modelar calidad básica y procedencia por canal de cada lectura.
 - [x] Añadir salinidad y primera estimación experimental de oleaje derivada de presión.
 - [x] Mostrar condiciones oceánicas y estado del mar en el frontend.
 - [x] Añadir batería y cola interna de mantenimiento.

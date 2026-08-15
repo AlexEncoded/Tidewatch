@@ -129,6 +129,27 @@ def test_pressure_reading_is_recorded_and_returned_in_buoy_summary() -> None:
     assert summary.json()[0]["latest_pressure"]["pressure_kpa"] == 101.325
 
 
+def test_reading_quality_is_persisted() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Quality Buoy"}).json()
+    response = client.post(
+        f"/api/v1/buoys/{buoy['id']}/pressures",
+        json={"pressure_kpa": 101.2, "quality": "suspect"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["quality"] == "suspect"
+
+
+def test_reading_quality_is_validated() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Invalid Quality Buoy"}).json()
+    response = client.post(
+        f"/api/v1/buoys/{buoy['id']}/pressures",
+        json={"pressure_kpa": 101.2, "quality": "unknown"},
+    )
+
+    assert response.status_code == 422
+
+
 def test_pressure_must_be_in_sensor_range() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Pressure Range Buoy"}).json()
 
