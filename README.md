@@ -31,6 +31,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Histórico temporal de posiciones para reconstruir desplazamientos.
 - Análisis experimental de distancia recorrida, desplazamiento y velocidad media.
 - Detección operativa de deriva anómala en la cola de mantenimiento.
+- Exportación CSV de posiciones para análisis offline y futuros pipelines ML.
 - Presión en kPa como base para el cálculo experimental de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
 - Clasificación operativa inicial del estado del mar.
@@ -80,6 +81,7 @@ esta fase de aprendizaje.
 - [x] Persistir y consultar el histórico de posiciones de cada boya.
 - [x] Añadir análisis experimental de movimiento y deriva.
 - [x] Generar incidencias configurables cuando una boya deriva demasiado rápido.
+- [x] Exportar el histórico de posiciones para análisis offline.
 - [ ] Calibrar el oleaje con datos reales.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones externas de mantenimiento.

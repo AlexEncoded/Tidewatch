@@ -200,6 +200,17 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
     )
     assert filtered_locations.status_code == 200
     assert [item["longitude"] for item in filtered_locations.json()] == [0.02, 0.01]
+    export = client.get(
+        f"/api/v1/buoys/{buoy_id}/locations/export",
+        params={"limit": 2},
+    )
+    assert export.status_code == 200
+    assert export.headers["content-type"].startswith("text/csv")
+    assert export.headers["content-disposition"] == (
+        f'attachment; filename="{buoy_id}-locations.csv"'
+    )
+    assert export.text.splitlines()[0] == "buoy_id,latitude,longitude,measured_at"
+    assert len(export.text.splitlines()) == 3
     invalid_window = client.get(
         f"/api/v1/buoys/{buoy_id}/locations",
         params={
