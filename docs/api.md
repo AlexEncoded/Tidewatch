@@ -74,4 +74,5 @@ La salud energética se consulta con `battery-health?threshold=10`. Si ambas
 unidades están disponibles, devuelve los porcentajes A/B, su diferencia y la
 unidad sospechosa cuando supera el umbral. El endpoint de batería acepta
 `device_id=A|B`; los registros antiguos se consideran de la unidad A por
-compatibilidad.
+compatibilidad. Las incidencias de batería baja identifican explícitamente la
+unidad física afectada.

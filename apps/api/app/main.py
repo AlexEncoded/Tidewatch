@@ -804,17 +804,21 @@ def maintenance_issues(
                 )
             )
 
-        battery = repository.latest_battery(buoy.id)
-        if battery is not None and battery.battery_percent < 20:
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="low_battery",
-                    severity="critical" if battery.battery_percent < 10 else "warning",
-                    message=f"Battery level is {battery.battery_percent:.1f}%",
+        for device_id in ("A", "B"):
+            battery = repository.latest_battery(buoy.id, device_id)
+            if battery is not None and battery.battery_percent < 20:
+                issues.append(
+                    MaintenanceIssue(
+                        buoy_id=buoy.id,
+                        buoy_name=buoy.name,
+                        issue_type="low_battery",
+                        severity="critical" if battery.battery_percent < 10 else "warning",
+                        message=(
+                            f"Battery level for device {device_id} is "
+                            f"{battery.battery_percent:.1f}%"
+                        ),
+                    )
                 )
-            )
 
         battery_readings = {}
         for device_id in ("A", "B"):

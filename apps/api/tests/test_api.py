@@ -639,7 +639,10 @@ def test_low_battery_creates_maintenance_issue() -> None:
     assert f'buoy_id="{buoy_id}"' in metrics.text
     issues = client.get("/api/v1/maintenance/issues")
 
-    assert any(issue["issue_type"] == "low_battery" for issue in issues.json())
+    low_battery_issue = next(
+        issue for issue in issues.json() if issue["issue_type"] == "low_battery"
+    )
+    assert "device A" in low_battery_issue["message"]
 
 
 def test_temperature_analysis_detects_anomaly() -> None:
