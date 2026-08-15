@@ -645,6 +645,22 @@ def test_low_battery_creates_maintenance_issue() -> None:
     assert "device A" in low_battery_issue["message"]
 
 
+def test_missing_redundant_battery_device_creates_maintenance_issue() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Single Battery Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={"battery_percent": 80, "device_id": "A"},
+    )
+
+    issues = client.get("/api/v1/maintenance/issues")
+
+    missing_issue = next(
+        issue for issue in issues.json() if issue["issue_type"] == "missing_redundant_device"
+    )
+    assert missing_issue["buoy_id"] == buoy_id
+    assert "device B" in missing_issue["message"]
+
+
 def test_temperature_analysis_detects_anomaly() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Analysis Buoy"}).json()["id"]
 

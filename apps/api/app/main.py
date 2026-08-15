@@ -834,6 +834,22 @@ def maintenance_issues(
             battery_delta_percent.labels(buoy_id=buoy.id).set(
                 battery_health_result.delta_percent
             )
+        available_battery_devices = [
+            device_id for device_id, reading in battery_readings.items() if reading is not None
+        ]
+        if len(available_battery_devices) == 1:
+            missing_device = "B" if available_battery_devices[0] == "A" else "A"
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="missing_redundant_device",
+                    severity="warning",
+                    message=(
+                        f"No battery telemetry received from redundant device {missing_device}"
+                    ),
+                )
+            )
         if battery_health_result.status == "degraded":
             issues.append(
                 MaintenanceIssue(
