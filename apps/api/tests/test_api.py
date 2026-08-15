@@ -174,7 +174,7 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
                 "location": {
                     "latitude": 0,
                     "longitude": longitude,
-                    "measured_at": (start + timedelta(hours=index)).isoformat(),
+                    "measured_at": (start + timedelta(minutes=30 * index)).isoformat(),
                 },
             },
         )
@@ -207,7 +207,7 @@ def test_maintenance_issues_detect_buoy_drift() -> None:
                 "location": {
                     "latitude": 0,
                     "longitude": longitude,
-                    "measured_at": (start + timedelta(hours=index)).isoformat(),
+                    "measured_at": (start + timedelta(minutes=30 * index)).isoformat(),
                 },
             },
         )
