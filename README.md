@@ -35,6 +35,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Metadatos básicos de calidad (`good`, `suspect`, `invalid`) por lectura.
 - Las lecturas `invalid` se conservan para auditoría y se excluyen de análisis.
 - Las últimas lecturas inválidas generan incidencias de mantenimiento.
+- Resumen acumulado de calidad disponible por boya.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
 - Cola operativa de incidencias para mantenimiento.
 - Métricas Prometheus y dashboard Grafana.

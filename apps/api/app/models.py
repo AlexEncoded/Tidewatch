@@ -117,6 +117,14 @@ class MaintenanceIssue(BaseModel):
     message: str
 
 
+class QualitySummary(BaseModel):
+    buoy_id: str
+    total_readings: int
+    good_readings: int
+    suspect_readings: int
+    invalid_readings: int
+
+
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .entities import (
@@ -190,6 +190,23 @@ class BuoyRepository:
             .limit(1)
         )
         return self.db.scalars(query).first()
+
+    def quality_counts(self, buoy_id: str) -> dict[str, int]:
+        counts = {"good": 0, "suspect": 0, "invalid": 0}
+        for entity in (
+            TemperatureReadingEntity,
+            PressureReadingEntity,
+            SalinityReadingEntity,
+        ):
+            query = (
+                select(entity.quality, func.count())
+                .where(entity.buoy_id == buoy_id)
+                .group_by(entity.quality)
+            )
+            for quality, count in self.db.execute(query):
+                if quality in counts:
+                    counts[quality] += count
+        return counts
 
     def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertEntity | None:
         query = select(TemperatureAlertEntity).where(

@@ -27,6 +27,7 @@ incidencia `invalid_reading` en la cola de mantenimiento.
 | `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería |
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
+| `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias |
 
 ## Operación

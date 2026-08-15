@@ -193,6 +193,30 @@ def test_invalid_latest_reading_creates_maintenance_issue() -> None:
     assert any(issue["issue_type"] == "invalid_reading" for issue in issues.json())
 
 
+def test_quality_summary_counts_all_sensor_readings() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Quality Summary Buoy"}).json()["id"]
+    for quality in ("good", "suspect", "invalid"):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={"temperature_celsius": 20, "quality": quality},
+        )
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/pressures",
+        json={"pressure_kpa": 101.3},
+    )
+
+    summary = client.get(f"/api/v1/buoys/{buoy_id}/quality-summary")
+
+    assert summary.status_code == 200
+    assert summary.json() == {
+        "buoy_id": buoy_id,
+        "total_readings": 4,
+        "good_readings": 2,
+        "suspect_readings": 1,
+        "invalid_readings": 1,
+    }
+
+
 def test_pressure_must_be_in_sensor_range() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Pressure Range Buoy"}).json()
 
