@@ -266,6 +266,19 @@ class BuoyRepository:
             query = query.where(BatteryReadingEntity.device_id == device_id)
         return self.db.scalars(query).first()
 
+    def list_batteries(
+        self, buoy_id: str, limit: int, device_id: str | None = None
+    ) -> list[BatteryReadingEntity]:
+        query = (
+            select(BatteryReadingEntity)
+            .where(BatteryReadingEntity.buoy_id == buoy_id)
+            .order_by(BatteryReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if device_id is not None:
+            query = query.where(BatteryReadingEntity.device_id == device_id)
+        return list(self.db.scalars(query).all())
+
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
         counts = {"good": 0, "suspect": 0, "invalid": 0}
         for entity in (

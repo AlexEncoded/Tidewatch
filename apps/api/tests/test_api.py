@@ -619,6 +619,12 @@ def test_low_battery_creates_maintenance_issue() -> None:
     latest_backup = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=B")
     assert latest_backup.status_code == 200
     assert latest_backup.json()["battery_percent"] == 96
+    battery_history = client.get(
+        f"/api/v1/buoys/{buoy_id}/battery/history?device_id=B"
+    )
+    assert battery_history.status_code == 200
+    assert battery_history.json()[0]["device_id"] == "B"
+    assert battery_history.json()[0]["battery_percent"] == 96
     health = client.get(f"/api/v1/buoys/{buoy_id}/battery-health")
     assert health.status_code == 200
     assert health.json()["status"] == "degraded"

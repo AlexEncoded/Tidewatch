@@ -600,6 +600,23 @@ def latest_battery(
 
 
 @app.get(
+    "/api/v1/buoys/{buoy_id}/battery/history",
+    response_model=list[BatteryReading],
+    tags=["battery"],
+)
+def battery_history(
+    buoy_id: str,
+    limit: int = Query(default=100, ge=1, le=500),
+    device_id: str | None = Query(default=None, pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[BatteryReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_batteries(buoy_id, limit, device_id)
+
+
+@app.get(
     "/api/v1/buoys/{buoy_id}/battery-health",
     response_model=BatteryHealth,
     tags=["battery"],

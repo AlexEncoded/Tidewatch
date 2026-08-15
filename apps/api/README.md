@@ -63,6 +63,7 @@ Métricas Prometheus: <http://localhost:8000/metrics>
 | `GET` | `/api/v1/buoys/{id}/salinity` | Consultar salinidad |
 | `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería A/B |
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar batería, opcionalmente por unidad |
+| `GET` | `/api/v1/buoys/{id}/battery/history` | Consultar histórico de batería por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery-health` | Comparar batería A/B |
 | `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones |
 | `GET` | `/api/v1/buoys/{id}/locations/export` | Exportar posiciones de una boya |
