@@ -222,6 +222,24 @@ def test_invalid_latest_reading_creates_maintenance_issue() -> None:
     assert any(issue["issue_type"] == "invalid_reading" for issue in issues.json())
 
 
+def test_suspect_latest_reading_creates_warning_issue() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Suspect Reading Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/salinity",
+        json={"salinity_psu": 35.4, "quality": "suspect"},
+    )
+
+    assert response.status_code == 201
+    issues = client.get("/api/v1/maintenance/issues")
+
+    assert issues.status_code == 200
+    assert any(
+        issue["issue_type"] == "suspect_reading"
+        and issue["severity"] == "warning"
+        for issue in issues.json()
+    )
+
+
 def test_quality_summary_counts_all_sensor_readings() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Quality Summary Buoy"}).json()["id"]
     for quality in ("good", "suspect", "invalid"):

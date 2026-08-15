@@ -533,6 +533,22 @@ def maintenance_issues(
                 )
             )
 
+        suspect_sensors = [
+            sensor
+            for sensor, readings in latest_readings.items()
+            if readings and readings[0].quality == "suspect"
+        ]
+        if suspect_sensors:
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="suspect_reading",
+                    severity="warning",
+                    message=f"Suspect latest readings: {', '.join(suspect_sensors)}",
+                )
+            )
+
         battery = repository.latest_battery(buoy.id)
         if battery is not None and battery.battery_percent < 20:
             issues.append(

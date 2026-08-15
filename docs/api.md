@@ -12,6 +12,8 @@ Las lecturas `invalid` se conservan para auditoría, pero no participan en los
 análisis de tendencia, oleaje ni generación de alertas.
 La última lectura inválida de una familia de sensores genera además una
 incidencia `invalid_reading` en la cola de mantenimiento.
+La última lectura sospechosa genera una incidencia `suspect_reading` de
+severidad `warning` para revisión preventiva.
 
 | Método | Ruta | Propósito |
 |---|---|---|

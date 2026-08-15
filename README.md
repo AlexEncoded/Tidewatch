@@ -35,6 +35,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Metadatos básicos de calidad (`good`, `suspect`, `invalid`) por lectura.
 - Las lecturas `invalid` se conservan para auditoría y se excluyen de análisis.
 - Las últimas lecturas inválidas generan incidencias de mantenimiento.
+- Las últimas lecturas sospechosas generan avisos preventivos de mantenimiento.
 - Resumen acumulado de calidad disponible por boya.
 - Ingestión de telemetría por lotes para preparar el flujo continuo desde las boyas.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
