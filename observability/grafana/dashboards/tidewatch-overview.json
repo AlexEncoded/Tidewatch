@@ -59,6 +59,15 @@
       "gridPos": {"h": 4, "w": 6, "x": 0, "y": 24},
       "targets": [{"expr": "sum(tidewatch_sensor_degraded)", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 8,
+      "title": "Reading quality",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 18, "x": 6, "y": 24},
+      "targets": [{"expr": "sum by (quality) (rate(tidewatch_reading_quality_total[5m]))", "legendFormat": "{{quality}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

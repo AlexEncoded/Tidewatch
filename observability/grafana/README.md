@@ -9,6 +9,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Temperatura actual por boya.
 - Boyas silenciosas.
 - Tiempo desde la última lectura.
+- Tasa de lecturas por calidad (`good`, `suspect` e `invalid`).
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar
