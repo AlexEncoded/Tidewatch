@@ -44,7 +44,7 @@ severidad `warning` para revisión preventiva.
 | `GET` | `/api/v1/buoys/stale` | Boyas activas sin comunicación |
 | `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
 | `PATCH` | `/api/v1/buoys/{id}/location` | Actualizar coordenadas |
-| `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones |
+| `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones (`limit`, `since`, `until`) |
 | `GET` | `/api/v1/buoys/{id}/movement-analysis` | Estimar distancia y deriva |
 
 La respuesta de ingestión incluye `accepted_readings` y el desglose

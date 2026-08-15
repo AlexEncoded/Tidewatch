@@ -86,13 +86,23 @@ class BuoyRepository:
             self.db.refresh(buoy)
         return entity
 
-    def list_locations(self, buoy_id: str, limit: int) -> list[BuoyLocationReadingEntity]:
+    def list_locations(
+        self,
+        buoy_id: str,
+        limit: int,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[BuoyLocationReadingEntity]:
         query = (
             select(BuoyLocationReadingEntity)
             .where(BuoyLocationReadingEntity.buoy_id == buoy_id)
             .order_by(BuoyLocationReadingEntity.measured_at.desc())
             .limit(limit)
         )
+        if since is not None:
+            query = query.where(BuoyLocationReadingEntity.measured_at >= since)
+        if until is not None:
+            query = query.where(BuoyLocationReadingEntity.measured_at <= until)
         return list(self.db.scalars(query).all())
 
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:

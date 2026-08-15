@@ -282,12 +282,19 @@ def update_buoy_location(
 def list_buoy_locations(
     buoy_id: str,
     limit: int = Query(default=100, ge=1, le=500),
+    since: datetime | None = Query(default=None),
+    until: datetime | None = Query(default=None),
     db: Session = Depends(get_db),
 ) -> list[BuoyLocationReading]:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_locations(buoy_id, limit)
+    if since is not None and until is not None and since > until:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="since must be earlier than or equal to until",
+        )
+    return repository.list_locations(buoy_id, limit, since, until)
 
 
 @app.get(

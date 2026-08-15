@@ -191,6 +191,23 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
     metrics = client.get("/metrics")
     assert "tidewatch_buoy_movement_speed_mps" in metrics.text
     assert f'buoy_id="{buoy_id}"' in metrics.text
+    filtered_locations = client.get(
+        f"/api/v1/buoys/{buoy_id}/locations",
+        params={
+            "since": (start + timedelta(minutes=30)).isoformat(),
+            "until": (start + timedelta(minutes=60)).isoformat(),
+        },
+    )
+    assert filtered_locations.status_code == 200
+    assert [item["longitude"] for item in filtered_locations.json()] == [0.02, 0.01]
+    invalid_window = client.get(
+        f"/api/v1/buoys/{buoy_id}/locations",
+        params={
+            "since": (start + timedelta(hours=1)).isoformat(),
+            "until": start.isoformat(),
+        },
+    )
+    assert invalid_window.status_code == 422
 
 
 def test_maintenance_issues_detect_buoy_drift() -> None:
