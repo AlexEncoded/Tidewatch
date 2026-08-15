@@ -26,6 +26,11 @@ function formatWave(analysis) {
     : `${analysis.estimated_wave_height_m.toFixed(2)} m`;
 }
 
+function formatMovement(analysis) {
+  if (!analysis || analysis.average_speed_mps == null) return "Insufficient data";
+  return `${analysis.average_speed_mps.toFixed(3)} m/s`;
+}
+
 function formatQuality(summary) {
   if (!summary || summary.total_readings === 0) {
     return '<span class="quality quality-unknown">No data</span>';
@@ -86,7 +91,7 @@ function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "Never";
 }
 
-function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries) {
+function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries, movements) {
   document.querySelector("#total-buoys").textContent = buoys.length;
   document.querySelector("#active-buoys").textContent = buoys.filter(
     ({ buoy }) => buoy.status === "active",
@@ -105,8 +110,13 @@ function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries) {
       const analysis = analyses[index];
       const health = sensorHealth[index];
       const quality = qualitySummaries[index];
+      const movement = movements[index];
       const seaState = analysis?.sea_state ?? "unknown";
       const sensorStatus = health?.status ?? "unknown";
+      const movementSpeed = movement?.average_speed_mps;
+      const movementStatus = movementSpeed == null
+        ? "unknown"
+        : movementSpeed > 1 ? "drifting" : "stable";
       const degradedSensors = health?.degraded_sensors?.length
         ? ` (${health.degraded_sensors.join(", ")})`
         : "";
@@ -125,6 +135,8 @@ function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries) {
             <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Wave estimate</dt><dd>${formatWave(analysis)}</dd></div>
             <div><dt>Sea state</dt><dd><span class="sea-state sea-state-${seaState}">${seaState}</span></dd></div>
+            <div><dt>Movement</dt><dd><span class="movement movement-${movementStatus}">${formatMovement(movement)}</span></dd></div>
+            <div><dt>Distance tracked</dt><dd>${movement?.distance_travelled_m == null ? "Insufficient data" : `${movement.distance_travelled_m.toFixed(0)} m`}</dd></div>
             <div><dt>Data quality</dt><dd>${formatQuality(quality)}</dd></div>
             <div><dt>Last reading</dt><dd>${formatDate(buoy.last_seen_at)}</dd></div>
             <div><dt>Coordinates</dt><dd>${buoy.latitude ?? "—"}, ${buoy.longitude ?? "—"}</dd></div>
@@ -189,7 +201,15 @@ async function loadBuoys() {
         return qualityResponse.ok ? qualityResponse.json() : null;
       }),
     );
-    renderBuoys(buoys, analyses, sensorHealth, qualitySummaries);
+    const movements = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const movementResponse = await fetch(
+          `/api/v1/buoys/${buoy.id}/movement-analysis`,
+        );
+        return movementResponse.ok ? movementResponse.json() : null;
+      }),
+    );
+    renderBuoys(buoys, analyses, sensorHealth, qualitySummaries, movements);
   } catch (error) {
     errorMessage.textContent = `Unable to load fleet data: ${error.message}`;
     errorMessage.hidden = false;

@@ -45,6 +45,10 @@ dl { margin: 0; } dl div { border-top: 1px solid #1d3b51; padding: 10px 0; } dt,
 .sea-state-moderate { background: #47371a; color: #ffd27a; }
 .sea-state-rough { background: #43232d; color: #ff9da9; }
 .sea-state-unknown { background: #263849; color: #9bb1c5; }
+.movement { border-radius: 999px; padding: 4px 8px; font-size: 0.68rem; }
+.movement-stable { background: #123f38; color: #7af0c3; }
+.movement-drifting { background: #43232d; color: #ff9da9; }
+.movement-unknown { background: #263849; color: #9bb1c5; }
 .quality-summary { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 .quality { border-radius: 999px; font-size: 0.68rem; padding: 4px 7px; white-space: nowrap; }
 .quality-good { background: #123f38; color: #7af0c3; }
