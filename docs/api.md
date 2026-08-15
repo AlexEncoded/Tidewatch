@@ -47,4 +47,5 @@ severidad `warning` para revisión preventiva.
 
 La respuesta de ingestión incluye `accepted_readings` y el desglose
 `accepted_by_family` para confirmar cuántas lecturas de cada sensor se han
-procesado.
+procesado. El lote puede incluir opcionalmente `location` para actualizar las
+coordenadas de la boya en la misma operación.

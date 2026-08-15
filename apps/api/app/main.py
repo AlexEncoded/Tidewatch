@@ -125,6 +125,9 @@ def ingest_telemetry(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
+    if payload.location is not None:
+        repository.update_location(buoy_id, payload.location)
+
     accepted = 0
     accepted_by_family = {
         "temperature": 0,

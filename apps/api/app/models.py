@@ -96,6 +96,7 @@ class TelemetryBatchCreate(BaseModel):
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
     battery: BatteryReadingCreate | None = None
+    location: BuoyLocationUpdate | None = None
 
     @model_validator(mode="after")
     def must_contain_readings(self) -> "TelemetryBatchCreate":

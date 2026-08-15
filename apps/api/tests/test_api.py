@@ -72,6 +72,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             ],
             "salinity": [{"salinity_psu": 35.1}],
             "battery": {"battery_percent": 87.5},
+            "location": {"latitude": 36.9, "longitude": 2.7},
         },
     )
 
@@ -91,6 +92,8 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     assert summary["latest_pressure"]["pressure_kpa"] == 101.4
     assert summary["latest_salinity"]["salinity_psu"] == 35.1
     assert summary["latest_battery"]["battery_percent"] == 87.5
+    assert summary["buoy"]["latitude"] == 36.9
+    assert summary["buoy"]["longitude"] == 2.7
     redundant_pressure = client.get(
         f"/api/v1/buoys/{buoy_id}/pressures?sensor_channel=B"
     )
