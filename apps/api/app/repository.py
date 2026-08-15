@@ -14,6 +14,7 @@ from .entities import (
 from .models import (
     Buoy,
     BuoyStatusUpdate,
+    BuoyLocationUpdate,
     PressureReading,
     SalinityReading,
     BatteryReading,
@@ -46,6 +47,18 @@ class BuoyRepository:
         if buoy is None:
             return None
         buoy.status = update.status
+        self.db.commit()
+        self.db.refresh(buoy)
+        return buoy
+
+    def update_location(
+        self, buoy_id: str, update: BuoyLocationUpdate
+    ) -> BuoyEntity | None:
+        buoy = self.get_buoy(buoy_id)
+        if buoy is None:
+            return None
+        buoy.latitude = update.latitude
+        buoy.longitude = update.longitude
         self.db.commit()
         self.db.refresh(buoy)
         return buoy

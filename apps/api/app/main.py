@@ -15,6 +15,7 @@ from .models import (
     Buoy,
     BuoyCreate,
     BuoyHealth,
+    BuoyLocationUpdate,
     BuoyStatusUpdate,
     BuoySummary,
     BatteryReading,
@@ -240,6 +241,18 @@ def update_buoy_status(
     db: Session = Depends(get_db),
 ) -> Buoy:
     buoy = BuoyRepository(db).update_status(buoy_id, payload)
+    if buoy is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return buoy
+
+
+@app.patch("/api/v1/buoys/{buoy_id}/location", response_model=Buoy, tags=["buoys"])
+def update_buoy_location(
+    buoy_id: str,
+    payload: BuoyLocationUpdate,
+    db: Session = Depends(get_db),
+) -> Buoy:
+    buoy = BuoyRepository(db).update_location(buoy_id, payload)
     if buoy is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return buoy

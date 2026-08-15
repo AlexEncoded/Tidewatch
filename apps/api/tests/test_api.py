@@ -121,6 +121,33 @@ def test_temperature_updates_buoy_last_seen_and_status_can_change() -> None:
     assert updated.json()["last_seen_at"] is not None
 
 
+def test_buoy_location_can_be_updated() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys",
+        json={"name": "Moving Buoy", "latitude": 36.7, "longitude": 3.1},
+    ).json()["id"]
+
+    updated = client.patch(
+        f"/api/v1/buoys/{buoy_id}/location",
+        json={"latitude": 37.2, "longitude": 2.8},
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["latitude"] == 37.2
+    assert updated.json()["longitude"] == 2.8
+
+
+def test_buoy_location_rejects_invalid_coordinates() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Coordinate Buoy"}).json()["id"]
+
+    response = client.patch(
+        f"/api/v1/buoys/{buoy_id}/location",
+        json={"latitude": 95, "longitude": 2},
+    )
+
+    assert response.status_code == 422
+
+
 def test_stale_buoy_is_reported_for_maintenance() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Silent Buoy"}).json()["id"]
     client.post(

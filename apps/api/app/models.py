@@ -15,6 +15,11 @@ class BuoyStatusUpdate(BaseModel):
     status: Literal["active", "maintenance", "inactive"]
 
 
+class BuoyLocationUpdate(BaseModel):
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+
+
 class Buoy(BaseModel):
     id: str
     name: str

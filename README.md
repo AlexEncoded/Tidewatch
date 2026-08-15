@@ -27,6 +27,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Análisis de media, rango, tendencia y anomalías.
 - Alertas derivadas y alertas persistidas con resolución.
 - Ubicación, estado operativo y última comunicación de cada boya.
+- Actualización validada de posición para soportar movimiento futuro de las boyas.
 - Presión en kPa como base para el cálculo experimental de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
 - Clasificación operativa inicial del estado del mar.
