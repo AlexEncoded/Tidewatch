@@ -86,6 +86,18 @@ class BatteryReading(BatteryReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class TelemetryBatchCreate(BaseModel):
+    temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
+    pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
+    salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
+    battery: BatteryReadingCreate | None = None
+
+
+class TelemetryIngestResponse(BaseModel):
+    buoy_id: str
+    accepted_readings: int
+
+
 class PressureAnalysis(BaseModel):
     buoy_id: str
     sample_count: int

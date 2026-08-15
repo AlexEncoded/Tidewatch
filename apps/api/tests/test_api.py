@@ -59,6 +59,28 @@ def test_create_buoy_and_record_temperature() -> None:
     assert reading.json()["temperature_celsius"] == 19.7
 
 
+def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Batch Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "temperatures": [{"temperature_celsius": 19.8, "sensor_channel": "A"}],
+            "pressures": [{"pressure_kpa": 101.4, "sensor_channel": "B"}],
+            "salinity": [{"salinity_psu": 35.1}],
+            "battery": {"battery_percent": 87.5},
+        },
+    )
+
+    assert response.status_code == 202
+    assert response.json() == {"buoy_id": buoy_id, "accepted_readings": 4}
+    summary = client.get("/api/v1/buoys").json()[0]
+    assert summary["latest_temperature"]["temperature_celsius"] == 19.8
+    assert summary["latest_pressure"]["pressure_kpa"] == 101.4
+    assert summary["latest_salinity"]["salinity_psu"] == 35.1
+    assert summary["latest_battery"]["battery_percent"] == 87.5
+
+
 def test_temperature_updates_buoy_last_seen_and_status_can_change() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Operational Buoy"}).json()["id"]
     client.post(

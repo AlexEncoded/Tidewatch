@@ -32,6 +32,8 @@ from .models import (
     TemperatureAnalysis,
     TemperatureAlert,
     StoredTemperatureAlert,
+    TelemetryBatchCreate,
+    TelemetryIngestResponse,
 )
 from .repository import BuoyRepository
 from .metrics import (
@@ -88,6 +90,67 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
         created_at=datetime.now(timezone.utc),
     )
     return BuoyRepository(db).create_buoy(buoy)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/telemetry",
+    response_model=TelemetryIngestResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["telemetry"],
+)
+def ingest_telemetry(
+    buoy_id: str,
+    payload: TelemetryBatchCreate,
+    db: Session = Depends(get_db),
+) -> TelemetryIngestResponse:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+
+    accepted = 0
+    for reading_payload in payload.temperatures:
+        reading = TemperatureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_temperature(reading)
+        temperature_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_temperature_celsius.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.temperature_celsius)
+        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            reading.measured_at.timestamp()
+        )
+        accepted += 1
+
+    for reading_payload in payload.pressures:
+        reading = PressureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_pressure(reading)
+        pressure_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_pressure_kpa.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.pressure_kpa)
+        accepted += 1
+
+    for reading_payload in payload.salinity:
+        reading = SalinityReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_salinity(reading)
+        salinity_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_salinity_psu.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.salinity_psu)
+        accepted += 1
+
+    if payload.battery is not None:
+        repository.add_battery(
+            BatteryReading(buoy_id=buoy_id, **payload.battery.model_dump())
+        )
+        accepted += 1
+
+    return TelemetryIngestResponse(buoy_id=buoy_id, accepted_readings=accepted)
 
 
 @app.get("/api/v1/buoys", response_model=list[BuoySummary], tags=["buoys"])
