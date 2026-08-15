@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class BuoyCreate(BaseModel):
@@ -116,8 +116,15 @@ class TelemetryBatchCreate(BaseModel):
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
-    battery: BatteryReadingCreate | None = None
+    battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
+
+    @field_validator("battery", mode="before")
+    @classmethod
+    def normalize_battery_payload(cls, value):
+        if value is None:
+            return []
+        return [value] if isinstance(value, dict) else value
 
     @model_validator(mode="after")
     def must_contain_readings(self) -> "TelemetryBatchCreate":

@@ -197,10 +197,13 @@ def ingest_telemetry(
         accepted_by_family["salinity"] += 1
         accepted += 1
 
-    if payload.battery is not None:
-        battery = BatteryReading(buoy_id=buoy_id, **payload.battery.model_dump())
+    for battery_payload in payload.battery:
+        battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
         battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
+        battery_device_percent.labels(
+            buoy_id=buoy_id, device_id=battery.device_id
+        ).set(battery.battery_percent)
         accepted_by_family["battery"] += 1
         accepted += 1
 

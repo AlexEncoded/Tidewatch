@@ -18,7 +18,8 @@ Endpoints locales:
 The simulator creates the configured buoy and emits channels A/B for the
 environmental sensors plus a battery reading for device A every ten seconds
 using the batch telemetry endpoint. The API also accepts direct battery
-readings for device B and compares both units through `battery-health`. The
+readings for device B, as well as two battery readings in the same batch, and
+compares both units through `battery-health`. The
 simulator sends a small position change so the fleet map and recent track can
 be exercised with moving coordinates.
 

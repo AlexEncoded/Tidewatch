@@ -106,6 +106,26 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     assert locations.json()[0]["longitude"] == 2.7
 
 
+def test_batch_telemetry_accepts_redundant_batteries() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Dual Battery Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "battery": [
+                {"battery_percent": 92, "device_id": "A"},
+                {"battery_percent": 88, "device_id": "B"},
+            ]
+        },
+    )
+
+    assert response.status_code == 202
+    assert response.json()["accepted_readings"] == 2
+    assert response.json()["accepted_by_family"]["battery"] == 2
+    assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A").json()["battery_percent"] == 92
+    assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=B").json()["battery_percent"] == 88
+
+
 def test_empty_telemetry_batch_is_rejected() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Empty Batch Buoy"}).json()["id"]
 

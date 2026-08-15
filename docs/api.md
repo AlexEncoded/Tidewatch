@@ -61,8 +61,10 @@ severidad `warning` para revisión preventiva.
 La respuesta de ingestión incluye `accepted_readings` y el desglose
 `accepted_by_family` para confirmar cuántas lecturas de cada sensor se han
 procesado. El lote puede incluir opcionalmente `location` para actualizar las
-coordenadas de la boya en la misma operación. Cada posición se conserva con su
-marca temporal para reconstruir desplazamientos.
+coordenadas de la boya en la misma operación. También puede incluir hasta dos
+objetos `battery`, uno por `device_id` A/B; el formato antiguo de un único
+objeto sigue siendo compatible. Cada posición se conserva con su marca
+temporal para reconstruir desplazamientos.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.
