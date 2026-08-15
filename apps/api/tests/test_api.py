@@ -408,6 +408,32 @@ def test_maintenance_issues_reports_degraded_sensor() -> None:
     assert issues.json()[0]["buoy_id"] == buoy_id
 
 
+def test_invalid_reading_is_ignored_by_sensor_health_comparison() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Invalid Health Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20, "sensor_channel": "A"},
+    )
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={
+            "temperature_celsius": 45,
+            "sensor_channel": "A",
+            "quality": "invalid",
+        },
+    )
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20.1, "sensor_channel": "B"},
+    )
+
+    health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health")
+
+    assert health.status_code == 200
+    assert health.json()["status"] == "consistent"
+    assert health.json()["temperature_delta_celsius"] == 0.1
+
+
 def test_low_battery_creates_maintenance_issue() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Low Battery Buoy"}).json()["id"]
     battery = client.post(

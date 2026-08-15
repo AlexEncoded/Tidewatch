@@ -61,6 +61,10 @@ def record_quality_metric(
     ).inc()
 
 
+def latest_usable_reading(readings: list) -> list:
+    return [reading for reading in readings if reading.quality != "invalid"][:1]
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     yield
@@ -441,12 +445,12 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
-    temperature_a = repository.list_temperatures(buoy_id, 1, "A")
-    temperature_b = repository.list_temperatures(buoy_id, 1, "B")
-    pressure_a = repository.list_pressures(buoy_id, 1, "A")
-    pressure_b = repository.list_pressures(buoy_id, 1, "B")
-    salinity_a = repository.list_salinity(buoy_id, 1, "A")
-    salinity_b = repository.list_salinity(buoy_id, 1, "B")
+    temperature_a = latest_usable_reading(repository.list_temperatures(buoy_id, 50, "A"))
+    temperature_b = latest_usable_reading(repository.list_temperatures(buoy_id, 50, "B"))
+    pressure_a = latest_usable_reading(repository.list_pressures(buoy_id, 50, "A"))
+    pressure_b = latest_usable_reading(repository.list_pressures(buoy_id, 50, "B"))
+    salinity_a = latest_usable_reading(repository.list_salinity(buoy_id, 50, "A"))
+    salinity_b = latest_usable_reading(repository.list_salinity(buoy_id, 50, "B"))
 
     deltas = {
         "temperature": (

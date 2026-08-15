@@ -10,6 +10,8 @@ Todas las lecturas incluyen `measured_at`, `sensor_channel` (`A` o `B`) y
 
 Las lecturas `invalid` se conservan para auditoría, pero no participan en los
 análisis de tendencia, oleaje ni generación de alertas.
+Tampoco participan en la comparación de salud entre canales A/B; se utiliza la
+última lectura no inválida disponible.
 La última lectura inválida de una familia de sensores genera además una
 incidencia `invalid_reading` en la cola de mantenimiento.
 La última lectura sospechosa genera una incidencia `suspect_reading` de
