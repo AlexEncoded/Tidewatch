@@ -188,6 +188,9 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
     assert analysis.json()["displacement_m"] == analysis.json()["distance_travelled_m"]
     assert 0.6 < analysis.json()["average_speed_mps"] < 0.7
     assert analysis.json()["confidence"] == "experimental"
+    metrics = client.get("/metrics")
+    assert "tidewatch_buoy_movement_speed_mps" in metrics.text
+    assert f'buoy_id="{buoy_id}"' in metrics.text
 
 
 def test_maintenance_issues_detect_buoy_drift() -> None:

@@ -33,3 +33,11 @@ groups:
         annotations:
           summary: "Tidewatch buoy battery is low"
           description: "The buoy battery is below 20 percent and requires maintenance planning."
+      - alert: TidewatchBuoyDrifting
+        expr: tidewatch_buoy_movement_speed_mps > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch buoy movement is above the safe threshold"
+          description: "The experimental movement estimate is above 1 m/s and should be reviewed by maintenance."

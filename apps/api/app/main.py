@@ -41,6 +41,7 @@ from .models import (
 from .repository import BuoyRepository
 from .metrics import (
     battery_percent,
+    buoy_movement_speed_mps,
     buoy_last_seen_timestamp_seconds,
     current_pressure_kpa,
     current_salinity_psu,
@@ -131,6 +132,11 @@ def ingest_telemetry(
         repository.add_location(
             BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())
         )
+        movement = analyze_movement(buoy_id, repository.list_locations(buoy_id, 50))
+        if movement.average_speed_mps is not None:
+            buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(
+                movement.average_speed_mps
+            )
 
     accepted = 0
     accepted_by_family = {
@@ -262,6 +268,9 @@ def update_buoy_location(
     buoy = BuoyRepository(db).update_location(buoy_id, payload)
     if buoy is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    movement = analyze_movement(buoy_id, BuoyRepository(db).list_locations(buoy_id, 50))
+    if movement.average_speed_mps is not None:
+        buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(movement.average_speed_mps)
     return buoy
 
 
@@ -655,6 +664,8 @@ def maintenance_issues(
             )
 
         movement = analyze_movement(buoy.id, repository.list_locations(buoy.id, 50))
+        if movement.average_speed_mps is not None:
+            buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
         if (
             movement.average_speed_mps is not None
             and movement.average_speed_mps > drift_speed_mps

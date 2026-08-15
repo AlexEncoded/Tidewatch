@@ -55,6 +55,12 @@ battery_percent = Gauge(
     ["buoy_id"],
 )
 
+buoy_movement_speed_mps = Gauge(
+    "tidewatch_buoy_movement_speed_mps",
+    "Experimental average movement speed calculated from recent buoy positions.",
+    ["buoy_id"],
+)
+
 reading_quality_total = Counter(
     "tidewatch_reading_quality_total",
     "Total sensor readings accepted by quality, family and channel.",

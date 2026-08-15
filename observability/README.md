@@ -16,6 +16,8 @@ La API expone `/metrics` y ya existe una configuración inicial en
 sensores redundantes degradados y lecturas inválidas recientes en
 `alerts/tidewatch.rules.yml`. La métrica `tidewatch_reading_quality_total`
 permite separar la calidad por boya, familia de sensor y canal.
+También publica `tidewatch_buoy_movement_speed_mps` para observar deriva y
+alertar cuando supera el umbral experimental configurado.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.
