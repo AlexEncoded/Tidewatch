@@ -68,6 +68,15 @@
       "targets": [{"expr": "sum by (quality) (rate(tidewatch_reading_quality_total[5m]))", "legendFormat": "{{quality}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 9,
+      "title": "Battery level",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [{"expr": "tidewatch_battery_percent", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "decimals": 1}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

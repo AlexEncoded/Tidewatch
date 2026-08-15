@@ -37,6 +37,7 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .metrics import (
+    battery_percent,
     buoy_last_seen_timestamp_seconds,
     current_pressure_kpa,
     current_salinity_psu,
@@ -160,9 +161,9 @@ def ingest_telemetry(
         accepted += 1
 
     if payload.battery is not None:
-        repository.add_battery(
-            BatteryReading(buoy_id=buoy_id, **payload.battery.model_dump())
-        )
+        battery = BatteryReading(buoy_id=buoy_id, **payload.battery.model_dump())
+        repository.add_battery(battery)
+        battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
         accepted += 1
 
     return TelemetryIngestResponse(buoy_id=buoy_id, accepted_readings=accepted)
@@ -393,7 +394,10 @@ def record_battery(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.add_battery(BatteryReading(buoy_id=buoy_id, **payload.model_dump()))
+    battery = BatteryReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_battery = repository.add_battery(battery)
+    battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
+    return saved_battery
 
 
 @app.get(

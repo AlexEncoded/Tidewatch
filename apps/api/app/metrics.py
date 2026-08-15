@@ -49,6 +49,12 @@ buoy_last_seen_timestamp_seconds = Gauge(
     ["buoy_id"],
 )
 
+battery_percent = Gauge(
+    "tidewatch_battery_percent",
+    "Most recent battery percentage for each buoy.",
+    ["buoy_id"],
+)
+
 reading_quality_total = Counter(
     "tidewatch_reading_quality_total",
     "Total sensor readings accepted by quality, family and channel.",

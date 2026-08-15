@@ -25,3 +25,11 @@ groups:
         annotations:
           summary: "Tidewatch buoy is producing invalid readings"
           description: "The buoy has produced at least one invalid sensor reading during the last ten minutes."
+      - alert: TidewatchLowBattery
+        expr: tidewatch_battery_percent < 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch buoy battery is low"
+          description: "The buoy battery is below 20 percent and requires maintenance planning."
