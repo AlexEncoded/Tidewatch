@@ -17,7 +17,8 @@ Endpoints locales:
 
 The simulator creates the configured buoy and emits channels A/B for the
 environmental sensors plus battery readings every ten seconds using the batch
-telemetry endpoint.
+telemetry endpoint. It also sends a small simulated position change so the
+fleet map can be exercised with moving coordinates.
 
 Run it from the repository root with:
 

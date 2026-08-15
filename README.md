@@ -64,7 +64,7 @@ esta fase de aprendizaje.
 - [ ] Publicar API y worker en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
 - [x] Añadir mapa operativo de boyas al frontend.
-- [ ] Crear tests de carga para la ingesta.
+- [x] Crear tests de carga para la ingesta batch.
 
 ### Evolución de la plataforma
 
@@ -73,13 +73,15 @@ esta fase de aprendizaje.
 - [x] Añadir salinidad y primera estimación experimental de oleaje derivada de presión.
 - [x] Mostrar condiciones oceánicas y estado del mar en el frontend.
 - [x] Añadir batería y cola interna de mantenimiento.
-- [ ] Calibrar el oleaje con datos reales y añadir posición dinámica.
+- [x] Añadir posición dinámica simulada y actualización desde telemetría batch.
+- [ ] Calibrar el oleaje con datos reales.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones externas de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
 - [ ] Implementar blue/green o canary deployments.
 - [ ] Añadir backups, restauración y disaster recovery probado.
-- [ ] Introducir load tests y chaos engineering.
+- [x] Introducir load tests para la ingesta.
+- [ ] Añadir escenarios de chaos engineering.
 - [ ] Medir métricas DORA y coste por entorno.
 
 ### Futuro experimental: datos y ML
