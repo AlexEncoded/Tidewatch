@@ -86,39 +86,41 @@ def run() -> None:
                     "salinity_psu": round(current_salinity + random.uniform(-0.04, 0.04), 3),
                 },
             }
-            for channel, values in readings.items():
-                response = client.post(
-                    f"{API_URL}/api/v1/buoys/{buoy_id}/temperatures",
-                    json={
+            payload = {
+                "temperatures": [
+                    {
                         "temperature_celsius": values["temperature_celsius"],
                         "sensor_channel": channel,
                         "measured_at": measured_at,
-                    },
-                )
-                response.raise_for_status()
-                pressure_response = client.post(
-                    f"{API_URL}/api/v1/buoys/{buoy_id}/pressures",
-                    json={
+                    }
+                    for channel, values in readings.items()
+                ],
+                "pressures": [
+                    {
                         "pressure_kpa": values["pressure_kpa"],
                         "sensor_channel": channel,
                         "measured_at": measured_at,
-                    },
-                )
-                pressure_response.raise_for_status()
-                salinity_response = client.post(
-                    f"{API_URL}/api/v1/buoys/{buoy_id}/salinity",
-                    json={
+                    }
+                    for channel, values in readings.items()
+                ],
+                "salinity": [
+                    {
                         "salinity_psu": values["salinity_psu"],
                         "sensor_channel": channel,
                         "measured_at": measured_at,
-                    },
-                )
-                salinity_response.raise_for_status()
-            battery_response = client.post(
-                f"{API_URL}/api/v1/buoys/{buoy_id}/battery",
-                json={"battery_percent": current_battery, "measured_at": measured_at},
+                    }
+                    for channel, values in readings.items()
+                ],
+                "battery": {
+                    "battery_percent": current_battery,
+                    "measured_at": measured_at,
+                },
+            }
+            response = client.post(
+                f"{API_URL}/api/v1/buoys/{buoy_id}/telemetry",
+                json=payload,
             )
-            battery_response.raise_for_status()
+            response.raise_for_status()
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "

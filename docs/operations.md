@@ -16,7 +16,8 @@ Endpoints locales:
 - Metrics: <http://localhost:8000/metrics>
 
 The simulator creates the configured buoy and emits channels A/B for the
-environmental sensors plus battery readings every ten seconds.
+environmental sensors plus battery readings every ten seconds using the batch
+telemetry endpoint.
 
 Run it from the repository root with:
 

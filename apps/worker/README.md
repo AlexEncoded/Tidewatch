@@ -1,8 +1,10 @@
 # Tidewatch buoy simulator
 
-Simulador de una boya que genera pequeñas variaciones de temperatura y las
-envía a la API periódicamente. Es la primera fuente de telemetría reproducible
-para desarrollo local y pruebas de extremo a extremo.
+Simulador de una boya que genera pequeñas variaciones de temperatura, presión,
+salinidad y batería y las envía a la API periódicamente. Cada ciclo usa la
+ingestión batch para transmitir los sensores A/B en una sola petición. Es la
+primera fuente de telemetría reproducible para desarrollo local y pruebas de
+extremo a extremo.
 
 ## Configuración
 
