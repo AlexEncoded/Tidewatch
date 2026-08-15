@@ -88,6 +88,14 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     assert redundant_pressure.json()[0]["pressure_kpa"] == 101.5
 
 
+def test_empty_telemetry_batch_is_rejected() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Empty Batch Buoy"}).json()["id"]
+
+    response = client.post(f"/api/v1/buoys/{buoy_id}/telemetry", json={})
+
+    assert response.status_code == 422
+
+
 def test_temperature_updates_buoy_last_seen_and_status_can_change() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Operational Buoy"}).json()["id"]
     client.post(

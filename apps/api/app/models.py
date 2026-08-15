@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class BuoyCreate(BaseModel):
@@ -91,6 +91,12 @@ class TelemetryBatchCreate(BaseModel):
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
     battery: BatteryReadingCreate | None = None
+
+    @model_validator(mode="after")
+    def must_contain_readings(self) -> "TelemetryBatchCreate":
+        if not (self.temperatures or self.pressures or self.salinity or self.battery):
+            raise ValueError("Telemetry batch must contain at least one reading")
+        return self
 
 
 class TelemetryIngestResponse(BaseModel):
