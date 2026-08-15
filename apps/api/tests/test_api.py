@@ -126,6 +126,22 @@ def test_batch_telemetry_accepts_redundant_batteries() -> None:
     assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=B").json()["battery_percent"] == 88
 
 
+def test_batch_telemetry_rejects_duplicate_battery_devices() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Duplicate Battery Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "battery": [
+                {"battery_percent": 92, "device_id": "A"},
+                {"battery_percent": 91, "device_id": "A"},
+            ]
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_empty_telemetry_batch_is_rejected() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Empty Batch Buoy"}).json()["id"]
 

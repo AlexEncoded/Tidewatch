@@ -130,6 +130,9 @@ class TelemetryBatchCreate(BaseModel):
     def must_contain_readings(self) -> "TelemetryBatchCreate":
         if not (self.temperatures or self.pressures or self.salinity or self.battery):
             raise ValueError("Telemetry batch must contain at least one reading")
+        battery_devices = [reading.device_id for reading in self.battery]
+        if len(battery_devices) != len(set(battery_devices)):
+            raise ValueError("Telemetry batch cannot contain duplicate battery devices")
         return self
 
 
