@@ -30,6 +30,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Actualización validada de posición para soportar movimiento futuro de las boyas.
 - Histórico temporal de posiciones para reconstruir desplazamientos.
 - Análisis experimental de distancia recorrida, desplazamiento y velocidad media.
+- Detección operativa de deriva anómala en la cola de mantenimiento.
 - Presión en kPa como base para el cálculo experimental de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
 - Clasificación operativa inicial del estado del mar.
@@ -78,6 +79,7 @@ esta fase de aprendizaje.
 - [x] Añadir posición dinámica simulada y actualización desde telemetría batch.
 - [x] Persistir y consultar el histórico de posiciones de cada boya.
 - [x] Añadir análisis experimental de movimiento y deriva.
+- [x] Generar incidencias configurables cuando una boya deriva demasiado rápido.
 - [ ] Calibrar el oleaje con datos reales.
 - [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones externas de mantenimiento.

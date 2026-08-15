@@ -190,6 +190,33 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
     assert analysis.json()["confidence"] == "experimental"
 
 
+def test_maintenance_issues_detect_buoy_drift() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Drift Alert Buoy", "latitude": 0, "longitude": 0}
+    ).json()["id"]
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    for index, longitude in enumerate((0, 0.01, 0.02)):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "temperatures": [{"temperature_celsius": 20}],
+                "location": {
+                    "latitude": 0,
+                    "longitude": longitude,
+                    "measured_at": (start + timedelta(hours=index)).isoformat(),
+                },
+            },
+        )
+
+    issues = client.get("/api/v1/maintenance/issues?drift_speed_mps=0.5")
+
+    assert issues.status_code == 200
+    drift_issue = next(issue for issue in issues.json() if issue["issue_type"] == "drift_detected")
+    assert drift_issue["buoy_id"] == buoy_id
+    assert drift_issue["severity"] == "warning"
+
+
 def test_stale_buoy_is_reported_for_maintenance() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Silent Buoy"}).json()["id"]
     client.post(

@@ -33,7 +33,7 @@ severidad `warning` para revisión preventiva.
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
-| `GET` | `/api/v1/maintenance/issues` | Consultar incidencias |
+| `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |
 
 ## Operación
 
@@ -52,3 +52,6 @@ La respuesta de ingestión incluye `accepted_readings` y el desglose
 procesado. El lote puede incluir opcionalmente `location` para actualizar las
 coordenadas de la boya en la misma operación. Cada posición se conserva con su
 marca temporal para reconstruir desplazamientos.
+
+`/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
+de velocidad media que dispara la incidencia `drift_detected`.

@@ -569,6 +569,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
 )
 def maintenance_issues(
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
     db: Session = Depends(get_db),
 ) -> list[MaintenanceIssue]:
     repository = BuoyRepository(db)
@@ -650,6 +651,24 @@ def maintenance_issues(
                     issue_type="low_battery",
                     severity="critical" if battery.battery_percent < 10 else "warning",
                     message=f"Battery level is {battery.battery_percent:.1f}%",
+                )
+            )
+
+        movement = analyze_movement(buoy.id, repository.list_locations(buoy.id, 50))
+        if (
+            movement.average_speed_mps is not None
+            and movement.average_speed_mps > drift_speed_mps
+        ):
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="drift_detected",
+                    severity="warning",
+                    message=(
+                        f"Average movement speed is {movement.average_speed_mps:.3f} m/s, "
+                        f"above the configured limit of {drift_speed_mps:g} m/s"
+                    ),
                 )
             )
 
