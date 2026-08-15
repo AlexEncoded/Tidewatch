@@ -187,6 +187,8 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 ## Documentación
 
 - [Arquitectura](docs/architecture.md)
+- [API](docs/api.md)
+- [Operación local](docs/operations.md)
 - [Infraestructura Azure](terraform/README.md)
 - [Seguridad](docs/security.md)
 - [Disaster recovery](docs/disaster-recovery.md)
