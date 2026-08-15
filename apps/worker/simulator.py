@@ -13,6 +13,8 @@ BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
 BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
+BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
+BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
 TELEMETRY_RETRIES = max(0, int(os.getenv("TELEMETRY_RETRIES", "3")))
 RETRY_BACKOFF_SECONDS = max(0, float(os.getenv("RETRY_BACKOFF_SECONDS", "1")))
 
@@ -94,6 +96,8 @@ def run() -> None:
         current_pressure = BASE_PRESSURE
         current_salinity = BASE_SALINITY
         current_battery = BASE_BATTERY
+        current_latitude = BASE_LATITUDE
+        current_longitude = BASE_LONGITUDE
         print(f"Simulating buoy {buoy_id} every {INTERVAL_SECONDS:g}s")
 
         while True:
@@ -101,6 +105,8 @@ def run() -> None:
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
             current_battery = max(0, round(current_battery - random.uniform(0.01, 0.05), 2))
+            current_latitude = max(-90, min(90, current_latitude + random.uniform(-0.001, 0.001)))
+            current_longitude = max(-180, min(180, current_longitude + random.uniform(-0.001, 0.001)))
             measured_at = datetime.now(timezone.utc).isoformat()
             readings = {
                 "A": {
@@ -143,12 +149,17 @@ def run() -> None:
                     "battery_percent": current_battery,
                     "measured_at": measured_at,
                 },
+                "location": {
+                    "latitude": round(current_latitude, 6),
+                    "longitude": round(current_longitude, 6),
+                },
             }
             send_telemetry(client, buoy_id, payload)
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
-                f"battery {current_battery:.1f}% | sensors A/B"
+                f"battery {current_battery:.1f}% | "
+                f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
             time.sleep(INTERVAL_SECONDS)
 
