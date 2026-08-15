@@ -179,6 +179,20 @@ def test_invalid_temperature_is_kept_but_excluded_from_analysis() -> None:
     assert readings.json()[0]["quality"] == "invalid"
 
 
+def test_invalid_latest_reading_creates_maintenance_issue() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Invalid Reading Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/pressures",
+        json={"pressure_kpa": 101.0, "quality": "invalid"},
+    )
+
+    assert response.status_code == 201
+    issues = client.get("/api/v1/maintenance/issues")
+
+    assert issues.status_code == 200
+    assert any(issue["issue_type"] == "invalid_reading" for issue in issues.json())
+
+
 def test_pressure_must_be_in_sensor_range() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Pressure Range Buoy"}).json()
 

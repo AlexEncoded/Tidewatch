@@ -429,6 +429,27 @@ def maintenance_issues(
                 )
             )
 
+        latest_readings = {
+            "temperature": repository.list_temperatures(buoy.id, 1),
+            "pressure": repository.list_pressures(buoy.id, 1),
+            "salinity": repository.list_salinity(buoy.id, 1),
+        }
+        invalid_sensors = [
+            sensor
+            for sensor, readings in latest_readings.items()
+            if readings and readings[0].quality == "invalid"
+        ]
+        if invalid_sensors:
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="invalid_reading",
+                    severity="warning",
+                    message=f"Invalid latest readings: {', '.join(invalid_sensors)}",
+                )
+            )
+
         battery = repository.latest_battery(buoy.id)
         if battery is not None and battery.battery_percent < 20:
             issues.append(
