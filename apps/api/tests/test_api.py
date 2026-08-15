@@ -659,6 +659,10 @@ def test_missing_redundant_battery_device_creates_maintenance_issue() -> None:
     )
     assert missing_issue["buoy_id"] == buoy_id
     assert "device B" in missing_issue["message"]
+    metrics = client.get("/metrics")
+    assert "tidewatch_redundant_device_missing" in metrics.text
+    assert f'buoy_id="{buoy_id}"' in metrics.text
+    assert 'device_id="B"' in metrics.text
 
 
 def test_temperature_analysis_detects_anomaly() -> None:

@@ -67,6 +67,12 @@ battery_delta_percent = Gauge(
     ["buoy_id"],
 )
 
+redundant_device_missing = Gauge(
+    "tidewatch_redundant_device_missing",
+    "Whether a redundant buoy device is missing battery telemetry.",
+    ["buoy_id", "device_id"],
+)
+
 buoy_movement_speed_mps = Gauge(
     "tidewatch_buoy_movement_speed_mps",
     "Experimental average movement speed calculated from recent buoy positions.",

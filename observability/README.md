@@ -20,6 +20,8 @@ También publica `tidewatch_buoy_movement_speed_mps` para observar deriva y
 alertar cuando supera el umbral experimental configurado.
 La salud energética dual se expone con `tidewatch_battery_device_percent` y
 `tidewatch_battery_delta_percent`.
+La ausencia de una unidad se publica como `tidewatch_redundant_device_missing`
+y dispara una alerta crítica tras cinco minutos.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

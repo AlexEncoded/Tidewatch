@@ -58,6 +58,7 @@ from .metrics import (
     current_temperature_celsius,
     pressure_readings_total,
     reading_quality_total,
+    redundant_device_missing,
     salinity_readings_total,
     sensor_degraded,
     temperature_readings_total,
@@ -837,6 +838,10 @@ def maintenance_issues(
         available_battery_devices = [
             device_id for device_id, reading in battery_readings.items() if reading is not None
         ]
+        for device_id in ("A", "B"):
+            redundant_device_missing.labels(
+                buoy_id=buoy.id, device_id=device_id
+            ).set(0 if device_id in available_battery_devices else 1)
         if len(available_battery_devices) == 1:
             missing_device = "B" if available_battery_devices[0] == "A" else "A"
             issues.append(

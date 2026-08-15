@@ -103,6 +103,14 @@
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
       "targets": [{"expr": "tidewatch_battery_delta_percent", "legendFormat": "{{buoy_id}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "percent", "decimals": 1, "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "orange", "value": 10}]}}, "overrides": []}
+    },
+    {
+      "id": 13,
+      "title": "Missing redundant devices",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 48},
+      "targets": [{"expr": "sum(tidewatch_redundant_device_missing)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
     }
   ],
   "schemaVersion": 39,

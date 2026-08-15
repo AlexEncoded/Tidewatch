@@ -41,6 +41,14 @@ groups:
         annotations:
           summary: "Tidewatch redundant batteries are diverging"
           description: "The battery levels of the two physical buoy devices differ by more than 10 percentage points."
+      - alert: TidewatchRedundantDeviceMissing
+        expr: tidewatch_redundant_device_missing == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tidewatch redundant buoy device is missing"
+          description: "One physical buoy device has stopped sending battery telemetry and requires inspection."
       - alert: TidewatchBuoyDrifting
         expr: tidewatch_buoy_movement_speed_mps > 1
         for: 10m
