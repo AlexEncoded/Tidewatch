@@ -1,7 +1,8 @@
 # Tidewatch API
 
-Primer servicio de Tidewatch. Esta iteración permite registrar boyas y medir la
-temperatura del mar.
+Servicio FastAPI de Tidewatch. Registra boyas, ingiere telemetría ambiental,
+persiste históricos y expone análisis experimentales, salud redundante y
+operación de mantenimiento.
 
 ## Ejecutar localmente con PostgreSQL
 
@@ -48,11 +49,27 @@ Métricas Prometheus: <http://localhost:8000/metrics>
 |---|---|---|
 | `GET` | `/health` | Health check |
 | `POST` | `/api/v1/buoys` | Registrar una boya y su ubicación |
-| `GET` | `/api/v1/buoys` | Listar boyas y última temperatura |
+| `GET` | `/api/v1/buoys` | Listar boyas y resumen de última telemetría |
 | `GET` | `/api/v1/buoys/stale` | Detectar boyas sin comunicación |
 | `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
+| `PATCH` | `/api/v1/buoys/{id}/location` | Actualizar posición |
+| `POST` | `/api/v1/buoys/{id}/telemetry` | Ingerir un lote de telemetría |
 | `POST` | `/api/v1/buoys/{id}/temperatures` | Registrar temperatura |
 | `GET` | `/api/v1/buoys/{id}/temperatures` | Consultar historial |
+| `POST` | `/api/v1/buoys/{id}/pressures` | Registrar presión |
+| `GET` | `/api/v1/buoys/{id}/pressures` | Consultar presión |
+| `GET` | `/api/v1/buoys/{id}/pressure-analysis` | Estimar oleaje experimental |
+| `POST` | `/api/v1/buoys/{id}/salinity` | Registrar salinidad |
+| `GET` | `/api/v1/buoys/{id}/salinity` | Consultar salinidad |
+| `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería A/B |
+| `GET` | `/api/v1/buoys/{id}/battery` | Consultar batería, opcionalmente por unidad |
+| `GET` | `/api/v1/buoys/{id}/battery-health` | Comparar batería A/B |
+| `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones |
+| `GET` | `/api/v1/buoys/{id}/locations/export` | Exportar posiciones de una boya |
+| `GET` | `/api/v1/buoys/{id}/movement-analysis` | Analizar movimiento experimental |
+| `GET` | `/api/v1/locations/export` | Exportar posiciones de toda la flota |
+| `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar sensores A/B |
+| `GET` | `/api/v1/maintenance/issues` | Consultar incidencias |
 | `GET` | `/api/v1/buoys/{id}/temperature-analysis` | Analizar anomalías |
 | `GET` | `/api/v1/alerts/temperature` | Listar alertas de temperatura |
 | `POST` | `/api/v1/alerts/temperature/evaluate` | Persistir anomalías actuales |
@@ -78,8 +95,8 @@ la tendencia como `rising`, `falling` o `stable`. Para marcar anomalías necesit
 al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
 `threshold`.
 
-La API expone métricas Prometheus de lecturas aceptadas, temperatura actual y
-última comunicación de cada boya.
+La API expone métricas Prometheus de lecturas aceptadas, temperatura actual,
+última comunicación, movimiento y salud energética A/B.
 
 Las alertas calculadas bajo demanda se pueden persistir explícitamente mediante
 `evaluate`. La misma lectura no crea duplicados gracias a la restricción única

@@ -5,13 +5,17 @@ levantada: <http://localhost:8000/docs>.
 
 ## Telemetría
 
-Todas las lecturas incluyen `measured_at`, `sensor_channel` (`A` o `B`) y
-`quality` (`good`, `suspect` o `invalid`).
+Las lecturas ambientales de temperatura, presión y salinidad incluyen
+`measured_at`, `sensor_channel` (`A` o `B`) y `quality` (`good`, `suspect` o
+`invalid`). Las lecturas de batería usan `device_id` (`A` o `B`) y las
+posiciones usan `measured_at`.
 
 Las lecturas `invalid` se conservan para auditoría, pero no participan en los
 análisis de tendencia, oleaje ni generación de alertas.
 Tampoco participan en la comparación de salud entre canales A/B; se utiliza la
-última lectura no inválida disponible.
+última lectura no inválida disponible. Esta regla aplica a las familias
+ambientales con `sensor_channel`, no a la batería, que tiene su propia
+comparación por `device_id`.
 La última lectura inválida de una familia de sensores genera además una
 incidencia `invalid_reading` en la cola de mantenimiento.
 La última lectura sospechosa genera una incidencia `suspect_reading` de
@@ -35,6 +39,10 @@ severidad `warning` para revisión preventiva.
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |
+| `GET` | `/api/v1/alerts/temperature` | Consultar anomalías de temperatura |
+| `POST` | `/api/v1/alerts/temperature/evaluate` | Persistir anomalías actuales |
+| `GET` | `/api/v1/alerts/temperature/stored` | Consultar alertas persistidas |
+| `POST` | `/api/v1/alerts/temperature/{id}/resolve` | Resolver una alerta |
 
 ## Operación
 
@@ -58,3 +66,9 @@ marca temporal para reconstruir desplazamientos.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.
+
+La salud energética se consulta con `battery-health?threshold=10`. Si ambas
+unidades están disponibles, devuelve los porcentajes A/B, su diferencia y la
+unidad sospechosa cuando supera el umbral. El endpoint de batería acepta
+`device_id=A|B`; los registros antiguos se consideran de la unidad A por
+compatibilidad.

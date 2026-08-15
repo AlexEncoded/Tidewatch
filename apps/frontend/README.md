@@ -1,7 +1,7 @@
 # Tidewatch frontend
 
-Dashboard operativo inicial para consultar la flota de boyas, su temperatura,
-estado y última comunicación.
+Dashboard operativo para consultar la flota de boyas, sus condiciones
+ambientales, estado, batería redundante, movimiento y última comunicación.
 
 ## Ejecutar con Docker Compose
 

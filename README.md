@@ -32,11 +32,13 @@ una señal desde el dispositivo hasta una operación en producción.
 - Análisis experimental de distancia recorrida, desplazamiento y velocidad media.
 - Detección operativa de deriva anómala en la cola de mantenimiento.
 - Exportación CSV de posiciones para análisis offline y futuros pipelines ML.
+- Exportación CSV de posiciones de una boya o de toda la flota.
 - Presión en kPa como base para el cálculo experimental de altura de ola.
 - Estimación experimental de altura de ola a partir de variación de presión.
 - Clasificación operativa inicial del estado del mar.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Canales redundantes A/B y endpoint de comparación de salud de sensores.
+- Identificación A/B de baterías y comparación de salud energética redundante.
 - Metadatos básicos de calidad (`good`, `suspect`, `invalid`) por lectura.
 - Las lecturas `invalid` se conservan para auditoría y se excluyen de análisis.
 - Las últimas lecturas inválidas generan incidencias de mantenimiento.
@@ -45,6 +47,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Ingestión de telemetría por lotes para preparar el flujo continuo desde las boyas.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
 - Cola operativa de incidencias para mantenimiento.
+- Visualización de trayectorias recientes y exportación desde el frontend.
 - Métricas Prometheus y dashboard Grafana.
 - Chart Helm, aplicación Argo CD y políticas base de Kubernetes.
 - Infraestructura Azure preparada con Terraform.
@@ -82,8 +85,11 @@ esta fase de aprendizaje.
 - [x] Añadir análisis experimental de movimiento y deriva.
 - [x] Generar incidencias configurables cuando una boya deriva demasiado rápido.
 - [x] Exportar el histórico de posiciones para análisis offline.
+- [x] Exportar snapshots CSV de posiciones de toda la flota.
+- [x] Comparar baterías A/B y detectar unidades energéticas degradadas.
+- [x] Exponer deriva y salud energética en Prometheus, alertas y Grafana.
 - [ ] Calibrar el oleaje con datos reales.
-- [ ] Crear procesamiento asíncrono real para telemetría.
+- [ ] Crear procesamiento asíncrono real para telemetría y soportar lotes de batería A/B.
 - [ ] Incorporar notificaciones externas de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
 - [ ] Implementar blue/green o canary deployments.

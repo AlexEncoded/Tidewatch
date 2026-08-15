@@ -16,9 +16,11 @@ Endpoints locales:
 - Metrics: <http://localhost:8000/metrics>
 
 The simulator creates the configured buoy and emits channels A/B for the
-environmental sensors plus battery readings every ten seconds using the batch
-telemetry endpoint. It also sends a small simulated position change so the
-fleet map can be exercised with moving coordinates.
+environmental sensors plus a battery reading for device A every ten seconds
+using the batch telemetry endpoint. The API also accepts direct battery
+readings for device B and compares both units through `battery-health`. The
+simulator sends a small position change so the fleet map and recent track can
+be exercised with moving coordinates.
 
 Run it from the repository root with:
 

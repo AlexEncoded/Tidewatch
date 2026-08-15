@@ -27,19 +27,21 @@ Azure Monitor / Log Analytics / Managed Grafana
 
 ```text
 Buoy simulator / buoy device
-        │ temperature · pressure · salinity · battery
-        │ sensor channels A/B + quality metadata
+        │ temperature · pressure · salinity · battery · position
+        │ sensor channels A/B + battery device A/B + quality metadata
         ▼
 FastAPI ingestion API
         ├── PostgreSQL + Alembic migrations
         ├── anomaly and wave estimation
-        ├── sensor health and maintenance issues
+        ├── movement analysis, battery health and maintenance issues
         └── Prometheus metrics
 ```
 
-The frontend consumes the API, displays fleet locations, ocean conditions and
-the maintenance queue. Pressure-based wave height and sea-state classification
-are explicitly experimental until real sensor calibration is available.
+The frontend consumes the API, displays fleet locations, recent tracks, ocean
+conditions, battery health and the maintenance queue. It also links to a CSV
+snapshot export for offline analysis. Pressure-based wave height, movement and
+sea-state classification are explicitly experimental until real sensor
+calibration is available.
 
 ## Servicios Azure
 
