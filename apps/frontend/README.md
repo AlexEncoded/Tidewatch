@@ -13,3 +13,7 @@ Abrir <http://localhost:8080>.
 
 Nginx hace proxy de `/api/` hacia el servicio interno de la API. El dashboard
 se actualiza automáticamente cada 15 segundos.
+
+Cada tarjeta muestra también el resumen acumulado de calidad de datos de la
+boya: lecturas `good`, `suspect` e `invalid`. Las lecturas inválidas siguen
+siendo visibles en el histórico, pero no participan en los análisis.

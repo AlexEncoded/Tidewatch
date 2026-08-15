@@ -45,5 +45,11 @@ dl { margin: 0; } dl div { border-top: 1px solid #1d3b51; padding: 10px 0; } dt,
 .sea-state-moderate { background: #47371a; color: #ffd27a; }
 .sea-state-rough { background: #43232d; color: #ff9da9; }
 .sea-state-unknown { background: #263849; color: #9bb1c5; }
+.quality-summary { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.quality { border-radius: 999px; font-size: 0.68rem; padding: 4px 7px; white-space: nowrap; }
+.quality-good { background: #123f38; color: #7af0c3; }
+.quality-suspect { background: #47371a; color: #ffd27a; }
+.quality-invalid { background: #43232d; color: #ff9da9; }
+.quality-unknown { background: #263849; color: #9bb1c5; }
 .error { color: #ff9da9; } .empty { color: #9bb1c5; }
 @media (max-width: 700px) { .header { flex-direction: column; } .summary { grid-template-columns: 1fr; } }

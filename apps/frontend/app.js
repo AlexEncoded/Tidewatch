@@ -26,6 +26,19 @@ function formatWave(analysis) {
     : `${analysis.estimated_wave_height_m.toFixed(2)} m`;
 }
 
+function formatQuality(summary) {
+  if (!summary || summary.total_readings === 0) {
+    return '<span class="quality quality-unknown">No data</span>';
+  }
+
+  return `
+    <span class="quality-summary">
+      <span class="quality quality-good">${summary.good_readings} good</span>
+      <span class="quality quality-suspect">${summary.suspect_readings} suspect</span>
+      <span class="quality quality-invalid">${summary.invalid_readings} invalid</span>
+    </span>`;
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;",
@@ -73,7 +86,7 @@ function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "Never";
 }
 
-function renderBuoys(buoys, analyses, sensorHealth) {
+function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries) {
   document.querySelector("#total-buoys").textContent = buoys.length;
   document.querySelector("#active-buoys").textContent = buoys.filter(
     ({ buoy }) => buoy.status === "active",
@@ -91,6 +104,7 @@ function renderBuoys(buoys, analyses, sensorHealth) {
       const status = buoy.status.toLowerCase();
       const analysis = analyses[index];
       const health = sensorHealth[index];
+      const quality = qualitySummaries[index];
       const seaState = analysis?.sea_state ?? "unknown";
       const sensorStatus = health?.status ?? "unknown";
       const degradedSensors = health?.degraded_sensors?.length
@@ -111,6 +125,7 @@ function renderBuoys(buoys, analyses, sensorHealth) {
             <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Wave estimate</dt><dd>${formatWave(analysis)}</dd></div>
             <div><dt>Sea state</dt><dd><span class="sea-state sea-state-${seaState}">${seaState}</span></dd></div>
+            <div><dt>Data quality</dt><dd>${formatQuality(quality)}</dd></div>
             <div><dt>Last reading</dt><dd>${formatDate(buoy.last_seen_at)}</dd></div>
             <div><dt>Coordinates</dt><dd>${buoy.latitude ?? "—"}, ${buoy.longitude ?? "—"}</dd></div>
           </dl>
@@ -166,7 +181,15 @@ async function loadBuoys() {
         return healthResponse.ok ? healthResponse.json() : null;
       }),
     );
-    renderBuoys(buoys, analyses, sensorHealth);
+    const qualitySummaries = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const qualityResponse = await fetch(
+          `/api/v1/buoys/${buoy.id}/quality-summary`,
+        );
+        return qualityResponse.ok ? qualityResponse.json() : null;
+      }),
+    );
+    renderBuoys(buoys, analyses, sensorHealth, qualitySummaries);
   } catch (error) {
     errorMessage.textContent = `Unable to load fleet data: ${error.message}`;
     errorMessage.hidden = false;
