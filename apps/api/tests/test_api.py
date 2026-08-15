@@ -6,6 +6,7 @@ from sqlalchemy import delete
 from app.database import SessionLocal, create_tables
 from app.entities import (
     BuoyEntity,
+    BuoyLocationReadingEntity,
     BatteryReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
@@ -23,6 +24,7 @@ def setup_function() -> None:
         db.execute(delete(SalinityReadingEntity))
         db.execute(delete(BatteryReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
+        db.execute(delete(BuoyLocationReadingEntity))
         db.execute(delete(BuoyEntity))
         db.commit()
 
@@ -98,6 +100,10 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
         f"/api/v1/buoys/{buoy_id}/pressures?sensor_channel=B"
     )
     assert redundant_pressure.json()[0]["pressure_kpa"] == 101.5
+    locations = client.get(f"/api/v1/buoys/{buoy_id}/locations")
+    assert locations.status_code == 200
+    assert locations.json()[0]["latitude"] == 36.9
+    assert locations.json()[0]["longitude"] == 2.7
 
 
 def test_empty_telemetry_batch_is_rejected() -> None:
@@ -138,6 +144,9 @@ def test_buoy_location_can_be_updated() -> None:
     assert updated.status_code == 200
     assert updated.json()["latitude"] == 37.2
     assert updated.json()["longitude"] == 2.8
+    locations = client.get(f"/api/v1/buoys/{buoy_id}/locations")
+    assert locations.status_code == 200
+    assert locations.json()[0]["latitude"] == 37.2
 
 
 def test_buoy_location_rejects_invalid_coordinates() -> None:

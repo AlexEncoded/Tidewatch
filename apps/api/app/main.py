@@ -16,6 +16,7 @@ from .models import (
     BuoyCreate,
     BuoyHealth,
     BuoyLocationUpdate,
+    BuoyLocationReading,
     BuoyStatusUpdate,
     BuoySummary,
     BatteryReading,
@@ -126,7 +127,9 @@ def ingest_telemetry(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     if payload.location is not None:
-        repository.update_location(buoy_id, payload.location)
+        repository.add_location(
+            BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())
+        )
 
     accepted = 0
     accepted_by_family = {
@@ -259,6 +262,22 @@ def update_buoy_location(
     if buoy is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return buoy
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/locations",
+    response_model=list[BuoyLocationReading],
+    tags=["buoys"],
+)
+def list_buoy_locations(
+    buoy_id: str,
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[BuoyLocationReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_locations(buoy_id, limit)
 
 
 @app.post(

@@ -20,6 +20,16 @@ class BuoyLocationUpdate(BaseModel):
     longitude: float = Field(ge=-180, le=180)
 
 
+class BuoyLocationReadingCreate(BuoyLocationUpdate):
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BuoyLocationReading(BuoyLocationReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class Buoy(BaseModel):
     id: str
     name: str
@@ -96,7 +106,7 @@ class TelemetryBatchCreate(BaseModel):
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
     battery: BatteryReadingCreate | None = None
-    location: BuoyLocationUpdate | None = None
+    location: BuoyLocationReadingCreate | None = None
 
     @model_validator(mode="after")
     def must_contain_readings(self) -> "TelemetryBatchCreate":

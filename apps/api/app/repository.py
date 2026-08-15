@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .entities import (
     BuoyEntity,
+    BuoyLocationReadingEntity,
     BatteryReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
@@ -15,6 +16,7 @@ from .models import (
     Buoy,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
+    BuoyLocationReading,
     PressureReading,
     SalinityReading,
     BatteryReading,
@@ -57,11 +59,41 @@ class BuoyRepository:
         buoy = self.get_buoy(buoy_id)
         if buoy is None:
             return None
-        buoy.latitude = update.latitude
-        buoy.longitude = update.longitude
+        self.add_location(
+            BuoyLocationReading(
+                buoy_id=buoy_id,
+                latitude=update.latitude,
+                longitude=update.longitude,
+            )
+        )
+        return self.get_buoy(buoy_id)
+
+    def add_location(self, reading: BuoyLocationReading) -> BuoyLocationReadingEntity:
+        entity = BuoyLocationReadingEntity(
+            buoy_id=reading.buoy_id,
+            latitude=reading.latitude,
+            longitude=reading.longitude,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
         self.db.commit()
-        self.db.refresh(buoy)
-        return buoy
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None:
+            buoy.latitude = reading.latitude
+            buoy.longitude = reading.longitude
+            self.db.commit()
+            self.db.refresh(buoy)
+        return entity
+
+    def list_locations(self, buoy_id: str, limit: int) -> list[BuoyLocationReadingEntity]:
+        query = (
+            select(BuoyLocationReadingEntity)
+            .where(BuoyLocationReadingEntity.buoy_id == buoy_id)
+            .order_by(BuoyLocationReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        return list(self.db.scalars(query).all())
 
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
         return self.db.get(BuoyEntity, buoy_id)

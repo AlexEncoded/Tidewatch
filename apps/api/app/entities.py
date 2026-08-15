@@ -28,6 +28,20 @@ class BuoyEntity(Base):
     battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    location_readings: Mapped[list["BuoyLocationReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
+
+
+class BuoyLocationReadingEntity(Base):
+    __tablename__ = "buoy_location_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="location_readings")
 
 
 class TemperatureReadingEntity(Base):

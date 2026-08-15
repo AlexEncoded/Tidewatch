@@ -44,8 +44,10 @@ severidad `warning` para revisión preventiva.
 | `GET` | `/api/v1/buoys/stale` | Boyas activas sin comunicación |
 | `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
 | `PATCH` | `/api/v1/buoys/{id}/location` | Actualizar coordenadas |
+| `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones |
 
 La respuesta de ingestión incluye `accepted_readings` y el desglose
 `accepted_by_family` para confirmar cuántas lecturas de cada sensor se han
 procesado. El lote puede incluir opcionalmente `location` para actualizar las
-coordenadas de la boya en la misma operación.
+coordenadas de la boya en la misma operación. Cada posición se conserva con su
+marca temporal para reconstruir desplazamientos.
