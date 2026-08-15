@@ -17,3 +17,11 @@ groups:
         annotations:
           summary: "Tidewatch redundant sensor is degraded"
           description: "One sensor family is reporting a significant difference between channels A and B."
+      - alert: TidewatchInvalidReadings
+        expr: sum by (buoy_id) (increase(tidewatch_reading_quality_total{quality="invalid"}[10m])) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch buoy is producing invalid readings"
+          description: "The buoy has produced at least one invalid sensor reading during the last ten minutes."

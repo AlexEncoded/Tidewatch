@@ -13,7 +13,9 @@ posible.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y
-sensores redundantes degradados en `alerts/tidewatch.rules.yml`.
+sensores redundantes degradados y lecturas inválidas recientes en
+`alerts/tidewatch.rules.yml`. La métrica `tidewatch_reading_quality_total`
+permite separar la calidad por boya, familia de sensor y canal.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

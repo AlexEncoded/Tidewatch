@@ -48,3 +48,9 @@ buoy_last_seen_timestamp_seconds = Gauge(
     "Unix timestamp of the most recent reading for each buoy.",
     ["buoy_id"],
 )
+
+reading_quality_total = Counter(
+    "tidewatch_reading_quality_total",
+    "Total sensor readings accepted by quality, family and channel.",
+    ["buoy_id", "sensor_family", "sensor_channel", "quality"],
+)

@@ -42,10 +42,22 @@ from .metrics import (
     current_salinity_psu,
     current_temperature_celsius,
     pressure_readings_total,
+    reading_quality_total,
     salinity_readings_total,
     sensor_degraded,
     temperature_readings_total,
 )
+
+
+def record_quality_metric(
+    buoy_id: str, sensor_family: str, sensor_channel: str, quality: str
+) -> None:
+    reading_quality_total.labels(
+        buoy_id=buoy_id,
+        sensor_family=sensor_family,
+        sensor_channel=sensor_channel,
+        quality=quality,
+    ).inc()
 
 
 @asynccontextmanager
@@ -117,6 +129,7 @@ def ingest_telemetry(
         current_temperature_celsius.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.temperature_celsius)
+        record_quality_metric(buoy_id, "temperature", reading.sensor_channel, reading.quality)
         buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
             reading.measured_at.timestamp()
         )
@@ -131,6 +144,7 @@ def ingest_telemetry(
         current_pressure_kpa.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.pressure_kpa)
+        record_quality_metric(buoy_id, "pressure", reading.sensor_channel, reading.quality)
         accepted += 1
 
     for reading_payload in payload.salinity:
@@ -142,6 +156,7 @@ def ingest_telemetry(
         current_salinity_psu.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.salinity_psu)
+        record_quality_metric(buoy_id, "salinity", reading.sensor_channel, reading.quality)
         accepted += 1
 
     if payload.battery is not None:
@@ -234,6 +249,7 @@ def record_temperature(
     current_temperature_celsius.labels(
         buoy_id=buoy_id, sensor_channel=reading.sensor_channel
     ).set(reading.temperature_celsius)
+    record_quality_metric(buoy_id, "temperature", reading.sensor_channel, reading.quality)
     buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(reading.measured_at.timestamp())
     return saved_reading
 
@@ -277,6 +293,7 @@ def record_pressure(
     current_pressure_kpa.labels(
         buoy_id=buoy_id, sensor_channel=reading.sensor_channel
     ).set(reading.pressure_kpa)
+    record_quality_metric(buoy_id, "pressure", reading.sensor_channel, reading.quality)
     return saved_reading
 
 
@@ -341,6 +358,7 @@ def record_salinity(
     current_salinity_psu.labels(
         buoy_id=buoy_id, sensor_channel=reading.sensor_channel
     ).set(reading.salinity_psu)
+    record_quality_metric(buoy_id, "salinity", reading.sensor_channel, reading.quality)
     return saved_reading
 
 

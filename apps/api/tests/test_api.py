@@ -167,6 +167,11 @@ def test_reading_quality_is_persisted() -> None:
 
     assert response.status_code == 201
     assert response.json()["quality"] == "suspect"
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert "tidewatch_reading_quality_total" in metrics.text
+    assert f'buoy_id="{buoy["id"]}"' in metrics.text
+    assert 'quality="suspect"' in metrics.text
 
 
 def test_reading_quality_is_validated() -> None:
