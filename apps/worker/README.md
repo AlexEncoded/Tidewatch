@@ -20,3 +20,5 @@ extremo a extremo.
 El simulador crea la boya automáticamente si todavía no existe.
 Los errores de validación `4xx` no se reintentan; los errores temporales de red
 o del servidor usan backoff exponencial.
+
+Los tests del worker se ejecutan con `pytest` en GitHub Actions.
