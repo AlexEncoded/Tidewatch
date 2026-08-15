@@ -21,4 +21,5 @@ muestra la velocidad media y distancia recorrida cuando existen posiciones
 suficientes para calcular el movimiento. El mapa dibuja además la trayectoria
 reciente de cada boya a partir de su histórico de posiciones.
 El botón `Export positions` descarga el snapshot CSV de posiciones de toda la
-flota para análisis offline.
+flota para análisis offline. La tarjeta también compara el nivel de batería de
+las unidades físicas A/B y señala divergencias.
