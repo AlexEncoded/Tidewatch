@@ -3,6 +3,7 @@ const errorMessage = document.querySelector("#error");
 const refreshButton = document.querySelector("#refresh");
 let fleetMap;
 let buoyMarkers;
+let buoyTracks;
 
 function formatTemperature(reading) {
   return reading ? `${reading.temperature_celsius.toFixed(1)} °C` : "No reading";
@@ -54,7 +55,7 @@ function escapeHtml(value) {
   })[character]);
 }
 
-function renderMap(buoys) {
+function renderMap(buoys, locationHistory) {
   if (typeof L === "undefined") return;
 
   const locatedBuoys = buoys.filter(
@@ -68,15 +69,24 @@ function renderMap(buoys) {
       maxZoom: 18,
     }).addTo(fleetMap);
     buoyMarkers = L.layerGroup().addTo(fleetMap);
+    buoyTracks = L.layerGroup().addTo(fleetMap);
   }
 
   buoyMarkers.clearLayers();
+  buoyTracks.clearLayers();
   locatedBuoys.forEach(({ buoy }) => {
     const marker = L.marker([buoy.latitude, buoy.longitude]);
     marker.bindPopup(
       `<strong>${escapeHtml(buoy.name)}</strong><br>Status: ${escapeHtml(buoy.status)}<br>${escapeHtml(buoy.id)}`,
     );
     marker.addTo(buoyMarkers);
+    const history = locationHistory[buoy.id] ?? [];
+    if (history.length > 1) {
+      L.polyline(
+        history.slice().reverse().map(({ latitude, longitude }) => [latitude, longitude]),
+        { color: "#66d9ef", weight: 2, opacity: 0.75, dashArray: "6 8" },
+      ).addTo(buoyTracks);
+    }
   });
 
   if (locatedBuoys.length) {
@@ -91,13 +101,20 @@ function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "Never";
 }
 
-function renderBuoys(buoys, analyses, sensorHealth, qualitySummaries, movements) {
+function renderBuoys(
+  buoys,
+  analyses,
+  sensorHealth,
+  qualitySummaries,
+  movements,
+  locationHistory,
+) {
   document.querySelector("#total-buoys").textContent = buoys.length;
   document.querySelector("#active-buoys").textContent = buoys.filter(
     ({ buoy }) => buoy.status === "active",
   ).length;
   document.querySelector("#last-refresh").textContent = new Date().toLocaleTimeString();
-  renderMap(buoys);
+  renderMap(buoys, locationHistory);
 
   if (!buoys.length) {
     grid.innerHTML = '<p class="empty">No buoys registered yet.</p>';
@@ -209,7 +226,25 @@ async function loadBuoys() {
         return movementResponse.ok ? movementResponse.json() : null;
       }),
     );
-    renderBuoys(buoys, analyses, sensorHealth, qualitySummaries, movements);
+    const locationHistoryEntries = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const locationsResponse = await fetch(
+          `/api/v1/buoys/${buoy.id}/locations?limit=50`,
+        );
+        return [
+          buoy.id,
+          locationsResponse.ok ? await locationsResponse.json() : [],
+        ];
+      }),
+    );
+    renderBuoys(
+      buoys,
+      analyses,
+      sensorHealth,
+      qualitySummaries,
+      movements,
+      Object.fromEntries(locationHistoryEntries),
+    );
   } catch (error) {
     errorMessage.textContent = `Unable to load fleet data: ${error.message}`;
     errorMessage.hidden = false;

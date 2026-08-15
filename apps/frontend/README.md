@@ -18,4 +18,5 @@ Cada tarjeta muestra también el resumen acumulado de calidad de datos de la
 boya: lecturas `good`, `suspect` e `invalid`. Las lecturas inválidas siguen
 siendo visibles en el histórico, pero no participan en los análisis. También
 muestra la velocidad media y distancia recorrida cuando existen posiciones
-suficientes para calcular el movimiento.
+suficientes para calcular el movimiento. El mapa dibuja además la trayectoria
+reciente de cada boya a partir de su histórico de posiciones.
