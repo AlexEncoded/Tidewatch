@@ -577,11 +577,15 @@ def record_battery(
     response_model=BatteryReading | None,
     tags=["battery"],
 )
-def latest_battery(buoy_id: str, db: Session = Depends(get_db)) -> BatteryReading | None:
+def latest_battery(
+    buoy_id: str,
+    device_id: str | None = Query(default=None, pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> BatteryReading | None:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.latest_battery(buoy_id)
+    return repository.latest_battery(buoy_id, device_id)
 
 
 @app.get(

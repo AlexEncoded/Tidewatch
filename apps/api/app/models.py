@@ -92,6 +92,7 @@ class SalinityReading(SalinityReadingCreate):
 
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
+    device_id: Literal["A", "B"] = "A"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

@@ -30,7 +30,7 @@ severidad `warning` para revisión preventiva.
 | `GET` | `/api/v1/buoys/{id}/salinity` | Consultar salinidad por canal |
 | `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería |
 | `POST` | `/api/v1/buoys/{id}/telemetry` | Ingerir un lote de telemetría no vacío |
-| `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería |
+| `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería (`device_id` opcional) |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |

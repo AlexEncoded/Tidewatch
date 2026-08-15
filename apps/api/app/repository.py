@@ -238,6 +238,7 @@ class BuoyRepository:
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:
         entity = BatteryReadingEntity(
             buoy_id=reading.buoy_id,
+            device_id=reading.device_id,
             battery_percent=reading.battery_percent,
             measured_at=reading.measured_at,
         )
@@ -252,13 +253,17 @@ class BuoyRepository:
             self.db.commit()
         return entity
 
-    def latest_battery(self, buoy_id: str) -> BatteryReadingEntity | None:
+    def latest_battery(
+        self, buoy_id: str, device_id: str | None = None
+    ) -> BatteryReadingEntity | None:
         query = (
             select(BatteryReadingEntity)
             .where(BatteryReadingEntity.buoy_id == buoy_id)
             .order_by(BatteryReadingEntity.measured_at.desc())
             .limit(1)
         )
+        if device_id is not None:
+            query = query.where(BatteryReadingEntity.device_id == device_id)
         return self.db.scalars(query).first()
 
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
