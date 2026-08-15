@@ -105,6 +105,21 @@ class BuoyRepository:
             query = query.where(BuoyLocationReadingEntity.measured_at <= until)
         return list(self.db.scalars(query).all())
 
+    def list_all_locations(
+        self,
+        limit: int,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[BuoyLocationReadingEntity]:
+        query = select(BuoyLocationReadingEntity).order_by(
+            BuoyLocationReadingEntity.measured_at.desc()
+        ).limit(limit)
+        if since is not None:
+            query = query.where(BuoyLocationReadingEntity.measured_at >= since)
+        if until is not None:
+            query = query.where(BuoyLocationReadingEntity.measured_at <= until)
+        return list(self.db.scalars(query).all())
+
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
         return self.db.get(BuoyEntity, buoy_id)
 

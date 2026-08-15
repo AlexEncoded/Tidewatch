@@ -46,6 +46,7 @@ severidad `warning` para revisión preventiva.
 | `PATCH` | `/api/v1/buoys/{id}/location` | Actualizar coordenadas |
 | `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones (`limit`, `since`, `until`) |
 | `GET` | `/api/v1/buoys/{id}/locations/export` | Exportar posiciones a CSV |
+| `GET` | `/api/v1/locations/export` | Exportar posiciones de toda la flota a CSV |
 | `GET` | `/api/v1/buoys/{id}/movement-analysis` | Estimar distancia y deriva |
 
 La respuesta de ingestión incluye `accepted_readings` y el desglose
