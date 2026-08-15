@@ -53,6 +53,11 @@ export default function (data) {
     "telemetry batch accepted": (response) => response.status === 202,
     "telemetry batch contains seven readings": (response) =>
       response.json("accepted_readings") === 7,
+    "telemetry batch reports families": (response) =>
+      response.json("accepted_by_family.temperature") === 2 &&
+      response.json("accepted_by_family.pressure") === 2 &&
+      response.json("accepted_by_family.salinity") === 2 &&
+      response.json("accepted_by_family.battery") === 1,
   });
 
   const fleet = http.get(`${baseUrl}/api/v1/buoys`);

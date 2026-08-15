@@ -125,6 +125,12 @@ def ingest_telemetry(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     accepted = 0
+    accepted_by_family = {
+        "temperature": 0,
+        "pressure": 0,
+        "salinity": 0,
+        "battery": 0,
+    }
     for reading_payload in payload.temperatures:
         reading = TemperatureReading(buoy_id=buoy_id, **reading_payload.model_dump())
         repository.add_temperature(reading)
@@ -138,6 +144,7 @@ def ingest_telemetry(
         buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
             reading.measured_at.timestamp()
         )
+        accepted_by_family["temperature"] += 1
         accepted += 1
 
     for reading_payload in payload.pressures:
@@ -150,6 +157,7 @@ def ingest_telemetry(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.pressure_kpa)
         record_quality_metric(buoy_id, "pressure", reading.sensor_channel, reading.quality)
+        accepted_by_family["pressure"] += 1
         accepted += 1
 
     for reading_payload in payload.salinity:
@@ -162,15 +170,21 @@ def ingest_telemetry(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.salinity_psu)
         record_quality_metric(buoy_id, "salinity", reading.sensor_channel, reading.quality)
+        accepted_by_family["salinity"] += 1
         accepted += 1
 
     if payload.battery is not None:
         battery = BatteryReading(buoy_id=buoy_id, **payload.battery.model_dump())
         repository.add_battery(battery)
         battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
+        accepted_by_family["battery"] += 1
         accepted += 1
 
-    return TelemetryIngestResponse(buoy_id=buoy_id, accepted_readings=accepted)
+    return TelemetryIngestResponse(
+        buoy_id=buoy_id,
+        accepted_readings=accepted,
+        accepted_by_family=accepted_by_family,
+    )
 
 
 @app.get("/api/v1/buoys", response_model=list[BuoySummary], tags=["buoys"])

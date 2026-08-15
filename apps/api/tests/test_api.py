@@ -76,7 +76,16 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     )
 
     assert response.status_code == 202
-    assert response.json() == {"buoy_id": buoy_id, "accepted_readings": 5}
+    assert response.json() == {
+        "buoy_id": buoy_id,
+        "accepted_readings": 5,
+        "accepted_by_family": {
+            "temperature": 1,
+            "pressure": 2,
+            "salinity": 1,
+            "battery": 1,
+        },
+    }
     summary = client.get("/api/v1/buoys").json()[0]
     assert summary["latest_temperature"]["temperature_celsius"] == 19.8
     assert summary["latest_pressure"]["pressure_kpa"] == 101.4

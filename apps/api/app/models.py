@@ -102,6 +102,7 @@ class TelemetryBatchCreate(BaseModel):
 class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int
+    accepted_by_family: dict[str, int]
 
 
 class PressureAnalysis(BaseModel):
