@@ -16,7 +16,7 @@ Endpoints locales:
 - Metrics: <http://localhost:8000/metrics>
 
 The simulator creates the configured buoy and emits channels A/B for the
-environmental sensors plus a battery reading for device A every ten seconds
+environmental sensors plus battery readings for devices A and B every ten seconds
 using the batch telemetry endpoint. The API also accepts direct battery
 readings for device B, as well as two battery readings in the same batch, and
 compares both units through `battery-health`. The

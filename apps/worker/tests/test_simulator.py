@@ -52,3 +52,9 @@ def test_send_telemetry_does_not_retry_client_error(monkeypatch: pytest.MonkeyPa
         simulator.send_telemetry(client, "TW-TEST", {"temperatures": []})
 
     assert client.calls == 1
+
+
+def test_battery_reading_discharges_one_device(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.03)
+
+    assert simulator.battery_reading(100) == 99.97

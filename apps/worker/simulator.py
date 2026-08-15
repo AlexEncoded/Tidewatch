@@ -37,6 +37,11 @@ def salinity_reading(previous: float) -> float:
     return round(max(0, min(45, previous + drift)), 3)
 
 
+def battery_reading(previous: float) -> float:
+    """Simulate gradual battery discharge for one physical buoy device."""
+    return max(0, round(previous - random.uniform(0.01, 0.05), 2))
+
+
 def wait_for_api(client: httpx.Client) -> None:
     while True:
         try:
@@ -95,7 +100,8 @@ def run() -> None:
         current_temperature = BASE_TEMPERATURE
         current_pressure = BASE_PRESSURE
         current_salinity = BASE_SALINITY
-        current_battery = BASE_BATTERY
+        current_battery_a = BASE_BATTERY
+        current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
         current_longitude = BASE_LONGITUDE
         print(f"Simulating buoy {buoy_id} every {INTERVAL_SECONDS:g}s")
@@ -104,7 +110,8 @@ def run() -> None:
             current_temperature = temperature_reading(current_temperature)
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
-            current_battery = max(0, round(current_battery - random.uniform(0.01, 0.05), 2))
+            current_battery_a = battery_reading(current_battery_a)
+            current_battery_b = battery_reading(current_battery_b)
             current_latitude = max(-90, min(90, current_latitude + random.uniform(-0.001, 0.001)))
             current_longitude = max(-180, min(180, current_longitude + random.uniform(-0.001, 0.001)))
             measured_at = datetime.now(timezone.utc).isoformat()
@@ -145,10 +152,18 @@ def run() -> None:
                     }
                     for channel, values in readings.items()
                 ],
-                "battery": {
-                    "battery_percent": current_battery,
-                    "measured_at": measured_at,
-                },
+                "battery": [
+                    {
+                        "battery_percent": current_battery_a,
+                        "device_id": "A",
+                        "measured_at": measured_at,
+                    },
+                    {
+                        "battery_percent": current_battery_b,
+                        "device_id": "B",
+                        "measured_at": measured_at,
+                    },
+                ],
                 "location": {
                     "latitude": round(current_latitude, 6),
                     "longitude": round(current_longitude, 6),
@@ -158,7 +173,7 @@ def run() -> None:
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
-                f"battery {current_battery:.1f}% | "
+                f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
             time.sleep(INTERVAL_SECONDS)
