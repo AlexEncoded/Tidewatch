@@ -33,6 +33,7 @@ una señal desde el dispositivo hasta una operación en producción.
 - Salinidad en PSU para enriquecer la telemetría oceanográfica.
 - Canales redundantes A/B y endpoint de comparación de salud de sensores.
 - Metadatos básicos de calidad (`good`, `suspect`, `invalid`) por lectura.
+- Las lecturas `invalid` se conservan para auditoría y se excluyen de análisis.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
 - Cola operativa de incidencias para mantenimiento.
 - Métricas Prometheus y dashboard Grafana.

@@ -8,6 +8,9 @@ levantada: <http://localhost:8000/docs>.
 Todas las lecturas incluyen `measured_at`, `sensor_channel` (`A` o `B`) y
 `quality` (`good`, `suspect` o `invalid`).
 
+Las lecturas `invalid` se conservan para auditoría, pero no participan en los
+análisis de tendencia, oleaje ni generación de alertas.
+
 | Método | Ruta | Propósito |
 |---|---|---|
 | `POST` | `/api/v1/buoys` | Registrar una boya |

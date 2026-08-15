@@ -250,6 +250,7 @@ def pressure_analysis(
     readings = [
         PressureReading.model_validate(reading)
         for reading in repository.list_pressures(buoy_id, window)
+        if reading.quality != "invalid"
     ]
     return analyze_pressure(buoy_id, readings)
 
@@ -461,6 +462,7 @@ def temperature_analysis(
     readings = [
         TemperatureReading.model_validate(reading)
         for reading in repository.list_temperatures(buoy_id, window)
+        if reading.quality != "invalid"
     ]
     return analyze_temperatures(buoy_id, readings, threshold)
 
@@ -482,6 +484,7 @@ def temperature_alerts(
         readings = [
             TemperatureReading.model_validate(reading)
             for reading in repository.list_temperatures(buoy.id, window)
+            if reading.quality != "invalid"
         ]
         analysis = analyze_temperatures(buoy.id, readings, threshold)
         if analysis.is_anomaly and analysis.latest_temperature is not None:
@@ -532,6 +535,7 @@ def evaluate_temperature_alerts(
         readings = [
             TemperatureReading.model_validate(reading)
             for reading in repository.list_temperatures(buoy.id, window)
+            if reading.quality != "invalid"
         ]
         analysis = analyze_temperatures(buoy.id, readings, threshold)
         if not analysis.is_anomaly or not readings:

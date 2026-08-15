@@ -150,6 +150,35 @@ def test_reading_quality_is_validated() -> None:
     assert response.status_code == 422
 
 
+def test_invalid_temperature_is_kept_but_excluded_from_analysis() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Quality Analysis Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+    for index, temperature in enumerate((20, 20.1, 19.9)):
+        client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+            },
+        )
+
+    invalid = client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={
+            "temperature_celsius": 45,
+            "quality": "invalid",
+            "measured_at": (measured_at + timedelta(minutes=3)).isoformat(),
+        },
+    )
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/temperature-analysis")
+    readings = client.get(f"/api/v1/buoys/{buoy_id}/temperatures?limit=10")
+
+    assert invalid.status_code == 201
+    assert analysis.status_code == 200
+    assert analysis.json()["sample_count"] == 3
+    assert readings.json()[0]["quality"] == "invalid"
+
+
 def test_pressure_must_be_in_sensor_range() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Pressure Range Buoy"}).json()
 
