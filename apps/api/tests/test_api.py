@@ -160,6 +160,36 @@ def test_buoy_location_rejects_invalid_coordinates() -> None:
     assert response.status_code == 422
 
 
+def test_movement_analysis_estimates_distance_and_speed() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Drifting Buoy", "latitude": 0, "longitude": 0}
+    ).json()["id"]
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    for index, longitude in enumerate((0, 0.01, 0.02)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "temperatures": [{"temperature_celsius": 20}],
+                "location": {
+                    "latitude": 0,
+                    "longitude": longitude,
+                    "measured_at": (start + timedelta(hours=index)).isoformat(),
+                },
+            },
+        )
+        assert response.status_code == 202
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/movement-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["sample_count"] == 3
+    assert 2200 < analysis.json()["distance_travelled_m"] < 2250
+    assert analysis.json()["displacement_m"] == analysis.json()["distance_travelled_m"]
+    assert 0.6 < analysis.json()["average_speed_mps"] < 0.7
+    assert analysis.json()["confidence"] == "experimental"
+
+
 def test_stale_buoy_is_reported_for_maintenance() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Silent Buoy"}).json()["id"]
     client.post(

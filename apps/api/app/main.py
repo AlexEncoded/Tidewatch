@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .analytics import analyze_pressure, analyze_temperatures
+from .analytics import analyze_movement, analyze_pressure, analyze_temperatures
 from .models import (
     Buoy,
     BuoyCreate,
@@ -22,6 +22,7 @@ from .models import (
     BatteryReading,
     BatteryReadingCreate,
     MaintenanceIssue,
+    MovementAnalysis,
     PressureReading,
     PressureReadingCreate,
     PressureAnalysis,
@@ -278,6 +279,22 @@ def list_buoy_locations(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_locations(buoy_id, limit)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/movement-analysis",
+    response_model=MovementAnalysis,
+    tags=["buoys"],
+)
+def buoy_movement_analysis(
+    buoy_id: str,
+    window: int = Query(default=100, ge=2, le=500),
+    db: Session = Depends(get_db),
+) -> MovementAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return analyze_movement(buoy_id, repository.list_locations(buoy_id, window))
 
 
 @app.post(
