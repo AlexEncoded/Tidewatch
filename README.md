@@ -195,6 +195,8 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 - [Seguridad](docs/security.md)
 - [Disaster recovery](docs/disaster-recovery.md)
 - [Runbooks](runbooks/)
+- [Load tests](load-tests/)
+- [Chaos experiments](chaos/)
 - [Postmortems](postmortems/)
 
 ## Estado del proyecto
