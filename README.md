@@ -89,7 +89,8 @@ esta fase de aprendizaje.
 - [x] Comparar baterías A/B y detectar unidades energéticas degradadas.
 - [x] Exponer deriva y salud energética en Prometheus, alertas y Grafana.
 - [ ] Calibrar el oleaje con datos reales.
-- [ ] Crear procesamiento asíncrono real para telemetría y soportar lotes de batería A/B.
+- [x] Soportar lotes de batería A/B en la ingesta de telemetría.
+- [ ] Crear procesamiento asíncrono real para telemetría.
 - [ ] Incorporar notificaciones externas de mantenimiento.
 - [ ] Añadir entornos `staging` y `production`.
 - [ ] Implementar blue/green o canary deployments.
