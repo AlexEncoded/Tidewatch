@@ -30,6 +30,13 @@ function formatBatteryHealth(health) {
   return `<span class="battery-health battery-health-${health.status}">${details}</span>`;
 }
 
+function formatBatteryAutonomy(analysis) {
+  if (!analysis || analysis.estimated_hours_remaining == null) {
+    return "Insufficient data";
+  }
+  return `${analysis.estimated_hours_remaining.toFixed(1)} h`;
+}
+
 function formatWave(analysis) {
   return analysis?.estimated_wave_height_m == null
     ? "Insufficient data"
@@ -117,6 +124,7 @@ function renderBuoys(
   qualitySummaries,
   movements,
   batteryHealth,
+  batteryAnalyses,
   locationHistory,
 ) {
   document.querySelector("#total-buoys").textContent = buoys.length;
@@ -139,6 +147,7 @@ function renderBuoys(
       const quality = qualitySummaries[index];
       const movement = movements[index];
       const batteryStatus = batteryHealth[index];
+      const batteryAnalysis = batteryAnalyses[index];
       const seaState = analysis?.sea_state ?? "unknown";
       const sensorStatus = health?.status ?? "unknown";
       const movementSpeed = movement?.average_speed_mps;
@@ -162,6 +171,7 @@ function renderBuoys(
             <div><dt>Salinity</dt><dd>${formatSalinity(latest_salinity)}</dd></div>
             <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Battery A/B</dt><dd>${formatBatteryHealth(batteryStatus)}</dd></div>
+            <div><dt>Autonomy A/B</dt><dd>${formatBatteryAutonomy(batteryAnalysis.A)} / ${formatBatteryAutonomy(batteryAnalysis.B)}</dd></div>
             <div><dt>Wave estimate</dt><dd>${formatWave(analysis)}</dd></div>
             <div><dt>Sea state</dt><dd><span class="sea-state sea-state-${seaState}">${seaState}</span></dd></div>
             <div><dt>Movement</dt><dd><span class="movement movement-${movementStatus}">${formatMovement(movement)}</span></dd></div>
@@ -257,6 +267,19 @@ async function loadBuoys() {
         return healthResponse.ok ? healthResponse.json() : null;
       }),
     );
+    const batteryAnalyses = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const [analysisA, analysisB] = await Promise.all(
+          ["A", "B"].map(async (deviceId) => {
+            const analysisResponse = await fetch(
+              `/api/v1/buoys/${buoy.id}/battery-analysis?device_id=${deviceId}`,
+            );
+            return analysisResponse.ok ? analysisResponse.json() : null;
+          }),
+        );
+        return { A: analysisA, B: analysisB };
+      }),
+    );
     renderBuoys(
       buoys,
       analyses,
@@ -264,6 +287,7 @@ async function loadBuoys() {
       qualitySummaries,
       movements,
       batteryHealth,
+      batteryAnalyses,
       Object.fromEntries(locationHistoryEntries),
     );
   } catch (error) {

@@ -23,3 +23,5 @@ reciente de cada boya a partir de su histórico de posiciones.
 El botón `Export positions` descarga el snapshot CSV de posiciones de toda la
 flota para análisis offline. La tarjeta también compara el nivel de batería de
 las unidades físicas A/B y señala divergencias.
+También muestra la autonomía estimada de cada unidad cuando existe suficiente
+histórico de batería.
