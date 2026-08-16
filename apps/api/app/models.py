@@ -112,6 +112,18 @@ class BatteryHealth(BaseModel):
     checked_at: datetime
 
 
+class BatteryAnalysis(BaseModel):
+    buoy_id: str
+    device_id: str
+    sample_count: int
+    latest_percent: float | None = None
+    oldest_percent: float | None = None
+    change_percent: float | None = None
+    discharge_rate_percent_per_hour: float | None = None
+    estimated_hours_remaining: float | None = None
+    confidence: str = "insufficient_data"
+
+
 class TelemetryBatchCreate(BaseModel):
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)

@@ -36,6 +36,7 @@ severidad `warning` para revisión preventiva.
 | `POST` | `/api/v1/buoys/{id}/telemetry` | Ingerir un lote de telemetría no vacío |
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería (`device_id` opcional) |
 | `GET` | `/api/v1/buoys/{id}/battery/history` | Consultar histórico de batería por unidad |
+| `GET` | `/api/v1/buoys/{id}/battery-analysis` | Estimar descarga y autonomía por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery-health` | Comparar baterías A/B |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |

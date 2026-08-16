@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .analytics import (
     analyze_battery_health,
+    analyze_battery,
     analyze_movement,
     analyze_pressure,
     analyze_temperatures,
@@ -29,6 +30,7 @@ from .models import (
     BatteryReading,
     BatteryReadingCreate,
     BatteryHealth,
+    BatteryAnalysis,
     MaintenanceIssue,
     MovementAnalysis,
     PressureReading,
@@ -615,6 +617,27 @@ def battery_history(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_batteries(buoy_id, limit, device_id)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/battery-analysis",
+    response_model=BatteryAnalysis,
+    tags=["battery"],
+)
+def battery_analysis(
+    buoy_id: str,
+    device_id: str = Query(default="A", pattern="^(A|B)$"),
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> BatteryAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    readings = [
+        BatteryReading.model_validate(reading)
+        for reading in repository.list_batteries(buoy_id, window, device_id)
+    ]
+    return analyze_battery(buoy_id, device_id, readings)
 
 
 @app.get(

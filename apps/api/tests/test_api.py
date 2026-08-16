@@ -657,6 +657,12 @@ def test_low_battery_creates_maintenance_issue() -> None:
     assert battery_history.status_code == 200
     assert battery_history.json()[0]["device_id"] == "B"
     assert battery_history.json()[0]["battery_percent"] == 96
+    battery_analysis = client.get(
+        f"/api/v1/buoys/{buoy_id}/battery-analysis?device_id=A"
+    )
+    assert battery_analysis.status_code == 200
+    assert battery_analysis.json()["sample_count"] == 1
+    assert battery_analysis.json()["confidence"] == "insufficient_data"
     health = client.get(f"/api/v1/buoys/{buoy_id}/battery-health")
     assert health.status_code == 200
     assert health.json()["status"] == "degraded"
@@ -691,6 +697,30 @@ def test_missing_redundant_battery_device_creates_maintenance_issue() -> None:
     )
     assert missing_issue["buoy_id"] == buoy_id
     assert "device B" in missing_issue["message"]
+
+
+def test_battery_analysis_estimates_discharge_rate() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Battery Analysis Buoy"}).json()["id"]
+    now = datetime.now(timezone.utc)
+    for hours_ago, battery_percent in ((2, 80), (1, 70), (0, 60)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/battery",
+            json={
+                "battery_percent": battery_percent,
+                "device_id": "A",
+                "measured_at": (now - timedelta(hours=hours_ago)).isoformat(),
+            },
+        )
+        assert response.status_code == 201
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/battery-analysis?device_id=A")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["sample_count"] == 3
+    assert analysis.json()["change_percent"] == -20
+    assert analysis.json()["discharge_rate_percent_per_hour"] == 10
+    assert analysis.json()["estimated_hours_remaining"] == 6
+    assert analysis.json()["confidence"] == "experimental"
     metrics = client.get("/metrics")
     assert "tidewatch_redundant_device_missing" in metrics.text
     assert f'buoy_id="{buoy_id}"' in metrics.text

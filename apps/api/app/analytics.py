@@ -10,6 +10,7 @@ from .models import (
     MovementAnalysis,
     BatteryHealth,
     BatteryReading,
+    BatteryAnalysis,
 )
 
 
@@ -100,6 +101,36 @@ def analyze_battery_health(
         delta_percent=delta,
         degraded_devices=degraded_devices,
         checked_at=datetime.now(timezone.utc),
+    )
+
+
+def analyze_battery(
+    buoy_id: str, device_id: str, readings: list[BatteryReading]
+) -> BatteryAnalysis:
+    if not readings:
+        return BatteryAnalysis(buoy_id=buoy_id, device_id=device_id, sample_count=0)
+
+    latest = readings[0]
+    oldest = readings[-1]
+    change = round(latest.battery_percent - oldest.battery_percent, 2)
+    elapsed_hours = (latest.measured_at - oldest.measured_at).total_seconds() / 3600
+    discharge_rate = None
+    estimated_hours = None
+    if len(readings) >= 2 and elapsed_hours > 0:
+        discharge_rate = round(max(0, -change) / elapsed_hours, 3)
+        if discharge_rate > 0:
+            estimated_hours = round(latest.battery_percent / discharge_rate, 2)
+
+    return BatteryAnalysis(
+        buoy_id=buoy_id,
+        device_id=device_id,
+        sample_count=len(readings),
+        latest_percent=latest.battery_percent,
+        oldest_percent=oldest.battery_percent,
+        change_percent=change,
+        discharge_rate_percent_per_hour=discharge_rate,
+        estimated_hours_remaining=estimated_hours,
+        confidence="experimental" if len(readings) >= 2 and discharge_rate is not None else "insufficient_data",
     )
 
 
