@@ -216,6 +216,8 @@ class BuoySummary(BaseModel):
     latest_pressure: PressureReading | None = None
     latest_salinity: SalinityReading | None = None
     latest_battery: BatteryReading | None = None
+    latest_battery_a: BatteryReading | None = None
+    latest_battery_b: BatteryReading | None = None
 
 
 class TemperatureAnalysis(BaseModel):

@@ -227,6 +227,8 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_pressure=repository.latest_pressure(buoy.id),
             latest_salinity=repository.latest_salinity(buoy.id),
             latest_battery=repository.latest_battery(buoy.id),
+            latest_battery_a=repository.latest_battery(buoy.id, "A"),
+            latest_battery_b=repository.latest_battery(buoy.id, "B"),
         )
         for buoy in repository.list_buoys()
     ]

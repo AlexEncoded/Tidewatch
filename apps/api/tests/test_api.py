@@ -124,6 +124,9 @@ def test_batch_telemetry_accepts_redundant_batteries() -> None:
     assert response.json()["accepted_by_family"]["battery"] == 2
     assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A").json()["battery_percent"] == 92
     assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=B").json()["battery_percent"] == 88
+    summary = client.get("/api/v1/buoys").json()[0]
+    assert summary["latest_battery_a"]["battery_percent"] == 92
+    assert summary["latest_battery_b"]["battery_percent"] == 88
 
 
 def test_batch_telemetry_rejects_duplicate_battery_devices() -> None:
