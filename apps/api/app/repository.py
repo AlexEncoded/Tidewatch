@@ -159,8 +159,10 @@ class BuoyRepository:
             query = query.where(TemperatureReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
-    def latest_temperature(self, buoy_id: str) -> TemperatureReadingEntity | None:
-        readings = self.list_temperatures(buoy_id, limit=1, sensor_channel="A")
+    def latest_temperature(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> TemperatureReadingEntity | None:
+        readings = self.list_temperatures(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_pressure(self, reading: PressureReading) -> PressureReadingEntity:
@@ -195,8 +197,10 @@ class BuoyRepository:
             query = query.where(PressureReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
-    def latest_pressure(self, buoy_id: str) -> PressureReadingEntity | None:
-        readings = self.list_pressures(buoy_id, limit=1, sensor_channel="A")
+    def latest_pressure(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> PressureReadingEntity | None:
+        readings = self.list_pressures(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_salinity(self, reading: SalinityReading) -> SalinityReadingEntity:
@@ -231,8 +235,10 @@ class BuoyRepository:
             query = query.where(SalinityReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
-    def latest_salinity(self, buoy_id: str) -> SalinityReadingEntity | None:
-        readings = self.list_salinity(buoy_id, limit=1, sensor_channel="A")
+    def latest_salinity(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> SalinityReadingEntity | None:
+        readings = self.list_salinity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

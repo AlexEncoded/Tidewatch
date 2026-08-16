@@ -91,8 +91,14 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     }
     summary = client.get("/api/v1/buoys").json()[0]
     assert summary["latest_temperature"]["temperature_celsius"] == 19.8
+    assert summary["latest_temperature_a"]["temperature_celsius"] == 19.8
+    assert summary["latest_temperature_b"] is None
     assert summary["latest_pressure"]["pressure_kpa"] == 101.4
+    assert summary["latest_pressure_a"]["pressure_kpa"] == 101.4
+    assert summary["latest_pressure_b"]["pressure_kpa"] == 101.5
     assert summary["latest_salinity"]["salinity_psu"] == 35.1
+    assert summary["latest_salinity_a"]["salinity_psu"] == 35.1
+    assert summary["latest_salinity_b"] is None
     assert summary["latest_battery"]["battery_percent"] == 87.5
     assert summary["buoy"]["latitude"] == 36.9
     assert summary["buoy"]["longitude"] == 2.7

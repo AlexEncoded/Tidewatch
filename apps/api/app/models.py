@@ -213,8 +213,14 @@ class QualitySummary(BaseModel):
 class BuoySummary(BaseModel):
     buoy: Buoy
     latest_temperature: TemperatureReading | None = None
+    latest_temperature_a: TemperatureReading | None = None
+    latest_temperature_b: TemperatureReading | None = None
     latest_pressure: PressureReading | None = None
+    latest_pressure_a: PressureReading | None = None
+    latest_pressure_b: PressureReading | None = None
     latest_salinity: SalinityReading | None = None
+    latest_salinity_a: SalinityReading | None = None
+    latest_salinity_b: SalinityReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
