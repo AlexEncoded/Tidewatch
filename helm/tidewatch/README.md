@@ -14,6 +14,15 @@ kubectl create secret generic tidewatch-database \
 En producción, este Secret será sustituido por Azure Key Vault y Workload
 Identity. No se deben guardar credenciales en `values.yaml`.
 
+Para activar Workload Identity en el API, usa el `client_id` de la salida
+`tidewatch_api_workload_identity_client_id` de Terraform:
+
+```bash
+helm upgrade --install tidewatch ./helm/tidewatch \
+  --set workloadIdentity.enabled=true \
+  --set workloadIdentity.clientId=<USER_ASSIGNED_IDENTITY_CLIENT_ID>
+```
+
 ## Instalar
 
 ```bash

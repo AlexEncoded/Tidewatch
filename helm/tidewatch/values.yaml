@@ -14,6 +14,11 @@ api:
       cpu: 500m
       memory: 512Mi
 
+workloadIdentity:
+  enabled: false
+  serviceAccountName: tidewatch-api
+  clientId: ""
+
 worker:
   image:
     repository: tidewatch/worker
