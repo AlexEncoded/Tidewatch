@@ -89,7 +89,8 @@ la incidencia `missing_redundant_device` para la unidad ausente.
 La salud de sensores se consulta con `/sensor-health`. La métrica
 `tidewatch_sensor_channel_missing` identifica la familia y el canal sin
 telemetría reciente; una ausencia se mantiene separada de una divergencia
-entre lecturas disponibles.
+entre lecturas disponibles. El parámetro `max_age_minutes` (30 por defecto)
+define cuánto tiempo puede tener una lectura antes de considerarse ausente.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,
