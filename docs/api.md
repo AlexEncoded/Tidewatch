@@ -20,6 +20,9 @@ La última lectura inválida de una familia de sensores genera además una
 incidencia `invalid_reading` en la cola de mantenimiento.
 La última lectura sospechosa genera una incidencia `suspect_reading` de
 severidad `warning` para revisión preventiva.
+Si una familia ambiental solo recibe datos de uno de sus canales, la salud
+devuelve `missing_sensors` con el formato `familia:canal` y mantenimiento crea
+una incidencia `missing_sensor_channel`.
 
 | Método | Ruta | Propósito |
 |---|---|---|
@@ -80,6 +83,11 @@ unidad sospechosa cuando supera el umbral. El endpoint de batería acepta
 compatibilidad. Las incidencias de batería baja identifican explícitamente la
 unidad física afectada. Si solo una unidad aporta datos, mantenimiento recibe
 la incidencia `missing_redundant_device` para la unidad ausente.
+
+La salud de sensores se consulta con `/sensor-health`. La métrica
+`tidewatch_sensor_channel_missing` identifica la familia y el canal sin
+telemetría reciente; una ausencia se mantiene separada de una divergencia
+entre lecturas disponibles.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,

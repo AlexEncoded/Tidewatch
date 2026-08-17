@@ -22,6 +22,9 @@ La salud energética dual se expone con `tidewatch_battery_device_percent` y
 `tidewatch_battery_delta_percent`.
 La ausencia de una unidad se publica como `tidewatch_redundant_device_missing`
 y dispara una alerta crítica tras cinco minutos.
+La ausencia de un canal ambiental se publica como
+`tidewatch_sensor_channel_missing` con las etiquetas de familia y canal, y
+dispara una alerta de mantenimiento tras cinco minutos.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

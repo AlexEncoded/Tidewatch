@@ -17,6 +17,14 @@ groups:
         annotations:
           summary: "Tidewatch redundant sensor is degraded"
           description: "One sensor family is reporting a significant difference between channels A and B."
+      - alert: TidewatchSensorChannelMissing
+        expr: tidewatch_sensor_channel_missing == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch sensor channel is missing"
+          description: "A redundant sensor channel has stopped reporting while its paired channel remains available."
       - alert: TidewatchInvalidReadings
         expr: sum by (buoy_id) (increase(tidewatch_reading_quality_total{quality="invalid"}[10m])) > 0
         for: 2m

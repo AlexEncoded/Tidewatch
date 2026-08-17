@@ -111,6 +111,14 @@
       "gridPos": {"h": 4, "w": 6, "x": 0, "y": 48},
       "targets": [{"expr": "sum(tidewatch_redundant_device_missing)", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 14,
+      "title": "Missing sensor channels",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 48},
+      "targets": [{"expr": "sum(tidewatch_sensor_channel_missing)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
     }
   ],
   "schemaVersion": 39,
