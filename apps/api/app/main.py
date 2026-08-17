@@ -2,8 +2,10 @@ from contextlib import asynccontextmanager
 from csv import DictWriter
 from datetime import datetime, timezone
 from io import StringIO
+import os
 from uuid import uuid4
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
@@ -32,6 +34,7 @@ from .models import (
     BatteryHealth,
     BatteryAnalysis,
     MaintenanceIssue,
+    MaintenanceNotificationResult,
     MovementAnalysis,
     PressureReading,
     PressureReadingCreate,
@@ -989,6 +992,43 @@ def maintenance_issues(
             )
 
     return issues
+
+
+@app.post(
+    "/api/v1/maintenance/notifications",
+    response_model=MaintenanceNotificationResult,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["maintenance"],
+)
+def notify_maintenance(
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
+    db: Session = Depends(get_db),
+) -> MaintenanceNotificationResult:
+    webhook_url = os.getenv("MAINTENANCE_WEBHOOK_URL")
+    if not webhook_url:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MAINTENANCE_WEBHOOK_URL is not configured",
+        )
+
+    issues = maintenance_issues(
+        max_age_minutes=max_age_minutes, drift_speed_mps=drift_speed_mps, db=db
+    )
+    payload = {
+        "source": "tidewatch",
+        "issues": [issue.model_dump(mode="json") for issue in issues],
+    }
+    try:
+        response = httpx.post(webhook_url, json=payload, timeout=5)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Maintenance webhook delivery failed",
+        ) from exc
+
+    return MaintenanceNotificationResult(status="sent", issue_count=len(issues))
 
 
 @app.get(

@@ -209,6 +209,11 @@ class MaintenanceIssue(BaseModel):
     message: str
 
 
+class MaintenanceNotificationResult(BaseModel):
+    status: str
+    issue_count: int
+
+
 class QualitySummary(BaseModel):
     buoy_id: str
     total_readings: int

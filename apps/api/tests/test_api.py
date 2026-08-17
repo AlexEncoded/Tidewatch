@@ -13,6 +13,7 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app
+import app.main as main_module
 
 client = TestClient(app)
 create_tables()
@@ -650,6 +651,49 @@ def test_maintenance_issues_reports_missing_sensor_channel() -> None:
     )
     assert missing_issue["buoy_id"] == buoy_id
     assert "pressure:A" in missing_issue["message"]
+
+
+def test_maintenance_notification_requires_webhook_configuration(
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("MAINTENANCE_WEBHOOK_URL", raising=False)
+
+    response = client.post("/api/v1/maintenance/notifications")
+
+    assert response.status_code == 503
+    assert "not configured" in response.json()["detail"]
+
+
+def test_maintenance_notification_delivers_current_issues(monkeypatch) -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Webhook Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20, "sensor_channel": "A"},
+    )
+    captured = {}
+
+    class WebhookResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+    def fake_post(url, **kwargs):
+        captured["url"] = url
+        captured["payload"] = kwargs["json"]
+        return WebhookResponse()
+
+    monkeypatch.setenv("MAINTENANCE_WEBHOOK_URL", "https://hooks.example.test/tidewatch")
+    monkeypatch.setattr(main_module.httpx, "post", fake_post)
+
+    response = client.post("/api/v1/maintenance/notifications")
+
+    assert response.status_code == 202
+    assert response.json()["status"] == "sent"
+    assert captured["url"] == "https://hooks.example.test/tidewatch"
+    assert captured["payload"]["source"] == "tidewatch"
+    assert any(
+        issue["issue_type"] == "missing_sensor_channel"
+        for issue in captured["payload"]["issues"]
+    )
 
 
 def test_sensor_health_reports_stale_redundant_channel_as_missing() -> None:
