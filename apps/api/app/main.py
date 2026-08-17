@@ -79,8 +79,21 @@ def record_quality_metric(
     ).inc()
 
 
-def latest_usable_reading(readings: list) -> list:
-    return [reading for reading in readings if reading.quality != "invalid"][:1]
+def latest_usable_reading(
+    readings: list, max_age_seconds: float | None = None, now: datetime | None = None
+) -> list:
+    reference_time = now or datetime.now(timezone.utc)
+    for reading in readings:
+        if reading.quality == "invalid":
+            continue
+        if max_age_seconds is not None:
+            measured_at = reading.measured_at
+            if measured_at.tzinfo is None:
+                measured_at = measured_at.replace(tzinfo=timezone.utc)
+            if (reference_time - measured_at).total_seconds() > max_age_seconds:
+                continue
+        return [reading]
+    return []
 
 
 @asynccontextmanager
@@ -701,17 +714,35 @@ def quality_summary(buoy_id: str, db: Session = Depends(get_db)) -> QualitySumma
     response_model=SensorHealth,
     tags=["sensors"],
 )
-def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
+def sensor_health(
+    buoy_id: str,
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> SensorHealth:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
-    temperature_a = latest_usable_reading(repository.list_temperatures(buoy_id, 50, "A"))
-    temperature_b = latest_usable_reading(repository.list_temperatures(buoy_id, 50, "B"))
-    pressure_a = latest_usable_reading(repository.list_pressures(buoy_id, 50, "A"))
-    pressure_b = latest_usable_reading(repository.list_pressures(buoy_id, 50, "B"))
-    salinity_a = latest_usable_reading(repository.list_salinity(buoy_id, 50, "A"))
-    salinity_b = latest_usable_reading(repository.list_salinity(buoy_id, 50, "B"))
+    now = datetime.now(timezone.utc)
+    max_age_seconds = max_age_minutes * 60
+    temperature_a = latest_usable_reading(
+        repository.list_temperatures(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    temperature_b = latest_usable_reading(
+        repository.list_temperatures(buoy_id, 50, "B"), max_age_seconds, now
+    )
+    pressure_a = latest_usable_reading(
+        repository.list_pressures(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    pressure_b = latest_usable_reading(
+        repository.list_pressures(buoy_id, 50, "B"), max_age_seconds, now
+    )
+    salinity_a = latest_usable_reading(
+        repository.list_salinity(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    salinity_b = latest_usable_reading(
+        repository.list_salinity(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -775,7 +806,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         salinity_delta_psu=deltas["salinity"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
-        checked_at=datetime.now(timezone.utc),
+        checked_at=now,
     )
 
 
@@ -810,7 +841,7 @@ def maintenance_issues(
                     )
                 )
 
-        health = sensor_health(buoy.id, db)
+        health = sensor_health(buoy.id, max_age_minutes=max_age_minutes, db=db)
         if health.status == "degraded":
             if health.degraded_sensors:
                 issues.append(

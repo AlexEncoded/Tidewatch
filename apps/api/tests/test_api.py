@@ -652,6 +652,28 @@ def test_maintenance_issues_reports_missing_sensor_channel() -> None:
     assert "pressure:A" in missing_issue["message"]
 
 
+def test_sensor_health_reports_stale_redundant_channel_as_missing() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Stale Sensor Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={
+            "temperature_celsius": 20,
+            "sensor_channel": "A",
+            "measured_at": (datetime.now(timezone.utc) - timedelta(minutes=45)).isoformat(),
+        },
+    )
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20.1, "sensor_channel": "B"},
+    )
+
+    health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health?max_age_minutes=30")
+
+    assert health.status_code == 200
+    assert health.json()["missing_sensors"] == ["temperature:A"]
+    assert health.json()["status"] == "degraded"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
