@@ -6,9 +6,11 @@ levantada: <http://localhost:8000/docs>.
 ## Telemetría
 
 Las lecturas ambientales de temperatura, presión y salinidad incluyen
-`measured_at`, `sensor_channel` (`A` o `B`) y `quality` (`good`, `suspect` o
-`invalid`). Las lecturas de batería usan `device_id` (`A` o `B`) y las
-posiciones usan `measured_at`.
+`measured_at`, `sensor_channel` (`A` o `B`), `sensor_id`,
+`firmware_version` y `quality` (`good`, `suspect` o `invalid`).
+`sensor_id` y `firmware_version` son opcionales para conservar compatibilidad
+con dispositivos antiguos. Las lecturas de batería usan `device_id` (`A` o
+`B`) y las posiciones usan `measured_at`.
 
 Las lecturas `invalid` se conservan para auditoría, pero no participan en los
 análisis de tendencia, oleaje ni generación de alertas.

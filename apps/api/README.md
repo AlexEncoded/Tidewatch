@@ -80,6 +80,10 @@ Métricas Prometheus: <http://localhost:8000/metrics>
 Las lecturas aceptan temperaturas entre `-5 °C` y `45 °C`. Las boyas y lecturas
 se persisten en PostgreSQL cuando se ejecuta mediante Docker Compose.
 
+Las lecturas ambientales pueden incluir `sensor_id` y `firmware_version` para
+conservar la procedencia física y del software de cada canal. Ambos campos son
+opcionales para aceptar telemetría de dispositivos anteriores.
+
 La ubicación es opcional en esta fase. Si se proporciona, `latitude` debe estar
 entre `-90` y `90`, y `longitude` entre `-180` y `180`.
 

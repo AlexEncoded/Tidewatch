@@ -18,10 +18,13 @@ extremo a extremo.
 | `BASE_LONGITUDE` | `3.1` | Longitud inicial |
 | `TELEMETRY_RETRIES` | `3` | Reintentos ante red o errores `5xx` |
 | `RETRY_BACKOFF_SECONDS` | `1` | Espera inicial entre reintentos |
+| `SENSOR_FIRMWARE_VERSION` | `2.4.1` | Versión emitida para los sensores simulados |
 
 El simulador crea la boya automáticamente si todavía no existe.
 Los errores de validación `4xx` no se reintentan; los errores temporales de red
 o del servidor usan backoff exponencial.
 La posición se desplaza ligeramente en cada ciclo para simular movimiento.
+Cada lectura ambiental incluye un `sensor_id` estable por familia y canal, así
+como la versión de firmware configurada.
 
 Los tests del worker se ejecutan con `pytest` en GitHub Actions.
