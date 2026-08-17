@@ -42,3 +42,8 @@ output "key_vault_uri" {
   description = "Key Vault URI for application secrets."
   value       = module.key_vault.key_vault_uri
 }
+
+output "tidewatch_api_workload_identity_client_id" {
+  description = "Client ID to configure on the Tidewatch API ServiceAccount."
+  value       = azurerm_user_assigned_identity.tidewatch_api.client_id
+}

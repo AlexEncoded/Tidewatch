@@ -88,3 +88,25 @@ module "key_vault" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   tags                = local.common_tags
 }
+
+resource "azurerm_user_assigned_identity" "tidewatch_api" {
+  name                = "id-${local.name_prefix}-api"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+}
+
+resource "azurerm_federated_identity_credential" "tidewatch_api" {
+  name                = "fic-${local.name_prefix}-api"
+  resource_group_name = azurerm_resource_group.main.name
+  parent_id           = azurerm_user_assigned_identity.tidewatch_api.id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = module.aks.oidc_issuer_url
+  subject             = "system:serviceaccount:${var.workload_identity_namespace}:${var.workload_identity_service_account}"
+}
+
+resource "azurerm_role_assignment" "tidewatch_api_key_vault" {
+  scope                = module.key_vault.key_vault_id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.tidewatch_api.principal_id
+}

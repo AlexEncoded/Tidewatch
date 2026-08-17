@@ -54,3 +54,15 @@ variable "aks_node_vm_size" {
   type        = string
   default     = "Standard_B2s"
 }
+
+variable "workload_identity_namespace" {
+  description = "Kubernetes namespace used by the API ServiceAccount."
+  type        = string
+  default     = "tidewatch-dev"
+}
+
+variable "workload_identity_service_account" {
+  description = "Kubernetes ServiceAccount federated to the API identity."
+  type        = string
+  default     = "tidewatch-api"
+}
