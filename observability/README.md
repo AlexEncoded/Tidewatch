@@ -15,6 +15,9 @@ La API emite una línea por petición a stdout con `method`, `path`, `status_cod
 y `duration_ms`. El colector del entorno debe recoger stdout del contenedor y
 añadir las etiquetas de pod, namespace y entorno; la aplicación no escribe
 logs en disco.
+También expone `tidewatch_http_requests_total` y
+`tidewatch_http_request_duration_seconds`, con etiquetas de baja cardinalidad
+para método y estado HTTP, para construir paneles de tasa y latencia.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y

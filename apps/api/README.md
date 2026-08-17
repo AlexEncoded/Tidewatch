@@ -106,6 +106,8 @@ La API expone métricas Prometheus de lecturas aceptadas, temperatura actual,
 Cada petición HTTP genera un log de una línea en stdout con método, ruta,
 código de estado y duración en milisegundos, preparado para su recolección
 centralizada en Kubernetes.
+La misma actividad se mide con las métricas Prometheus
+`tidewatch_http_requests_total` y `tidewatch_http_request_duration_seconds`.
 
 `/api/v1/buoys/{id}/sensor-health` acepta `max_age_minutes` para distinguir un
 canal sin telemetría reciente de uno que todavía está operativo. El mismo
