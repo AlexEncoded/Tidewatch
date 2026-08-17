@@ -131,6 +131,8 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             temperature_celsius=reading.temperature_celsius,
             sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
             quality=reading.quality,
             measured_at=reading.measured_at,
         )
@@ -170,6 +172,8 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             pressure_kpa=reading.pressure_kpa,
             sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
             quality=reading.quality,
             measured_at=reading.measured_at,
         )
@@ -208,6 +212,8 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             salinity_psu=reading.salinity_psu,
             sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
             quality=reading.quality,
             measured_at=reading.measured_at,
         )

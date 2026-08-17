@@ -67,12 +67,26 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     response = client.post(
         f"/api/v1/buoys/{buoy_id}/telemetry",
         json={
-            "temperatures": [{"temperature_celsius": 19.8, "sensor_channel": "A"}],
+            "temperatures": [{
+                "temperature_celsius": 19.8,
+                "sensor_channel": "A",
+                "sensor_id": "temp-a-01",
+                "firmware_version": "2.4.1",
+            }],
             "pressures": [
-                {"pressure_kpa": 101.4, "sensor_channel": "A"},
+                {
+                    "pressure_kpa": 101.4,
+                    "sensor_channel": "A",
+                    "sensor_id": "pressure-a-01",
+                    "firmware_version": "2.4.1",
+                },
                 {"pressure_kpa": 101.5, "sensor_channel": "B"},
             ],
-            "salinity": [{"salinity_psu": 35.1}],
+            "salinity": [{
+                "salinity_psu": 35.1,
+                "sensor_id": "salinity-a-01",
+                "firmware_version": "2.4.1",
+            }],
             "battery": {"battery_percent": 87.5},
             "location": {"latitude": 36.9, "longitude": 2.7},
         },
@@ -106,6 +120,13 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
         f"/api/v1/buoys/{buoy_id}/pressures?sensor_channel=B"
     )
     assert redundant_pressure.json()[0]["pressure_kpa"] == 101.5
+    temperature = client.get(f"/api/v1/buoys/{buoy_id}/temperatures").json()[0]
+    assert temperature["sensor_id"] == "temp-a-01"
+    assert temperature["firmware_version"] == "2.4.1"
+    pressure = client.get(f"/api/v1/buoys/{buoy_id}/pressures").json()[0]
+    assert pressure["sensor_id"] == "pressure-a-01"
+    salinity = client.get(f"/api/v1/buoys/{buoy_id}/salinity").json()[0]
+    assert salinity["sensor_id"] == "salinity-a-01"
     locations = client.get(f"/api/v1/buoys/{buoy_id}/locations")
     assert locations.status_code == 200
     assert locations.json()[0]["latitude"] == 36.9
