@@ -46,6 +46,7 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |
+| `POST` | `/api/v1/maintenance/notifications` | Enviar incidencias al webhook configurado |
 | `GET` | `/api/v1/alerts/temperature` | Consultar anomalías de temperatura |
 | `POST` | `/api/v1/alerts/temperature/evaluate` | Persistir anomalías actuales |
 | `GET` | `/api/v1/alerts/temperature/stored` | Consultar alertas persistidas |
@@ -77,6 +78,10 @@ desplazamientos.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.
+
+`/api/v1/maintenance/notifications` usa `MAINTENANCE_WEBHOOK_URL` para enviar
+el listado actual de incidencias como JSON. Devuelve `503` si no hay webhook
+configurado y `502` si el destino rechaza o no recibe la petición.
 
 La salud energética se consulta con `battery-health?threshold=10`. Si ambas
 unidades están disponibles, devuelve los porcentajes A/B, su diferencia y la
