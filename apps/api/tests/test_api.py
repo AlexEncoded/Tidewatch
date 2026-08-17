@@ -596,6 +596,41 @@ def test_sensor_health_identifies_degraded_sensor() -> None:
     assert health.json()["degraded_sensors"] == ["temperature"]
 
 
+def test_sensor_health_identifies_missing_redundant_channel() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Missing Sensor Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20, "sensor_channel": "A"},
+    )
+
+    health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health")
+
+    assert health.status_code == 200
+    assert health.json()["status"] == "degraded"
+    assert health.json()["degraded_sensors"] == []
+    assert health.json()["missing_sensors"] == ["temperature:B"]
+
+    metrics = client.get("/metrics")
+    assert 'tidewatch_sensor_channel_missing{buoy_id="' in metrics.text
+    assert 'sensor="temperature",sensor_channel="B"} 1.0' in metrics.text
+
+
+def test_maintenance_issues_reports_missing_sensor_channel() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Missing Sensor Maintenance"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/pressures",
+        json={"pressure_kpa": 101.3, "sensor_channel": "B"},
+    )
+
+    issues = client.get("/api/v1/maintenance/issues")
+
+    missing_issue = next(
+        issue for issue in issues.json() if issue["issue_type"] == "missing_sensor_channel"
+    )
+    assert missing_issue["buoy_id"] == buoy_id
+    assert "pressure:A" in missing_issue["message"]
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):

@@ -62,6 +62,7 @@ from .metrics import (
     reading_quality_total,
     redundant_device_missing,
     salinity_readings_total,
+    sensor_channel_missing,
     sensor_degraded,
     temperature_readings_total,
 )
@@ -712,6 +713,19 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
     salinity_a = latest_usable_reading(repository.list_salinity(buoy_id, 50, "A"))
     salinity_b = latest_usable_reading(repository.list_salinity(buoy_id, 50, "B"))
 
+    sensor_readings = {
+        "temperature": {"A": temperature_a, "B": temperature_b},
+        "pressure": {"A": pressure_a, "B": pressure_b},
+        "salinity": {"A": salinity_a, "B": salinity_b},
+    }
+    missing_sensors = [
+        f"{sensor}:{channel}"
+        for sensor, channels in sensor_readings.items()
+        if any(channels.values())
+        for channel, reading in channels.items()
+        if reading is None
+    ]
+
     deltas = {
         "temperature": (
             round(abs(temperature_a[0].temperature_celsius - temperature_b[0].temperature_celsius), 3)
@@ -740,11 +754,19 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
     if available:
         status_value = "degraded" if degraded_sensors else "consistent"
 
-    for sensor in thresholds:
+    for sensor, channels in sensor_readings.items():
+        has_reading = any(channels.values())
+        for channel, reading in channels.items():
+            sensor_channel_missing.labels(
+                buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
+            ).set(1 if has_reading and reading is None else 0)
         sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
-            1 if sensor in degraded_sensors else 0
+            1 if sensor in degraded_sensors or any(
+                missing.startswith(f"{sensor}:") for missing in missing_sensors
+            ) else 0
         )
 
+    status_value = "degraded" if degraded_sensors or missing_sensors else status_value
     return SensorHealth(
         buoy_id=buoy_id,
         status=status_value,
@@ -752,6 +774,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         pressure_delta_kpa=deltas["pressure"],
         salinity_delta_psu=deltas["salinity"],
         degraded_sensors=degraded_sensors,
+        missing_sensors=missing_sensors,
         checked_at=datetime.now(timezone.utc),
     )
 
@@ -789,15 +812,29 @@ def maintenance_issues(
 
         health = sensor_health(buoy.id, db)
         if health.status == "degraded":
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="degraded_sensor",
-                    severity="warning",
-                    message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+            if health.degraded_sensors:
+                issues.append(
+                    MaintenanceIssue(
+                        buoy_id=buoy.id,
+                        buoy_name=buoy.name,
+                        issue_type="degraded_sensor",
+                        severity="warning",
+                        message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+                    )
                 )
-            )
+            if health.missing_sensors:
+                issues.append(
+                    MaintenanceIssue(
+                        buoy_id=buoy.id,
+                        buoy_name=buoy.name,
+                        issue_type="missing_sensor_channel",
+                        severity="warning",
+                        message=(
+                            "No recent telemetry received from sensor channels: "
+                            f"{', '.join(health.missing_sensors)}"
+                        ),
+                    )
+                )
 
         latest_readings = {
             "temperature": repository.list_temperatures(buoy.id, 1),

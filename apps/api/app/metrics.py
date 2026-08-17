@@ -43,6 +43,12 @@ sensor_degraded = Gauge(
     ["buoy_id", "sensor"],
 )
 
+sensor_channel_missing = Gauge(
+    "tidewatch_sensor_channel_missing",
+    "Whether a redundant sensor channel is missing recent telemetry.",
+    ["buoy_id", "sensor", "sensor_channel"],
+)
+
 buoy_last_seen_timestamp_seconds = Gauge(
     "tidewatch_buoy_last_seen_timestamp_seconds",
     "Unix timestamp of the most recent reading for each buoy.",

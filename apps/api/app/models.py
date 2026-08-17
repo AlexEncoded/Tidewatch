@@ -191,6 +191,7 @@ class SensorHealth(BaseModel):
     pressure_delta_kpa: float | None = None
     salinity_delta_psu: float | None = None
     degraded_sensors: list[str] = []
+    missing_sensors: list[str] = []
     checked_at: datetime
 
 
