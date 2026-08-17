@@ -103,6 +103,10 @@ al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
 La API expone métricas Prometheus de lecturas aceptadas, temperatura actual,
 última comunicación, movimiento y salud energética A/B.
 
+Cada petición HTTP genera un log de una línea en stdout con método, ruta,
+código de estado y duración en milisegundos, preparado para su recolección
+centralizada en Kubernetes.
+
 `/api/v1/buoys/{id}/sensor-health` acepta `max_age_minutes` para distinguir un
 canal sin telemetría reciente de uno que todavía está operativo. El mismo
 umbral se aplica a la cola de `/api/v1/maintenance/issues`.

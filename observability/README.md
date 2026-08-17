@@ -11,6 +11,11 @@ La observabilidad combinará:
 Los dashboards, reglas y alertas deben mantenerse como código siempre que sea
 posible.
 
+La API emite una línea por petición a stdout con `method`, `path`, `status_code`
+y `duration_ms`. El colector del entorno debe recoger stdout del contenedor y
+añadir las etiquetas de pod, namespace y entorno; la aplicación no escribe
+logs en disco.
+
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y
 sensores redundantes degradados y lecturas inválidas recientes en
