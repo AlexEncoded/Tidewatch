@@ -723,7 +723,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         for sensor, channels in sensor_readings.items()
         if any(channels.values())
         for channel, reading in channels.items()
-        if reading is None
+        if not reading
     ]
 
     deltas = {
@@ -759,7 +759,7 @@ def sensor_health(buoy_id: str, db: Session = Depends(get_db)) -> SensorHealth:
         for channel, reading in channels.items():
             sensor_channel_missing.labels(
                 buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
-            ).set(1 if has_reading and reading is None else 0)
+            ).set(1 if has_reading and not reading else 0)
         sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
             1 if sensor in degraded_sensors or any(
                 missing.startswith(f"{sensor}:") for missing in missing_sensors
