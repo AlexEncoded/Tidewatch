@@ -2,7 +2,9 @@ from contextlib import asynccontextmanager
 from csv import DictWriter
 from datetime import datetime, timezone
 from io import StringIO
+import logging
 import os
+import time
 from uuid import uuid4
 
 import httpx
@@ -71,6 +73,9 @@ from .metrics import (
 )
 
 
+logger = logging.getLogger("tidewatch.api")
+
+
 def record_quality_metric(
     buoy_id: str, sensor_family: str, sensor_channel: str, quality: str
 ) -> None:
@@ -110,6 +115,21 @@ app = FastAPI(
     version="0.2.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_logging_middleware(request, call_next):
+    started_at = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = round((time.perf_counter() - started_at) * 1000, 2)
+    logger.info(
+        "http_request method=%s path=%s status_code=%s duration_ms=%s",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import logging
 
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
@@ -35,6 +36,14 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_http_requests_are_logged(caplog) -> None:
+    with caplog.at_level(logging.INFO, logger="tidewatch.api"):
+        response = client.get("/health")
+
+    assert response.status_code == 200
+    assert "http_request method=GET path=/health status_code=200" in caplog.text
 
 
 def test_create_buoy_and_record_temperature() -> None:
