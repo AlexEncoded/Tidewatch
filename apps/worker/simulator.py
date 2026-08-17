@@ -17,6 +17,7 @@ BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
 TELEMETRY_RETRIES = max(0, int(os.getenv("TELEMETRY_RETRIES", "3")))
 RETRY_BACKOFF_SECONDS = max(0, float(os.getenv("RETRY_BACKOFF_SECONDS", "1")))
+SENSOR_FIRMWARE_VERSION = os.getenv("SENSOR_FIRMWARE_VERSION", "2.4.1")
 
 
 def temperature_reading(previous: float) -> float:
@@ -132,6 +133,8 @@ def run() -> None:
                     {
                         "temperature_celsius": values["temperature_celsius"],
                         "sensor_channel": channel,
+                        "sensor_id": f"temperature-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
                         "measured_at": measured_at,
                     }
                     for channel, values in readings.items()
@@ -140,6 +143,8 @@ def run() -> None:
                     {
                         "pressure_kpa": values["pressure_kpa"],
                         "sensor_channel": channel,
+                        "sensor_id": f"pressure-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
                         "measured_at": measured_at,
                     }
                     for channel, values in readings.items()
@@ -148,6 +153,8 @@ def run() -> None:
                     {
                         "salinity_psu": values["salinity_psu"],
                         "sensor_channel": channel,
+                        "sensor_id": f"salinity-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
                         "measured_at": measured_at,
                     }
                     for channel, values in readings.items()
