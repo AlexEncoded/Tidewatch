@@ -1,4 +1,17 @@
-from prometheus_client import Counter, Gauge
+from prometheus_client import Counter, Gauge, Histogram
+
+
+http_requests_total = Counter(
+    "tidewatch_http_requests_total",
+    "Total HTTP requests handled by method and response status.",
+    ["method", "status_code"],
+)
+
+http_request_duration_seconds = Histogram(
+    "tidewatch_http_request_duration_seconds",
+    "HTTP request duration in seconds by method.",
+    ["method"],
+)
 
 
 temperature_readings_total = Counter(

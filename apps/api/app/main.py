@@ -63,6 +63,8 @@ from .metrics import (
     current_pressure_kpa,
     current_salinity_psu,
     current_temperature_celsius,
+    http_request_duration_seconds,
+    http_requests_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -122,6 +124,10 @@ async def request_logging_middleware(request, call_next):
     started_at = time.perf_counter()
     response = await call_next(request)
     duration_ms = round((time.perf_counter() - started_at) * 1000, 2)
+    http_requests_total.labels(
+        method=request.method, status_code=str(response.status_code)
+    ).inc()
+    http_request_duration_seconds.labels(method=request.method).observe(duration_ms / 1000)
     logger.info(
         "http_request method=%s path=%s status_code=%s duration_ms=%s",
         request.method,

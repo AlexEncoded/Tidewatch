@@ -46,6 +46,17 @@ def test_http_requests_are_logged(caplog) -> None:
     assert "http_request method=GET path=/health status_code=200" in caplog.text
 
 
+def test_http_request_metrics_are_exposed() -> None:
+    client.get("/health")
+
+    metrics = client.get("/metrics")
+
+    assert metrics.status_code == 200
+    assert "tidewatch_http_requests_total" in metrics.text
+    assert 'method="GET",status_code="200"' in metrics.text
+    assert "tidewatch_http_request_duration_seconds" in metrics.text
+
+
 def test_create_buoy_and_record_temperature() -> None:
     buoy = client.post(
         "/api/v1/buoys",
