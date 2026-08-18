@@ -44,6 +44,8 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/buoys/{id}/battery-analysis` | Estimar descarga y autonomía por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery-health` | Comparar baterías A/B |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
+| `POST` | `/api/v1/buoys/{id}/sensor-health/check` | Evaluar y persistir salud A/B |
+| `GET` | `/api/v1/buoys/{id}/sensor-health/history` | Consultar histórico de salud |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |
 | `POST` | `/api/v1/maintenance/notifications` | Enviar incidencias al webhook configurado |
@@ -96,6 +98,8 @@ La salud de sensores se consulta con `/sensor-health`. La métrica
 telemetría reciente; una ausencia se mantiene separada de una divergencia
 entre lecturas disponibles. El parámetro `max_age_minutes` (30 por defecto)
 define cuánto tiempo puede tener una lectura antes de considerarse ausente.
+La evaluación persistente se solicita con `POST /sensor-health/check`; el
+histórico se consulta con `GET /sensor-health/history?limit=50`.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,

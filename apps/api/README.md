@@ -113,6 +113,10 @@ La misma actividad se mide con las métricas Prometheus
 canal sin telemetría reciente de uno que todavía está operativo. El mismo
 umbral se aplica a la cola de `/api/v1/maintenance/issues`.
 
+`POST /api/v1/buoys/{id}/sensor-health/check` guarda una evaluación con sus
+divergencias y canales ausentes. `GET /api/v1/buoys/{id}/sensor-health/history`
+permite revisar esas evaluaciones sin recalcularlas.
+
 Para notificar incidencias a un sistema externo, configura
 `MAINTENANCE_WEBHOOK_URL` y ejecuta `POST /api/v1/maintenance/notifications`.
 La API envía un payload JSON con `source` e `issues` y no expone la URL
