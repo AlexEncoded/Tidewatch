@@ -119,6 +119,24 @@
       "gridPos": {"h": 4, "w": 6, "x": 6, "y": 48},
       "targets": [{"expr": "sum(tidewatch_sensor_channel_missing)", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 15,
+      "title": "HTTP request rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 52},
+      "targets": [{"expr": "sum by (method, status_code) (rate(tidewatch_http_requests_total[5m]))", "legendFormat": "{{method}} {{status_code}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 16,
+      "title": "HTTP request latency p95",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 52},
+      "targets": [{"expr": "histogram_quantile(0.95, sum by (le, method) (rate(tidewatch_http_request_duration_seconds_bucket[5m])))", "legendFormat": "{{method}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
