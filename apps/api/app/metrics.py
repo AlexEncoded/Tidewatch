@@ -13,6 +13,12 @@ http_request_duration_seconds = Histogram(
     ["method"],
 )
 
+sensor_health_decision = Gauge(
+    "tidewatch_sensor_health_decision",
+    "Current sensor family decision: average, fallback_a, fallback_b or invalid.",
+    ["buoy_id", "sensor", "decision"],
+)
+
 
 temperature_readings_total = Counter(
     "tidewatch_temperature_readings_total",

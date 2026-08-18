@@ -72,6 +72,7 @@ from .metrics import (
     salinity_readings_total,
     sensor_channel_missing,
     sensor_degraded,
+    sensor_health_decision,
     temperature_readings_total,
 )
 
@@ -840,6 +841,10 @@ def sensor_health(
             decisions[sensor] = "fallback_b"
         else:
             decisions[sensor] = "invalid"
+        for decision in ("average", "fallback_a", "fallback_b", "invalid"):
+            sensor_health_decision.labels(
+                buoy_id=buoy_id, sensor=sensor, decision=decision
+            ).set(1 if decisions[sensor] == decision else 0)
     return SensorHealth(
         buoy_id=buoy_id,
         status=status_value,
