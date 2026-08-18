@@ -759,7 +759,7 @@ def test_sensor_health_check_is_persisted_and_retrievable() -> None:
     assert history.json()[0]["decisions"]["temperature"] == "fallback_a"
     metrics = client.get("/metrics")
     assert 'tidewatch_sensor_health_decision{buoy_id="' in metrics.text
-    assert 'sensor="temperature",decision="fallback_a"} 1.0' in metrics.text
+    assert 'decision="fallback_a",sensor="temperature"} 1.0' in metrics.text
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
