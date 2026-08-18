@@ -18,6 +18,8 @@ logs en disco.
 También expone `tidewatch_http_requests_total` y
 `tidewatch_http_request_duration_seconds`, con etiquetas de baja cardinalidad
 para método y estado HTTP, para construir paneles de tasa y latencia.
+Las decisiones de fallback quedan disponibles en el histórico de salud para
+auditoría y no sustituyen las lecturas originales.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y

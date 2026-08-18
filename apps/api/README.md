@@ -116,6 +116,8 @@ umbral se aplica a la cola de `/api/v1/maintenance/issues`.
 `POST /api/v1/buoys/{id}/sensor-health/check` guarda una evaluación con sus
 divergencias y canales ausentes. `GET /api/v1/buoys/{id}/sensor-health/history`
 permite revisar esas evaluaciones sin recalcularlas.
+El campo `decisions` explica qué decisión tomó cada familia ambiental: promedio
+de A/B, fallback a un canal disponible o dato inválido.
 
 Para notificar incidencias a un sistema externo, configura
 `MAINTENANCE_WEBHOOK_URL` y ejecuta `POST /api/v1/maintenance/notifications`.
