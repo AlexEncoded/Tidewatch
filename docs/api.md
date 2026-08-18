@@ -102,6 +102,8 @@ La evaluación persistente se solicita con `POST /sensor-health/check`; el
 histórico se consulta con `GET /sensor-health/history?limit=50`.
 Cada evaluación guarda también la decisión por familia: `average`,
 `fallback_a`, `fallback_b` o `invalid`.
+La métrica Prometheus `tidewatch_sensor_health_decision` expone esa decisión
+actual para dashboards y alertas.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,
