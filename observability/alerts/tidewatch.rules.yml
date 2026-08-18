@@ -25,6 +25,14 @@ groups:
         annotations:
           summary: "Tidewatch sensor channel is missing"
           description: "A redundant sensor channel has stopped reporting while its paired channel remains available."
+      - alert: TidewatchSensorDecisionInvalid
+        expr: tidewatch_sensor_health_decision{decision="invalid"} == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tidewatch sensor decision is invalid"
+          description: "A sensor family has no trustworthy value after redundant-channel validation and requires maintenance review."
       - alert: TidewatchInvalidReadings
         expr: sum by (buoy_id) (increase(tidewatch_reading_quality_total{quality="invalid"}[10m])) > 0
         for: 2m
