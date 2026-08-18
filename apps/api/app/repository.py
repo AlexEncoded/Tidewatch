@@ -276,6 +276,7 @@ class BuoyRepository:
             salinity_delta_psu=health.salinity_delta_psu,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
+            decisions=health.decisions,
             checked_at=health.checked_at,
         )
         self.db.add(entity)

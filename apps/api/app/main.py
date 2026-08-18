@@ -828,6 +828,18 @@ def sensor_health(
         )
 
     status_value = "degraded" if degraded_sensors or missing_sensors else status_value
+    decisions = {}
+    for sensor, channels in sensor_readings.items():
+        has_a = bool(channels["A"])
+        has_b = bool(channels["B"])
+        if has_a and has_b:
+            decisions[sensor] = "invalid" if sensor in degraded_sensors else "average"
+        elif has_a:
+            decisions[sensor] = "fallback_a"
+        elif has_b:
+            decisions[sensor] = "fallback_b"
+        else:
+            decisions[sensor] = "invalid"
     return SensorHealth(
         buoy_id=buoy_id,
         status=status_value,
@@ -836,6 +848,7 @@ def sensor_health(
         salinity_delta_psu=deltas["salinity"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
+        decisions=decisions,
         checked_at=now,
     )
 

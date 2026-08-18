@@ -753,8 +753,10 @@ def test_sensor_health_check_is_persisted_and_retrievable() -> None:
     assert check.status_code == 201
     assert check.json()["status"] == "degraded"
     assert check.json()["missing_sensors"] == ["temperature:B"]
+    assert check.json()["decisions"]["temperature"] == "fallback_a"
     assert history.status_code == 200
     assert history.json()[0]["id"] == check.json()["id"]
+    assert history.json()[0]["decisions"]["temperature"] == "fallback_a"
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:

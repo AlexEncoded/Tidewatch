@@ -198,6 +198,7 @@ class SensorHealth(BaseModel):
     salinity_delta_psu: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
+    decisions: dict[str, str] = Field(default_factory=dict)
     checked_at: datetime
 
 

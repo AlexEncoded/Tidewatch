@@ -97,6 +97,7 @@ class SensorHealthCheckEntity(Base):
     salinity_delta_psu: Mapped[float | None] = mapped_column(Float, nullable=True)
     degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
     checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship()
 
