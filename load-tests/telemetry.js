@@ -65,5 +65,22 @@ export default function (data) {
 
   const issues = http.get(`${baseUrl}/api/v1/maintenance/issues`);
   check(issues, { "maintenance is 200": (response) => response.status === 200 });
+
+  const healthCheck = http.post(
+    `${baseUrl}/api/v1/buoys/${data.buoyId}/sensor-health/check`,
+  );
+  check(healthCheck, {
+    "sensor health check persisted": (response) => response.status === 201,
+    "sensor health has fallback decisions": (response) =>
+      response.json("decisions.temperature") !== undefined,
+  });
+
+  const healthHistory = http.get(
+    `${baseUrl}/api/v1/buoys/${data.buoyId}/sensor-health/history?limit=10`,
+  );
+  check(healthHistory, {
+    "sensor health history is 200": (response) => response.status === 200,
+    "sensor health history is populated": (response) => response.json().length > 0,
+  });
   sleep(1);
 }
