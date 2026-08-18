@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .entities import (
     BuoyEntity,
+    SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
     PressureReadingEntity,
@@ -20,6 +21,7 @@ from .models import (
     PressureReading,
     SalinityReading,
     BatteryReading,
+    SensorHealth,
     TemperatureAlert,
     TemperatureReading,
 )
@@ -264,6 +266,33 @@ class BuoyRepository:
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
+
+    def add_sensor_health_check(self, health: SensorHealth) -> SensorHealthCheckEntity:
+        entity = SensorHealthCheckEntity(
+            buoy_id=health.buoy_id,
+            status=health.status,
+            temperature_delta_celsius=health.temperature_delta_celsius,
+            pressure_delta_kpa=health.pressure_delta_kpa,
+            salinity_delta_psu=health.salinity_delta_psu,
+            degraded_sensors=health.degraded_sensors,
+            missing_sensors=health.missing_sensors,
+            checked_at=health.checked_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        return entity
+
+    def list_sensor_health_checks(
+        self, buoy_id: str, limit: int
+    ) -> list[SensorHealthCheckEntity]:
+        query = (
+            select(SensorHealthCheckEntity)
+            .where(SensorHealthCheckEntity.buoy_id == buoy_id)
+            .order_by(SensorHealthCheckEntity.checked_at.desc())
+            .limit(limit)
+        )
+        return list(self.db.scalars(query).all())
 
     def latest_battery(
         self, buoy_id: str, device_id: str | None = None

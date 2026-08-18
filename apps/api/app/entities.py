@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint
+from sqlalchemy import DateTime, Float, ForeignKey, JSON, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -84,6 +84,21 @@ class SalinityReadingEntity(Base):
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="salinity_readings")
+
+
+class SensorHealthCheckEntity(Base):
+    __tablename__ = "sensor_health_checks"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    temperature_delta_celsius: Mapped[float | None] = mapped_column(Float, nullable=True)
+    pressure_delta_kpa: Mapped[float | None] = mapped_column(Float, nullable=True)
+    salinity_delta_psu: Mapped[float | None] = mapped_column(Float, nullable=True)
+    degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship()
 
 
 class BatteryReadingEntity(Base):

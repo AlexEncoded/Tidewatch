@@ -201,6 +201,12 @@ class SensorHealth(BaseModel):
     checked_at: datetime
 
 
+class SensorHealthCheck(SensorHealth):
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
 class MaintenanceIssue(BaseModel):
     buoy_id: str
     buoy_name: str

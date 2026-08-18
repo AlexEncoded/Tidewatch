@@ -11,6 +11,7 @@ from app.entities import (
     BatteryReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
+    SensorHealthCheckEntity,
     TemperatureReadingEntity,
 )
 from app.main import app
@@ -26,6 +27,7 @@ def setup_function() -> None:
         db.execute(delete(SalinityReadingEntity))
         db.execute(delete(BatteryReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
+        db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
         db.execute(delete(BuoyEntity))
         db.commit()
@@ -736,6 +738,23 @@ def test_sensor_health_reports_stale_redundant_channel_as_missing() -> None:
     assert health.status_code == 200
     assert health.json()["missing_sensors"] == ["temperature:A"]
     assert health.json()["status"] == "degraded"
+
+
+def test_sensor_health_check_is_persisted_and_retrievable() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Health History Buoy"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/temperatures",
+        json={"temperature_celsius": 20, "sensor_channel": "A"},
+    )
+
+    check = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+    history = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health/history")
+
+    assert check.status_code == 201
+    assert check.json()["status"] == "degraded"
+    assert check.json()["missing_sensors"] == ["temperature:B"]
+    assert history.status_code == 200
+    assert history.json()[0]["id"] == check.json()["id"]
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
