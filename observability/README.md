@@ -22,6 +22,8 @@ Las decisiones de fallback quedan disponibles en el histórico de salud para
 auditoría y no sustituyen las lecturas originales.
 La métrica `tidewatch_sensor_health_decision` publica la decisión actual por
 familia y boya con valor `1` solo para la decisión activa.
+La regla `TidewatchSensorDecisionInvalid` eleva a crítica una decisión
+`invalid` mantenida durante cinco minutos.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y

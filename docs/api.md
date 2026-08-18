@@ -104,6 +104,8 @@ Cada evaluación guarda también la decisión por familia: `average`,
 `fallback_a`, `fallback_b` o `invalid`.
 La métrica Prometheus `tidewatch_sensor_health_decision` expone esa decisión
 actual para dashboards y alertas.
+Una decisión `invalid` mantenida activa durante cinco minutos dispara la alerta
+crítica `TidewatchSensorDecisionInvalid`.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,
