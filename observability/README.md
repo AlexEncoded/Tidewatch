@@ -51,3 +51,7 @@ con la configuración de `grafana/provisioning/`.
 
 Las reglas Prometheus se validan en CI con `promtool` usando la imagen oficial
 de Prometheus fijada en `prom/prometheus:v2.55.1`.
+
+El oxígeno disuelto se observa con `tidewatch_current_dissolved_oxygen_mg_l`
+por boya y canal, y su consistencia redundante queda registrada en
+`dissolved_oxygen_delta_mg_l`.
