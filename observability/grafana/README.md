@@ -18,6 +18,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Turbidez en NTU por boya y canal redundante.
 - Oxígeno disuelto en mg/L por boya y canal redundante.
 - pH por boya y canal redundante.
+- Conductividad en µS/cm por boya y canal redundante.
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar
