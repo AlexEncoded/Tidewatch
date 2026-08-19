@@ -27,6 +27,9 @@ La regla `TidewatchSensorDecisionInvalid` eleva a crítica una decisión
 La regla `TidewatchSensorFallbackActive` eleva un warning cuando una familia
 opera durante diez minutos con `fallback_a` o `fallback_b`; sirve para
 planificar mantenimiento antes de perder ambos canales.
+La IMU publica sus componentes de aceleración y velocidad angular por eje, y
+el diagnóstico A/B compara la magnitud del delta de aceleración en
+`imu_acceleration_delta_mps2`.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y
