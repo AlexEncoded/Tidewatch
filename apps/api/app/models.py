@@ -193,6 +193,21 @@ class DissolvedOxygenReading(DissolvedOxygenReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class PHReadingCreate(BaseModel):
+    ph: float = Field(ge=0, le=14)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PHReading(PHReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
@@ -237,6 +252,7 @@ class TelemetryBatchCreate(BaseModel):
     marine_current: list[MarineCurrentReadingCreate] = Field(default_factory=list, max_length=100)
     turbidity: list[TurbidityReadingCreate] = Field(default_factory=list, max_length=100)
     dissolved_oxygen: list[DissolvedOxygenReadingCreate] = Field(default_factory=list, max_length=100)
+    ph: list[PHReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -259,6 +275,7 @@ class TelemetryBatchCreate(BaseModel):
             or self.marine_current
             or self.turbidity
             or self.dissolved_oxygen
+            or self.ph
             or self.battery
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
@@ -275,6 +292,7 @@ class TelemetryBatchCreate(BaseModel):
             ("marine_current", self.marine_current),
             ("turbidity", self.turbidity),
             ("dissolved_oxygen", self.dissolved_oxygen),
+            ("ph", self.ph),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -386,6 +404,9 @@ class BuoySummary(BaseModel):
     latest_dissolved_oxygen: DissolvedOxygenReading | None = None
     latest_dissolved_oxygen_a: DissolvedOxygenReading | None = None
     latest_dissolved_oxygen_b: DissolvedOxygenReading | None = None
+    latest_ph: PHReading | None = None
+    latest_ph_a: PHReading | None = None
+    latest_ph_b: PHReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
