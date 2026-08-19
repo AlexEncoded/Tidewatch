@@ -104,6 +104,24 @@ current_wind_direction_degrees = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+marine_current_readings_total = Counter(
+    "tidewatch_marine_current_readings_total",
+    "Total number of marine current readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_marine_current_speed_mps = Gauge(
+    "tidewatch_current_marine_current_speed_mps",
+    "Most recent marine current speed by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_marine_current_direction_degrees = Gauge(
+    "tidewatch_current_marine_current_direction_degrees",
+    "Most recent marine current direction by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
