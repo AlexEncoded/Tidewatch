@@ -11,6 +11,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Tiempo desde la última lectura.
 - Tasa de lecturas por calidad (`good`, `suspect` e `invalid`).
 - Nivel de batería por boya.
+- Vectores de aceleración y velocidad angular de la IMU por boya, canal y eje.
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar
