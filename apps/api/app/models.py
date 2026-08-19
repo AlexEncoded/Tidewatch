@@ -304,6 +304,7 @@ class SensorHealth(BaseModel):
     wind_direction_delta_degrees: float | None = None
     marine_current_speed_delta_mps: float | None = None
     marine_current_direction_delta_degrees: float | None = None
+    turbidity_delta_ntu: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
     decisions: dict[str, str] = Field(default_factory=dict)

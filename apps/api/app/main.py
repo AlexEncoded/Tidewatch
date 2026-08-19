@@ -1172,6 +1172,12 @@ def sensor_health(
     marine_current_b = latest_usable_reading(
         repository.list_marine_current(buoy_id, 50, "B"), max_age_seconds, now
     )
+    turbidity_a = latest_usable_reading(
+        repository.list_turbidity(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    turbidity_b = latest_usable_reading(
+        repository.list_turbidity(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1181,6 +1187,7 @@ def sensor_health(
         "ambient_light": {"A": ambient_light_a, "B": ambient_light_b},
         "wind": {"A": wind_a, "B": wind_b},
         "marine_current": {"A": marine_current_a, "B": marine_current_b},
+        "turbidity": {"A": turbidity_a, "B": turbidity_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1283,6 +1290,11 @@ def sensor_health(
             if marine_current_a and marine_current_b
             else None
         ),
+        "turbidity": (
+            round(abs(turbidity_a[0].turbidity_ntu - turbidity_b[0].turbidity_ntu), 3)
+            if turbidity_a and turbidity_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1295,6 +1307,7 @@ def sensor_health(
         "wind_direction": 15,
         "marine_current_speed": 0.25,
         "marine_current_direction": 15,
+        "turbidity": 10,
     }
     degraded_sensors = [
         sensor
@@ -1353,6 +1366,7 @@ def sensor_health(
         wind_direction_delta_degrees=deltas["wind_direction"],
         marine_current_speed_delta_mps=deltas["marine_current_speed"],
         marine_current_direction_delta_degrees=deltas["marine_current_direction"],
+        turbidity_delta_ntu=deltas["turbidity"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,
