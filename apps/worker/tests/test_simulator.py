@@ -103,4 +103,4 @@ def test_marine_current_reading_stays_within_sensor_range(monkeypatch: pytest.Mo
     reading = simulator.marine_current_reading(19.99, 359.9)
 
     assert reading["current_speed_mps"] == 20
-    assert reading["current_direction_degrees"] == 0.04
+    assert reading["current_direction_degrees"] == 359.94
