@@ -16,6 +16,7 @@ from app.entities import (
     TurbidityReadingEntity,
     DissolvedOxygenReadingEntity,
     PHReadingEntity,
+    ConductivityReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -40,6 +41,7 @@ def setup_function() -> None:
         db.execute(delete(TurbidityReadingEntity))
         db.execute(delete(DissolvedOxygenReadingEntity))
         db.execute(delete(PHReadingEntity))
+        db.execute(delete(ConductivityReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -155,6 +157,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "turbidity": 0,
             "dissolved_oxygen": 0,
             "ph": 0,
+            "conductivity": 0,
             "battery": 1,
         },
     }
@@ -1050,6 +1053,33 @@ def test_sensor_health_compares_redundant_ph() -> None:
     assert health.status_code == 201
     assert health.json()["ph_delta"] == 0.1
     assert health.json()["decisions"]["ph"] == "average"
+
+
+def test_conductivity_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Conductivity Buoy"}
+    ).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/conductivity",
+        json={
+            "conductivity_us_cm": 51000,
+            "sensor_channel": "A",
+            "sensor_id": "conductivity-a-01",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["conductivity_us_cm"] == 51000
+    assert client.get(f"/api/v1/buoys/{buoy_id}/conductivity").json()[0][
+        "conductivity_us_cm"
+    ] == 51000
+    assert "tidewatch_conductivity_readings_total" in client.get("/metrics").text
+    invalid = client.post(
+        f"/api/v1/buoys/{buoy_id}/conductivity",
+        json={"conductivity_us_cm": 200001},
+    )
+    assert invalid.status_code == 422
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
