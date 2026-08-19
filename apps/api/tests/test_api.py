@@ -15,6 +15,7 @@ from app.entities import (
     MarineCurrentReadingEntity,
     TurbidityReadingEntity,
     DissolvedOxygenReadingEntity,
+    PHReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -38,6 +39,7 @@ def setup_function() -> None:
         db.execute(delete(MarineCurrentReadingEntity))
         db.execute(delete(TurbidityReadingEntity))
         db.execute(delete(DissolvedOxygenReadingEntity))
+        db.execute(delete(PHReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -152,6 +154,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "marine_current": 0,
             "turbidity": 0,
             "dissolved_oxygen": 0,
+            "ph": 0,
             "battery": 1,
         },
     }
@@ -1008,6 +1011,29 @@ def test_sensor_health_compares_redundant_dissolved_oxygen() -> None:
     assert health.status_code == 201
     assert health.json()["dissolved_oxygen_delta_mg_l"] == 0.5
     assert health.json()["decisions"]["dissolved_oxygen"] == "average"
+
+
+def test_ph_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "pH Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/ph",
+        json={
+            "ph": 8.1,
+            "sensor_channel": "A",
+            "sensor_id": "ph-a-01",
+            "firmware_version": "2.4.1",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["ph"] == 8.1
+    assert client.get(f"/api/v1/buoys/{buoy_id}/ph").json()[0]["ph"] == 8.1
+    assert client.get(f"/api/v1/buoys/{buoy_id}/ph").json()[0]["sensor_id"] == "ph-a-01"
+    assert "tidewatch_ph_readings_total" in client.get("/metrics").text
+
+    invalid = client.post(f"/api/v1/buoys/{buoy_id}/ph", json={"ph": 15})
+    assert invalid.status_code == 422
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
