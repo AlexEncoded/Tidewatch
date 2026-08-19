@@ -15,6 +15,7 @@ from .entities import (
     TurbidityReadingEntity,
     DissolvedOxygenReadingEntity,
     PHReadingEntity,
+    ConductivityReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -35,6 +36,7 @@ from .models import (
     TurbidityReading,
     DissolvedOxygenReading,
     PHReading,
+    ConductivityReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -556,6 +558,52 @@ class BuoyRepository:
 
     def latest_ph(self, buoy_id: str, sensor_channel: str = "A") -> PHReadingEntity | None:
         readings = self.list_ph(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_conductivity(
+        self, reading: ConductivityReading
+    ) -> ConductivityReadingEntity:
+        entity = ConductivityReadingEntity(
+            buoy_id=reading.buoy_id,
+            conductivity_us_cm=reading.conductivity_us_cm,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_conductivity(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[ConductivityReadingEntity]:
+        query = (
+            select(ConductivityReadingEntity)
+            .where(ConductivityReadingEntity.buoy_id == buoy_id)
+            .order_by(ConductivityReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if sensor_channel is not None:
+            query = query.where(
+                ConductivityReadingEntity.sensor_channel == sensor_channel
+            )
+        return list(self.db.scalars(query).all())
+
+    def latest_conductivity(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> ConductivityReadingEntity | None:
+        readings = self.list_conductivity(
+            buoy_id, limit=1, sensor_channel=sensor_channel
+        )
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:
