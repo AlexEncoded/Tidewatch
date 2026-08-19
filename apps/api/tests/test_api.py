@@ -1036,6 +1036,22 @@ def test_ph_ingestion_exposes_latest_value_and_metrics() -> None:
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_ph() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "pH Health Buoy"}).json()["id"]
+    for channel, value in (("A", 8.0), ("B", 8.1)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/ph",
+            json={"ph": value, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["ph_delta"] == 0.1
+    assert health.json()["decisions"]["ph"] == "average"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
