@@ -13,6 +13,7 @@ from .entities import (
     WindReadingEntity,
     MarineCurrentReadingEntity,
     TurbidityReadingEntity,
+    DissolvedOxygenReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -31,6 +32,7 @@ from .models import (
     WindReading,
     MarineCurrentReading,
     TurbidityReading,
+    DissolvedOxygenReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -470,6 +472,50 @@ class BuoyRepository:
         self, buoy_id: str, sensor_channel: str = "A"
     ) -> TurbidityReadingEntity | None:
         readings = self.list_turbidity(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_dissolved_oxygen(
+        self, reading: DissolvedOxygenReading
+    ) -> DissolvedOxygenReadingEntity:
+        entity = DissolvedOxygenReadingEntity(
+            buoy_id=reading.buoy_id,
+            dissolved_oxygen_mg_l=reading.dissolved_oxygen_mg_l,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_dissolved_oxygen(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[DissolvedOxygenReadingEntity]:
+        query = (
+            select(DissolvedOxygenReadingEntity)
+            .where(DissolvedOxygenReadingEntity.buoy_id == buoy_id)
+            .order_by(DissolvedOxygenReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if sensor_channel is not None:
+            query = query.where(DissolvedOxygenReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def latest_dissolved_oxygen(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> DissolvedOxygenReadingEntity | None:
+        readings = self.list_dissolved_oxygen(
+            buoy_id, limit=1, sensor_channel=sensor_channel
+        )
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

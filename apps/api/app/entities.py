@@ -40,6 +40,9 @@ class BuoyEntity(Base):
     turbidity_readings: Mapped[list["TurbidityReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    dissolved_oxygen_readings: Mapped[list["DissolvedOxygenReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
     battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
@@ -176,6 +179,20 @@ class TurbidityReadingEntity(Base):
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="turbidity_readings")
+
+
+class DissolvedOxygenReadingEntity(Base):
+    __tablename__ = "dissolved_oxygen_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    dissolved_oxygen_mg_l: Mapped[float] = mapped_column(Float, nullable=False)
+    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="dissolved_oxygen_readings")
 
 
 class SensorHealthCheckEntity(Base):
