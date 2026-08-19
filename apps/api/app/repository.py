@@ -10,6 +10,7 @@ from .entities import (
     BatteryReadingEntity,
     ImuReadingEntity,
     AmbientLightReadingEntity,
+    WindReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -25,6 +26,7 @@ from .models import (
     BatteryReading,
     ImuReading,
     AmbientLightReading,
+    WindReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -338,6 +340,47 @@ class BuoyRepository:
         self, buoy_id: str, sensor_channel: str = "A"
     ) -> AmbientLightReadingEntity | None:
         readings = self.list_ambient_light(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_wind(self, reading: WindReading) -> WindReadingEntity:
+        entity = WindReadingEntity(
+            buoy_id=reading.buoy_id,
+            wind_speed_mps=reading.wind_speed_mps,
+            wind_direction_degrees=reading.wind_direction_degrees,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_wind(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[WindReadingEntity]:
+        query = (
+            select(WindReadingEntity)
+            .where(WindReadingEntity.buoy_id == buoy_id)
+            .order_by(WindReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if sensor_channel is not None:
+            query = query.where(WindReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def latest_wind(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> WindReadingEntity | None:
+        readings = self.list_wind(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

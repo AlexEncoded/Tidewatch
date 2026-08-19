@@ -131,6 +131,22 @@ class AmbientLightReading(AmbientLightReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class WindReadingCreate(BaseModel):
+    wind_speed_mps: float = Field(ge=0, le=100)
+    wind_direction_degrees: float = Field(ge=0, lt=360)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class WindReading(WindReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
@@ -171,6 +187,7 @@ class TelemetryBatchCreate(BaseModel):
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
     imu: list[ImuReadingCreate] = Field(default_factory=list, max_length=100)
     ambient_light: list[AmbientLightReadingCreate] = Field(default_factory=list, max_length=100)
+    wind: list[WindReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -189,6 +206,7 @@ class TelemetryBatchCreate(BaseModel):
             or self.salinity
             or self.imu
             or self.ambient_light
+            or self.wind
             or self.battery
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
@@ -201,6 +219,7 @@ class TelemetryBatchCreate(BaseModel):
             ("salinity", self.salinity),
             ("imu", self.imu),
             ("ambient_light", self.ambient_light),
+            ("wind", self.wind),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -294,6 +313,9 @@ class BuoySummary(BaseModel):
     latest_ambient_light: AmbientLightReading | None = None
     latest_ambient_light_a: AmbientLightReading | None = None
     latest_ambient_light_b: AmbientLightReading | None = None
+    latest_wind: WindReading | None = None
+    latest_wind_a: WindReading | None = None
+    latest_wind_b: WindReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
