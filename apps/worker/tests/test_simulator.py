@@ -58,3 +58,24 @@ def test_battery_reading_discharges_one_device(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.03)
 
     assert simulator.battery_reading(100) == 99.97
+
+
+def test_imu_reading_stays_within_calm_buoy_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        simulator.random,
+        "uniform",
+        lambda minimum, maximum: (minimum + maximum) / 2,
+    )
+
+    reading = simulator.imu_reading()
+
+    assert set(reading) == {
+        "acceleration_x_mps2",
+        "acceleration_y_mps2",
+        "acceleration_z_mps2",
+        "angular_velocity_x_dps",
+        "angular_velocity_y_dps",
+        "angular_velocity_z_dps",
+    }
+    assert reading["acceleration_z_mps2"] == 9.8
+    assert abs(reading["angular_velocity_z_dps"]) <= 2

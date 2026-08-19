@@ -38,6 +38,18 @@ def salinity_reading(previous: float) -> float:
     return round(max(0, min(45, previous + drift)), 3)
 
 
+def imu_reading() -> dict[str, float]:
+    """Generate a calm buoy IMU vector with gravity on the vertical axis."""
+    return {
+        "acceleration_x_mps2": round(random.uniform(-0.35, 0.35), 3),
+        "acceleration_y_mps2": round(random.uniform(-0.35, 0.35), 3),
+        "acceleration_z_mps2": round(random.uniform(9.65, 9.95), 3),
+        "angular_velocity_x_dps": round(random.uniform(-2.0, 2.0), 3),
+        "angular_velocity_y_dps": round(random.uniform(-2.0, 2.0), 3),
+        "angular_velocity_z_dps": round(random.uniform(-2.0, 2.0), 3),
+    }
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -111,6 +123,11 @@ def run() -> None:
             current_temperature = temperature_reading(current_temperature)
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
+            imu_a = imu_reading()
+            imu_b = {
+                key: round(value + random.uniform(-0.04, 0.04), 3)
+                for key, value in imu_a.items()
+            }
             current_battery_a = battery_reading(current_battery_a)
             current_battery_b = battery_reading(current_battery_b)
             current_latitude = max(-90, min(90, current_latitude + random.uniform(-0.001, 0.001)))
@@ -158,6 +175,16 @@ def run() -> None:
                         "measured_at": measured_at,
                     }
                     for channel, values in readings.items()
+                ],
+                "imu": [
+                    {
+                        **values,
+                        "sensor_channel": channel,
+                        "sensor_id": f"imu-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel, values in {"A": imu_a, "B": imu_b}.items()
                 ],
                 "battery": [
                     {
