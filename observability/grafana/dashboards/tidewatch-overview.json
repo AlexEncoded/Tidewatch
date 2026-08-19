@@ -167,6 +167,18 @@
       "targets": [{"expr": "tidewatch_current_ambient_light_lux", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "lux", "decimals": 2}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 20,
+      "title": "Wind speed and direction",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 84},
+      "targets": [
+        {"expr": "tidewatch_current_wind_speed_mps", "legendFormat": "speed {{buoy_id}} / {{sensor_channel}}", "refId": "A"},
+        {"expr": "tidewatch_current_wind_direction_degrees", "legendFormat": "direction {{buoy_id}} / {{sensor_channel}}", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 2}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
