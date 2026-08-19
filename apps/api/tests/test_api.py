@@ -1082,6 +1082,24 @@ def test_conductivity_ingestion_exposes_latest_value_and_metrics() -> None:
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_conductivity() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Conductivity Health Buoy"}
+    ).json()["id"]
+    for channel, value in (("A", 51000), ("B", 52000)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/conductivity",
+            json={"conductivity_us_cm": value, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["conductivity_delta_us_cm"] == 1000
+    assert health.json()["decisions"]["conductivity"] == "average"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
