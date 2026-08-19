@@ -146,6 +146,18 @@
       "targets": [{"expr": "sum by (decision) (tidewatch_sensor_health_decision)", "legendFormat": "{{decision}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 18,
+      "title": "IMU motion vectors",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 68},
+      "targets": [
+        {"expr": "tidewatch_current_imu_acceleration_mps2", "legendFormat": "acc {{buoy_id}} / {{sensor_channel}} / {{axis}}", "refId": "A"},
+        {"expr": "tidewatch_current_imu_angular_velocity_dps", "legendFormat": "gyro {{buoy_id}} / {{sensor_channel}} / {{axis}}", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
