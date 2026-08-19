@@ -829,6 +829,22 @@ def test_ambient_light_ingestion_exposes_latest_lux() -> None:
     assert "tidewatch_current_ambient_light_lux" in metrics.text
 
 
+def test_sensor_health_compares_redundant_ambient_light() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Light Health Buoy"}).json()["id"]
+    for channel, lux in (("A", 800.0), ("B", 1200.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/ambient-light",
+            json={"illuminance_lux": lux, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["ambient_light_delta_lux"] == 400.0
+    assert health.json()["decisions"]["ambient_light"] == "average"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
