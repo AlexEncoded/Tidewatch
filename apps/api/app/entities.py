@@ -174,6 +174,8 @@ class SensorHealthCheckEntity(Base):
     ambient_light_delta_lux: Mapped[float | None] = mapped_column(Float, nullable=True)
     wind_speed_delta_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
     wind_direction_delta_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
+    marine_current_speed_delta_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
+    marine_current_direction_delta_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
     degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)

@@ -459,6 +459,8 @@ class BuoyRepository:
             ambient_light_delta_lux=health.ambient_light_delta_lux,
             wind_speed_delta_mps=health.wind_speed_delta_mps,
             wind_direction_delta_degrees=health.wind_direction_delta_degrees,
+            marine_current_speed_delta_mps=health.marine_current_speed_delta_mps,
+            marine_current_direction_delta_degrees=health.marine_current_direction_delta_degrees,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,

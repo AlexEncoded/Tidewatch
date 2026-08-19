@@ -1100,6 +1100,12 @@ def sensor_health(
     wind_b = latest_usable_reading(
         repository.list_wind(buoy_id, 50, "B"), max_age_seconds, now
     )
+    marine_current_a = latest_usable_reading(
+        repository.list_marine_current(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    marine_current_b = latest_usable_reading(
+        repository.list_marine_current(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1108,6 +1114,7 @@ def sensor_health(
         "imu": {"A": imu_a, "B": imu_b},
         "ambient_light": {"A": ambient_light_a, "B": ambient_light_b},
         "wind": {"A": wind_a, "B": wind_b},
+        "marine_current": {"A": marine_current_a, "B": marine_current_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1181,6 +1188,35 @@ def sensor_health(
             if wind_a and wind_b
             else None
         ),
+        "marine_current_speed": (
+            round(
+                abs(
+                    marine_current_a[0].current_speed_mps
+                    - marine_current_b[0].current_speed_mps
+                ),
+                3,
+            )
+            if marine_current_a and marine_current_b
+            else None
+        ),
+        "marine_current_direction": (
+            round(
+                min(
+                    abs(
+                        marine_current_a[0].current_direction_degrees
+                        - marine_current_b[0].current_direction_degrees
+                    ),
+                    360
+                    - abs(
+                        marine_current_a[0].current_direction_degrees
+                        - marine_current_b[0].current_direction_degrees
+                    ),
+                ),
+                2,
+            )
+            if marine_current_a and marine_current_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1191,6 +1227,8 @@ def sensor_health(
         "ambient_light": 5000,
         "wind_speed": 0.5,
         "wind_direction": 15,
+        "marine_current_speed": 0.25,
+        "marine_current_direction": 15,
     }
     degraded_sensors = [
         sensor
@@ -1199,6 +1237,11 @@ def sensor_health(
     ]
     if "wind_speed" in degraded_sensors or "wind_direction" in degraded_sensors:
         degraded_sensors.append("wind")
+    if (
+        "marine_current_speed" in degraded_sensors
+        or "marine_current_direction" in degraded_sensors
+    ):
+        degraded_sensors.append("marine_current")
     status_value = "insufficient_data"
     if available:
         status_value = "degraded" if degraded_sensors else "consistent"
@@ -1242,6 +1285,8 @@ def sensor_health(
         ambient_light_delta_lux=deltas["ambient_light"],
         wind_speed_delta_mps=deltas["wind_speed"],
         wind_direction_delta_degrees=deltas["wind_direction"],
+        marine_current_speed_delta_mps=deltas["marine_current_speed"],
+        marine_current_direction_delta_degrees=deltas["marine_current_direction"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,
