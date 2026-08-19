@@ -179,6 +179,18 @@
       ],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 2}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 21,
+      "title": "Marine current speed and direction",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 92},
+      "targets": [
+        {"expr": "tidewatch_current_marine_current_speed_mps", "legendFormat": "speed {{buoy_id}} / {{sensor_channel}}", "refId": "A"},
+        {"expr": "tidewatch_current_marine_current_direction_degrees", "legendFormat": "direction {{buoy_id}} / {{sensor_channel}}", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
