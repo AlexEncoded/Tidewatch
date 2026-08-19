@@ -86,3 +86,12 @@ def test_ambient_light_reading_stays_within_sensor_range(monkeypatch: pytest.Mon
 
     assert simulator.ambient_light_reading(1000) == 1050
     assert simulator.ambient_light_reading(149999.9) <= 150000
+
+
+def test_wind_reading_wraps_direction_and_bounds_speed(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.5)
+
+    reading = simulator.wind_reading(99.9, 359.8)
+
+    assert reading["wind_speed_mps"] == 100
+    assert reading["wind_direction_degrees"] == 0.3

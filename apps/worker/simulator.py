@@ -13,6 +13,8 @@ BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
 BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
 BASE_AMBIENT_LIGHT = float(os.getenv("BASE_AMBIENT_LIGHT_LUX", "1200"))
+BASE_WIND_SPEED = float(os.getenv("BASE_WIND_SPEED_MPS", "4"))
+BASE_WIND_DIRECTION = float(os.getenv("BASE_WIND_DIRECTION_DEGREES", "180"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -54,6 +56,16 @@ def imu_reading() -> dict[str, float]:
 def ambient_light_reading(previous: float) -> float:
     """Simulate gradual daylight changes in lux."""
     return round(max(0, min(150000, previous + random.uniform(-180, 180))), 2)
+
+
+def wind_reading(previous_speed: float, previous_direction: float) -> dict[str, float]:
+    """Simulate wind with a bounded speed and circular direction."""
+    return {
+        "wind_speed_mps": round(max(0, min(100, previous_speed + random.uniform(-0.5, 0.5))), 2),
+        "wind_direction_degrees": round(
+            (previous_direction + random.uniform(-8, 8)) % 360, 2
+        ),
+    }
 
 
 def battery_reading(previous: float) -> float:
@@ -120,6 +132,8 @@ def run() -> None:
         current_pressure = BASE_PRESSURE
         current_salinity = BASE_SALINITY
         current_ambient_light = BASE_AMBIENT_LIGHT
+        current_wind_speed = BASE_WIND_SPEED
+        current_wind_direction = BASE_WIND_DIRECTION
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -131,6 +145,16 @@ def run() -> None:
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
             current_ambient_light = ambient_light_reading(current_ambient_light)
+            wind_a = wind_reading(current_wind_speed, current_wind_direction)
+            current_wind_speed = wind_a["wind_speed_mps"]
+            current_wind_direction = wind_a["wind_direction_degrees"]
+            wind_b = {
+                "wind_speed_mps": round(max(0, wind_a["wind_speed_mps"] + random.uniform(-0.1, 0.1)), 2),
+                "wind_direction_degrees": round(
+                    (wind_a["wind_direction_degrees"] + random.uniform(-2, 2)) % 360,
+                    2,
+                ),
+            }
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -208,6 +232,16 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "wind": [
+                    {
+                        **values,
+                        "sensor_channel": channel,
+                        "sensor_id": f"wind-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel, values in {"A": wind_a, "B": wind_b}.items()
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -230,6 +264,7 @@ def run() -> None:
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
                 f"light {current_ambient_light:.1f} lux | "
+                f"wind {current_wind_speed:.2f} m/s {current_wind_direction:.1f}° | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
