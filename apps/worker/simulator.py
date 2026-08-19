@@ -15,6 +15,8 @@ BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
 BASE_AMBIENT_LIGHT = float(os.getenv("BASE_AMBIENT_LIGHT_LUX", "1200"))
 BASE_WIND_SPEED = float(os.getenv("BASE_WIND_SPEED_MPS", "4"))
 BASE_WIND_DIRECTION = float(os.getenv("BASE_WIND_DIRECTION_DEGREES", "180"))
+BASE_CURRENT_SPEED = float(os.getenv("BASE_CURRENT_SPEED_MPS", "0.8"))
+BASE_CURRENT_DIRECTION = float(os.getenv("BASE_CURRENT_DIRECTION_DEGREES", "90"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -64,6 +66,20 @@ def wind_reading(previous_speed: float, previous_direction: float) -> dict[str, 
         "wind_speed_mps": round(max(0, min(100, previous_speed + random.uniform(-0.5, 0.5))), 2),
         "wind_direction_degrees": round(
             (previous_direction + random.uniform(-8, 8)) % 360, 2
+        ),
+    }
+
+
+def marine_current_reading(
+    previous_speed: float, previous_direction: float
+) -> dict[str, float]:
+    """Simulate a bounded marine current with circular direction."""
+    return {
+        "current_speed_mps": round(
+            max(0, min(20, previous_speed + random.uniform(-0.08, 0.08))), 3
+        ),
+        "current_direction_degrees": round(
+            (previous_direction + random.uniform(-4, 4)) % 360, 2
         ),
     }
 
@@ -134,6 +150,8 @@ def run() -> None:
         current_ambient_light = BASE_AMBIENT_LIGHT
         current_wind_speed = BASE_WIND_SPEED
         current_wind_direction = BASE_WIND_DIRECTION
+        current_current_speed = BASE_CURRENT_SPEED
+        current_current_direction = BASE_CURRENT_DIRECTION
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -152,6 +170,21 @@ def run() -> None:
                 "wind_speed_mps": round(max(0, wind_a["wind_speed_mps"] + random.uniform(-0.1, 0.1)), 2),
                 "wind_direction_degrees": round(
                     (wind_a["wind_direction_degrees"] + random.uniform(-2, 2)) % 360,
+                    2,
+                ),
+            }
+            current_a = marine_current_reading(
+                current_current_speed, current_current_direction
+            )
+            current_current_speed = current_a["current_speed_mps"]
+            current_current_direction = current_a["current_direction_degrees"]
+            current_b = {
+                "current_speed_mps": round(
+                    max(0, current_a["current_speed_mps"] + random.uniform(-0.03, 0.03)),
+                    3,
+                ),
+                "current_direction_degrees": round(
+                    (current_a["current_direction_degrees"] + random.uniform(-1, 1)) % 360,
                     2,
                 ),
             }
@@ -242,6 +275,16 @@ def run() -> None:
                     }
                     for channel, values in {"A": wind_a, "B": wind_b}.items()
                 ],
+                "marine_current": [
+                    {
+                        **values,
+                        "sensor_channel": channel,
+                        "sensor_id": f"marine-current-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel, values in {"A": current_a, "B": current_b}.items()
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -265,6 +308,7 @@ def run() -> None:
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
                 f"light {current_ambient_light:.1f} lux | "
                 f"wind {current_wind_speed:.2f} m/s {current_wind_direction:.1f}° | "
+                f"current {current_current_speed:.3f} m/s {current_current_direction:.1f}° | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )

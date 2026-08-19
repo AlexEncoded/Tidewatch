@@ -95,3 +95,12 @@ def test_wind_reading_wraps_direction_and_bounds_speed(monkeypatch: pytest.Monke
 
     assert reading["wind_speed_mps"] == 100
     assert reading["wind_direction_degrees"] == 0.3
+
+
+def test_marine_current_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.04)
+
+    reading = simulator.marine_current_reading(19.99, 359.9)
+
+    assert reading["current_speed_mps"] == 20
+    assert reading["current_direction_degrees"] == 0.04
