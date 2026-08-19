@@ -24,6 +24,9 @@ La métrica `tidewatch_sensor_health_decision` publica la decisión actual por
 familia y boya con valor `1` solo para la decisión activa.
 La regla `TidewatchSensorDecisionInvalid` eleva a crítica una decisión
 `invalid` mantenida durante cinco minutos.
+La regla `TidewatchSensorFallbackActive` eleva un warning cuando una familia
+opera durante diez minutos con `fallback_a` o `fallback_b`; sirve para
+planificar mantenimiento antes de perder ambos canales.
 
 La API expone `/metrics` y ya existe una configuración inicial en
 `prometheus/prometheus.yml`, junto con reglas para detectar boyas silenciosas y
@@ -42,3 +45,6 @@ dispara una alerta de mantenimiento tras cinco minutos.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.
+
+Las reglas Prometheus se validan en CI con `promtool` usando la imagen oficial
+de Prometheus fijada en `prom/prometheus:v2.55.1`.
