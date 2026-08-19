@@ -116,6 +116,21 @@ class ImuReading(ImuReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class AmbientLightReadingCreate(BaseModel):
+    illuminance_lux: float = Field(ge=0, le=150000)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AmbientLightReading(AmbientLightReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
@@ -155,6 +170,7 @@ class TelemetryBatchCreate(BaseModel):
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
     imu: list[ImuReadingCreate] = Field(default_factory=list, max_length=100)
+    ambient_light: list[AmbientLightReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -167,7 +183,14 @@ class TelemetryBatchCreate(BaseModel):
 
     @model_validator(mode="after")
     def must_contain_readings(self) -> "TelemetryBatchCreate":
-        if not (self.temperatures or self.pressures or self.salinity or self.imu or self.battery):
+        if not (
+            self.temperatures
+            or self.pressures
+            or self.salinity
+            or self.imu
+            or self.ambient_light
+            or self.battery
+        ):
             raise ValueError("Telemetry batch must contain at least one reading")
         battery_devices = [reading.device_id for reading in self.battery]
         if len(battery_devices) != len(set(battery_devices)):
@@ -177,6 +200,7 @@ class TelemetryBatchCreate(BaseModel):
             ("pressure", self.pressures),
             ("salinity", self.salinity),
             ("imu", self.imu),
+            ("ambient_light", self.ambient_light),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -266,6 +290,9 @@ class BuoySummary(BaseModel):
     latest_imu: ImuReading | None = None
     latest_imu_a: ImuReading | None = None
     latest_imu_b: ImuReading | None = None
+    latest_ambient_light: AmbientLightReading | None = None
+    latest_ambient_light_a: AmbientLightReading | None = None
+    latest_ambient_light_b: AmbientLightReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
