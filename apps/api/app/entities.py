@@ -34,6 +34,9 @@ class BuoyEntity(Base):
     wind_readings: Mapped[list["WindReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    marine_current_readings: Mapped[list["MarineCurrentReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
     battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
@@ -141,6 +144,21 @@ class WindReadingEntity(Base):
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="wind_readings")
+
+
+class MarineCurrentReadingEntity(Base):
+    __tablename__ = "marine_current_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    current_speed_mps: Mapped[float] = mapped_column(Float, nullable=False)
+    current_direction_degrees: Mapped[float] = mapped_column(Float, nullable=False)
+    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="marine_current_readings")
 
 
 class SensorHealthCheckEntity(Base):
