@@ -13,6 +13,7 @@ from app.entities import (
     AmbientLightReadingEntity,
     WindReadingEntity,
     MarineCurrentReadingEntity,
+    TurbidityReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -34,6 +35,7 @@ def setup_function() -> None:
         db.execute(delete(AmbientLightReadingEntity))
         db.execute(delete(WindReadingEntity))
         db.execute(delete(MarineCurrentReadingEntity))
+        db.execute(delete(TurbidityReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -918,6 +920,25 @@ def test_marine_current_ingestion_and_circular_health() -> None:
     assert client.get(f"/api/v1/buoys/{buoy_id}/marine-current").json()[0]["current_speed_mps"] == 0.8
     metrics = client.get("/metrics")
     assert "tidewatch_marine_current_readings_total" in metrics.text
+
+
+def test_turbidity_ingestion_exposes_latest_ntu() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Turbidity Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/turbidity",
+        json={
+            "turbidity_ntu": 12.5,
+            "sensor_channel": "A",
+            "sensor_id": "turbidity-a-01",
+            "firmware_version": "2.4.1",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["turbidity_ntu"] == 12.5
+    assert client.get(f"/api/v1/buoys/{buoy_id}/turbidity").json()[0]["turbidity_ntu"] == 12.5
+    assert "tidewatch_turbidity_readings_total" in client.get("/metrics").text
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
