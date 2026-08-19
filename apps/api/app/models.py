@@ -154,6 +154,7 @@ class TelemetryBatchCreate(BaseModel):
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
+    imu: list[ImuReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -166,7 +167,7 @@ class TelemetryBatchCreate(BaseModel):
 
     @model_validator(mode="after")
     def must_contain_readings(self) -> "TelemetryBatchCreate":
-        if not (self.temperatures or self.pressures or self.salinity or self.battery):
+        if not (self.temperatures or self.pressures or self.salinity or self.imu or self.battery):
             raise ValueError("Telemetry batch must contain at least one reading")
         battery_devices = [reading.device_id for reading in self.battery]
         if len(battery_devices) != len(set(battery_devices)):
@@ -175,6 +176,7 @@ class TelemetryBatchCreate(BaseModel):
             ("temperature", self.temperatures),
             ("pressure", self.pressures),
             ("salinity", self.salinity),
+            ("imu", self.imu),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -260,6 +262,9 @@ class BuoySummary(BaseModel):
     latest_salinity: SalinityReading | None = None
     latest_salinity_a: SalinityReading | None = None
     latest_salinity_b: SalinityReading | None = None
+    latest_imu: ImuReading | None = None
+    latest_imu_a: ImuReading | None = None
+    latest_imu_b: ImuReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None

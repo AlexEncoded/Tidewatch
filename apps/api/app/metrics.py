@@ -56,6 +56,24 @@ current_salinity_psu = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+imu_readings_total = Counter(
+    "tidewatch_imu_readings_total",
+    "Total number of IMU readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_imu_acceleration_mps2 = Gauge(
+    "tidewatch_current_imu_acceleration_mps2",
+    "Most recent IMU acceleration vector component by buoy and channel.",
+    ["buoy_id", "sensor_channel", "axis"],
+)
+
+current_imu_angular_velocity_dps = Gauge(
+    "tidewatch_current_imu_angular_velocity_dps",
+    "Most recent IMU angular velocity vector component by buoy and channel.",
+    ["buoy_id", "sensor_channel", "axis"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
