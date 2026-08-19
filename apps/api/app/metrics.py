@@ -146,6 +146,18 @@ current_dissolved_oxygen_mg_l = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+ph_readings_total = Counter(
+    "tidewatch_ph_readings_total",
+    "Total number of pH readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_ph = Gauge(
+    "tidewatch_current_ph",
+    "Most recent pH value by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

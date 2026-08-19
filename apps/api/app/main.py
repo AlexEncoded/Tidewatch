@@ -45,6 +45,8 @@ from .models import (
     TurbidityReadingCreate,
     DissolvedOxygenReading,
     DissolvedOxygenReadingCreate,
+    PHReading,
+    PHReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -86,6 +88,7 @@ from .metrics import (
     current_marine_current_direction_degrees,
     current_turbidity_ntu,
     current_dissolved_oxygen_mg_l,
+    current_ph,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -94,6 +97,7 @@ from .metrics import (
     marine_current_readings_total,
     turbidity_readings_total,
     dissolved_oxygen_readings_total,
+    ph_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -235,6 +239,7 @@ def ingest_telemetry(
         "marine_current": 0,
         "turbidity": 0,
         "dissolved_oxygen": 0,
+        "ph": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -390,6 +395,19 @@ def ingest_telemetry(
         accepted_by_family["dissolved_oxygen"] += 1
         accepted += 1
 
+    for reading_payload in payload.ph:
+        reading = PHReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_ph(reading)
+        ph_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_ph.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.ph)
+        record_quality_metric(buoy_id, "ph", reading.sensor_channel, reading.quality)
+        accepted_by_family["ph"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -440,6 +458,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_dissolved_oxygen=repository.latest_dissolved_oxygen(buoy.id),
             latest_dissolved_oxygen_a=repository.latest_dissolved_oxygen(buoy.id, "A"),
             latest_dissolved_oxygen_b=repository.latest_dissolved_oxygen(buoy.id, "B"),
+            latest_ph=repository.latest_ph(buoy.id),
+            latest_ph_a=repository.latest_ph(buoy.id, "A"),
+            latest_ph_b=repository.latest_ph(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1061,6 +1082,49 @@ def list_dissolved_oxygen(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/ph",
+    response_model=PHReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["ph"],
+)
+def record_ph(
+    buoy_id: str,
+    payload: PHReadingCreate,
+    db: Session = Depends(get_db),
+) -> PHReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = PHReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_ph(reading)
+    ph_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_ph.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.ph)
+    record_quality_metric(buoy_id, "ph", reading.sensor_channel, reading.quality)
+    return saved_reading
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/ph",
+    response_model=list[PHReading],
+    tags=["ph"],
+)
+def list_ph(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[PHReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_ph(buoy_id, limit, sensor_channel)
 
 
 @app.post(
