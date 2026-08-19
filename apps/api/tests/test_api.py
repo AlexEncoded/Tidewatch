@@ -941,6 +941,22 @@ def test_turbidity_ingestion_exposes_latest_ntu() -> None:
     assert "tidewatch_turbidity_readings_total" in client.get("/metrics").text
 
 
+def test_sensor_health_compares_redundant_turbidity() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Turbidity Health Buoy"}).json()["id"]
+    for channel, turbidity in (("A", 10.0), ("B", 12.5)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/turbidity",
+            json={"turbidity_ntu": turbidity, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["turbidity_delta_ntu"] == 2.5
+    assert health.json()["decisions"]["turbidity"] == "average"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
