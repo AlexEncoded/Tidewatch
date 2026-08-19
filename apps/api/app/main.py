@@ -3,6 +3,7 @@ from csv import DictWriter
 from datetime import datetime, timezone
 from io import StringIO
 import logging
+from math import sqrt
 import os
 import time
 from uuid import uuid4
@@ -865,11 +866,18 @@ def sensor_health(
     salinity_b = latest_usable_reading(
         repository.list_salinity(buoy_id, 50, "B"), max_age_seconds, now
     )
+    imu_a = latest_usable_reading(
+        repository.list_imu(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    imu_b = latest_usable_reading(
+        repository.list_imu(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
         "pressure": {"A": pressure_a, "B": pressure_b},
         "salinity": {"A": salinity_a, "B": salinity_b},
+        "imu": {"A": imu_a, "B": imu_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -895,9 +903,31 @@ def sensor_health(
             if salinity_a and salinity_b
             else None
         ),
+        "imu": (
+            round(
+                sqrt(
+                    sum(
+                        (
+                            getattr(imu_a[0], f"acceleration_{axis}_mps2")
+                            - getattr(imu_b[0], f"acceleration_{axis}_mps2")
+                        )
+                        ** 2
+                        for axis in ("x", "y", "z")
+                    )
+                ),
+                3,
+            )
+            if imu_a and imu_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
-    thresholds = {"temperature": 0.5, "pressure": 0.25, "salinity": 0.2}
+    thresholds = {
+        "temperature": 0.5,
+        "pressure": 0.25,
+        "salinity": 0.2,
+        "imu": 0.5,
+    }
     degraded_sensors = [
         sensor
         for sensor, value in deltas.items()
@@ -942,6 +972,7 @@ def sensor_health(
         temperature_delta_celsius=deltas["temperature"],
         pressure_delta_kpa=deltas["pressure"],
         salinity_delta_psu=deltas["salinity"],
+        imu_acceleration_delta_mps2=deltas["imu"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,

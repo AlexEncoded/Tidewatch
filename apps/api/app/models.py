@@ -218,6 +218,7 @@ class SensorHealth(BaseModel):
     temperature_delta_celsius: float | None = None
     pressure_delta_kpa: float | None = None
     salinity_delta_psu: float | None = None
+    imu_acceleration_delta_mps2: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
     decisions: dict[str, str] = Field(default_factory=dict)
