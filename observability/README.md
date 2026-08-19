@@ -55,3 +55,5 @@ de Prometheus fijada en `prom/prometheus:v2.55.1`.
 El oxígeno disuelto se observa con `tidewatch_current_dissolved_oxygen_mg_l`
 por boya y canal, y su consistencia redundante queda registrada en
 `dissolved_oxygen_delta_mg_l`.
+El pH se observa con `tidewatch_current_ph` por boya y canal, y su delta A/B
+queda registrada como `ph_delta` en el historial de salud.
