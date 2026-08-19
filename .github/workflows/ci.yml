@@ -91,3 +91,17 @@ jobs:
 
       - name: Run worker tests
         run: pytest
+
+  observability-rules:
+    name: Observability rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Prometheus rules
+        run: >-
+          docker run --rm --entrypoint promtool
+          -v "${{ github.workspace }}:/work:ro"
+          prom/prometheus:v2.55.1
+          check rules /work/observability/alerts/tidewatch.rules.yml
