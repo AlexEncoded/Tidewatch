@@ -47,6 +47,8 @@ from .models import (
     DissolvedOxygenReadingCreate,
     PHReading,
     PHReadingCreate,
+    ConductivityReading,
+    ConductivityReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -89,6 +91,7 @@ from .metrics import (
     current_turbidity_ntu,
     current_dissolved_oxygen_mg_l,
     current_ph,
+    current_conductivity_us_cm,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -98,6 +101,7 @@ from .metrics import (
     turbidity_readings_total,
     dissolved_oxygen_readings_total,
     ph_readings_total,
+    conductivity_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -240,6 +244,7 @@ def ingest_telemetry(
         "turbidity": 0,
         "dissolved_oxygen": 0,
         "ph": 0,
+        "conductivity": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -408,6 +413,23 @@ def ingest_telemetry(
         accepted_by_family["ph"] += 1
         accepted += 1
 
+    for reading_payload in payload.conductivity:
+        reading = ConductivityReading(
+            buoy_id=buoy_id, **reading_payload.model_dump()
+        )
+        repository.add_conductivity(reading)
+        conductivity_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_conductivity_us_cm.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.conductivity_us_cm)
+        record_quality_metric(
+            buoy_id, "conductivity", reading.sensor_channel, reading.quality
+        )
+        accepted_by_family["conductivity"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -461,6 +483,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_ph=repository.latest_ph(buoy.id),
             latest_ph_a=repository.latest_ph(buoy.id, "A"),
             latest_ph_b=repository.latest_ph(buoy.id, "B"),
+            latest_conductivity=repository.latest_conductivity(buoy.id),
+            latest_conductivity_a=repository.latest_conductivity(buoy.id, "A"),
+            latest_conductivity_b=repository.latest_conductivity(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1125,6 +1150,51 @@ def list_ph(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_ph(buoy_id, limit, sensor_channel)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/conductivity",
+    response_model=ConductivityReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["conductivity"],
+)
+def record_conductivity(
+    buoy_id: str,
+    payload: ConductivityReadingCreate,
+    db: Session = Depends(get_db),
+) -> ConductivityReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = ConductivityReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_conductivity(reading)
+    conductivity_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_conductivity_us_cm.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.conductivity_us_cm)
+    record_quality_metric(
+        buoy_id, "conductivity", reading.sensor_channel, reading.quality
+    )
+    return saved_reading
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/conductivity",
+    response_model=list[ConductivityReading],
+    tags=["conductivity"],
+)
+def list_conductivity(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[ConductivityReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_conductivity(buoy_id, limit, sensor_channel)
 
 
 @app.post(

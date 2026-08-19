@@ -158,6 +158,18 @@ current_ph = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+conductivity_readings_total = Counter(
+    "tidewatch_conductivity_readings_total",
+    "Total number of conductivity readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_conductivity_us_cm = Gauge(
+    "tidewatch_current_conductivity_us_cm",
+    "Most recent conductivity in microsiemens per centimeter by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
