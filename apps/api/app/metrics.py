@@ -74,6 +74,18 @@ current_imu_angular_velocity_dps = Gauge(
     ["buoy_id", "sensor_channel", "axis"],
 )
 
+ambient_light_readings_total = Counter(
+    "tidewatch_ambient_light_readings_total",
+    "Total number of ambient light readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_ambient_light_lux = Gauge(
+    "tidewatch_current_ambient_light_lux",
+    "Most recent ambient light illuminance by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

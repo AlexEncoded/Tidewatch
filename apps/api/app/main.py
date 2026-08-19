@@ -35,6 +35,8 @@ from .models import (
     BatteryReading,
     BatteryReadingCreate,
     BatteryHealth,
+    AmbientLightReading,
+    AmbientLightReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -69,9 +71,11 @@ from .metrics import (
     current_temperature_celsius,
     current_imu_acceleration_mps2,
     current_imu_angular_velocity_dps,
+    current_ambient_light_lux,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
+    ambient_light_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -208,6 +212,7 @@ def ingest_telemetry(
         "pressure": 0,
         "salinity": 0,
         "imu": 0,
+        "ambient_light": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -278,6 +283,23 @@ def ingest_telemetry(
         accepted_by_family["imu"] += 1
         accepted += 1
 
+    for reading_payload in payload.ambient_light:
+        reading = AmbientLightReading(
+            buoy_id=buoy_id, **reading_payload.model_dump()
+        )
+        repository.add_ambient_light(reading)
+        ambient_light_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_ambient_light_lux.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.illuminance_lux)
+        record_quality_metric(
+            buoy_id, "ambient_light", reading.sensor_channel, reading.quality
+        )
+        accepted_by_family["ambient_light"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -313,6 +335,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_imu=repository.latest_imu(buoy.id),
             latest_imu_a=repository.latest_imu(buoy.id, "A"),
             latest_imu_b=repository.latest_imu(buoy.id, "B"),
+            latest_ambient_light=repository.latest_ambient_light(buoy.id),
+            latest_ambient_light_a=repository.latest_ambient_light(buoy.id, "A"),
+            latest_ambient_light_b=repository.latest_ambient_light(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -709,6 +734,49 @@ def list_imu(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_imu(buoy_id, limit, sensor_channel)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/ambient-light",
+    response_model=AmbientLightReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["ambient-light"],
+)
+def record_ambient_light(
+    buoy_id: str,
+    payload: AmbientLightReadingCreate,
+    db: Session = Depends(get_db),
+) -> AmbientLightReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = AmbientLightReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_ambient_light(reading)
+    ambient_light_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_ambient_light_lux.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.illuminance_lux)
+    record_quality_metric(buoy_id, "ambient_light", reading.sensor_channel, reading.quality)
+    return saved_reading
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/ambient-light",
+    response_model=list[AmbientLightReading],
+    tags=["ambient-light"],
+)
+def list_ambient_light(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[AmbientLightReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_ambient_light(buoy_id, limit, sensor_channel)
 
 
 @app.post(
