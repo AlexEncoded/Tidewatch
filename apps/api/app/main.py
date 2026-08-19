@@ -1248,6 +1248,12 @@ def sensor_health(
     turbidity_b = latest_usable_reading(
         repository.list_turbidity(buoy_id, 50, "B"), max_age_seconds, now
     )
+    dissolved_oxygen_a = latest_usable_reading(
+        repository.list_dissolved_oxygen(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    dissolved_oxygen_b = latest_usable_reading(
+        repository.list_dissolved_oxygen(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1258,6 +1264,7 @@ def sensor_health(
         "wind": {"A": wind_a, "B": wind_b},
         "marine_current": {"A": marine_current_a, "B": marine_current_b},
         "turbidity": {"A": turbidity_a, "B": turbidity_b},
+        "dissolved_oxygen": {"A": dissolved_oxygen_a, "B": dissolved_oxygen_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1365,6 +1372,17 @@ def sensor_health(
             if turbidity_a and turbidity_b
             else None
         ),
+        "dissolved_oxygen": (
+            round(
+                abs(
+                    dissolved_oxygen_a[0].dissolved_oxygen_mg_l
+                    - dissolved_oxygen_b[0].dissolved_oxygen_mg_l
+                ),
+                3,
+            )
+            if dissolved_oxygen_a and dissolved_oxygen_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1378,6 +1396,7 @@ def sensor_health(
         "marine_current_speed": 0.25,
         "marine_current_direction": 15,
         "turbidity": 10,
+        "dissolved_oxygen": 1,
     }
     degraded_sensors = [
         sensor
@@ -1437,6 +1456,7 @@ def sensor_health(
         marine_current_speed_delta_mps=deltas["marine_current_speed"],
         marine_current_direction_delta_degrees=deltas["marine_current_direction"],
         turbidity_delta_ntu=deltas["turbidity"],
+        dissolved_oxygen_delta_mg_l=deltas["dissolved_oxygen"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,

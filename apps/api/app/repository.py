@@ -550,6 +550,7 @@ class BuoyRepository:
             marine_current_speed_delta_mps=health.marine_current_speed_delta_mps,
             marine_current_direction_delta_degrees=health.marine_current_direction_delta_degrees,
             turbidity_delta_ntu=health.turbidity_delta_ntu,
+            dissolved_oxygen_delta_mg_l=health.dissolved_oxygen_delta_mg_l,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,
