@@ -18,6 +18,7 @@ BASE_WIND_DIRECTION = float(os.getenv("BASE_WIND_DIRECTION_DEGREES", "180"))
 BASE_CURRENT_SPEED = float(os.getenv("BASE_CURRENT_SPEED_MPS", "0.8"))
 BASE_CURRENT_DIRECTION = float(os.getenv("BASE_CURRENT_DIRECTION_DEGREES", "90"))
 BASE_TURBIDITY = float(os.getenv("BASE_TURBIDITY_NTU", "3"))
+BASE_DISSOLVED_OXYGEN = float(os.getenv("BASE_DISSOLVED_OXYGEN_MG_L", "7.5"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -90,6 +91,11 @@ def turbidity_reading(previous: float) -> float:
     return round(max(0, min(5000, previous + random.uniform(-0.4, 0.4))), 3)
 
 
+def dissolved_oxygen_reading(previous: float) -> float:
+    """Simulate gradual dissolved oxygen changes in mg/L."""
+    return round(max(0, min(20, previous + random.uniform(-0.08, 0.08))), 3)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -159,6 +165,7 @@ def run() -> None:
         current_current_speed = BASE_CURRENT_SPEED
         current_current_direction = BASE_CURRENT_DIRECTION
         current_turbidity = BASE_TURBIDITY
+        current_dissolved_oxygen = BASE_DISSOLVED_OXYGEN
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -196,6 +203,7 @@ def run() -> None:
                 ),
             }
             current_turbidity = turbidity_reading(current_turbidity)
+            current_dissolved_oxygen = dissolved_oxygen_reading(current_dissolved_oxygen)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -310,6 +318,26 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "dissolved_oxygen": [
+                    {
+                        "dissolved_oxygen_mg_l": round(
+                            max(
+                                0,
+                                min(
+                                    20,
+                                    current_dissolved_oxygen
+                                    + (0 if channel == "A" else random.uniform(-0.03, 0.03)),
+                                ),
+                            ),
+                            3,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"dissolved-oxygen-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -335,6 +363,7 @@ def run() -> None:
                 f"wind {current_wind_speed:.2f} m/s {current_wind_direction:.1f}° | "
                 f"current {current_current_speed:.3f} m/s {current_current_direction:.1f}° | "
                 f"turbidity {current_turbidity:.3f} NTU | "
+                f"dissolved oxygen {current_dissolved_oxygen:.3f} mg/L | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )

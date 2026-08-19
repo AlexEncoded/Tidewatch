@@ -111,3 +111,12 @@ def test_turbidity_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyP
 
     assert simulator.turbidity_reading(4999.9) == 5000
     assert simulator.turbidity_reading(1.0) == 1.4
+
+
+def test_dissolved_oxygen_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.08)
+
+    assert simulator.dissolved_oxygen_reading(19.99) == 20
+    assert simulator.dissolved_oxygen_reading(7.5) == 7.58
