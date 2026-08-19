@@ -940,12 +940,19 @@ def sensor_health(
     imu_b = latest_usable_reading(
         repository.list_imu(buoy_id, 50, "B"), max_age_seconds, now
     )
+    ambient_light_a = latest_usable_reading(
+        repository.list_ambient_light(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    ambient_light_b = latest_usable_reading(
+        repository.list_ambient_light(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
         "pressure": {"A": pressure_a, "B": pressure_b},
         "salinity": {"A": salinity_a, "B": salinity_b},
         "imu": {"A": imu_a, "B": imu_b},
+        "ambient_light": {"A": ambient_light_a, "B": ambient_light_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -988,6 +995,17 @@ def sensor_health(
             if imu_a and imu_b
             else None
         ),
+        "ambient_light": (
+            round(
+                abs(
+                    ambient_light_a[0].illuminance_lux
+                    - ambient_light_b[0].illuminance_lux
+                ),
+                2,
+            )
+            if ambient_light_a and ambient_light_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -995,6 +1013,7 @@ def sensor_health(
         "pressure": 0.25,
         "salinity": 0.2,
         "imu": 0.5,
+        "ambient_light": 5000,
     }
     degraded_sensors = [
         sensor
@@ -1041,6 +1060,7 @@ def sensor_health(
         pressure_delta_kpa=deltas["pressure"],
         salinity_delta_psu=deltas["salinity"],
         imu_acceleration_delta_mps2=deltas["imu"],
+        ambient_light_delta_lux=deltas["ambient_light"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,

@@ -366,6 +366,7 @@ class BuoyRepository:
             pressure_delta_kpa=health.pressure_delta_kpa,
             salinity_delta_psu=health.salinity_delta_psu,
             imu_acceleration_delta_mps2=health.imu_acceleration_delta_mps2,
+            ambient_light_delta_lux=health.ambient_light_delta_lux,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,
