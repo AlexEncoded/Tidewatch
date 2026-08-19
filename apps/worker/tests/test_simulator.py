@@ -104,3 +104,10 @@ def test_marine_current_reading_stays_within_sensor_range(monkeypatch: pytest.Mo
 
     assert reading["current_speed_mps"] == 20
     assert reading["current_direction_degrees"] == 359.94
+
+
+def test_turbidity_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.4)
+
+    assert simulator.turbidity_reading(4999.9) == 5000
+    assert simulator.turbidity_reading(1.0) == 1.4
