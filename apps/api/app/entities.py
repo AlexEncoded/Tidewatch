@@ -229,6 +229,7 @@ class SensorHealthCheckEntity(Base):
     marine_current_direction_delta_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
     turbidity_delta_ntu: Mapped[float | None] = mapped_column(Float, nullable=True)
     dissolved_oxygen_delta_mg_l: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ph_delta: Mapped[float | None] = mapped_column(Float, nullable=True)
     degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
