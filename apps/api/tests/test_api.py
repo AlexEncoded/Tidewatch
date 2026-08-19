@@ -9,6 +9,7 @@ from app.entities import (
     BuoyEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
+    ImuReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -26,6 +27,7 @@ def setup_function() -> None:
         db.execute(delete(PressureReadingEntity))
         db.execute(delete(SalinityReadingEntity))
         db.execute(delete(BatteryReadingEntity))
+        db.execute(delete(ImuReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -110,6 +112,17 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
                 "sensor_id": "salinity-a-01",
                 "firmware_version": "2.4.1",
             }],
+            "imu": [{
+                "acceleration_x_mps2": 0.12,
+                "acceleration_y_mps2": -0.08,
+                "acceleration_z_mps2": 9.79,
+                "angular_velocity_x_dps": 0.4,
+                "angular_velocity_y_dps": -0.2,
+                "angular_velocity_z_dps": 0.1,
+                "sensor_channel": "A",
+                "sensor_id": "imu-a-01",
+                "firmware_version": "2.4.1",
+            }],
             "battery": {"battery_percent": 87.5},
             "location": {"latitude": 36.9, "longitude": 2.7},
         },
@@ -118,16 +131,21 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     assert response.status_code == 202
     assert response.json() == {
         "buoy_id": buoy_id,
-        "accepted_readings": 5,
+        "accepted_readings": 6,
         "accepted_by_family": {
             "temperature": 1,
             "pressure": 2,
             "salinity": 1,
+            "imu": 1,
             "battery": 1,
         },
     }
     summary = client.get("/api/v1/buoys").json()[0]
     assert summary["latest_temperature"]["temperature_celsius"] == 19.8
+    assert summary["latest_imu"]["acceleration_z_mps2"] == 9.79
+    metrics = client.get("/metrics")
+    assert "tidewatch_imu_readings_total" in metrics.text
+    assert 'tidewatch_current_imu_acceleration_mps2{axis="z"' in metrics.text
     assert summary["latest_temperature_a"]["temperature_celsius"] == 19.8
     assert summary["latest_temperature_b"] is None
     assert summary["latest_pressure"]["pressure_kpa"] == 101.4
