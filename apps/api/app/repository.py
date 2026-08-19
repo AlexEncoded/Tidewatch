@@ -640,6 +640,7 @@ class BuoyRepository:
             turbidity_delta_ntu=health.turbidity_delta_ntu,
             dissolved_oxygen_delta_mg_l=health.dissolved_oxygen_delta_mg_l,
             ph_delta=health.ph_delta,
+            conductivity_delta_us_cm=health.conductivity_delta_us_cm,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,
