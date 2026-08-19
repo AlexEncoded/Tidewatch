@@ -148,6 +148,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "ambient_light": 0,
             "wind": 0,
             "marine_current": 0,
+            "turbidity": 0,
             "battery": 1,
         },
     }
