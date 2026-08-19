@@ -12,6 +12,7 @@ from app.entities import (
     ImuReadingEntity,
     AmbientLightReadingEntity,
     WindReadingEntity,
+    MarineCurrentReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -32,6 +33,7 @@ def setup_function() -> None:
         db.execute(delete(ImuReadingEntity))
         db.execute(delete(AmbientLightReadingEntity))
         db.execute(delete(WindReadingEntity))
+        db.execute(delete(MarineCurrentReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -891,6 +893,30 @@ def test_sensor_health_compares_wind_direction_circularly() -> None:
     assert health.json()["wind_speed_delta_mps"] == 0.0
     assert health.json()["wind_direction_delta_degrees"] == 2.0
     assert health.json()["decisions"]["wind"] == "average"
+
+
+def test_marine_current_ingestion_and_circular_health() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Current Buoy"}).json()["id"]
+    for channel, direction in (("A", 359.0), ("B", 1.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/marine-current",
+            json={
+                "current_speed_mps": 0.8,
+                "current_direction_degrees": direction,
+                "sensor_channel": channel,
+            },
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["marine_current_speed_delta_mps"] == 0.0
+    assert health.json()["marine_current_direction_delta_degrees"] == 2.0
+    assert health.json()["decisions"]["marine_current"] == "average"
+    assert client.get(f"/api/v1/buoys/{buoy_id}/marine-current").json()[0]["current_speed_mps"] == 0.8
+    metrics = client.get("/metrics")
+    assert "tidewatch_marine_current_readings_total" in metrics.text
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
