@@ -141,6 +141,8 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "pressure": 2,
             "salinity": 1,
             "imu": 1,
+            "ambient_light": 0,
+            "wind": 0,
             "battery": 1,
         },
     }
