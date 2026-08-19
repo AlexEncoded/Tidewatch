@@ -134,6 +134,18 @@ current_turbidity_ntu = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+dissolved_oxygen_readings_total = Counter(
+    "tidewatch_dissolved_oxygen_readings_total",
+    "Total number of dissolved oxygen readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_dissolved_oxygen_mg_l = Gauge(
+    "tidewatch_current_dissolved_oxygen_mg_l",
+    "Most recent dissolved oxygen concentration in mg/L by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

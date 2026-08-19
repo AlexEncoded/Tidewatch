@@ -43,6 +43,8 @@ from .models import (
     MarineCurrentReadingCreate,
     TurbidityReading,
     TurbidityReadingCreate,
+    DissolvedOxygenReading,
+    DissolvedOxygenReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -83,6 +85,7 @@ from .metrics import (
     current_marine_current_speed_mps,
     current_marine_current_direction_degrees,
     current_turbidity_ntu,
+    current_dissolved_oxygen_mg_l,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -90,6 +93,7 @@ from .metrics import (
     wind_readings_total,
     marine_current_readings_total,
     turbidity_readings_total,
+    dissolved_oxygen_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -230,6 +234,7 @@ def ingest_telemetry(
         "wind": 0,
         "marine_current": 0,
         "turbidity": 0,
+        "dissolved_oxygen": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -368,6 +373,23 @@ def ingest_telemetry(
         accepted_by_family["turbidity"] += 1
         accepted += 1
 
+    for reading_payload in payload.dissolved_oxygen:
+        reading = DissolvedOxygenReading(
+            buoy_id=buoy_id, **reading_payload.model_dump()
+        )
+        repository.add_dissolved_oxygen(reading)
+        dissolved_oxygen_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_dissolved_oxygen_mg_l.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.dissolved_oxygen_mg_l)
+        record_quality_metric(
+            buoy_id, "dissolved_oxygen", reading.sensor_channel, reading.quality
+        )
+        accepted_by_family["dissolved_oxygen"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -415,6 +437,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_turbidity=repository.latest_turbidity(buoy.id),
             latest_turbidity_a=repository.latest_turbidity(buoy.id, "A"),
             latest_turbidity_b=repository.latest_turbidity(buoy.id, "B"),
+            latest_dissolved_oxygen=repository.latest_dissolved_oxygen(buoy.id),
+            latest_dissolved_oxygen_a=repository.latest_dissolved_oxygen(buoy.id, "A"),
+            latest_dissolved_oxygen_b=repository.latest_dissolved_oxygen(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -991,6 +1016,51 @@ def list_turbidity(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_turbidity(buoy_id, limit, sensor_channel)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/dissolved-oxygen",
+    response_model=DissolvedOxygenReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["dissolved-oxygen"],
+)
+def record_dissolved_oxygen(
+    buoy_id: str,
+    payload: DissolvedOxygenReadingCreate,
+    db: Session = Depends(get_db),
+) -> DissolvedOxygenReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = DissolvedOxygenReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_dissolved_oxygen(reading)
+    dissolved_oxygen_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_dissolved_oxygen_mg_l.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.dissolved_oxygen_mg_l)
+    record_quality_metric(
+        buoy_id, "dissolved_oxygen", reading.sensor_channel, reading.quality
+    )
+    return saved_reading
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/dissolved-oxygen",
+    response_model=list[DissolvedOxygenReading],
+    tags=["dissolved-oxygen"],
+)
+def list_dissolved_oxygen(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[DissolvedOxygenReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 
 
 @app.post(
