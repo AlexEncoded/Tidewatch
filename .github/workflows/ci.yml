@@ -99,6 +99,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate Grafana dashboards
+        run: python -m json.tool observability/grafana/dashboards/tidewatch-overview.json > /dev/null
+
       - name: Validate Prometheus rules
         run: >-
           docker run --rm --entrypoint promtool
