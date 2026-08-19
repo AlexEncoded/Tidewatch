@@ -11,6 +11,7 @@ from app.entities import (
     BatteryReadingEntity,
     ImuReadingEntity,
     AmbientLightReadingEntity,
+    WindReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -30,6 +31,7 @@ def setup_function() -> None:
         db.execute(delete(BatteryReadingEntity))
         db.execute(delete(ImuReadingEntity))
         db.execute(delete(AmbientLightReadingEntity))
+        db.execute(delete(WindReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -843,6 +845,29 @@ def test_sensor_health_compares_redundant_ambient_light() -> None:
     assert health.status_code == 201
     assert health.json()["ambient_light_delta_lux"] == 400.0
     assert health.json()["decisions"]["ambient_light"] == "average"
+
+
+def test_wind_ingestion_exposes_speed_and_direction() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Wind Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/wind",
+        json={
+            "wind_speed_mps": 6.4,
+            "wind_direction_degrees": 275.0,
+            "sensor_channel": "A",
+            "sensor_id": "wind-a-01",
+            "firmware_version": "2.4.1",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["wind_speed_mps"] == 6.4
+    assert client.get(f"/api/v1/buoys/{buoy_id}/wind").json()[0]["wind_direction_degrees"] == 275.0
+    metrics = client.get("/metrics")
+    assert "tidewatch_wind_readings_total" in metrics.text
+    assert "tidewatch_current_wind_speed_mps" in metrics.text
+    assert "tidewatch_current_wind_direction_degrees" in metrics.text
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
