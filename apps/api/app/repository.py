@@ -410,6 +410,8 @@ class BuoyRepository:
             salinity_delta_psu=health.salinity_delta_psu,
             imu_acceleration_delta_mps2=health.imu_acceleration_delta_mps2,
             ambient_light_delta_lux=health.ambient_light_delta_lux,
+            wind_speed_delta_mps=health.wind_speed_delta_mps,
+            wind_direction_delta_degrees=health.wind_direction_delta_degrees,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,
