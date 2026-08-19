@@ -33,6 +33,14 @@ groups:
         annotations:
           summary: "Tidewatch sensor decision is invalid"
           description: "A sensor family has no trustworthy value after redundant-channel validation and requires maintenance review."
+      - alert: TidewatchSensorFallbackActive
+        expr: tidewatch_sensor_health_decision{decision=~"fallback_a|fallback_b"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch sensor fallback is active"
+          description: "A sensor family is operating with only one valid redundant channel and should be inspected before redundancy is lost."
       - alert: TidewatchInvalidReadings
         expr: sum by (buoy_id) (increase(tidewatch_reading_quality_total{quality="invalid"}[10m])) > 0
         for: 2m
