@@ -127,3 +127,12 @@ def test_ph_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -
 
     assert simulator.ph_reading(13.99) == 14
     assert simulator.ph_reading(8.1) == 8.12
+
+
+def test_conductivity_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 250)
+
+    assert simulator.conductivity_reading(199999) == 200000
+    assert simulator.conductivity_reading(51000) == 51250

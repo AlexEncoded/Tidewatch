@@ -20,6 +20,7 @@ BASE_CURRENT_DIRECTION = float(os.getenv("BASE_CURRENT_DIRECTION_DEGREES", "90")
 BASE_TURBIDITY = float(os.getenv("BASE_TURBIDITY_NTU", "3"))
 BASE_DISSOLVED_OXYGEN = float(os.getenv("BASE_DISSOLVED_OXYGEN_MG_L", "7.5"))
 BASE_PH = float(os.getenv("BASE_PH", "8.1"))
+BASE_CONDUCTIVITY = float(os.getenv("BASE_CONDUCTIVITY_US_CM", "51000"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -102,6 +103,11 @@ def ph_reading(previous: float) -> float:
     return round(max(0, min(14, previous + random.uniform(-0.02, 0.02))), 3)
 
 
+def conductivity_reading(previous: float) -> float:
+    """Simulate gradual conductivity changes in microsiemens per centimeter."""
+    return round(max(0, min(200000, previous + random.uniform(-250, 250))), 2)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -173,6 +179,7 @@ def run() -> None:
         current_turbidity = BASE_TURBIDITY
         current_dissolved_oxygen = BASE_DISSOLVED_OXYGEN
         current_ph = BASE_PH
+        current_conductivity = BASE_CONDUCTIVITY
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -212,6 +219,7 @@ def run() -> None:
             current_turbidity = turbidity_reading(current_turbidity)
             current_dissolved_oxygen = dissolved_oxygen_reading(current_dissolved_oxygen)
             current_ph = ph_reading(current_ph)
+            current_conductivity = conductivity_reading(current_conductivity)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -366,6 +374,26 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "conductivity": [
+                    {
+                        "conductivity_us_cm": round(
+                            max(
+                                0,
+                                min(
+                                    200000,
+                                    current_conductivity
+                                    + (0 if channel == "A" else random.uniform(-80, 80)),
+                                ),
+                            ),
+                            2,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"conductivity-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -393,6 +421,7 @@ def run() -> None:
                 f"turbidity {current_turbidity:.3f} NTU | "
                 f"dissolved oxygen {current_dissolved_oxygen:.3f} mg/L | "
                 f"pH {current_ph:.3f} | "
+                f"conductivity {current_conductivity:.2f} uS/cm | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
