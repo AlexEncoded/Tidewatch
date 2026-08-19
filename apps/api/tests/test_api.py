@@ -10,6 +10,7 @@ from app.entities import (
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
     ImuReadingEntity,
+    AmbientLightReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -28,6 +29,7 @@ def setup_function() -> None:
         db.execute(delete(SalinityReadingEntity))
         db.execute(delete(BatteryReadingEntity))
         db.execute(delete(ImuReadingEntity))
+        db.execute(delete(AmbientLightReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -802,6 +804,29 @@ def test_sensor_health_compares_redundant_imu_acceleration() -> None:
     assert health.status_code == 201
     assert health.json()["imu_acceleration_delta_mps2"] == 0.15
     assert health.json()["decisions"]["imu"] == "average"
+
+
+def test_ambient_light_ingestion_exposes_latest_lux() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Light Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/ambient-light",
+        json={
+            "illuminance_lux": 845.5,
+            "sensor_channel": "A",
+            "sensor_id": "ambient-light-a-01",
+            "firmware_version": "2.4.1",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["illuminance_lux"] == 845.5
+    listing = client.get(f"/api/v1/buoys/{buoy_id}/ambient-light")
+    assert listing.status_code == 200
+    assert listing.json()[0]["buoy_id"] == buoy_id
+    metrics = client.get("/metrics")
+    assert "tidewatch_ambient_light_readings_total" in metrics.text
+    assert "tidewatch_current_ambient_light_lux" in metrics.text
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
