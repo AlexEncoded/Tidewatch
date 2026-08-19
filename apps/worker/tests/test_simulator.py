@@ -120,3 +120,10 @@ def test_dissolved_oxygen_reading_stays_within_sensor_range(
 
     assert simulator.dissolved_oxygen_reading(19.99) == 20
     assert simulator.dissolved_oxygen_reading(7.5) == 7.58
+
+
+def test_ph_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.02)
+
+    assert simulator.ph_reading(13.99) == 14
+    assert simulator.ph_reading(8.1) == 8.12
