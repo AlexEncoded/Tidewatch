@@ -122,6 +122,18 @@ current_marine_current_direction_degrees = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+turbidity_readings_total = Counter(
+    "tidewatch_turbidity_readings_total",
+    "Total number of turbidity readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_turbidity_ntu = Gauge(
+    "tidewatch_current_turbidity_ntu",
+    "Most recent turbidity in NTU by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
