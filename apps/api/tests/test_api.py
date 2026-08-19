@@ -780,6 +780,30 @@ def test_sensor_health_check_is_persisted_and_retrievable() -> None:
     assert 'decision="fallback_a",sensor="temperature"} 1.0' in metrics.text
 
 
+def test_sensor_health_compares_redundant_imu_acceleration() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "IMU Health Buoy"}).json()["id"]
+    for channel, x_value in (("A", 0.10), ("B", 0.25)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/imu",
+            json={
+                "acceleration_x_mps2": x_value,
+                "acceleration_y_mps2": 0.0,
+                "acceleration_z_mps2": 9.8,
+                "angular_velocity_x_dps": 0.1,
+                "angular_velocity_y_dps": 0.1,
+                "angular_velocity_z_dps": 0.1,
+                "sensor_channel": channel,
+            },
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["imu_acceleration_delta_mps2"] == 0.15
+    assert health.json()["decisions"]["imu"] == "average"
+
+
 def test_maintenance_issues_reports_degraded_sensor() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance Buoy"}).json()["id"]
     for channel, temperature in (("A", 20.0), ("B", 21.0)):
