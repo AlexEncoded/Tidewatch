@@ -158,6 +158,15 @@
       ],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 19,
+      "title": "Ambient light",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 76},
+      "targets": [{"expr": "tidewatch_current_ambient_light_lux", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "lux", "decimals": 2}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
