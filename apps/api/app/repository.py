@@ -8,6 +8,7 @@ from .entities import (
     SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
+    ImuReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -21,6 +22,7 @@ from .models import (
     PressureReading,
     SalinityReading,
     BatteryReading,
+    ImuReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -247,6 +249,51 @@ class BuoyRepository:
         self, buoy_id: str, sensor_channel: str = "A"
     ) -> SalinityReadingEntity | None:
         readings = self.list_salinity(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_imu(self, reading: ImuReading) -> ImuReadingEntity:
+        entity = ImuReadingEntity(
+            buoy_id=reading.buoy_id,
+            acceleration_x_mps2=reading.acceleration_x_mps2,
+            acceleration_y_mps2=reading.acceleration_y_mps2,
+            acceleration_z_mps2=reading.acceleration_z_mps2,
+            angular_velocity_x_dps=reading.angular_velocity_x_dps,
+            angular_velocity_y_dps=reading.angular_velocity_y_dps,
+            angular_velocity_z_dps=reading.angular_velocity_z_dps,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_imu(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[ImuReadingEntity]:
+        query = (
+            select(ImuReadingEntity)
+            .where(ImuReadingEntity.buoy_id == buoy_id)
+            .order_by(ImuReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if sensor_channel is not None:
+            query = query.where(ImuReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def latest_imu(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> ImuReadingEntity | None:
+        readings = self.list_imu(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

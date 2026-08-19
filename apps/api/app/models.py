@@ -96,6 +96,26 @@ class SalinityReading(SalinityReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class ImuReadingCreate(BaseModel):
+    acceleration_x_mps2: float = Field(ge=-200, le=200)
+    acceleration_y_mps2: float = Field(ge=-200, le=200)
+    acceleration_z_mps2: float = Field(ge=-200, le=200)
+    angular_velocity_x_dps: float = Field(ge=-2000, le=2000)
+    angular_velocity_y_dps: float = Field(ge=-2000, le=2000)
+    angular_velocity_z_dps: float = Field(ge=-2000, le=2000)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ImuReading(ImuReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
