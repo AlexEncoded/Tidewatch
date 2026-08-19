@@ -12,6 +12,7 @@ INTERVAL_SECONDS = float(os.getenv("INTERVAL_SECONDS", "10"))
 BASE_TEMPERATURE = float(os.getenv("BASE_TEMPERATURE_CELSIUS", "19.5"))
 BASE_PRESSURE = float(os.getenv("BASE_PRESSURE_KPA", "101.3"))
 BASE_SALINITY = float(os.getenv("BASE_SALINITY_PSU", "35.2"))
+BASE_AMBIENT_LIGHT = float(os.getenv("BASE_AMBIENT_LIGHT_LUX", "1200"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -48,6 +49,11 @@ def imu_reading() -> dict[str, float]:
         "angular_velocity_y_dps": round(random.uniform(-2.0, 2.0), 3),
         "angular_velocity_z_dps": round(random.uniform(-2.0, 2.0), 3),
     }
+
+
+def ambient_light_reading(previous: float) -> float:
+    """Simulate gradual daylight changes in lux."""
+    return round(max(0, min(150000, previous + random.uniform(-180, 180))), 2)
 
 
 def battery_reading(previous: float) -> float:
@@ -113,6 +119,7 @@ def run() -> None:
         current_temperature = BASE_TEMPERATURE
         current_pressure = BASE_PRESSURE
         current_salinity = BASE_SALINITY
+        current_ambient_light = BASE_AMBIENT_LIGHT
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -123,6 +130,7 @@ def run() -> None:
             current_temperature = temperature_reading(current_temperature)
             current_pressure = pressure_reading(current_pressure)
             current_salinity = salinity_reading(current_salinity)
+            current_ambient_light = ambient_light_reading(current_ambient_light)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -186,6 +194,20 @@ def run() -> None:
                     }
                     for channel, values in {"A": imu_a, "B": imu_b}.items()
                 ],
+                "ambient_light": [
+                    {
+                        "illuminance_lux": round(
+                            current_ambient_light
+                            + (0 if channel == "A" else random.uniform(-25, 25)),
+                            2,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"ambient-light-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -207,6 +229,7 @@ def run() -> None:
             print(
                 f"{buoy_id}: {current_temperature:.2f} °C | "
                 f"{current_pressure:.3f} kPa | {current_salinity:.3f} PSU | "
+                f"light {current_ambient_light:.1f} lux | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )

@@ -79,3 +79,10 @@ def test_imu_reading_stays_within_calm_buoy_range(monkeypatch: pytest.MonkeyPatc
     }
     assert reading["acceleration_z_mps2"] == 9.8
     assert abs(reading["angular_velocity_z_dps"]) <= 2
+
+
+def test_ambient_light_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 50)
+
+    assert simulator.ambient_light_reading(1000) == 1050
+    assert simulator.ambient_light_reading(149999.9) <= 150000
