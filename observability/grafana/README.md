@@ -13,6 +13,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Nivel de batería por boya.
 - Vectores de aceleración y velocidad angular de la IMU por boya, canal y eje.
 - Iluminancia ambiental en lux por boya y canal redundante.
+- Velocidad y dirección del viento por boya y canal redundante.
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar
