@@ -86,6 +86,24 @@ current_ambient_light_lux = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+wind_readings_total = Counter(
+    "tidewatch_wind_readings_total",
+    "Total number of wind readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_wind_speed_mps = Gauge(
+    "tidewatch_current_wind_speed_mps",
+    "Most recent wind speed by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_wind_direction_degrees = Gauge(
+    "tidewatch_current_wind_direction_degrees",
+    "Most recent wind direction by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
