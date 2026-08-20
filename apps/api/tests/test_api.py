@@ -17,6 +17,7 @@ from app.entities import (
     DissolvedOxygenReadingEntity,
     PHReadingEntity,
     ConductivityReadingEntity,
+    ChlorophyllAReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -42,6 +43,7 @@ def setup_function() -> None:
         db.execute(delete(DissolvedOxygenReadingEntity))
         db.execute(delete(PHReadingEntity))
         db.execute(delete(ConductivityReadingEntity))
+        db.execute(delete(ChlorophyllAReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -158,6 +160,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "dissolved_oxygen": 0,
             "ph": 0,
             "conductivity": 0,
+            "chlorophyll_a": 0,
             "battery": 1,
         },
     }
@@ -1098,6 +1101,33 @@ def test_sensor_health_compares_redundant_conductivity() -> None:
     assert health.status_code == 201
     assert health.json()["conductivity_delta_us_cm"] == 1000
     assert health.json()["decisions"]["conductivity"] == "average"
+
+
+def test_chlorophyll_a_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Chlorophyll Buoy"}
+    ).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/chlorophyll-a",
+        json={
+            "chlorophyll_a_ug_l": 4.2,
+            "sensor_channel": "A",
+            "sensor_id": "chlorophyll-a-01",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["chlorophyll_a_ug_l"] == 4.2
+    assert client.get(f"/api/v1/buoys/{buoy_id}/chlorophyll-a").json()[0][
+        "chlorophyll_a_ug_l"
+    ] == 4.2
+    assert "tidewatch_chlorophyll_a_readings_total" in client.get("/metrics").text
+    invalid = client.post(
+        f"/api/v1/buoys/{buoy_id}/chlorophyll-a",
+        json={"chlorophyll_a_ug_l": 1001},
+    )
+    assert invalid.status_code == 422
 
 
 def test_maintenance_issues_reports_degraded_sensor() -> None:
