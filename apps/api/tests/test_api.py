@@ -161,6 +161,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "ph": 0,
             "conductivity": 0,
             "chlorophyll_a": 0,
+            "rainfall": 0,
             "battery": 1,
         },
     }
