@@ -58,5 +58,7 @@ por boya y canal, y su consistencia redundante queda registrada en
 El pH se observa con `tidewatch_current_ph` y su delta A/B queda registrada
 como `ph_delta`; la conductividad usa `tidewatch_current_conductivity_us_cm` y
 `conductivity_delta_us_cm` para el histórico redundante.
+La clorofila-a se observa con `tidewatch_current_chlorophyll_a_ug_l` y su
+delta A/B queda registrada como `chlorophyll_a_delta_ug_l`.
 El pH se observa con `tidewatch_current_ph` por boya y canal, y su delta A/B
 queda registrada como `ph_delta` en el historial de salud.
