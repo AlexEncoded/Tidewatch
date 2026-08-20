@@ -49,6 +49,8 @@ from .models import (
     PHReadingCreate,
     ConductivityReading,
     ConductivityReadingCreate,
+    ChlorophyllAReading,
+    ChlorophyllAReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -92,6 +94,7 @@ from .metrics import (
     current_dissolved_oxygen_mg_l,
     current_ph,
     current_conductivity_us_cm,
+    current_chlorophyll_a_ug_l,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -102,6 +105,7 @@ from .metrics import (
     dissolved_oxygen_readings_total,
     ph_readings_total,
     conductivity_readings_total,
+    chlorophyll_a_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -245,6 +249,7 @@ def ingest_telemetry(
         "dissolved_oxygen": 0,
         "ph": 0,
         "conductivity": 0,
+        "chlorophyll_a": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -430,6 +435,23 @@ def ingest_telemetry(
         accepted_by_family["conductivity"] += 1
         accepted += 1
 
+    for reading_payload in payload.chlorophyll_a:
+        reading = ChlorophyllAReading(
+            buoy_id=buoy_id, **reading_payload.model_dump()
+        )
+        repository.add_chlorophyll_a(reading)
+        chlorophyll_a_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_chlorophyll_a_ug_l.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.chlorophyll_a_ug_l)
+        record_quality_metric(
+            buoy_id, "chlorophyll_a", reading.sensor_channel, reading.quality
+        )
+        accepted_by_family["chlorophyll_a"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -486,6 +508,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_conductivity=repository.latest_conductivity(buoy.id),
             latest_conductivity_a=repository.latest_conductivity(buoy.id, "A"),
             latest_conductivity_b=repository.latest_conductivity(buoy.id, "B"),
+            latest_chlorophyll_a=repository.latest_chlorophyll_a(buoy.id),
+            latest_chlorophyll_a_a=repository.latest_chlorophyll_a(buoy.id, "A"),
+            latest_chlorophyll_a_b=repository.latest_chlorophyll_a(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1195,6 +1220,51 @@ def list_conductivity(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_conductivity(buoy_id, limit, sensor_channel)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/chlorophyll-a",
+    response_model=ChlorophyllAReading,
+    status_code=status.HTTP_201_CREATED,
+    tags=["chlorophyll-a"],
+)
+def record_chlorophyll_a(
+    buoy_id: str,
+    payload: ChlorophyllAReadingCreate,
+    db: Session = Depends(get_db),
+) -> ChlorophyllAReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = ChlorophyllAReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_chlorophyll_a(reading)
+    chlorophyll_a_readings_total.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).inc()
+    current_chlorophyll_a_ug_l.labels(
+        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+    ).set(reading.chlorophyll_a_ug_l)
+    record_quality_metric(
+        buoy_id, "chlorophyll_a", reading.sensor_channel, reading.quality
+    )
+    return saved_reading
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/chlorophyll-a",
+    response_model=list[ChlorophyllAReading],
+    tags=["chlorophyll-a"],
+)
+def list_chlorophyll_a(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    db: Session = Depends(get_db),
+) -> list[ChlorophyllAReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_chlorophyll_a(buoy_id, limit, sensor_channel)
 
 
 @app.post(

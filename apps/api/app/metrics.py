@@ -170,6 +170,18 @@ current_conductivity_us_cm = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+chlorophyll_a_readings_total = Counter(
+    "tidewatch_chlorophyll_a_readings_total",
+    "Total number of chlorophyll-a readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_chlorophyll_a_ug_l = Gauge(
+    "tidewatch_current_chlorophyll_a_ug_l",
+    "Most recent chlorophyll-a concentration in micrograms per liter by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
