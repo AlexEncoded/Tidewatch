@@ -51,6 +51,8 @@ from .models import (
     ConductivityReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
+    RainfallReading,
+    RainfallReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -95,6 +97,7 @@ from .metrics import (
     current_ph,
     current_conductivity_us_cm,
     current_chlorophyll_a_ug_l,
+    current_rainfall_mm_h,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -106,6 +109,7 @@ from .metrics import (
     ph_readings_total,
     conductivity_readings_total,
     chlorophyll_a_readings_total,
+    rainfall_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -250,6 +254,7 @@ def ingest_telemetry(
         "ph": 0,
         "conductivity": 0,
         "chlorophyll_a": 0,
+        "rainfall": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -452,6 +457,19 @@ def ingest_telemetry(
         accepted_by_family["chlorophyll_a"] += 1
         accepted += 1
 
+    for reading_payload in payload.rainfall:
+        reading = RainfallReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_rainfall(reading)
+        rainfall_readings_total.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).inc()
+        current_rainfall_mm_h.labels(
+            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
+        ).set(reading.rainfall_mm_h)
+        record_quality_metric(buoy_id, "rainfall", reading.sensor_channel, reading.quality)
+        accepted_by_family["rainfall"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -511,6 +529,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_chlorophyll_a=repository.latest_chlorophyll_a(buoy.id),
             latest_chlorophyll_a_a=repository.latest_chlorophyll_a(buoy.id, "A"),
             latest_chlorophyll_a_b=repository.latest_chlorophyll_a(buoy.id, "B"),
+            latest_rainfall=repository.latest_rainfall(buoy.id),
+            latest_rainfall_a=repository.latest_rainfall(buoy.id, "A"),
+            latest_rainfall_b=repository.latest_rainfall(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1265,6 +1286,27 @@ def list_chlorophyll_a(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_chlorophyll_a(buoy_id, limit, sensor_channel)
+
+
+@app.post("/api/v1/buoys/{buoy_id}/rainfall", response_model=RainfallReading, status_code=status.HTTP_201_CREATED, tags=["rainfall"])
+def record_rainfall(buoy_id: str, payload: RainfallReadingCreate, db: Session = Depends(get_db)) -> RainfallReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = RainfallReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_rainfall(reading)
+    rainfall_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_rainfall_mm_h.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.rainfall_mm_h)
+    record_quality_metric(buoy_id, "rainfall", reading.sensor_channel, reading.quality)
+    return saved_reading
+
+
+@app.get("/api/v1/buoys/{buoy_id}/rainfall", response_model=list[RainfallReading], tags=["rainfall"])
+def list_rainfall(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[RainfallReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_rainfall(buoy_id, limit, sensor_channel)
 
 
 @app.post(

@@ -182,6 +182,18 @@ current_chlorophyll_a_ug_l = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+rainfall_readings_total = Counter(
+    "tidewatch_rainfall_readings_total",
+    "Total number of rainfall readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_rainfall_mm_h = Gauge(
+    "tidewatch_current_rainfall_mm_h",
+    "Most recent rainfall intensity in mm/h by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
