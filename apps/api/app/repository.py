@@ -689,6 +689,7 @@ class BuoyRepository:
             dissolved_oxygen_delta_mg_l=health.dissolved_oxygen_delta_mg_l,
             ph_delta=health.ph_delta,
             conductivity_delta_us_cm=health.conductivity_delta_us_cm,
+            chlorophyll_a_delta_ug_l=health.chlorophyll_a_delta_ug_l,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,

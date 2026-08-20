@@ -1470,6 +1470,12 @@ def sensor_health(
     conductivity_b = latest_usable_reading(
         repository.list_conductivity(buoy_id, 50, "B"), max_age_seconds, now
     )
+    chlorophyll_a = latest_usable_reading(
+        repository.list_chlorophyll_a(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    chlorophyll_b = latest_usable_reading(
+        repository.list_chlorophyll_a(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1483,6 +1489,7 @@ def sensor_health(
         "dissolved_oxygen": {"A": dissolved_oxygen_a, "B": dissolved_oxygen_b},
         "ph": {"A": ph_a, "B": ph_b},
         "conductivity": {"A": conductivity_a, "B": conductivity_b},
+        "chlorophyll_a": {"A": chlorophyll_a, "B": chlorophyll_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1617,6 +1624,17 @@ def sensor_health(
             if conductivity_a and conductivity_b
             else None
         ),
+        "chlorophyll_a": (
+            round(
+                abs(
+                    chlorophyll_a[0].chlorophyll_a_ug_l
+                    - chlorophyll_b[0].chlorophyll_a_ug_l
+                ),
+                3,
+            )
+            if chlorophyll_a and chlorophyll_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1633,6 +1651,7 @@ def sensor_health(
         "dissolved_oxygen": 1,
         "ph": 0.2,
         "conductivity": 2000,
+        "chlorophyll_a": 5,
     }
     degraded_sensors = [
         sensor
@@ -1695,6 +1714,7 @@ def sensor_health(
         dissolved_oxygen_delta_mg_l=deltas["dissolved_oxygen"],
         ph_delta=deltas["ph"],
         conductivity_delta_us_cm=deltas["conductivity"],
+        chlorophyll_a_delta_ug_l=deltas["chlorophyll_a"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,

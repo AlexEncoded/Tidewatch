@@ -265,6 +265,7 @@ class SensorHealthCheckEntity(Base):
     dissolved_oxygen_delta_mg_l: Mapped[float | None] = mapped_column(Float, nullable=True)
     ph_delta: Mapped[float | None] = mapped_column(Float, nullable=True)
     conductivity_delta_us_cm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    chlorophyll_a_delta_ug_l: Mapped[float | None] = mapped_column(Float, nullable=True)
     degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
