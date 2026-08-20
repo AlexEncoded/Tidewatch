@@ -16,6 +16,7 @@ from .entities import (
     DissolvedOxygenReadingEntity,
     PHReadingEntity,
     ConductivityReadingEntity,
+    ChlorophyllAReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -37,6 +38,7 @@ from .models import (
     DissolvedOxygenReading,
     PHReading,
     ConductivityReading,
+    ChlorophyllAReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -602,6 +604,52 @@ class BuoyRepository:
         self, buoy_id: str, sensor_channel: str = "A"
     ) -> ConductivityReadingEntity | None:
         readings = self.list_conductivity(
+            buoy_id, limit=1, sensor_channel=sensor_channel
+        )
+        return readings[0] if readings else None
+
+    def add_chlorophyll_a(
+        self, reading: ChlorophyllAReading
+    ) -> ChlorophyllAReadingEntity:
+        entity = ChlorophyllAReadingEntity(
+            buoy_id=reading.buoy_id,
+            chlorophyll_a_ug_l=reading.chlorophyll_a_ug_l,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (
+            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
+        ):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_chlorophyll_a(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[ChlorophyllAReadingEntity]:
+        query = (
+            select(ChlorophyllAReadingEntity)
+            .where(ChlorophyllAReadingEntity.buoy_id == buoy_id)
+            .order_by(ChlorophyllAReadingEntity.measured_at.desc())
+            .limit(limit)
+        )
+        if sensor_channel is not None:
+            query = query.where(
+                ChlorophyllAReadingEntity.sensor_channel == sensor_channel
+            )
+        return list(self.db.scalars(query).all())
+
+    def latest_chlorophyll_a(
+        self, buoy_id: str, sensor_channel: str = "A"
+    ) -> ChlorophyllAReadingEntity | None:
+        readings = self.list_chlorophyll_a(
             buoy_id, limit=1, sensor_channel=sensor_channel
         )
         return readings[0] if readings else None

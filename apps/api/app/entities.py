@@ -49,6 +49,9 @@ class BuoyEntity(Base):
     conductivity_readings: Mapped[list["ConductivityReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    chlorophyll_a_readings: Mapped[list["ChlorophyllAReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
     battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
@@ -227,6 +230,20 @@ class ConductivityReadingEntity(Base):
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="conductivity_readings")
+
+
+class ChlorophyllAReadingEntity(Base):
+    __tablename__ = "chlorophyll_a_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    chlorophyll_a_ug_l: Mapped[float] = mapped_column(Float, nullable=False)
+    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="chlorophyll_a_readings")
 
 
 class SensorHealthCheckEntity(Base):
