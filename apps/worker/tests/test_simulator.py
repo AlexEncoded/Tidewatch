@@ -136,3 +136,12 @@ def test_conductivity_reading_stays_within_sensor_range(
 
     assert simulator.conductivity_reading(199999) == 200000
     assert simulator.conductivity_reading(51000) == 51250
+
+
+def test_chlorophyll_a_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.2)
+
+    assert simulator.chlorophyll_a_reading(999.9) == 1000
+    assert simulator.chlorophyll_a_reading(4.2) == 4.4

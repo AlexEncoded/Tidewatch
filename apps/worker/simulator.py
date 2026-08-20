@@ -21,6 +21,7 @@ BASE_TURBIDITY = float(os.getenv("BASE_TURBIDITY_NTU", "3"))
 BASE_DISSOLVED_OXYGEN = float(os.getenv("BASE_DISSOLVED_OXYGEN_MG_L", "7.5"))
 BASE_PH = float(os.getenv("BASE_PH", "8.1"))
 BASE_CONDUCTIVITY = float(os.getenv("BASE_CONDUCTIVITY_US_CM", "51000"))
+BASE_CHLOROPHYLL_A = float(os.getenv("BASE_CHLOROPHYLL_A_UG_L", "4.2"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -108,6 +109,11 @@ def conductivity_reading(previous: float) -> float:
     return round(max(0, min(200000, previous + random.uniform(-250, 250))), 2)
 
 
+def chlorophyll_a_reading(previous: float) -> float:
+    """Simulate gradual chlorophyll-a changes in micrograms per liter."""
+    return round(max(0, min(1000, previous + random.uniform(-0.2, 0.2))), 3)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -180,6 +186,7 @@ def run() -> None:
         current_dissolved_oxygen = BASE_DISSOLVED_OXYGEN
         current_ph = BASE_PH
         current_conductivity = BASE_CONDUCTIVITY
+        current_chlorophyll_a = BASE_CHLOROPHYLL_A
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -220,6 +227,7 @@ def run() -> None:
             current_dissolved_oxygen = dissolved_oxygen_reading(current_dissolved_oxygen)
             current_ph = ph_reading(current_ph)
             current_conductivity = conductivity_reading(current_conductivity)
+            current_chlorophyll_a = chlorophyll_a_reading(current_chlorophyll_a)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -394,6 +402,26 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "chlorophyll_a": [
+                    {
+                        "chlorophyll_a_ug_l": round(
+                            max(
+                                0,
+                                min(
+                                    1000,
+                                    current_chlorophyll_a
+                                    + (0 if channel == "A" else random.uniform(-0.05, 0.05)),
+                                ),
+                            ),
+                            3,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"chlorophyll-a-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -422,6 +450,7 @@ def run() -> None:
                 f"dissolved oxygen {current_dissolved_oxygen:.3f} mg/L | "
                 f"pH {current_ph:.3f} | "
                 f"conductivity {current_conductivity:.2f} uS/cm | "
+                f"chlorophyll-a {current_chlorophyll_a:.3f} ug/L | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
