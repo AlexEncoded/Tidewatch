@@ -238,6 +238,21 @@ class ChlorophyllAReading(ChlorophyllAReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class RainfallReadingCreate(BaseModel):
+    rainfall_mm_h: float = Field(ge=0, le=500)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class RainfallReading(RainfallReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
@@ -285,6 +300,7 @@ class TelemetryBatchCreate(BaseModel):
     ph: list[PHReadingCreate] = Field(default_factory=list, max_length=100)
     conductivity: list[ConductivityReadingCreate] = Field(default_factory=list, max_length=100)
     chlorophyll_a: list[ChlorophyllAReadingCreate] = Field(default_factory=list, max_length=100)
+    rainfall: list[RainfallReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -310,6 +326,7 @@ class TelemetryBatchCreate(BaseModel):
             or self.ph
             or self.conductivity
             or self.chlorophyll_a
+            or self.rainfall
             or self.battery
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
@@ -329,6 +346,7 @@ class TelemetryBatchCreate(BaseModel):
             ("ph", self.ph),
             ("conductivity", self.conductivity),
             ("chlorophyll_a", self.chlorophyll_a),
+            ("rainfall", self.rainfall),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -452,6 +470,9 @@ class BuoySummary(BaseModel):
     latest_chlorophyll_a: ChlorophyllAReading | None = None
     latest_chlorophyll_a_a: ChlorophyllAReading | None = None
     latest_chlorophyll_a_b: ChlorophyllAReading | None = None
+    latest_rainfall: RainfallReading | None = None
+    latest_rainfall_a: RainfallReading | None = None
+    latest_rainfall_b: RainfallReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
