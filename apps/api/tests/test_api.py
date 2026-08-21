@@ -18,6 +18,7 @@ from app.entities import (
     PHReadingEntity,
     ConductivityReadingEntity,
     ChlorophyllAReadingEntity,
+    RainfallReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -44,6 +45,7 @@ def setup_function() -> None:
         db.execute(delete(PHReadingEntity))
         db.execute(delete(ConductivityReadingEntity))
         db.execute(delete(ChlorophyllAReadingEntity))
+        db.execute(delete(RainfallReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -1127,6 +1129,28 @@ def test_chlorophyll_a_ingestion_exposes_latest_value_and_metrics() -> None:
     invalid = client.post(
         f"/api/v1/buoys/{buoy_id}/chlorophyll-a",
         json={"chlorophyll_a_ug_l": 1001},
+    )
+    assert invalid.status_code == 422
+
+
+def test_rainfall_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Rainfall Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/rainfall",
+        json={
+            "rainfall_mm_h": 12.5,
+            "sensor_channel": "A",
+            "sensor_id": "rain-gauge-a-01",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["rainfall_mm_h"] == 12.5
+    assert client.get(f"/api/v1/buoys/{buoy_id}/rainfall").json()[0]["rainfall_mm_h"] == 12.5
+    assert "tidewatch_rainfall_readings_total" in client.get("/metrics").text
+    invalid = client.post(
+        f"/api/v1/buoys/{buoy_id}/rainfall", json={"rainfall_mm_h": 501}
     )
     assert invalid.status_code == 422
 
