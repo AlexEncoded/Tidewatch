@@ -145,3 +145,12 @@ def test_chlorophyll_a_reading_stays_within_sensor_range(
 
     assert simulator.chlorophyll_a_reading(999.9) == 1000
     assert simulator.chlorophyll_a_reading(4.2) == 4.4
+
+
+def test_rainfall_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 2)
+
+    assert simulator.rainfall_reading(499.9) == 500
+    assert simulator.rainfall_reading(10) == 12

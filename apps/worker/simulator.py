@@ -22,6 +22,7 @@ BASE_DISSOLVED_OXYGEN = float(os.getenv("BASE_DISSOLVED_OXYGEN_MG_L", "7.5"))
 BASE_PH = float(os.getenv("BASE_PH", "8.1"))
 BASE_CONDUCTIVITY = float(os.getenv("BASE_CONDUCTIVITY_US_CM", "51000"))
 BASE_CHLOROPHYLL_A = float(os.getenv("BASE_CHLOROPHYLL_A_UG_L", "4.2"))
+BASE_RAINFALL = float(os.getenv("BASE_RAINFALL_MM_H", "0"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -114,6 +115,11 @@ def chlorophyll_a_reading(previous: float) -> float:
     return round(max(0, min(1000, previous + random.uniform(-0.2, 0.2))), 3)
 
 
+def rainfall_reading(previous: float) -> float:
+    """Simulate bounded rainfall intensity in millimeters per hour."""
+    return round(max(0, min(500, previous + random.uniform(-2, 2))), 2)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -187,6 +193,7 @@ def run() -> None:
         current_ph = BASE_PH
         current_conductivity = BASE_CONDUCTIVITY
         current_chlorophyll_a = BASE_CHLOROPHYLL_A
+        current_rainfall = BASE_RAINFALL
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -228,6 +235,7 @@ def run() -> None:
             current_ph = ph_reading(current_ph)
             current_conductivity = conductivity_reading(current_conductivity)
             current_chlorophyll_a = chlorophyll_a_reading(current_chlorophyll_a)
+            current_rainfall = rainfall_reading(current_rainfall)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -422,6 +430,26 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "rainfall": [
+                    {
+                        "rainfall_mm_h": round(
+                            max(
+                                0,
+                                min(
+                                    500,
+                                    current_rainfall
+                                    + (0 if channel == "A" else random.uniform(-0.5, 0.5)),
+                                ),
+                            ),
+                            2,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"rain-gauge-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -451,6 +479,7 @@ def run() -> None:
                 f"pH {current_ph:.3f} | "
                 f"conductivity {current_conductivity:.2f} uS/cm | "
                 f"chlorophyll-a {current_chlorophyll_a:.3f} ug/L | "
+                f"rainfall {current_rainfall:.2f} mm/h | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
