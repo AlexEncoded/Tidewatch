@@ -18,6 +18,7 @@ from .entities import (
     ConductivityReadingEntity,
     ChlorophyllAReadingEntity,
     RainfallReadingEntity,
+    HumidityReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -41,6 +42,7 @@ from .models import (
     ConductivityReading,
     ChlorophyllAReading,
     RainfallReading,
+    HumidityReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -694,6 +696,35 @@ class BuoyRepository:
         self, buoy_id: str, sensor_channel: str = "A"
     ) -> RainfallReadingEntity | None:
         readings = self.list_rainfall(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_humidity(self, reading: HumidityReading) -> HumidityReadingEntity:
+        entity = HumidityReadingEntity(
+            buoy_id=reading.buoy_id,
+            humidity_percent=reading.humidity_percent,
+            sensor_channel=reading.sensor_channel,
+            sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version,
+            quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+            buoy.last_seen_at = reading.measured_at
+            self.db.commit()
+        return entity
+
+    def list_humidity(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[HumidityReadingEntity]:
+        query = select(HumidityReadingEntity).where(HumidityReadingEntity.buoy_id == buoy_id).order_by(HumidityReadingEntity.measured_at.desc()).limit(limit)
+        if sensor_channel is not None:
+            query = query.where(HumidityReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def latest_humidity(self, buoy_id: str, sensor_channel: str = "A") -> HumidityReadingEntity | None:
+        readings = self.list_humidity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

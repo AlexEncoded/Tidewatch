@@ -55,6 +55,9 @@ class BuoyEntity(Base):
     rainfall_readings: Mapped[list["RainfallReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    humidity_readings: Mapped[list["HumidityReadingEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
     battery_readings: Mapped[list["BatteryReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
@@ -261,6 +264,20 @@ class RainfallReadingEntity(Base):
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="rainfall_readings")
+
+
+class HumidityReadingEntity(Base):
+    __tablename__ = "humidity_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    humidity_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
+    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="humidity_readings")
 
 
 class SensorHealthCheckEntity(Base):
