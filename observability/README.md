@@ -46,6 +46,9 @@ La ausencia de un canal ambiental se publica como
 `tidewatch_sensor_channel_missing` con las etiquetas de familia y canal, y
 dispara una alerta de mantenimiento tras cinco minutos.
 
+La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
+delta A/B queda registrada como `humidity_delta_percent`.
+
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.
 
