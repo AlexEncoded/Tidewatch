@@ -154,3 +154,12 @@ def test_rainfall_reading_stays_within_sensor_range(
 
     assert simulator.rainfall_reading(499.9) == 500
     assert simulator.rainfall_reading(10) == 12
+
+
+def test_humidity_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 1)
+
+    assert simulator.humidity_reading(99.9) == 100
+    assert simulator.humidity_reading(75) == 76
