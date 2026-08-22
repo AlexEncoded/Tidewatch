@@ -19,6 +19,7 @@ from .entities import (
     ChlorophyllAReadingEntity,
     RainfallReadingEntity,
     HumidityReadingEntity,
+    AirTemperatureReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -43,6 +44,7 @@ from .models import (
     ChlorophyllAReading,
     RainfallReading,
     HumidityReading,
+    AirTemperatureReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -725,6 +727,29 @@ class BuoyRepository:
 
     def latest_humidity(self, buoy_id: str, sensor_channel: str = "A") -> HumidityReadingEntity | None:
         readings = self.list_humidity(buoy_id, limit=1, sensor_channel=sensor_channel)
+        return readings[0] if readings else None
+
+    def add_air_temperature(self, reading: AirTemperatureReading) -> AirTemperatureReadingEntity:
+        entity = AirTemperatureReadingEntity(
+            buoy_id=reading.buoy_id, air_temperature_celsius=reading.air_temperature_celsius,
+            sensor_channel=reading.sensor_channel, sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version, quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity); self.db.commit(); self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+            buoy.last_seen_at = reading.measured_at; self.db.commit()
+        return entity
+
+    def list_air_temperature(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[AirTemperatureReadingEntity]:
+        query = select(AirTemperatureReadingEntity).where(AirTemperatureReadingEntity.buoy_id == buoy_id).order_by(AirTemperatureReadingEntity.measured_at.desc()).limit(limit)
+        if sensor_channel is not None:
+            query = query.where(AirTemperatureReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def latest_air_temperature(self, buoy_id: str, sensor_channel: str = "A") -> AirTemperatureReadingEntity | None:
+        readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

@@ -268,6 +268,21 @@ class HumidityReading(HumidityReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class AirTemperatureReadingCreate(BaseModel):
+    air_temperature_celsius: float = Field(ge=-60, le=60)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AirTemperatureReading(AirTemperatureReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
@@ -317,6 +332,7 @@ class TelemetryBatchCreate(BaseModel):
     chlorophyll_a: list[ChlorophyllAReadingCreate] = Field(default_factory=list, max_length=100)
     rainfall: list[RainfallReadingCreate] = Field(default_factory=list, max_length=100)
     humidity: list[HumidityReadingCreate] = Field(default_factory=list, max_length=100)
+    air_temperature: list[AirTemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -344,6 +360,7 @@ class TelemetryBatchCreate(BaseModel):
             or self.chlorophyll_a
             or self.rainfall
             or self.humidity
+            or self.air_temperature
             or self.battery
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
@@ -365,6 +382,7 @@ class TelemetryBatchCreate(BaseModel):
             ("chlorophyll_a", self.chlorophyll_a),
             ("rainfall", self.rainfall),
             ("humidity", self.humidity),
+            ("air_temperature", self.air_temperature),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
@@ -496,6 +514,9 @@ class BuoySummary(BaseModel):
     latest_humidity: HumidityReading | None = None
     latest_humidity_a: HumidityReading | None = None
     latest_humidity_b: HumidityReading | None = None
+    latest_air_temperature: AirTemperatureReading | None = None
+    latest_air_temperature_a: AirTemperatureReading | None = None
+    latest_air_temperature_b: AirTemperatureReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None
