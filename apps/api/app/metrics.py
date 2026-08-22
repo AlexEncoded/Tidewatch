@@ -206,6 +206,18 @@ current_humidity_percent = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+air_temperature_readings_total = Counter(
+    "tidewatch_air_temperature_readings_total",
+    "Total number of air temperature readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_air_temperature_celsius = Gauge(
+    "tidewatch_current_air_temperature_celsius",
+    "Most recent air temperature in Celsius by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

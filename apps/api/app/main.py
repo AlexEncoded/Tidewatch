@@ -55,6 +55,8 @@ from .models import (
     RainfallReadingCreate,
     HumidityReading,
     HumidityReadingCreate,
+    AirTemperatureReading,
+    AirTemperatureReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -101,6 +103,7 @@ from .metrics import (
     current_chlorophyll_a_ug_l,
     current_rainfall_mm_h,
     current_humidity_percent,
+    current_air_temperature_celsius,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -114,6 +117,7 @@ from .metrics import (
     chlorophyll_a_readings_total,
     rainfall_readings_total,
     humidity_readings_total,
+    air_temperature_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -260,6 +264,7 @@ def ingest_telemetry(
         "chlorophyll_a": 0,
         "rainfall": 0,
         "humidity": 0,
+        "air_temperature": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -484,6 +489,15 @@ def ingest_telemetry(
         accepted_by_family["humidity"] += 1
         accepted += 1
 
+    for reading_payload in payload.air_temperature:
+        reading = AirTemperatureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_air_temperature(reading)
+        air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
+        record_quality_metric(buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
+        accepted_by_family["air_temperature"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -549,6 +563,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_humidity=repository.latest_humidity(buoy.id),
             latest_humidity_a=repository.latest_humidity(buoy.id, "A"),
             latest_humidity_b=repository.latest_humidity(buoy.id, "B"),
+            latest_air_temperature=repository.latest_air_temperature(buoy.id),
+            latest_air_temperature_a=repository.latest_air_temperature(buoy.id, "A"),
+            latest_air_temperature_b=repository.latest_air_temperature(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1345,6 +1362,27 @@ def list_humidity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), se
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_humidity(buoy_id, limit, sensor_channel)
+
+
+@app.post("/api/v1/buoys/{buoy_id}/air-temperature", response_model=AirTemperatureReading, status_code=status.HTTP_201_CREATED, tags=["air-temperature"])
+def record_air_temperature(buoy_id: str, payload: AirTemperatureReadingCreate, db: Session = Depends(get_db)) -> AirTemperatureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = AirTemperatureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_air_temperature(reading)
+    air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
+    record_quality_metric(buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
+    return saved_reading
+
+
+@app.get("/api/v1/buoys/{buoy_id}/air-temperature", response_model=list[AirTemperatureReading], tags=["air-temperature"])
+def list_air_temperature(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[AirTemperatureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_air_temperature(buoy_id, limit, sensor_channel)
 
 
 @app.post(
