@@ -418,6 +418,7 @@ class SensorHealth(BaseModel):
     conductivity_delta_us_cm: float | None = None
     chlorophyll_a_delta_ug_l: float | None = None
     rainfall_delta_mm_h: float | None = None
+    humidity_delta_percent: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
     decisions: dict[str, str] = Field(default_factory=dict)

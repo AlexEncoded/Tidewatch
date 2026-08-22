@@ -1562,6 +1562,12 @@ def sensor_health(
     rainfall_b = latest_usable_reading(
         repository.list_rainfall(buoy_id, 50, "B"), max_age_seconds, now
     )
+    humidity_a = latest_usable_reading(
+        repository.list_humidity(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    humidity_b = latest_usable_reading(
+        repository.list_humidity(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1577,6 +1583,7 @@ def sensor_health(
         "conductivity": {"A": conductivity_a, "B": conductivity_b},
         "chlorophyll_a": {"A": chlorophyll_a, "B": chlorophyll_b},
         "rainfall": {"A": rainfall_a, "B": rainfall_b},
+        "humidity": {"A": humidity_a, "B": humidity_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1727,6 +1734,11 @@ def sensor_health(
             if rainfall_a and rainfall_b
             else None
         ),
+        "humidity": (
+            round(abs(humidity_a[0].humidity_percent - humidity_b[0].humidity_percent), 2)
+            if humidity_a and humidity_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1745,6 +1757,7 @@ def sensor_health(
         "conductivity": 2000,
         "chlorophyll_a": 5,
         "rainfall": 20,
+        "humidity": 5,
     }
     degraded_sensors = [
         sensor
@@ -1809,6 +1822,7 @@ def sensor_health(
         conductivity_delta_us_cm=deltas["conductivity"],
         chlorophyll_a_delta_ug_l=deltas["chlorophyll_a"],
         rainfall_delta_mm_h=deltas["rainfall"],
+        humidity_delta_percent=deltas["humidity"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,
