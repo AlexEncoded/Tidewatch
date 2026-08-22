@@ -20,6 +20,7 @@ from app.entities import (
     ChlorophyllAReadingEntity,
     RainfallReadingEntity,
     HumidityReadingEntity,
+    AirTemperatureReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -48,6 +49,7 @@ def setup_function() -> None:
         db.execute(delete(ChlorophyllAReadingEntity))
         db.execute(delete(RainfallReadingEntity))
         db.execute(delete(HumidityReadingEntity))
+        db.execute(delete(AirTemperatureReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -167,6 +169,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "chlorophyll_a": 0,
             "rainfall": 0,
             "humidity": 0,
+            "air_temperature": 0,
             "battery": 1,
         },
     }
@@ -1177,6 +1180,21 @@ def test_humidity_ingestion_exposes_latest_value_and_metrics() -> None:
     invalid = client.post(
         f"/api/v1/buoys/{buoy_id}/humidity", json={"humidity_percent": 101}
     )
+    assert invalid.status_code == 422
+
+
+def test_air_temperature_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Air Temperature Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/air-temperature",
+        json={"air_temperature_celsius": 24.5, "sensor_channel": "A", "sensor_id": "air-temp-a-01"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["air_temperature_celsius"] == 24.5
+    assert client.get(f"/api/v1/buoys/{buoy_id}/air-temperature").json()[0]["air_temperature_celsius"] == 24.5
+    assert "tidewatch_air_temperature_readings_total" in client.get("/metrics").text
+    invalid = client.post(f"/api/v1/buoys/{buoy_id}/air-temperature", json={"air_temperature_celsius": 61})
     assert invalid.status_code == 422
 
 
