@@ -57,6 +57,8 @@ from .models import (
     HumidityReadingCreate,
     AirTemperatureReading,
     AirTemperatureReadingCreate,
+    AtmosphericPressureReading,
+    AtmosphericPressureReadingCreate,
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
@@ -104,6 +106,7 @@ from .metrics import (
     current_rainfall_mm_h,
     current_humidity_percent,
     current_air_temperature_celsius,
+    current_atmospheric_pressure_kpa,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -118,6 +121,7 @@ from .metrics import (
     rainfall_readings_total,
     humidity_readings_total,
     air_temperature_readings_total,
+    atmospheric_pressure_readings_total,
     pressure_readings_total,
     reading_quality_total,
     redundant_device_missing,
@@ -265,6 +269,7 @@ def ingest_telemetry(
         "rainfall": 0,
         "humidity": 0,
         "air_temperature": 0,
+        "atmospheric_pressure": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -498,6 +503,15 @@ def ingest_telemetry(
         accepted_by_family["air_temperature"] += 1
         accepted += 1
 
+    for reading_payload in payload.atmospheric_pressure:
+        reading = AtmosphericPressureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_atmospheric_pressure(reading)
+        atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
+        record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
+        accepted_by_family["atmospheric_pressure"] += 1
+        accepted += 1
+
     for battery_payload in payload.battery:
         battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
         repository.add_battery(battery)
@@ -566,6 +580,9 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
             latest_air_temperature=repository.latest_air_temperature(buoy.id),
             latest_air_temperature_a=repository.latest_air_temperature(buoy.id, "A"),
             latest_air_temperature_b=repository.latest_air_temperature(buoy.id, "B"),
+            latest_atmospheric_pressure=repository.latest_atmospheric_pressure(buoy.id),
+            latest_atmospheric_pressure_a=repository.latest_atmospheric_pressure(buoy.id, "A"),
+            latest_atmospheric_pressure_b=repository.latest_atmospheric_pressure(buoy.id, "B"),
             latest_battery=repository.latest_battery(buoy.id),
             latest_battery_a=repository.latest_battery(buoy.id, "A"),
             latest_battery_b=repository.latest_battery(buoy.id, "B"),
@@ -1383,6 +1400,27 @@ def list_air_temperature(buoy_id: str, limit: int = Query(default=50, ge=1, le=5
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_air_temperature(buoy_id, limit, sensor_channel)
+
+
+@app.post("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=AtmosphericPressureReading, status_code=status.HTTP_201_CREATED, tags=["atmospheric-pressure"])
+def record_atmospheric_pressure(buoy_id: str, payload: AtmosphericPressureReadingCreate, db: Session = Depends(get_db)) -> AtmosphericPressureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = AtmosphericPressureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_atmospheric_pressure(reading)
+    atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
+    record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
+    return saved_reading
+
+
+@app.get("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=list[AtmosphericPressureReading], tags=["atmospheric-pressure"])
+def list_atmospheric_pressure(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[AtmosphericPressureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
 
 
 @app.post(
