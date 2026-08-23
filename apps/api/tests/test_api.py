@@ -1198,6 +1198,22 @@ def test_air_temperature_ingestion_exposes_latest_value_and_metrics() -> None:
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_air_temperature() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Air Temperature Health Buoy"}).json()["id"]
+    for channel, value in (("A", 24.0), ("B", 24.3)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/air-temperature",
+            json={"air_temperature_celsius": value, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["air_temperature_delta_celsius"] == 0.3
+    assert health.json()["decisions"]["air_temperature"] == "average"
+
+
 def test_sensor_health_compares_redundant_humidity() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Humidity Health Buoy"}).json()["id"]
     for channel, value in (("A", 75.0), ("B", 78.0)):
