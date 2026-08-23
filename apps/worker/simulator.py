@@ -24,6 +24,7 @@ BASE_CONDUCTIVITY = float(os.getenv("BASE_CONDUCTIVITY_US_CM", "51000"))
 BASE_CHLOROPHYLL_A = float(os.getenv("BASE_CHLOROPHYLL_A_UG_L", "4.2"))
 BASE_RAINFALL = float(os.getenv("BASE_RAINFALL_MM_H", "0"))
 BASE_HUMIDITY = float(os.getenv("BASE_HUMIDITY_PERCENT", "75"))
+BASE_AIR_TEMPERATURE = float(os.getenv("BASE_AIR_TEMPERATURE_CELSIUS", "24"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -126,6 +127,11 @@ def humidity_reading(previous: float) -> float:
     return round(max(0, min(100, previous + random.uniform(-1, 1))), 2)
 
 
+def air_temperature_reading(previous: float) -> float:
+    """Simulate gradual air temperature changes."""
+    return round(max(-60, min(60, previous + random.uniform(-0.3, 0.3))), 2)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -201,6 +207,7 @@ def run() -> None:
         current_chlorophyll_a = BASE_CHLOROPHYLL_A
         current_rainfall = BASE_RAINFALL
         current_humidity = BASE_HUMIDITY
+        current_air_temperature = BASE_AIR_TEMPERATURE
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -244,6 +251,7 @@ def run() -> None:
             current_chlorophyll_a = chlorophyll_a_reading(current_chlorophyll_a)
             current_rainfall = rainfall_reading(current_rainfall)
             current_humidity = humidity_reading(current_humidity)
+            current_air_temperature = air_temperature_reading(current_air_temperature)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -478,6 +486,20 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "air_temperature": [
+                    {
+                        "air_temperature_celsius": round(
+                            current_air_temperature
+                            + (0 if channel == "A" else random.uniform(-0.15, 0.15)),
+                            2,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"air-temperature-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -509,6 +531,7 @@ def run() -> None:
                 f"chlorophyll-a {current_chlorophyll_a:.3f} ug/L | "
                 f"rainfall {current_rainfall:.2f} mm/h | "
                 f"humidity {current_humidity:.2f}% | "
+                f"air temperature {current_air_temperature:.2f} C | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )

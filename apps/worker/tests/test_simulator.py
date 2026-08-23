@@ -163,3 +163,12 @@ def test_humidity_reading_stays_within_sensor_range(
 
     assert simulator.humidity_reading(99.9) == 100
     assert simulator.humidity_reading(75) == 76
+
+
+def test_air_temperature_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.3)
+
+    assert simulator.air_temperature_reading(59.9) == 60
+    assert simulator.air_temperature_reading(24) == 24.3
