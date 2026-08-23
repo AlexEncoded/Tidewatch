@@ -790,6 +790,7 @@ class BuoyRepository:
             chlorophyll_a_delta_ug_l=health.chlorophyll_a_delta_ug_l,
             rainfall_delta_mm_h=health.rainfall_delta_mm_h,
             humidity_delta_percent=health.humidity_delta_percent,
+            air_temperature_delta_celsius=health.air_temperature_delta_celsius,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,
