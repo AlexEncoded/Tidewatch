@@ -82,6 +82,7 @@ from .models import (
     TelemetryIngestResponse,
 )
 from .repository import BuoyRepository
+from .telemetry import configure_telemetry
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -175,6 +176,7 @@ app = FastAPI(
     version="0.2.0",
     lifespan=lifespan,
 )
+app.state.otel_enabled = configure_telemetry(app)
 
 
 @app.middleware("http")
