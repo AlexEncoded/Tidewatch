@@ -1217,6 +1217,22 @@ def test_atmospheric_pressure_ingestion_exposes_latest_value_and_metrics() -> No
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_atmospheric_pressure() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Atmospheric Pressure Health Buoy"}).json()["id"]
+    for channel, value in (("A", 101.0), ("B", 101.2)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/atmospheric-pressure",
+            json={"atmospheric_pressure_kpa": value, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["atmospheric_pressure_delta_kpa"] == 0.2
+    assert health.json()["decisions"]["atmospheric_pressure"] == "average"
+
+
 def test_sensor_health_compares_redundant_air_temperature() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Air Temperature Health Buoy"}).json()["id"]
     for channel, value in (("A", 24.0), ("B", 24.3)):
