@@ -88,10 +88,11 @@ esta fase de aprendizaje.
 - [x] Exportar snapshots CSV de posiciones de toda la flota.
 - [x] Comparar baterías A/B y detectar unidades energéticas degradadas.
 - [x] Exponer deriva y salud energética en Prometheus, alertas y Grafana.
+- [x] Incorporar tracing OpenTelemetry opcional para la API.
 - [ ] Calibrar el oleaje con datos reales.
 - [x] Soportar lotes de batería A/B en la ingesta de telemetría.
 - [ ] Crear procesamiento asíncrono real para telemetría.
-- [ ] Incorporar notificaciones externas de mantenimiento.
+- [x] Incorporar notificaciones externas de mantenimiento mediante webhook.
 - [ ] Añadir entornos `staging` y `production`.
 - [ ] Implementar blue/green o canary deployments.
 - [ ] Añadir backups, restauración y disaster recovery probado.
