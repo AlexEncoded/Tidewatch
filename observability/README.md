@@ -50,6 +50,8 @@ La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.
 La temperatura del aire se observa con `tidewatch_current_air_temperature_celsius`
 y su delta A/B queda registrada como `air_temperature_delta_celsius`.
+La presión atmosférica se observa con `tidewatch_current_atmospheric_pressure_kpa`
+y su delta A/B queda registrada como `atmospheric_pressure_delta_kpa`.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

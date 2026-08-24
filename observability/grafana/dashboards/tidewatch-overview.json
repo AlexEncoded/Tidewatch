@@ -263,6 +263,15 @@
       "targets": [{"expr": "tidewatch_current_air_temperature_celsius", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "celsius", "decimals": 2}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 30,
+      "title": "Atmospheric pressure",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 164},
+      "targets": [{"expr": "tidewatch_current_atmospheric_pressure_kpa", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
