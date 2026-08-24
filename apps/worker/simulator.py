@@ -25,6 +25,7 @@ BASE_CHLOROPHYLL_A = float(os.getenv("BASE_CHLOROPHYLL_A_UG_L", "4.2"))
 BASE_RAINFALL = float(os.getenv("BASE_RAINFALL_MM_H", "0"))
 BASE_HUMIDITY = float(os.getenv("BASE_HUMIDITY_PERCENT", "75"))
 BASE_AIR_TEMPERATURE = float(os.getenv("BASE_AIR_TEMPERATURE_CELSIUS", "24"))
+BASE_ATMOSPHERIC_PRESSURE = float(os.getenv("BASE_ATMOSPHERIC_PRESSURE_KPA", "101.3"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -132,6 +133,11 @@ def air_temperature_reading(previous: float) -> float:
     return round(max(-60, min(60, previous + random.uniform(-0.3, 0.3))), 2)
 
 
+def atmospheric_pressure_reading(previous: float) -> float:
+    """Simulate gradual atmospheric pressure changes."""
+    return round(max(80, min(120, previous + random.uniform(-0.08, 0.08))), 3)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -208,6 +214,7 @@ def run() -> None:
         current_rainfall = BASE_RAINFALL
         current_humidity = BASE_HUMIDITY
         current_air_temperature = BASE_AIR_TEMPERATURE
+        current_atmospheric_pressure = BASE_ATMOSPHERIC_PRESSURE
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -252,6 +259,7 @@ def run() -> None:
             current_rainfall = rainfall_reading(current_rainfall)
             current_humidity = humidity_reading(current_humidity)
             current_air_temperature = air_temperature_reading(current_air_temperature)
+            current_atmospheric_pressure = atmospheric_pressure_reading(current_atmospheric_pressure)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -500,6 +508,20 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "atmospheric_pressure": [
+                    {
+                        "atmospheric_pressure_kpa": round(
+                            current_atmospheric_pressure
+                            + (0 if channel == "A" else random.uniform(-0.04, 0.04)),
+                            3,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"barometer-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -532,6 +554,7 @@ def run() -> None:
                 f"rainfall {current_rainfall:.2f} mm/h | "
                 f"humidity {current_humidity:.2f}% | "
                 f"air temperature {current_air_temperature:.2f} C | "
+                f"atmospheric pressure {current_atmospheric_pressure:.3f} kPa | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )

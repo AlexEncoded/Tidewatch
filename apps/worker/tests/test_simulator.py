@@ -172,3 +172,12 @@ def test_air_temperature_reading_stays_within_sensor_range(
 
     assert simulator.air_temperature_reading(59.9) == 60
     assert simulator.air_temperature_reading(24) == 24.3
+
+
+def test_atmospheric_pressure_reading_stays_within_sensor_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.08)
+
+    assert simulator.atmospheric_pressure_reading(119.99) == 120
+    assert simulator.atmospheric_pressure_reading(101.3) == 101.38
