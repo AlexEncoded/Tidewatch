@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 
 from fastapi.testclient import TestClient
+from fastapi import FastAPI
 from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables
@@ -28,10 +29,18 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app
+from app.telemetry import configure_telemetry
 import app.main as main_module
 
 client = TestClient(app)
 create_tables()
+
+
+def test_opentelemetry_is_disabled_by_default(monkeypatch) -> None:
+    monkeypatch.delenv("OTEL_ENABLED", raising=False)
+    telemetry_app = FastAPI()
+
+    assert configure_telemetry(telemetry_app) is False
 
 
 def setup_function() -> None:
