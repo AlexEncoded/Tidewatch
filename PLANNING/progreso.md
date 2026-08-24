@@ -148,6 +148,10 @@ OTLP HTTP con nombre de servicio configurable.
 Se añadió un experimento de chaos controlado en `chaos/inject_ab_discrepancy.py`
 que inyecta una divergencia A/B y verifica la decisión `degraded` de salud.
 
+Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
+confirmación explícita para la restauración. La prueba real de recuperación en
+Azure y la medición RPO/RTO siguen pendientes.
+
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
 acción desde `codeload.github.com`; un commit posterior volvió a pasar el

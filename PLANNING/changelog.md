@@ -117,3 +117,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
 - Añadido tracing OpenTelemetry opcional para la API con exportación OTLP HTTP.
 - Añadido experimento controlado de chaos para validar discrepancias de sensores
   redundantes A/B.
+- Añadidos helpers PowerShell de backup y restauración PostgreSQL con protección
+  contra restauraciones accidentales.

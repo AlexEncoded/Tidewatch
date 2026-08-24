@@ -24,6 +24,29 @@ desarrollo local y no constituye un backup.
 6. Validar `/health`, `/metrics`, ingesta y consultas recientes.
 7. Registrar tiempos, pérdida de datos y acciones en un postmortem.
 
+## Prueba local controlada
+
+Con PostgreSQL local y `DATABASE_URL` apuntando a una base de pruebas, generar
+un backup con:
+
+```powershell
+$env:DATABASE_URL = "postgresql+psycopg://tidewatch:tidewatch@localhost:5432/tidewatch"
+./scripts/postgres-backup.ps1 -OutputFile ./.tmp/tidewatch-backup.dump
+```
+
+Restaurarlo requiere una confirmación explícita porque `pg_restore --clean`
+elimina objetos existentes en la base destino:
+
+```powershell
+./scripts/postgres-restore.ps1 -BackupFile ./.tmp/tidewatch-backup.dump -ConfirmRestore
+cd apps/api
+alembic upgrade head
+```
+
+Después de restaurar, ejecutar los smoke checks de `/health`, `/metrics`, una
+ingesta y una consulta. Los helpers no se ejecutan automáticamente ni apuntan
+a Azure por defecto.
+
 ## Pruebas pendientes
 
 - Restauración real de PostgreSQL Flexible Server.
