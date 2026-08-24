@@ -115,3 +115,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   salud mediante `0040_atm_pressure_health`, API, simulador, tests, métricas y
   panel Grafana.
 - Añadido tracing OpenTelemetry opcional para la API con exportación OTLP HTTP.
+- Añadido experimento controlado de chaos para validar discrepancias de sensores
+  redundantes A/B.

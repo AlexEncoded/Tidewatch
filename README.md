@@ -96,7 +96,7 @@ esta fase de aprendizaje.
 - [ ] Implementar blue/green o canary deployments.
 - [ ] Añadir backups, restauración y disaster recovery probado.
 - [x] Introducir load tests para la ingesta.
-- [ ] Añadir escenarios de chaos engineering.
+- [x] Añadir un escenario controlado de chaos engineering para discrepancia A/B.
 - [ ] Medir métricas DORA y coste por entorno.
 
 ### Futuro experimental: datos y ML

@@ -145,6 +145,9 @@ La API incorpora tracing OpenTelemetry opcional: permanece desactivado por
 defecto y, al activar `OTEL_ENABLED`, instrumenta FastAPI y exporta spans por
 OTLP HTTP con nombre de servicio configurable.
 
+Se añadió un experimento de chaos controlado en `chaos/inject_ab_discrepancy.py`
+que inyecta una divergencia A/B y verifica la decisión `degraded` de salud.
+
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
 acción desde `codeload.github.com`; un commit posterior volvió a pasar el

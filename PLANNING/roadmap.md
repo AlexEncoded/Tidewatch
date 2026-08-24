@@ -101,7 +101,7 @@
 - [x] OpenTelemetry opcional con exportación OTLP HTTP para la API.
 - [x] Tests de carga básicos con k6 para ingesta, salud, mantenimiento e
   histórico A/B.
-- [ ] Chaos engineering.
+- [x] Primer escenario controlado de chaos engineering para discrepancia A/B.
 - [ ] Disaster recovery probado.
 
 ## Fase 5 — Datos y predicción
