@@ -98,7 +98,7 @@
 - [x] Métricas de presión, salinidad y sensores degradados.
 - [x] Paneles Grafana para nuevas señales.
 - [x] Logs HTTP estructurados a stdout preparados para centralización.
-- [ ] OpenTelemetry.
+- [x] OpenTelemetry opcional con exportación OTLP HTTP para la API.
 - [x] Tests de carga básicos con k6 para ingesta, salud, mantenimiento e
   histórico A/B.
 - [ ] Chaos engineering.

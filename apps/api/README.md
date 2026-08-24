@@ -43,6 +43,11 @@ Documentación interactiva: <http://localhost:8000/docs>
 
 Métricas Prometheus: <http://localhost:8000/metrics>
 
+El tracing OpenTelemetry está desactivado por defecto. Para activarlo, define
+`OTEL_ENABLED=true` y configura `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` con el
+endpoint OTLP HTTP de tu colector. `OTEL_SERVICE_NAME` permite identificar el
+servicio en el backend de trazas.
+
 ## Endpoints iniciales
 
 | Método | Ruta | Uso |

@@ -141,6 +141,10 @@ La presión atmosférica también está completa: kPa A/B, persistencia
 `0039_atmospheric_pressure`, salud mediante `0040_atm_pressure_health`, API,
 simulador, tests, métricas y Grafana.
 
+La API incorpora tracing OpenTelemetry opcional: permanece desactivado por
+defecto y, al activar `OTEL_ENABLED`, instrumenta FastAPI y exporta spans por
+OTLP HTTP con nombre de servicio configurable.
+
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
 acción desde `codeload.github.com`; un commit posterior volvió a pasar el

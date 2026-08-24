@@ -114,3 +114,4 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
 - Añadida presión atmosférica en kPa con persistencia `0039_atmospheric_pressure`,
   salud mediante `0040_atm_pressure_health`, API, simulador, tests, métricas y
   panel Grafana.
+- Añadido tracing OpenTelemetry opcional para la API con exportación OTLP HTTP.
