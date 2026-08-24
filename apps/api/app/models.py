@@ -456,6 +456,7 @@ class SensorHealth(BaseModel):
     rainfall_delta_mm_h: float | None = None
     humidity_delta_percent: float | None = None
     air_temperature_delta_celsius: float | None = None
+    atmospheric_pressure_delta_kpa: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
     decisions: dict[str, str] = Field(default_factory=dict)

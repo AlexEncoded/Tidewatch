@@ -1650,6 +1650,12 @@ def sensor_health(
     air_temperature_b = latest_usable_reading(
         repository.list_air_temperature(buoy_id, 50, "B"), max_age_seconds, now
     )
+    atmospheric_pressure_a = latest_usable_reading(
+        repository.list_atmospheric_pressure(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    atmospheric_pressure_b = latest_usable_reading(
+        repository.list_atmospheric_pressure(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1667,6 +1673,7 @@ def sensor_health(
         "rainfall": {"A": rainfall_a, "B": rainfall_b},
         "humidity": {"A": humidity_a, "B": humidity_b},
         "air_temperature": {"A": air_temperature_a, "B": air_temperature_b},
+        "atmospheric_pressure": {"A": atmospheric_pressure_a, "B": atmospheric_pressure_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1827,6 +1834,11 @@ def sensor_health(
             if air_temperature_a and air_temperature_b
             else None
         ),
+        "atmospheric_pressure": (
+            round(abs(atmospheric_pressure_a[0].atmospheric_pressure_kpa - atmospheric_pressure_b[0].atmospheric_pressure_kpa), 3)
+            if atmospheric_pressure_a and atmospheric_pressure_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1847,6 +1859,7 @@ def sensor_health(
         "rainfall": 20,
         "humidity": 5,
         "air_temperature": 0.5,
+        "atmospheric_pressure": 0.25,
     }
     degraded_sensors = [
         sensor
@@ -1913,6 +1926,7 @@ def sensor_health(
         rainfall_delta_mm_h=deltas["rainfall"],
         humidity_delta_percent=deltas["humidity"],
         air_temperature_delta_celsius=deltas["air_temperature"],
+        atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,
