@@ -33,6 +33,8 @@ consume la API; cuando está activa, la API lee el fichero montado para evitar
 depender de que el Secret exista antes del primer arranque. Permanece
 desactivada por defecto y requiere validar el acceso en un AKS real antes de
 usarla en producción.
+Al activar Key Vault, el chart asocia automáticamente la ServiceAccount de
+Workload Identity al pod de la API.
 
 Para activar Workload Identity en el API, usa el `client_id` de la salida
 `tidewatch_api_workload_identity_client_id` de Terraform:

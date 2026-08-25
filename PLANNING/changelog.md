@@ -125,3 +125,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   CSI y evitar depender de un Secret sincronizado previamente.
 - Corregido el nombre por defecto del secreto Key Vault a `database-url`, válido
   para las restricciones de nombres de Azure.
+- El chart fuerza ahora la ServiceAccount federada cuando se activa Key Vault
+  CSI, evitando un arranque sin identidad para leer secretos.
