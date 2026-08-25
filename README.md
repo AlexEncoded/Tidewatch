@@ -66,7 +66,8 @@ esta fase de aprendizaje.
 
 ### Próximos pasos
 
-- [ ] Validar el chart Helm con `helm lint` y desplegarlo en un clúster local.
+- [x] Validar el chart Helm con `helm lint` y renderizarlo en CI.
+- [ ] Desplegar el chart en un clúster local.
 - [ ] Completar el flujo Azure Key Vault + Workload Identity.
 - [ ] Publicar API y worker en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
