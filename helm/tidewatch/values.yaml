@@ -51,6 +51,12 @@ database:
   existingSecret: tidewatch-database
   existingSecretKey: DATABASE_URL
 
+keyVault:
+  enabled: false
+  name: ""
+  tenantId: ""
+  databaseSecretName: DATABASE_URL
+
 service:
   type: ClusterIP
 
