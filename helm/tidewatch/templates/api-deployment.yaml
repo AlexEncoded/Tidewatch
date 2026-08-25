@@ -18,7 +18,7 @@ spec:
         {{- include "tidewatch.labels" . | nindent 8 }}
         app.kubernetes.io/component: api
     spec:
-      {{- if .Values.workloadIdentity.enabled }}
+      {{- if or .Values.workloadIdentity.enabled .Values.keyVault.enabled }}
       serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName }}
       {{- end }}
       securityContext:
