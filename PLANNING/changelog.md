@@ -123,3 +123,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   desde Azure Key Vault mediante Workload Identity.
 - Ajustado el arranque de la API para leer `DATABASE_URL_FILE` desde el volumen
   CSI y evitar depender de un Secret sincronizado previamente.
+- Corregido el nombre por defecto del secreto Key Vault a `database-url`, válido
+  para las restricciones de nombres de Azure.
