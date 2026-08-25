@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from sqlalchemy import delete
 
-from app.database import SessionLocal, create_tables
+from app.database import SessionLocal, create_tables, resolve_database_url
 from app.entities import (
     BuoyEntity,
     BuoyLocationReadingEntity,
@@ -41,6 +41,15 @@ def test_opentelemetry_is_disabled_by_default(monkeypatch) -> None:
     telemetry_app = FastAPI()
 
     assert configure_telemetry(telemetry_app) is False
+
+
+def test_database_url_can_be_resolved_from_mounted_secret(tmp_path, monkeypatch) -> None:
+    secret_file = tmp_path / "DATABASE_URL"
+    secret_file.write_text("postgresql+psycopg://user:pass@db/tidewatch\n", encoding="utf-8")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("DATABASE_URL_FILE", str(secret_file))
+
+    assert resolve_database_url() == "postgresql+psycopg://user:pass@db/tidewatch"
 
 
 def setup_function() -> None:
