@@ -33,6 +33,17 @@ jobs:
       - name: Render Tidewatch chart
         run: helm template tidewatch helm/tidewatch -f helm/tidewatch/values-dev.yaml > /tmp/tidewatch-rendered.yaml
 
+      - name: Render Key Vault CSI variant
+        run: >-
+          helm template tidewatch helm/tidewatch
+          -f helm/tidewatch/values-dev.yaml
+          --set keyVault.enabled=true
+          --set keyVault.name=tidewatch-validation
+          --set keyVault.tenantId=00000000-0000-0000-0000-000000000000
+          --set workloadIdentity.enabled=true
+          --set workloadIdentity.clientId=00000000-0000-0000-0000-000000000000
+          > /tmp/tidewatch-keyvault-rendered.yaml
+
   kustomize:
     name: Validate Kustomize overlays
     runs-on: ubuntu-latest
