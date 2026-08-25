@@ -14,6 +14,24 @@ kubectl create secret generic tidewatch-database \
 En producción, este Secret será sustituido por Azure Key Vault y Workload
 Identity. No se deben guardar credenciales en `values.yaml`.
 
+El chart incluye una integración opcional con Secrets Store CSI Driver. Para
+usarla, instala previamente el driver y habilita el bloque con los valores de
+Key Vault:
+
+```bash
+helm upgrade --install tidewatch ./helm/tidewatch \
+  --set workloadIdentity.enabled=true \
+  --set workloadIdentity.clientId=<USER_ASSIGNED_IDENTITY_CLIENT_ID> \
+  --set keyVault.enabled=true \
+  --set keyVault.name=<KEY_VAULT_NAME> \
+  --set keyVault.tenantId=<TENANT_ID> \
+  --set keyVault.databaseSecretName=DATABASE_URL
+```
+
+La opción sincroniza el secreto `DATABASE_URL` con el Secret Kubernetes que
+consume la API. Permanece desactivada por defecto y requiere validar el acceso
+en un AKS real antes de usarla en producción.
+
 Para activar Workload Identity en el API, usa el `client_id` de la salida
 `tidewatch_api_workload_identity_client_id` de Terraform:
 

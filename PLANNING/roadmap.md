@@ -87,6 +87,7 @@
 - [x] Key Vault base.
 - [x] Helm y Argo CD.
 - [x] Base de Workload Identity para la API (Terraform, OIDC y Helm).
+- [x] Integración opcional de Secrets Store CSI en el chart Helm.
 - [ ] Despliegue real de `dev`.
 - [ ] Staging y producción.
 

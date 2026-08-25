@@ -152,6 +152,10 @@ Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
 confirmación explícita para la restauración. La prueba real de recuperación en
 Azure y la medición RPO/RTO siguen pendientes.
 
+El chart Helm incorpora ahora un `SecretProviderClass` opcional para sincronizar
+`DATABASE_URL` desde Azure Key Vault mediante Secrets Store CSI y Workload
+Identity. La validación contra un AKS desplegado sigue pendiente.
+
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
 acción desde `codeload.github.com`; un commit posterior volvió a pasar el

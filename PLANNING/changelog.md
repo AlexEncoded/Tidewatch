@@ -119,3 +119,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   redundantes A/B.
 - Añadidos helpers PowerShell de backup y restauración PostgreSQL con protección
   contra restauraciones accidentales.
+- Añadida integración opcional de Secrets Store CSI para obtener `DATABASE_URL`
+  desde Azure Key Vault mediante Workload Identity.

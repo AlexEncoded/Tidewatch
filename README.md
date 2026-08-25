@@ -69,7 +69,8 @@ esta fase de aprendizaje.
 - [x] Validar el chart Helm con `helm lint` y renderizarlo en CI.
 - [ ] Desplegar el chart en un clúster local.
 - [x] Preparar la base Azure Key Vault + Workload Identity en Terraform y Helm.
-- [ ] Integrar Secrets Store CSI y validar el acceso en un AKS desplegado.
+- [x] Añadir integración opcional de Secrets Store CSI al chart Helm.
+- [ ] Validar el acceso CSI en un AKS desplegado.
 - [ ] Publicar API y worker en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
 - [x] Añadir mapa operativo de boyas al frontend.
