@@ -39,11 +39,16 @@ spec:
             - name: http
               containerPort: {{ .Values.api.port }}
           env:
+            {{- if .Values.keyVault.enabled }}
+            - name: DATABASE_URL_FILE
+              value: /mnt/secrets-store/{{ .Values.keyVault.databaseSecretName }}
+            {{- else }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.database.existingSecret }}
                   key: {{ .Values.database.existingSecretKey }}
+            {{- end }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
