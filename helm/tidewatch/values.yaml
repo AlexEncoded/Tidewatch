@@ -55,7 +55,7 @@ keyVault:
   enabled: false
   name: ""
   tenantId: ""
-  databaseSecretName: DATABASE_URL
+  databaseSecretName: database-url
 
 service:
   type: ClusterIP

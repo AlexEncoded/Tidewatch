@@ -25,7 +25,7 @@ helm upgrade --install tidewatch ./helm/tidewatch \
   --set keyVault.enabled=true \
   --set keyVault.name=<KEY_VAULT_NAME> \
   --set keyVault.tenantId=<TENANT_ID> \
-  --set keyVault.databaseSecretName=DATABASE_URL
+  --set keyVault.databaseSecretName=database-url
 ```
 
 La opción sincroniza el secreto `DATABASE_URL` con el Secret Kubernetes que
