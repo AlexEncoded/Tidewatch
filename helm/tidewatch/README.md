@@ -29,8 +29,10 @@ helm upgrade --install tidewatch ./helm/tidewatch \
 ```
 
 La opción sincroniza el secreto `DATABASE_URL` con el Secret Kubernetes que
-consume la API. Permanece desactivada por defecto y requiere validar el acceso
-en un AKS real antes de usarla en producción.
+consume la API; cuando está activa, la API lee el fichero montado para evitar
+depender de que el Secret exista antes del primer arranque. Permanece
+desactivada por defecto y requiere validar el acceso en un AKS real antes de
+usarla en producción.
 
 Para activar Workload Identity en el API, usa el `client_id` de la salida
 `tidewatch_api_workload_identity_client_id` de Terraform:

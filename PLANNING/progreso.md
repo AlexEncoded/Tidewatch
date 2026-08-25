@@ -155,6 +155,8 @@ Azure y la medición RPO/RTO siguen pendientes.
 El chart Helm incorpora ahora un `SecretProviderClass` opcional para sincronizar
 `DATABASE_URL` desde Azure Key Vault mediante Secrets Store CSI y Workload
 Identity. La validación contra un AKS desplegado sigue pendiente.
+Para evitar una dependencia circular durante el arranque, la API acepta
+`DATABASE_URL_FILE` y lee el secreto directamente desde el volumen CSI.
 
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la

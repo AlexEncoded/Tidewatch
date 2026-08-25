@@ -121,3 +121,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   contra restauraciones accidentales.
 - Añadida integración opcional de Secrets Store CSI para obtener `DATABASE_URL`
   desde Azure Key Vault mediante Workload Identity.
+- Ajustado el arranque de la API para leer `DATABASE_URL_FILE` desde el volumen
+  CSI y evitar depender de un Secret sincronizado previamente.

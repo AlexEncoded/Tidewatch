@@ -27,6 +27,8 @@ uvicorn app.main:app --reload
 
 Por defecto, la ejecución local usa SQLite (`tidewatch.db`). Para conectar a
 PostgreSQL, define `DATABASE_URL` usando el formato de `.env.example`.
+En despliegues con Secrets Store CSI, la API también acepta
+`DATABASE_URL_FILE` y lee la URL desde el fichero secreto montado.
 
 Las migraciones del esquema se ejecutan con:
 
