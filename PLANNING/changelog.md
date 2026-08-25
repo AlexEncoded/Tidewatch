@@ -127,3 +127,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   para las restricciones de nombres de Azure.
 - El chart fuerza ahora la ServiceAccount federada cuando se activa Key Vault
   CSI, evitando un arranque sin identidad para leer secretos.
+- Añadido al workflow de plataforma un renderizado CI del chart con Key Vault
+  CSI y Workload Identity habilitados usando valores no sensibles.

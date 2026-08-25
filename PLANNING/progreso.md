@@ -157,6 +157,8 @@ El chart Helm incorpora ahora un `SecretProviderClass` opcional para sincronizar
 Identity. La validación contra un AKS desplegado sigue pendiente.
 Para evitar una dependencia circular durante el arranque, la API acepta
 `DATABASE_URL_FILE` y lee el secreto directamente desde el volumen CSI.
+El workflow de plataforma valida también el renderizado de esta variante con
+valores ficticios; el despliegue real en AKS continúa pendiente.
 
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
