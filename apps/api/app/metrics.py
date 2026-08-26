@@ -242,6 +242,30 @@ current_acoustic_altimeter_depth_meters = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+current_gnss_altitude_meters = Gauge(
+    "tidewatch_current_gnss_altitude_meters",
+    "Most recent GNSS altitude in meters by buoy.",
+    ["buoy_id"],
+)
+
+current_gnss_speed_mps = Gauge(
+    "tidewatch_current_gnss_speed_mps",
+    "Most recent GNSS speed in meters per second by buoy.",
+    ["buoy_id"],
+)
+
+current_gnss_hdop = Gauge(
+    "tidewatch_current_gnss_hdop",
+    "Most recent GNSS horizontal dilution of precision by buoy.",
+    ["buoy_id"],
+)
+
+current_gnss_satellites = Gauge(
+    "tidewatch_current_gnss_satellites",
+    "Most recent GNSS satellite count by buoy.",
+    ["buoy_id"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

@@ -112,6 +112,10 @@ from .metrics import (
     current_atmospheric_pressure_kpa,
     acoustic_altimeter_readings_total,
     current_acoustic_altimeter_depth_meters,
+    current_gnss_altitude_meters,
+    current_gnss_speed_mps,
+    current_gnss_hdop,
+    current_gnss_satellites,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -249,9 +253,16 @@ def ingest_telemetry(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     if payload.location is not None:
-        repository.add_location(
-            BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())
-        )
+        location = BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())
+        repository.add_location(location)
+        if location.altitude_meters is not None:
+            current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)
+        if location.speed_mps is not None:
+            current_gnss_speed_mps.labels(buoy_id=buoy_id).set(location.speed_mps)
+        if location.hdop is not None:
+            current_gnss_hdop.labels(buoy_id=buoy_id).set(location.hdop)
+        if location.satellites is not None:
+            current_gnss_satellites.labels(buoy_id=buoy_id).set(location.satellites)
         movement = analyze_movement(buoy_id, repository.list_locations(buoy_id, 50))
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(

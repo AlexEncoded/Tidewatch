@@ -559,6 +559,10 @@ def run() -> None:
                 "location": {
                     "latitude": round(current_latitude, 6),
                     "longitude": round(current_longitude, 6),
+                    "altitude_meters": 2.0,
+                    "speed_mps": round(random.uniform(0, 0.4), 3),
+                    "hdop": round(random.uniform(0.6, 1.4), 2),
+                    "satellites": random.randint(10, 16),
                 },
             }
             send_telemetry(client, buoy_id, payload)
