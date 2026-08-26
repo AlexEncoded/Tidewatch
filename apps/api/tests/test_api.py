@@ -340,6 +340,31 @@ def test_buoy_location_rejects_invalid_coordinates() -> None:
     assert response.status_code == 422
 
 
+def test_gnss_metadata_is_persisted_with_location() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "GNSS Buoy"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "location": {
+                "latitude": 36.7,
+                "longitude": 3.1,
+                "altitude_meters": 2.4,
+                "speed_mps": 0.8,
+                "hdop": 0.9,
+                "satellites": 14,
+            }
+        },
+    )
+
+    assert response.status_code == 202
+    location = client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]
+    assert location["altitude_meters"] == 2.4
+    assert location["speed_mps"] == 0.8
+    assert location["hdop"] == 0.9
+    assert location["satellites"] == 14
+
+
 def test_movement_analysis_estimates_distance_and_speed() -> None:
     buoy_id = client.post(
         "/api/v1/buoys", json={"name": "Drifting Buoy", "latitude": 0, "longitude": 0}
