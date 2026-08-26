@@ -193,7 +193,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
             "humidity": 0,
             "air_temperature": 0,
             "atmospheric_pressure": 0,
-            "atmospheric_pressure": 0,
+            "acoustic_altimeter": 0,
             "battery": 1,
         },
     }
