@@ -55,6 +55,9 @@ y su delta A/B queda registrada como `atmospheric_pressure_delta_kpa`.
 El altímetro acústico se observa con
 `tidewatch_current_acoustic_altimeter_depth_meters` y su delta A/B queda
 registrada como `acoustic_altimeter_delta_meters`.
+La primera fase GNSS se observa con `tidewatch_current_gnss_altitude_meters`,
+`tidewatch_current_gnss_speed_mps`, `tidewatch_current_gnss_hdop` y
+`tidewatch_current_gnss_satellites` por boya.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

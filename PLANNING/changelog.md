@@ -133,3 +133,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   OIDC y etiquetas inmutables basadas en el SHA del commit.
 - Añadido altímetro acústico en metros con persistencia A/B, diagnóstico,
   simulador, tests, métricas y panel Grafana.
+- Añadida primera fase GNSS con altitud, velocidad, HDOP y satélites, incluyendo
+  métricas, simulador, tests y paneles Grafana.

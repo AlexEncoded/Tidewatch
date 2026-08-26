@@ -281,6 +281,42 @@
       "targets": [{"expr": "tidewatch_current_acoustic_altimeter_depth_meters", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "lengthm", "decimals": 3}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 32,
+      "title": "GNSS altitude",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 180},
+      "targets": [{"expr": "tidewatch_current_gnss_altitude_meters", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "lengthm", "decimals": 2}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 33,
+      "title": "GNSS speed",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 180},
+      "targets": [{"expr": "tidewatch_current_gnss_speed_mps", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "mps", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 34,
+      "title": "GNSS HDOP",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 188},
+      "targets": [{"expr": "tidewatch_current_gnss_hdop", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 2}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 35,
+      "title": "GNSS satellites",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 188},
+      "targets": [{"expr": "tidewatch_current_gnss_satellites", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

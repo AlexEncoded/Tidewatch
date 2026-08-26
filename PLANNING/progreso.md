@@ -152,6 +152,11 @@ El altímetro acústico está completo: profundidad A/B en metros, persistencia
 `0041_acoustic_altimeter`, salud mediante `0042_acoustic_altimeter_health`, API,
 batch, simulador, tests, métricas y panel Grafana.
 
+La primera fase GNSS está completa: metadatos de altitud, velocidad, HDOP y
+satélites en la posición, persistencia `0043_gnss_metadata`, API batch,
+simulador, tests y paneles Grafana. Queda para una fase posterior la fusión
+avanzada GNSS/IMU orientada específicamente al oleaje.
+
 Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
 confirmación explícita para la restauración. La prueba real de recuperación en
 Azure y la medición RPO/RTO siguen pendientes.
