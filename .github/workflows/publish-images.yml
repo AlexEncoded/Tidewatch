@@ -1,0 +1,49 @@
+name: Publish images to ACR
+
+on:
+  workflow_dispatch:
+    inputs:
+      acr_name:
+        description: Azure Container Registry resource name
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Build and publish images
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ${{ inputs.acr_name }}.azurecr.io
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name "${{ inputs.acr_name }}"
+
+      - name: Build and push API
+        run: |
+          docker build --tag "$REGISTRY/tidewatch-api:$IMAGE_TAG" apps/api
+          docker push "$REGISTRY/tidewatch-api:$IMAGE_TAG"
+
+      - name: Build and push worker
+        run: |
+          docker build --tag "$REGISTRY/tidewatch-worker:$IMAGE_TAG" apps/worker
+          docker push "$REGISTRY/tidewatch-worker:$IMAGE_TAG"
+
+      - name: Build and push frontend
+        run: |
+          docker build --tag "$REGISTRY/tidewatch-frontend:$IMAGE_TAG" apps/frontend
+          docker push "$REGISTRY/tidewatch-frontend:$IMAGE_TAG"
