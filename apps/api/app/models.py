@@ -21,6 +21,10 @@ class BuoyLocationUpdate(BaseModel):
 
 
 class BuoyLocationReadingCreate(BuoyLocationUpdate):
+    altitude_meters: float | None = Field(default=None, ge=-1000, le=20000)
+    speed_mps: float | None = Field(default=None, ge=0, le=100)
+    hdop: float | None = Field(default=None, gt=0, le=100)
+    satellites: int | None = Field(default=None, ge=0, le=100)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

@@ -103,6 +103,10 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             latitude=reading.latitude,
             longitude=reading.longitude,
+            altitude_meters=reading.altitude_meters,
+            speed_mps=reading.speed_mps,
+            hdop=reading.hdop,
+            satellites=reading.satellites,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)

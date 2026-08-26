@@ -82,6 +82,10 @@ class BuoyLocationReadingEntity(Base):
     buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    altitude_meters: Mapped[float | None] = mapped_column(Float, nullable=True)
+    speed_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
+    hdop: Mapped[float | None] = mapped_column(Float, nullable=True)
+    satellites: Mapped[int | None] = mapped_column(nullable=True)
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="location_readings")
 
