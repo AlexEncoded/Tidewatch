@@ -363,6 +363,11 @@ def test_gnss_metadata_is_persisted_with_location() -> None:
     assert location["speed_mps"] == 0.8
     assert location["hdop"] == 0.9
     assert location["satellites"] == 14
+    metrics = client.get("/metrics")
+    assert "tidewatch_current_gnss_altitude_meters" in metrics.text
+    assert "tidewatch_current_gnss_speed_mps" in metrics.text
+    assert "tidewatch_current_gnss_hdop" in metrics.text
+    assert "tidewatch_current_gnss_satellites" in metrics.text
 
 
 def test_movement_analysis_estimates_distance_and_speed() -> None:
