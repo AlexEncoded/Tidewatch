@@ -38,11 +38,12 @@
 - [ ] Extender la validación A/B a toda la suite futura de sensores.
 - [ ] Definir márgenes de error por sensor y clasificación de incongruencias.
 - [ ] Medir la disponibilidad objetivo del 99,99% por boya y por unidad.
-- [ ] Incorporar IMU para movimiento, inclinación y oleaje.
-- [ ] Incorporar luz ambiental para ciclo día/noche y tormentas.
-- [ ] Incorporar anemómetro y veleta.
-- [ ] Incorporar sensor de corrientes marinas.
-- [ ] Incorporar turbidez.
+- [x] Incorporar IMU inicial para movimiento e inclinación; la fusión avanzada
+  orientada al oleaje queda pendiente.
+- [x] Incorporar luz ambiental para ciclo día/noche y tormentas.
+- [x] Incorporar anemómetro y veleta.
+- [x] Incorporar sensor de corrientes marinas.
+- [x] Incorporar turbidez.
 - [x] Incorporar oxígeno disuelto con persistencia A/B, API, simulador,
   diagnóstico de salud, tests y panel Grafana.
 - [x] Incorporar pH con persistencia A/B, API, simulador, diagnóstico de salud,
@@ -61,6 +62,7 @@
   salud, tests y panel Grafana.
 - [x] Incorporar altímetro acústico con persistencia A/B, API, simulador,
   diagnóstico de salud, tests y panel Grafana.
+- [x] Incorporar primera fase GNSS con altitud, velocidad, HDOP y satélites.
 - [ ] Evaluar GNSS/IMU avanzado para oleaje.
 - [ ] Evaluar sensor acústico submarino.
 
