@@ -24,6 +24,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Humedad relativa del aire en porcentaje por boya y canal redundante.
 - Temperatura del aire en °C por boya y canal redundante.
 - Presión atmosférica en kPa por boya y canal redundante.
+- Profundidad del altímetro acústico en metros por boya y canal redundante.
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar

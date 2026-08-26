@@ -272,6 +272,15 @@
       "targets": [{"expr": "tidewatch_current_atmospheric_pressure_kpa", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 3}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 31,
+      "title": "Acoustic altimeter depth",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 172},
+      "targets": [{"expr": "tidewatch_current_acoustic_altimeter_depth_meters", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "lengthm", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

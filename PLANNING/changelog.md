@@ -131,3 +131,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   CSI y Workload Identity habilitados usando valores no sensibles.
 - Añadido workflow manual para publicar las tres imágenes en ACR mediante Azure
   OIDC y etiquetas inmutables basadas en el SHA del commit.
+- Añadido altímetro acústico en metros con persistencia A/B, diagnóstico,
+  simulador, tests, métricas y panel Grafana.

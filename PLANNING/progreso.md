@@ -148,6 +148,10 @@ OTLP HTTP con nombre de servicio configurable.
 Se añadió un experimento de chaos controlado en `chaos/inject_ab_discrepancy.py`
 que inyecta una divergencia A/B y verifica la decisión `degraded` de salud.
 
+El altímetro acústico está completo: profundidad A/B en metros, persistencia
+`0041_acoustic_altimeter`, salud mediante `0042_acoustic_altimeter_health`, API,
+batch, simulador, tests, métricas y panel Grafana.
+
 Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
 confirmación explícita para la restauración. La prueba real de recuperación en
 Azure y la medición RPO/RTO siguen pendientes.

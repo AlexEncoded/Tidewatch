@@ -59,7 +59,8 @@
   simulador, diagnóstico de salud, tests y panel Grafana.
 - [x] Incorporar lluvia con persistencia A/B, API, simulador, diagnóstico de
   salud, tests y panel Grafana.
-- [ ] Evaluar altímetro acústico.
+- [x] Incorporar altímetro acústico con persistencia A/B, API, simulador,
+  diagnóstico de salud, tests y panel Grafana.
 - [ ] Evaluar GNSS/IMU avanzado para oleaje.
 - [ ] Evaluar sensor acústico submarino.
 
