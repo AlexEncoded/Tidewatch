@@ -364,6 +364,7 @@ class TelemetryBatchCreate(BaseModel):
     humidity: list[HumidityReadingCreate] = Field(default_factory=list, max_length=100)
     air_temperature: list[AirTemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     atmospheric_pressure: list[AtmosphericPressureReadingCreate] = Field(default_factory=list, max_length=100)
+    acoustic_altimeter: list[AcousticAltimeterReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 

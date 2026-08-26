@@ -276,6 +276,7 @@ def ingest_telemetry(
         "humidity": 0,
         "air_temperature": 0,
         "atmospheric_pressure": 0,
+        "acoustic_altimeter": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -516,6 +517,15 @@ def ingest_telemetry(
         current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
         record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
         accepted_by_family["atmospheric_pressure"] += 1
+        accepted += 1
+
+    for reading_payload in payload.acoustic_altimeter:
+        reading = AcousticAltimeterReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        repository.add_acoustic_altimeter(reading)
+        acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
+        record_quality_metric(buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
+        accepted_by_family["acoustic_altimeter"] += 1
         accepted += 1
 
     for battery_payload in payload.battery:
