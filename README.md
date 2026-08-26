@@ -71,7 +71,7 @@ esta fase de aprendizaje.
 - [x] Preparar la base Azure Key Vault + Workload Identity en Terraform y Helm.
 - [x] Añadir integración opcional de Secrets Store CSI al chart Helm.
 - [ ] Validar el acceso CSI en un AKS desplegado.
-- [ ] Publicar API y worker en ACR desde GitHub Actions.
+- [x] Preparar publicación manual de API, worker y frontend en ACR desde GitHub Actions.
 - [ ] Desplegar AKS `dev` con aprobación explícita.
 - [x] Añadir mapa operativo de boyas al frontend.
 - [x] Crear tests de carga para la ingesta batch.

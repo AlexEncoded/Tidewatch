@@ -160,6 +160,11 @@ Para evitar una dependencia circular durante el arranque, la API acepta
 El workflow de plataforma valida también el renderizado de esta variante con
 valores ficticios; el despliegue real en AKS continúa pendiente.
 
+Se añadió un workflow manual de GitHub Actions para construir y publicar API,
+worker y frontend en ACR usando Azure OIDC. Requiere configurar los secretos
+`AZURE_CLIENT_ID`, `AZURE_TENANT_ID` y `AZURE_SUBSCRIPTION_ID`, y no se ejecuta
+automáticamente en cada push.
+
 La suite CI y los escaneos de imágenes pasan. Gitleaks tuvo un fallo
 intermitente de infraestructura por `429 Too Many Requests` al descargar la
 acción desde `codeload.github.com`; un commit posterior volvió a pasar el
