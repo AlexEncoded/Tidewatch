@@ -230,6 +230,18 @@ current_atmospheric_pressure_kpa = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+acoustic_altimeter_readings_total = Counter(
+    "tidewatch_acoustic_altimeter_readings_total",
+    "Total number of acoustic altimeter readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_acoustic_altimeter_depth_meters = Gauge(
+    "tidewatch_current_acoustic_altimeter_depth_meters",
+    "Most recent acoustic altimeter depth in meters by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",
