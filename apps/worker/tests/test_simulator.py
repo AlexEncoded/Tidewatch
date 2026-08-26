@@ -60,6 +60,13 @@ def test_battery_reading_discharges_one_device(monkeypatch: pytest.MonkeyPatch) 
     assert simulator.battery_reading(100) == 99.97
 
 
+def test_acoustic_altimeter_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 0.2)
+
+    assert simulator.acoustic_altimeter_reading(19999.9) == 20000
+    assert simulator.acoustic_altimeter_reading(12) == 12.2
+
+
 def test_imu_reading_stays_within_calm_buoy_range(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         simulator.random,
