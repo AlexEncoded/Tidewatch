@@ -398,7 +398,9 @@ class TelemetryBatchCreate(BaseModel):
             or self.humidity
             or self.air_temperature
             or self.atmospheric_pressure
+            or self.acoustic_altimeter
             or self.battery
+            or self.location
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
         battery_devices = [reading.device_id for reading in self.battery]
