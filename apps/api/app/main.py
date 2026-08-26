@@ -1693,6 +1693,12 @@ def sensor_health(
     atmospheric_pressure_b = latest_usable_reading(
         repository.list_atmospheric_pressure(buoy_id, 50, "B"), max_age_seconds, now
     )
+    acoustic_altimeter_a = latest_usable_reading(
+        repository.list_acoustic_altimeter(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    acoustic_altimeter_b = latest_usable_reading(
+        repository.list_acoustic_altimeter(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1711,6 +1717,7 @@ def sensor_health(
         "humidity": {"A": humidity_a, "B": humidity_b},
         "air_temperature": {"A": air_temperature_a, "B": air_temperature_b},
         "atmospheric_pressure": {"A": atmospheric_pressure_a, "B": atmospheric_pressure_b},
+        "acoustic_altimeter": {"A": acoustic_altimeter_a, "B": acoustic_altimeter_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1876,6 +1883,11 @@ def sensor_health(
             if atmospheric_pressure_a and atmospheric_pressure_b
             else None
         ),
+        "acoustic_altimeter": (
+            round(abs(acoustic_altimeter_a[0].depth_meters - acoustic_altimeter_b[0].depth_meters), 3)
+            if acoustic_altimeter_a and acoustic_altimeter_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1897,6 +1909,7 @@ def sensor_health(
         "humidity": 5,
         "air_temperature": 0.5,
         "atmospheric_pressure": 0.25,
+        "acoustic_altimeter": 0.5,
     }
     degraded_sensors = [
         sensor
@@ -1964,6 +1977,7 @@ def sensor_health(
         humidity_delta_percent=deltas["humidity"],
         air_temperature_delta_celsius=deltas["air_temperature"],
         atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
+        acoustic_altimeter_delta_meters=deltas["acoustic_altimeter"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,
