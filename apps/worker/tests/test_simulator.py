@@ -67,6 +67,13 @@ def test_acoustic_altimeter_reading_stays_within_sensor_range(monkeypatch: pytes
     assert simulator.acoustic_altimeter_reading(12) == 12.2
 
 
+def test_underwater_acoustic_reading_stays_within_sensor_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simulator.random, "uniform", lambda _minimum, _maximum: 1.5)
+
+    assert simulator.underwater_acoustic_reading(99.9) == 100
+    assert simulator.underwater_acoustic_reading(-42) == -40.5
+
+
 def test_imu_reading_stays_within_calm_buoy_range(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         simulator.random,

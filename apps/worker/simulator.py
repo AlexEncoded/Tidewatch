@@ -27,6 +27,7 @@ BASE_HUMIDITY = float(os.getenv("BASE_HUMIDITY_PERCENT", "75"))
 BASE_AIR_TEMPERATURE = float(os.getenv("BASE_AIR_TEMPERATURE_CELSIUS", "24"))
 BASE_ATMOSPHERIC_PRESSURE = float(os.getenv("BASE_ATMOSPHERIC_PRESSURE_KPA", "101.3"))
 BASE_ACOUSTIC_ALTIMETER_DEPTH = float(os.getenv("BASE_ACOUSTIC_ALTIMETER_DEPTH_METERS", "12"))
+BASE_UNDERWATER_ACOUSTIC_ECHO = float(os.getenv("BASE_UNDERWATER_ACOUSTIC_ECHO_INTENSITY_DB", "-42"))
 BASE_BATTERY = float(os.getenv("BASE_BATTERY_PERCENT", "100"))
 BASE_LATITUDE = float(os.getenv("BASE_LATITUDE", "36.7"))
 BASE_LONGITUDE = float(os.getenv("BASE_LONGITUDE", "3.1"))
@@ -144,6 +145,11 @@ def acoustic_altimeter_reading(previous: float) -> float:
     return round(max(0, min(20000, previous + random.uniform(-0.2, 0.2))), 3)
 
 
+def underwater_acoustic_reading(previous: float) -> float:
+    """Simulate a bounded underwater acoustic echo intensity in dB."""
+    return round(max(-200, min(100, previous + random.uniform(-1.5, 1.5))), 2)
+
+
 def battery_reading(previous: float) -> float:
     """Simulate gradual battery discharge for one physical buoy device."""
     return max(0, round(previous - random.uniform(0.01, 0.05), 2))
@@ -222,6 +228,7 @@ def run() -> None:
         current_air_temperature = BASE_AIR_TEMPERATURE
         current_atmospheric_pressure = BASE_ATMOSPHERIC_PRESSURE
         current_acoustic_altimeter_depth = BASE_ACOUSTIC_ALTIMETER_DEPTH
+        current_underwater_acoustic_echo = BASE_UNDERWATER_ACOUSTIC_ECHO
         current_battery_a = BASE_BATTERY
         current_battery_b = BASE_BATTERY
         current_latitude = BASE_LATITUDE
@@ -268,6 +275,7 @@ def run() -> None:
             current_air_temperature = air_temperature_reading(current_air_temperature)
             current_atmospheric_pressure = atmospheric_pressure_reading(current_atmospheric_pressure)
             current_acoustic_altimeter_depth = acoustic_altimeter_reading(current_acoustic_altimeter_depth)
+            current_underwater_acoustic_echo = underwater_acoustic_reading(current_underwater_acoustic_echo)
             imu_a = imu_reading()
             imu_b = {
                 key: round(value + random.uniform(-0.04, 0.04), 3)
@@ -544,6 +552,20 @@ def run() -> None:
                     }
                     for channel in ("A", "B")
                 ],
+                "underwater_acoustic": [
+                    {
+                        "echo_intensity_db": round(
+                            current_underwater_acoustic_echo
+                            + (0 if channel == "A" else random.uniform(-0.8, 0.8)),
+                            2,
+                        ),
+                        "sensor_channel": channel,
+                        "sensor_id": f"underwater-acoustic-{channel.lower()}-01",
+                        "firmware_version": SENSOR_FIRMWARE_VERSION,
+                        "measured_at": measured_at,
+                    }
+                    for channel in ("A", "B")
+                ],
                 "battery": [
                     {
                         "battery_percent": current_battery_a,
@@ -582,6 +604,7 @@ def run() -> None:
                 f"air temperature {current_air_temperature:.2f} C | "
                 f"atmospheric pressure {current_atmospheric_pressure:.3f} kPa | "
                 f"acoustic depth {current_acoustic_altimeter_depth:.3f} m | "
+                f"underwater echo {current_underwater_acoustic_echo:.2f} dB | "
                 f"battery A/B {current_battery_a:.1f}%/{current_battery_b:.1f}% | "
                 f"position {current_latitude:.4f},{current_longitude:.4f} | sensors A/B"
             )
