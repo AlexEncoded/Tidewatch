@@ -58,6 +58,10 @@ registrada como `acoustic_altimeter_delta_meters`.
 La primera fase GNSS se observa con `tidewatch_current_gnss_altitude_meters`,
 `tidewatch_current_gnss_speed_mps`, `tidewatch_current_gnss_hdop` y
 `tidewatch_current_gnss_satellites` por boya.
+El sensor acústico submarino se observa con
+`tidewatch_current_underwater_acoustic_echo_intensity_db` por boya y canal.
+Su diagnóstico A/B calcula `underwater_acoustic_delta_db` y considera degradada
+la familia cuando la diferencia supera 5 dB.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.

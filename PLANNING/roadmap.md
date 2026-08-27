@@ -64,7 +64,8 @@
   diagnóstico de salud, tests y panel Grafana.
 - [x] Incorporar primera fase GNSS con altitud, velocidad, HDOP y satélites.
 - [ ] Evaluar GNSS/IMU avanzado para oleaje.
-- [ ] Evaluar sensor acústico submarino.
+- [x] Incorporar sensor acústico submarino en primera fase con intensidad de
+  eco A/B; queda abierta la evolución hacia usos acústicos avanzados.
 
 ## Fase transversal — Evolución arquitectónica
 

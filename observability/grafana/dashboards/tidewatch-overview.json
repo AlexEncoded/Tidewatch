@@ -317,6 +317,15 @@
       "targets": [{"expr": "tidewatch_current_gnss_satellites", "legendFormat": "{{buoy_id}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 36,
+      "title": "Underwater acoustic echo intensity",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 196},
+      "targets": [{"expr": "tidewatch_current_underwater_acoustic_echo_intensity_db", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "decibels", "decimals": 2}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
@@ -325,5 +334,5 @@
   "time": {"from": "now-6h", "to": "now"},
   "title": "Tidewatch overview",
   "uid": "tidewatch-overview",
-  "version": 2
+  "version": 3
 }

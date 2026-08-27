@@ -157,6 +157,11 @@ satélites en la posición, persistencia `0043_gnss_metadata`, API batch,
 simulador, tests y paneles Grafana. Queda para una fase posterior la fusión
 avanzada GNSS/IMU orientada específicamente al oleaje.
 
+El sensor acústico submarino está completo en su primera fase: intensidad de
+eco en dB A/B, persistencia `0044_underwater_acoustic`, diagnóstico mediante
+`0045_underwater_acoustic_health`, API batch, simulador, tests, métricas y
+panel Grafana.
+
 Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
 confirmación explícita para la restauración. La prueba real de recuperación en
 Azure y la medición RPO/RTO siguen pendientes.

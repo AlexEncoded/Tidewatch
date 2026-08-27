@@ -135,3 +135,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   simulador, tests, métricas y panel Grafana.
 - Añadida primera fase GNSS con altitud, velocidad, HDOP y satélites, incluyendo
   métricas, simulador, tests y paneles Grafana.
+- Añadido sensor acústico submarino con intensidad de eco A/B, persistencia,
+  diagnóstico, API, simulador, tests, métricas y panel Grafana.
