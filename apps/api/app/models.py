@@ -384,6 +384,7 @@ class TelemetryBatchCreate(BaseModel):
     air_temperature: list[AirTemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     atmospheric_pressure: list[AtmosphericPressureReadingCreate] = Field(default_factory=list, max_length=100)
     acoustic_altimeter: list[AcousticAltimeterReadingCreate] = Field(default_factory=list, max_length=100)
+    underwater_acoustic: list[UnderwaterAcousticReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
 
@@ -414,6 +415,7 @@ class TelemetryBatchCreate(BaseModel):
             or self.air_temperature
             or self.atmospheric_pressure
             or self.acoustic_altimeter
+            or self.underwater_acoustic
             or self.battery
             or self.location
         ):

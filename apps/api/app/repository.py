@@ -22,6 +22,7 @@ from .entities import (
     AirTemperatureReadingEntity,
     AtmosphericPressureReadingEntity,
     AcousticAltimeterReadingEntity,
+    UnderwaterAcousticReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureAlertEntity,
@@ -49,6 +50,7 @@ from .models import (
     AirTemperatureReading,
     AtmosphericPressureReading,
     AcousticAltimeterReading,
+    UnderwaterAcousticReading,
     SensorHealth,
     TemperatureAlert,
     TemperatureReading,
@@ -800,6 +802,25 @@ class BuoyRepository:
         query = select(AcousticAltimeterReadingEntity).where(AcousticAltimeterReadingEntity.buoy_id == buoy_id).order_by(AcousticAltimeterReadingEntity.measured_at.desc()).limit(limit)
         if sensor_channel is not None:
             query = query.where(AcousticAltimeterReadingEntity.sensor_channel == sensor_channel)
+        return list(self.db.scalars(query).all())
+
+    def add_underwater_acoustic(self, reading: UnderwaterAcousticReading) -> UnderwaterAcousticReadingEntity:
+        entity = UnderwaterAcousticReadingEntity(
+            buoy_id=reading.buoy_id, echo_intensity_db=reading.echo_intensity_db,
+            sensor_channel=reading.sensor_channel, sensor_id=reading.sensor_id,
+            firmware_version=reading.firmware_version, quality=reading.quality,
+            measured_at=reading.measured_at,
+        )
+        self.db.add(entity); self.db.commit(); self.db.refresh(entity)
+        buoy = self.get_buoy(reading.buoy_id)
+        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+            buoy.last_seen_at = reading.measured_at; self.db.commit()
+        return entity
+
+    def list_underwater_acoustic(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[UnderwaterAcousticReadingEntity]:
+        query = select(UnderwaterAcousticReadingEntity).where(UnderwaterAcousticReadingEntity.buoy_id == buoy_id).order_by(UnderwaterAcousticReadingEntity.measured_at.desc()).limit(limit)
+        if sensor_channel is not None:
+            query = query.where(UnderwaterAcousticReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
     def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:

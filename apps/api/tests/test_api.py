@@ -24,6 +24,7 @@ from app.entities import (
     AirTemperatureReadingEntity,
     AtmosphericPressureReadingEntity,
     AcousticAltimeterReadingEntity,
+    UnderwaterAcousticReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     SensorHealthCheckEntity,
@@ -72,6 +73,7 @@ def setup_function() -> None:
         db.execute(delete(AirTemperatureReadingEntity))
         db.execute(delete(AtmosphericPressureReadingEntity))
         db.execute(delete(AcousticAltimeterReadingEntity))
+        db.execute(delete(UnderwaterAcousticReadingEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -1295,6 +1297,21 @@ def test_acoustic_altimeter_ingestion_exposes_latest_value_and_metrics() -> None
     assert client.get(f"/api/v1/buoys/{buoy_id}/acoustic-altimeter").json()[0]["depth_meters"] == 12.5
     assert "tidewatch_acoustic_altimeter_readings_total" in client.get("/metrics").text
     invalid = client.post(f"/api/v1/buoys/{buoy_id}/acoustic-altimeter", json={"depth_meters": -1})
+    assert invalid.status_code == 422
+
+
+def test_underwater_acoustic_ingestion_exposes_latest_value_and_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Underwater Acoustic Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/underwater-acoustic",
+        json={"echo_intensity_db": -42.5, "sensor_channel": "A", "sensor_id": "sonar-a-01"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["echo_intensity_db"] == -42.5
+    assert client.get(f"/api/v1/buoys/{buoy_id}/underwater-acoustic").json()[0]["echo_intensity_db"] == -42.5
+    assert "tidewatch_underwater_acoustic_readings_total" in client.get("/metrics").text
+    invalid = client.post(f"/api/v1/buoys/{buoy_id}/underwater-acoustic", json={"echo_intensity_db": -201})
     assert invalid.status_code == 422
 
 

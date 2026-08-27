@@ -242,6 +242,18 @@ current_acoustic_altimeter_depth_meters = Gauge(
     ["buoy_id", "sensor_channel"],
 )
 
+underwater_acoustic_readings_total = Counter(
+    "tidewatch_underwater_acoustic_readings_total",
+    "Total number of underwater acoustic readings accepted by the API.",
+    ["buoy_id", "sensor_channel"],
+)
+
+current_underwater_acoustic_echo_intensity_db = Gauge(
+    "tidewatch_current_underwater_acoustic_echo_intensity_db",
+    "Most recent underwater acoustic echo intensity in dB by buoy and channel.",
+    ["buoy_id", "sensor_channel"],
+)
+
 current_gnss_altitude_meters = Gauge(
     "tidewatch_current_gnss_altitude_meters",
     "Most recent GNSS altitude in meters by buoy.",
