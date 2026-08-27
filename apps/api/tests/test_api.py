@@ -31,6 +31,7 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app
+from app.analytics import analyze_wave
 from app.telemetry import configure_telemetry
 import app.main as main_module
 
@@ -664,6 +665,25 @@ def test_pressure_analysis_estimates_wave_height() -> None:
     assert analysis.json()["estimated_wave_height_m"] == 0.102
     assert analysis.json()["confidence"] == "experimental"
     assert analysis.json()["sea_state"] == "calm"
+
+
+def test_wave_analysis_combines_gnss_altitude_and_imu_motion() -> None:
+    imu_readings = [
+        type("Imu", (), {"acceleration_z_mps2": value})()
+        for value in (9.7, 10.2, 9.9)
+    ]
+    locations = [
+        type("Location", (), {"altitude_meters": value})()
+        for value in (2.0, 2.4, 2.1)
+    ]
+
+    analysis = analyze_wave("TW-WAVE", imu_readings, locations)
+
+    assert analysis.sample_count == 3
+    assert analysis.gnss_vertical_range_m == 0.4
+    assert analysis.imu_vertical_acceleration_range_mps2 == 0.5
+    assert analysis.estimated_wave_height_m == 0.225
+    assert analysis.confidence == "experimental"
 
 
 def test_salinity_reading_is_recorded_and_validated() -> None:

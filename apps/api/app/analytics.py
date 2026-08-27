@@ -8,6 +8,7 @@ from .models import (
     TemperatureAnalysis,
     TemperatureReading,
     MovementAnalysis,
+    WaveAnalysis,
     BatteryHealth,
     BatteryReading,
     BatteryAnalysis,
@@ -218,4 +219,40 @@ def analyze_pressure(
         ),
         confidence="experimental" if has_enough_samples else "insufficient_data",
         sea_state=sea_state,
+    )
+
+
+def analyze_wave(
+    buoy_id: str,
+    imu_readings: list,
+    locations: list,
+) -> WaveAnalysis:
+    """Combine GNSS altitude and IMU vertical motion into an experimental estimate.
+
+    The IMU contribution uses a deliberately conservative synthetic calibration
+    factor; real deployments must replace it with a buoy-specific transfer model.
+    """
+    altitude_values = [
+        reading.altitude_meters
+        for reading in locations
+        if reading.altitude_meters is not None
+    ]
+    acceleration_values = [reading.acceleration_z_mps2 for reading in imu_readings]
+    gnss_range = max(altitude_values) - min(altitude_values) if len(altitude_values) >= 2 else None
+    imu_range = (
+        max(acceleration_values) - min(acceleration_values)
+        if len(acceleration_values) >= 2
+        else None
+    )
+    imu_wave_height = imu_range * 0.1 if imu_range is not None else None
+    estimates = [value for value in (gnss_range, imu_wave_height) if value is not None]
+    if not estimates:
+        return WaveAnalysis(buoy_id=buoy_id, sample_count=max(len(imu_readings), len(locations)))
+    return WaveAnalysis(
+        buoy_id=buoy_id,
+        sample_count=max(len(imu_readings), len(locations)),
+        gnss_vertical_range_m=round(gnss_range, 3) if gnss_range is not None else None,
+        imu_vertical_acceleration_range_mps2=round(imu_range, 3) if imu_range is not None else None,
+        estimated_wave_height_m=round(fmean(estimates), 3),
+        confidence="experimental" if len(estimates) == 2 else "partial",
     )
