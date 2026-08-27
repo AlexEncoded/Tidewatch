@@ -717,6 +717,7 @@ def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
     assert analysis.status_code == 200
     assert analysis.json()["estimated_wave_height_m"] == 0.225
     assert analysis.json()["confidence"] == "experimental"
+    assert "tidewatch_current_estimated_wave_height_m" in client.get("/metrics").text
 
 
 def test_salinity_reading_is_recorded_and_validated() -> None:

@@ -326,6 +326,15 @@
       "targets": [{"expr": "tidewatch_current_underwater_acoustic_echo_intensity_db", "legendFormat": "{{buoy_id}} / {{sensor_channel}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "decibels", "decimals": 2}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 37,
+      "title": "Experimental wave height",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 204},
+      "targets": [{"expr": "tidewatch_current_estimated_wave_height_m", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "lengthm", "decimals": 3}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

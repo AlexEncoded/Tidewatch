@@ -278,6 +278,12 @@ current_gnss_satellites = Gauge(
     ["buoy_id"],
 )
 
+current_estimated_wave_height_m = Gauge(
+    "tidewatch_current_estimated_wave_height_m",
+    "Experimental GNSS/IMU estimated wave height in meters by buoy.",
+    ["buoy_id"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

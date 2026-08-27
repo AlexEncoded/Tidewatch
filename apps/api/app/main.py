@@ -122,6 +122,7 @@ from .metrics import (
     current_gnss_speed_mps,
     current_gnss_hdop,
     current_gnss_satellites,
+    current_estimated_wave_height_m,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -827,11 +828,16 @@ def buoy_wave_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_wave(
+    result = analyze_wave(
         buoy_id,
         repository.list_imu(buoy_id, window, None),
         repository.list_locations(buoy_id, window),
     )
+    if result.estimated_wave_height_m is not None:
+        current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(
+            result.estimated_wave_height_m
+        )
+    return result
 
 
 @app.post(
