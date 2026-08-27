@@ -1744,6 +1744,12 @@ def sensor_health(
     acoustic_altimeter_b = latest_usable_reading(
         repository.list_acoustic_altimeter(buoy_id, 50, "B"), max_age_seconds, now
     )
+    underwater_acoustic_a = latest_usable_reading(
+        repository.list_underwater_acoustic(buoy_id, 50, "A"), max_age_seconds, now
+    )
+    underwater_acoustic_b = latest_usable_reading(
+        repository.list_underwater_acoustic(buoy_id, 50, "B"), max_age_seconds, now
+    )
 
     sensor_readings = {
         "temperature": {"A": temperature_a, "B": temperature_b},
@@ -1763,6 +1769,7 @@ def sensor_health(
         "air_temperature": {"A": air_temperature_a, "B": air_temperature_b},
         "atmospheric_pressure": {"A": atmospheric_pressure_a, "B": atmospheric_pressure_b},
         "acoustic_altimeter": {"A": acoustic_altimeter_a, "B": acoustic_altimeter_b},
+        "underwater_acoustic": {"A": underwater_acoustic_a, "B": underwater_acoustic_b},
     }
     missing_sensors = [
         f"{sensor}:{channel}"
@@ -1933,6 +1940,11 @@ def sensor_health(
             if acoustic_altimeter_a and acoustic_altimeter_b
             else None
         ),
+        "underwater_acoustic": (
+            round(abs(underwater_acoustic_a[0].echo_intensity_db - underwater_acoustic_b[0].echo_intensity_db), 2)
+            if underwater_acoustic_a and underwater_acoustic_b
+            else None
+        ),
     }
     available = [value for value in deltas.values() if value is not None]
     thresholds = {
@@ -1955,6 +1967,7 @@ def sensor_health(
         "air_temperature": 0.5,
         "atmospheric_pressure": 0.25,
         "acoustic_altimeter": 0.5,
+        "underwater_acoustic": 5,
     }
     degraded_sensors = [
         sensor
@@ -2023,6 +2036,7 @@ def sensor_health(
         air_temperature_delta_celsius=deltas["air_temperature"],
         atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
         acoustic_altimeter_delta_meters=deltas["acoustic_altimeter"],
+        underwater_acoustic_delta_db=deltas["underwater_acoustic"],
         degraded_sensors=degraded_sensors,
         missing_sensors=missing_sensors,
         decisions=decisions,

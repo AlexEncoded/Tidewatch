@@ -1315,6 +1315,22 @@ def test_underwater_acoustic_ingestion_exposes_latest_value_and_metrics() -> Non
     assert invalid.status_code == 422
 
 
+def test_sensor_health_compares_redundant_underwater_acoustic() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Underwater Acoustic Health Buoy"}).json()["id"]
+    for channel, value in (("A", -42.0), ("B", -35.5)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/underwater-acoustic",
+            json={"echo_intensity_db": value, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["underwater_acoustic_delta_db"] == 6.5
+    assert health.json()["decisions"]["underwater_acoustic"] == "invalid"
+
+
 def test_sensor_health_compares_redundant_acoustic_altimeter() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Altimeter Health Buoy"}).json()["id"]
     for channel, value in (("A", 12.0), ("B", 12.3)):

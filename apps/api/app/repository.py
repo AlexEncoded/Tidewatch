@@ -864,6 +864,7 @@ class BuoyRepository:
             air_temperature_delta_celsius=health.air_temperature_delta_celsius,
             atmospheric_pressure_delta_kpa=health.atmospheric_pressure_delta_kpa,
             acoustic_altimeter_delta_meters=health.acoustic_altimeter_delta_meters,
+            underwater_acoustic_delta_db=health.underwater_acoustic_delta_db,
             degraded_sensors=health.degraded_sensors,
             missing_sensors=health.missing_sensors,
             decisions=health.decisions,

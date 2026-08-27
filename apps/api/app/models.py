@@ -497,6 +497,7 @@ class SensorHealth(BaseModel):
     air_temperature_delta_celsius: float | None = None
     atmospheric_pressure_delta_kpa: float | None = None
     acoustic_altimeter_delta_meters: float | None = None
+    underwater_acoustic_delta_db: float | None = None
     degraded_sensors: list[str] = []
     missing_sensors: list[str] = []
     decisions: dict[str, str] = Field(default_factory=dict)
