@@ -1369,6 +1369,21 @@ def test_underwater_acoustic_ingestion_exposes_latest_value_and_metrics() -> Non
     assert invalid.status_code == 422
 
 
+def test_telemetry_batch_rejects_duplicate_underwater_acoustic_channels() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Duplicate Acoustic Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "underwater_acoustic": [
+                {"echo_intensity_db": -42, "sensor_channel": "A"},
+                {"echo_intensity_db": -41, "sensor_channel": "A"},
+            ]
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_sensor_health_compares_redundant_underwater_acoustic() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Underwater Acoustic Health Buoy"}).json()["id"]
     for channel, value in (("A", -42.0), ("B", -35.5)):

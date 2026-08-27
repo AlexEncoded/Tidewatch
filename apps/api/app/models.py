@@ -440,6 +440,8 @@ class TelemetryBatchCreate(BaseModel):
             ("humidity", self.humidity),
             ("air_temperature", self.air_temperature),
             ("atmospheric_pressure", self.atmospheric_pressure),
+            ("acoustic_altimeter", self.acoustic_altimeter),
+            ("underwater_acoustic", self.underwater_acoustic),
         ):
             channels = [reading.sensor_channel for reading in readings]
             if len(channels) != len(set(channels)):
