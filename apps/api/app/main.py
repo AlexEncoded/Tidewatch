@@ -21,6 +21,7 @@ from .analytics import (
     analyze_battery_health,
     analyze_battery,
     analyze_movement,
+    analyze_wave,
     analyze_pressure,
     analyze_temperatures,
 )
@@ -67,6 +68,7 @@ from .models import (
     MaintenanceIssue,
     MaintenanceNotificationResult,
     MovementAnalysis,
+    WaveAnalysis,
     ImuReading,
     ImuReadingCreate,
     PressureReading,
@@ -810,6 +812,26 @@ def buoy_movement_analysis(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return analyze_movement(buoy_id, repository.list_locations(buoy_id, window))
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/wave-analysis",
+    response_model=WaveAnalysis,
+    tags=["analytics"],
+)
+def buoy_wave_analysis(
+    buoy_id: str,
+    window: int = Query(default=100, ge=2, le=500),
+    db: Session = Depends(get_db),
+) -> WaveAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return analyze_wave(
+        buoy_id,
+        repository.list_imu(buoy_id, window, None),
+        repository.list_locations(buoy_id, window),
+    )
 
 
 @app.post(

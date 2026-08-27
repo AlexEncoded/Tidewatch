@@ -686,6 +686,39 @@ def test_wave_analysis_combines_gnss_altitude_and_imu_motion() -> None:
     assert analysis.confidence == "experimental"
 
 
+def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Wave Fusion Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+    for index, (altitude, acceleration) in enumerate(((2.0, 9.7), (2.4, 10.2))):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "imu": [{
+                    "acceleration_x_mps2": 0,
+                    "acceleration_y_mps2": 0,
+                    "acceleration_z_mps2": acceleration,
+                    "angular_velocity_x_dps": 0,
+                    "angular_velocity_y_dps": 0,
+                    "angular_velocity_z_dps": 0,
+                    "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+                }],
+                "location": {
+                    "latitude": 36.7,
+                    "longitude": 3.1,
+                    "altitude_meters": altitude,
+                    "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+                },
+            },
+        )
+        assert response.status_code == 202
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["estimated_wave_height_m"] == 0.225
+    assert analysis.json()["confidence"] == "experimental"
+
+
 def test_salinity_reading_is_recorded_and_validated() -> None:
     buoy = client.post("/api/v1/buoys", json={"name": "Salinity Buoy"}).json()
     response = client.post(
