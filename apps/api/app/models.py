@@ -317,6 +317,21 @@ class AcousticAltimeterReading(AcousticAltimeterReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class UnderwaterAcousticReadingCreate(BaseModel):
+    echo_intensity_db: float = Field(ge=-200, le=100)
+    sensor_channel: Literal["A", "B"] = "A"
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class UnderwaterAcousticReading(UnderwaterAcousticReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class BatteryReadingCreate(BaseModel):
     battery_percent: float = Field(ge=0, le=100)
     device_id: Literal["A", "B"] = "A"
