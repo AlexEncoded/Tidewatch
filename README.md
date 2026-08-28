@@ -93,6 +93,7 @@ esta fase de aprendizaje.
 - [x] Exponer deriva y salud energética en Prometheus, alertas y Grafana.
 - [x] Incorporar tracing OpenTelemetry opcional para la API.
 - [ ] Calibrar el oleaje con datos reales.
+- [x] Exponer una estimación experimental de oleaje combinando GNSS e IMU.
 - [x] Añadir metadatos GNSS de altitud, velocidad, HDOP y satélites.
 - [x] Soportar lotes de batería A/B en la ingesta de telemetría.
 - [ ] Crear procesamiento asíncrono real para telemetría.

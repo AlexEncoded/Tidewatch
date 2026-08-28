@@ -162,6 +162,11 @@ eco en dB A/B, persistencia `0044_underwater_acoustic`, diagnóstico mediante
 `0045_underwater_acoustic_health`, API batch, simulador, tests, métricas y
 panel Grafana.
 
+La primera fase de fusión GNSS/IMU para oleaje ya está disponible: el endpoint
+`/wave-analysis` combina el rango vertical GNSS con la variabilidad vertical
+de la IMU y publica una métrica experimental en Prometheus y Grafana. La
+calibración con datos reales y un modelo físico del oleaje siguen pendientes.
+
 Se añadieron helpers PowerShell de backup y restauración PostgreSQL, con
 confirmación explícita para la restauración. La prueba real de recuperación en
 Azure y la medición RPO/RTO siguen pendientes.

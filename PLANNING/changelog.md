@@ -137,3 +137,5 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   métricas, simulador, tests y paneles Grafana.
 - Añadido sensor acústico submarino con intensidad de eco A/B, persistencia,
   diagnóstico, API, simulador, tests, métricas y panel Grafana.
+- Añadida primera fase experimental de análisis de oleaje mediante fusión
+  GNSS/IMU, endpoint API, métrica Prometheus y panel Grafana.
