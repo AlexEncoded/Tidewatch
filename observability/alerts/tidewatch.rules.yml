@@ -81,3 +81,11 @@ groups:
         annotations:
           summary: "Tidewatch buoy movement is above the safe threshold"
           description: "The experimental movement estimate is above 1 m/s and should be reviewed by maintenance."
+      - alert: TidewatchExperimentalWaveHigh
+        expr: tidewatch_current_estimated_wave_height_m > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch experimental wave estimate is high"
+          description: "The GNSS/IMU wave estimate is above 2 m; validate calibration and local conditions before taking action."

@@ -65,6 +65,8 @@ la familia cuando la diferencia supera 5 dB.
 La estimación experimental de oleaje se expone como
 `tidewatch_current_estimated_wave_height_m` por boya; combina el rango vertical
 GNSS con la variabilidad de aceleración vertical de la IMU.
+La regla `TidewatchExperimentalWaveHigh` genera un warning si supera 2 m
+durante diez minutos, únicamente para revisión y validación de calibración.
 
 El dashboard inicial de Grafana está en `grafana/dashboards/` y se provisiona
 con la configuración de `grafana/provisioning/`.
