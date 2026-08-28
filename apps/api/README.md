@@ -75,6 +75,9 @@ servicio en el backend de trazas.
 | `GET` | `/api/v1/buoys/{id}/locations` | Consultar histórico de posiciones |
 | `GET` | `/api/v1/buoys/{id}/locations/export` | Exportar posiciones de una boya |
 | `GET` | `/api/v1/buoys/{id}/movement-analysis` | Analizar movimiento experimental |
+| `GET` | `/api/v1/buoys/{id}/wave-analysis` | Fusionar GNSS/IMU para oleaje experimental |
+| `POST` | `/api/v1/buoys/{id}/underwater-acoustic` | Registrar intensidad de eco submarino |
+| `GET` | `/api/v1/buoys/{id}/underwater-acoustic` | Consultar eco submarino |
 | `GET` | `/api/v1/locations/export` | Exportar posiciones de toda la flota |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar sensores A/B |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias |
@@ -109,6 +112,13 @@ al menos tres lecturas. El umbral por defecto es `2 °C` y se puede ajustar con
 
 La API expone métricas Prometheus de lecturas aceptadas, temperatura actual,
 última comunicación, movimiento y salud energética A/B.
+
+`/api/v1/buoys/{id}/wave-analysis` combina una ventana de posiciones GNSS con
+lecturas IMU y devuelve una estimación experimental. `window` controla el
+número máximo de muestras; la calibración con datos reales sigue pendiente.
+
+La acústica submarina acepta intensidades de eco entre `-200` y `100 dB`, con
+canales redundantes A/B y persistencia en PostgreSQL.
 
 Cada petición HTTP genera un log de una línea en stdout con método, ruta,
 código de estado y duración en milisegundos, preparado para su recolección
