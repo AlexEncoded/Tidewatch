@@ -63,6 +63,8 @@
 - [x] Incorporar altímetro acústico con persistencia A/B, API, simulador,
   diagnóstico de salud, tests y panel Grafana.
 - [x] Incorporar primera fase GNSS con altitud, velocidad, HDOP y satélites.
+- [x] Exponer una primera estimación experimental de oleaje mediante fusión
+  GNSS/IMU, métrica y dashboard.
 - [ ] Evaluar GNSS/IMU avanzado para oleaje.
 - [x] Incorporar sensor acústico submarino en primera fase con intensidad de
   eco A/B; queda abierta la evolución hacia usos acústicos avanzados.
