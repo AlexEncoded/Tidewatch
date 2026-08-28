@@ -36,9 +36,9 @@ def estimate_wave(
     imu_wave_height = imu_range * 0.1 if imu_range is not None else None
     estimates = [value for value in (gnss_range, imu_wave_height) if value is not None]
     return WaveEstimate(
-        gnss_vertical_range_m=gnss_range,
-        imu_vertical_acceleration_range_mps2=imu_range,
-        estimated_wave_height_m=fmean(estimates) if estimates else None,
+        gnss_vertical_range_m=round(gnss_range, 6) if gnss_range is not None else None,
+        imu_vertical_acceleration_range_mps2=round(imu_range, 6) if imu_range is not None else None,
+        estimated_wave_height_m=round(fmean(estimates), 6) if estimates else None,
         confidence=("experimental" if len(estimates) == 2 else "partial")
         if estimates
         else "insufficient_data",
