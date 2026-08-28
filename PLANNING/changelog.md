@@ -139,3 +139,7 @@ Registro humano de avances, decisiones relevantes y cambios de enfoque.
   diagnóstico, API, simulador, tests, métricas y panel Grafana.
 - Añadida primera fase experimental de análisis de oleaje mediante fusión
   GNSS/IMU, endpoint API, métrica Prometheus y panel Grafana.
+- Documentado el futuro cambio a inglés como idioma principal de la documentación,
+  conservando el español como versión secundaria.
+- Formalizada en el roadmap la adopción progresiva de arquitectura hexagonal con
+  DDD ligero y monolito modular.

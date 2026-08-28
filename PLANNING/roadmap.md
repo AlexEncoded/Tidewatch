@@ -71,6 +71,9 @@
 
 ## Fase transversal — Evolución arquitectónica
 
+- [ ] Adoptar progresivamente una arquitectura hexagonal con DDD ligero,
+  manteniendo el despliegue como monolito modular mientras los límites aún
+  evolucionan.
 - [ ] Definir los límites de dominio: `fleet`, `telemetry`, `sensors`,
   `maintenance` y `analytics`.
 - [ ] Reorganizar la API como monolito modular por contexto de negocio.
