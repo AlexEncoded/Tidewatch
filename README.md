@@ -21,7 +21,8 @@ una señal desde el dispositivo hasta una operación en producción.
 
 ## Capacidades actuales
 
-- API para registrar boyas y lecturas de temperatura, presión, salinidad y batería.
+- API para registrar boyas y la suite oceanográfica, meteorológica, de movimiento
+  y acústica submarina.
 - Persistencia PostgreSQL con migraciones Alembic.
 - Simulador de telemetría de boyas.
 - Análisis de media, rango, tendencia y anomalías.
@@ -46,6 +47,12 @@ una señal desde el dispositivo hasta una operación en producción.
 - Resumen acumulado de calidad disponible por boya.
 - Ingestión de telemetría por lotes para preparar el flujo continuo desde las boyas.
 - Telemetría de batería y avisos de carga baja para mantenimiento.
+- Sensores ambientales y oceanográficos redundantes A/B: IMU, luz, viento,
+  corrientes, turbidez, oxígeno disuelto, pH, conductividad, clorofila-a,
+  lluvia, humedad y meteorología.
+- Altímetro acústico, metadatos GNSS y sensor acústico submarino con métricas,
+  simulación, diagnóstico y paneles Grafana.
+- Endpoint experimental de fusión GNSS/IMU para estimar altura de ola.
 - Cola operativa de incidencias para mantenimiento.
 - Visualización de trayectorias recientes y exportación desde el frontend.
 - Métricas Prometheus y dashboard Grafana.
@@ -227,10 +234,11 @@ desde el entorno de ejecución. No se almacenan secretos en el repositorio.
 
 ## Estado del proyecto
 
-Fase actual: **fundación de plataforma**. La API de temperatura, presión,
-salinidad y batería funciona en local, con frontend operativo, redundancia A/B,
-observabilidad y cola de mantenimiento. La infraestructura Azure está definida
-como código pendiente de despliegue controlado.
+Fase actual: **fundación de plataforma y validación experimental de sensores**.
+La API, el worker simulador, la observabilidad y la cola de mantenimiento cubren
+la suite de sensores prevista en primera fase. El siguiente salto es calibrar
+el oleaje con datos reales y evolucionar la fusión GNSS/IMU; la infraestructura
+Azure sigue pendiente de despliegue controlado.
 
 ## Licencia
 

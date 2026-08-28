@@ -191,7 +191,7 @@ escaneo.
 
 ## Próxima sesión
 
-Elegir el siguiente bloque: configurar un colector centralizado para stdout,
-incorporar OpenTelemetry, persistir historial de salud/fallback, añadir tests
-de carga o preparar un despliegue Azure `dev` controlado. No desplegar recursos
-Azure con coste sin revisar presupuesto y aprobación explícita.
+Priorizar la calibración del oleaje con datos reales o, mientras no estén
+disponibles, mejorar la fusión GNSS/IMU con un modelo temporal y datos
+experimentales reproducibles. El despliegue Azure `dev` requiere revisar antes
+el presupuesto y obtener aprobación explícita.
