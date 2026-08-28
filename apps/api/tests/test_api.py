@@ -686,6 +686,19 @@ def test_wave_analysis_combines_gnss_altitude_and_imu_motion() -> None:
     assert analysis.confidence == "experimental"
 
 
+def test_wave_analysis_reports_partial_gnss_data() -> None:
+    locations = [
+        type("Location", (), {"altitude_meters": value})()
+        for value in (2.0, 2.4)
+    ]
+
+    analysis = analyze_wave("TW-GNSS-ONLY", [], locations)
+
+    assert analysis.estimated_wave_height_m == 0.4
+    assert analysis.confidence == "partial"
+    assert analysis.imu_vertical_acceleration_range_mps2 is None
+
+
 def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Wave Fusion Buoy"}).json()["id"]
     measured_at = datetime.now(timezone.utc)
@@ -718,6 +731,12 @@ def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
     assert analysis.json()["estimated_wave_height_m"] == 0.225
     assert analysis.json()["confidence"] == "experimental"
     assert "tidewatch_current_estimated_wave_height_m" in client.get("/metrics").text
+
+
+def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:
+    response = client.get("/api/v1/buoys/unknown/wave-analysis")
+
+    assert response.status_code == 404
 
 
 def test_salinity_reading_is_recorded_and_validated() -> None:
