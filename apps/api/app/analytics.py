@@ -13,6 +13,7 @@ from .models import (
     BatteryReading,
     BatteryAnalysis,
 )
+from .domain.wave import estimate_wave
 
 
 KPA_TO_METRES_OF_WATER = 0.102
@@ -238,21 +239,22 @@ def analyze_wave(
         if reading.altitude_meters is not None
     ]
     acceleration_values = [reading.acceleration_z_mps2 for reading in imu_readings]
-    gnss_range = max(altitude_values) - min(altitude_values) if len(altitude_values) >= 2 else None
-    imu_range = (
-        max(acceleration_values) - min(acceleration_values)
-        if len(acceleration_values) >= 2
-        else None
-    )
-    imu_wave_height = imu_range * 0.1 if imu_range is not None else None
-    estimates = [value for value in (gnss_range, imu_wave_height) if value is not None]
-    if not estimates:
+    estimate = estimate_wave(altitude_values, acceleration_values)
+    if estimate.estimated_wave_height_m is None:
         return WaveAnalysis(buoy_id=buoy_id, sample_count=max(len(imu_readings), len(locations)))
     return WaveAnalysis(
         buoy_id=buoy_id,
         sample_count=max(len(imu_readings), len(locations)),
-        gnss_vertical_range_m=round(gnss_range, 3) if gnss_range is not None else None,
-        imu_vertical_acceleration_range_mps2=round(imu_range, 3) if imu_range is not None else None,
-        estimated_wave_height_m=round(fmean(estimates), 3),
-        confidence="experimental" if len(estimates) == 2 else "partial",
+        gnss_vertical_range_m=(
+            round(estimate.gnss_vertical_range_m, 3)
+            if estimate.gnss_vertical_range_m is not None
+            else None
+        ),
+        imu_vertical_acceleration_range_mps2=(
+            round(estimate.imu_vertical_acceleration_range_mps2, 3)
+            if estimate.imu_vertical_acceleration_range_mps2 is not None
+            else None
+        ),
+        estimated_wave_height_m=round(estimate.estimated_wave_height_m, 3),
+        confidence=estimate.confidence,
     )
