@@ -13,7 +13,7 @@ from .models import (
     BatteryReading,
     BatteryAnalysis,
 )
-from .domain.wave import estimate_wave
+from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave
 
 
 KPA_TO_METRES_OF_WATER = 0.102
@@ -227,6 +227,7 @@ def analyze_wave(
     buoy_id: str,
     imu_readings: list,
     locations: list,
+    imu_wave_height_factor: float = DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
 ) -> WaveAnalysis:
     """Combine GNSS altitude and IMU vertical motion into an experimental estimate.
 
@@ -239,7 +240,11 @@ def analyze_wave(
         if reading.altitude_meters is not None
     ]
     acceleration_values = [reading.acceleration_z_mps2 for reading in imu_readings]
-    estimate = estimate_wave(altitude_values, acceleration_values)
+    estimate = estimate_wave(
+        altitude_values,
+        acceleration_values,
+        imu_wave_height_factor=imu_wave_height_factor,
+    )
     if estimate.estimated_wave_height_m is None:
         return WaveAnalysis(buoy_id=buoy_id, sample_count=max(len(imu_readings), len(locations)))
     return WaveAnalysis(
