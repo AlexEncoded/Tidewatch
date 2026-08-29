@@ -89,6 +89,7 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
+from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -150,6 +151,15 @@ from .metrics import (
 
 
 logger = logging.getLogger("tidewatch.api")
+
+
+def configured_wave_imu_factor() -> float:
+    """Return the bounded experimental IMU calibration factor from the environment."""
+    try:
+        value = float(os.getenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", str(DEFAULT_IMU_WAVE_HEIGHT_FACTOR)))
+    except ValueError:
+        return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+    return max(0.0, min(10.0, value))
 
 
 def record_quality_metric(
@@ -832,6 +842,7 @@ def buoy_wave_analysis(
         buoy_id,
         repository.list_imu(buoy_id, window, None),
         repository.list_locations(buoy_id, window),
+        imu_wave_height_factor=configured_wave_imu_factor(),
     )
     if result.estimated_wave_height_m is not None:
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(

@@ -30,7 +30,7 @@ from app.entities import (
     SensorHealthCheckEntity,
     TemperatureReadingEntity,
 )
-from app.main import app
+from app.main import app, configured_wave_imu_factor
 from app.analytics import analyze_wave
 from app.telemetry import configure_telemetry
 import app.main as main_module
@@ -684,6 +684,14 @@ def test_wave_analysis_combines_gnss_altitude_and_imu_motion() -> None:
     assert analysis.imu_vertical_acceleration_range_mps2 == 0.5
     assert analysis.estimated_wave_height_m == 0.225
     assert analysis.confidence == "experimental"
+
+
+def test_wave_calibration_factor_from_environment_is_bounded(monkeypatch) -> None:
+    monkeypatch.setenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", "25")
+    assert configured_wave_imu_factor() == 10.0
+
+    monkeypatch.setenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", "invalid")
+    assert configured_wave_imu_factor() == 0.1
 
 
 def test_wave_analysis_reports_partial_gnss_data() -> None:

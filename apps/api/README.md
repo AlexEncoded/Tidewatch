@@ -115,7 +115,9 @@ La API expone métricas Prometheus de lecturas aceptadas, temperatura actual,
 
 `/api/v1/buoys/{id}/wave-analysis` combina una ventana de posiciones GNSS con
 lecturas IMU y devuelve una estimación experimental. `window` controla el
-número máximo de muestras; la calibración con datos reales sigue pendiente.
+número máximo de muestras. El factor IMU se puede ajustar con
+`WAVE_IMU_WAVE_HEIGHT_FACTOR` (por defecto `0.1`, limitado entre `0` y `10`);
+la calibración con datos reales sigue pendiente.
 
 La acústica submarina acepta intensidades de eco entre `-200` y `100 dB`, con
 canales redundantes A/B y persistencia en PostgreSQL.
