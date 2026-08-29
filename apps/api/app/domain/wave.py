@@ -5,6 +5,9 @@ from statistics import fmean
 from typing import Sequence
 
 
+DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
+
+
 @dataclass(frozen=True)
 class WaveEstimate:
     gnss_vertical_range_m: float | None
@@ -16,12 +19,14 @@ class WaveEstimate:
 def estimate_wave(
     gnss_altitudes: Sequence[float],
     imu_vertical_accelerations: Sequence[float],
+    imu_wave_height_factor: float = DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
 ) -> WaveEstimate:
     """Estimate wave height from vertical GNSS and IMU samples.
 
     This is deliberately an experimental transfer model. The IMU contribution
     uses a conservative synthetic factor until buoy-specific calibration data
-    is available.
+    is available. ``imu_wave_height_factor`` is injectable so calibration can
+    be performed without changing the domain service contract.
     """
     gnss_range = (
         max(gnss_altitudes) - min(gnss_altitudes)
@@ -33,7 +38,9 @@ def estimate_wave(
         if len(imu_vertical_accelerations) >= 2
         else None
     )
-    imu_wave_height = imu_range * 0.1 if imu_range is not None else None
+    imu_wave_height = (
+        imu_range * imu_wave_height_factor if imu_range is not None else None
+    )
     estimates = [value for value in (gnss_range, imu_wave_height) if value is not None]
     return WaveEstimate(
         gnss_vertical_range_m=round(gnss_range, 6) if gnss_range is not None else None,

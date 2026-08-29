@@ -37,3 +37,9 @@ def test_wave_domain_service_is_independent_from_persistence_models() -> None:
     assert estimate.imu_vertical_acceleration_range_mps2 == 0.5
     assert estimate.estimated_wave_height_m == 0.225
     assert estimate.confidence == "experimental"
+
+
+def test_wave_domain_service_accepts_calibration_factor() -> None:
+    estimate = estimate_wave((2.0, 2.4), (9.7, 10.2), imu_wave_height_factor=0.2)
+
+    assert estimate.estimated_wave_height_m == 0.25
