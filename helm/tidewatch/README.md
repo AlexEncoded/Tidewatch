@@ -72,3 +72,8 @@ helm upgrade --install tidewatch ./helm/tidewatch \
   --set ingress.className=nginx \
   --set ingress.host=tidewatch.example.com
 ```
+
+La estimación experimental de oleaje usa `api.waveImuHeightFactor` para
+convertir la variabilidad vertical de la IMU. Su valor por defecto es `0.1`;
+ajústalo solo con datos de calibración de la boya y mantén documentado el
+valor usado en cada entorno.

@@ -4,6 +4,7 @@ api:
   image:
     repository: tidewatch/api
     tag: dev
+  waveImuHeightFactor: 0.1
   resources:
     requests:
       cpu: 50m
