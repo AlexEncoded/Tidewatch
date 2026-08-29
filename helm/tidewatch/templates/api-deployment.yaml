@@ -49,6 +49,8 @@ spec:
                   name: {{ .Values.database.existingSecret }}
                   key: {{ .Values.database.existingSecretKey }}
             {{- end }}
+            - name: WAVE_IMU_WAVE_HEIGHT_FACTOR
+              value: {{ .Values.api.waveImuHeightFactor | quote }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp

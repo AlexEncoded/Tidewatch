@@ -6,6 +6,7 @@ api:
     tag: dev
     pullPolicy: IfNotPresent
   port: 8000
+  waveImuHeightFactor: 0.1
   resources:
     requests:
       cpu: 100m
