@@ -6,6 +6,7 @@ from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
 from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
+from app.domain.temperature import estimate_temperature
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -165,3 +166,12 @@ def test_battery_analysis_domain_service_estimates_discharge() -> None:
     assert estimate.discharge_rate_percent_per_hour == 5.0
     assert estimate.estimated_hours_remaining == 16.0
     assert estimate.confidence == "experimental"
+
+
+def test_temperature_domain_service_detects_rising_anomaly() -> None:
+    estimate = estimate_temperature([30.0, 20.0, 20.0], threshold=2.0)
+
+    assert estimate.trend == "rising"
+    assert estimate.average_temperature == 23.33
+    assert estimate.is_anomaly is True
+    assert estimate.anomaly_reason is not None

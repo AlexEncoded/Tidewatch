@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from statistics import fmean
 
 from .models import (
     PressureAnalysis,
@@ -16,6 +15,7 @@ from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave
 from .domain.movement import distance_between_points, estimate_movement
 from .domain.battery_health import estimate_battery_health
 from .domain.battery_analysis import BatterySample, estimate_battery_discharge
+from .domain.temperature import estimate_temperature
 
 
 KPA_TO_METRES_OF_WATER = 0.102
@@ -88,39 +88,20 @@ def analyze_temperatures(
     readings: list[TemperatureReading],
     threshold: float,
 ) -> TemperatureAnalysis:
-    if not readings:
-        return TemperatureAnalysis(buoy_id=buoy_id, sample_count=0)
-
     values = [reading.temperature_celsius for reading in readings]
-    latest = readings[0].temperature_celsius
-    oldest = readings[-1].temperature_celsius
-    change = round(latest - oldest, 2)
-    average = fmean(values)
-    is_anomaly = len(values) >= 3 and abs(latest - average) > threshold
-    trend = "insufficient_data"
-    if len(values) >= 2:
-        if change > 0.2:
-            trend = "rising"
-        elif change < -0.2:
-            trend = "falling"
-        else:
-            trend = "stable"
+    estimate = estimate_temperature(values, threshold)
 
     return TemperatureAnalysis(
         buoy_id=buoy_id,
-        sample_count=len(values),
-        latest_temperature=latest,
-        average_temperature=round(average, 2),
-        minimum_temperature=min(values),
-        maximum_temperature=max(values),
-        change_celsius=change,
-        trend=trend,
-        is_anomaly=is_anomaly,
-        anomaly_reason=(
-            f"Latest reading differs from the recent average by more than {threshold:.2f} °C"
-            if is_anomaly
-            else None
-        ),
+        sample_count=estimate.sample_count,
+        latest_temperature=estimate.latest_temperature,
+        average_temperature=estimate.average_temperature,
+        minimum_temperature=estimate.minimum_temperature,
+        maximum_temperature=estimate.maximum_temperature,
+        change_celsius=estimate.change_celsius,
+        trend=estimate.trend,
+        is_anomaly=estimate.is_anomaly,
+        anomaly_reason=estimate.anomaly_reason,
     )
 
 
