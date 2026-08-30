@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from app.analytics import analyze_pressure, analyze_wave, distance_between_points
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
+from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
 
@@ -72,3 +73,20 @@ def test_wave_application_service_forwards_calibration_factor() -> None:
 
     assert analysis.gnss_vertical_range_m == 0.1
     assert analysis.estimated_wave_height_m == 0.1
+
+
+def test_sensor_health_averages_consistent_redundant_channels() -> None:
+    assert decide_channel(True, True) == "average"
+
+
+def test_sensor_health_invalidates_degraded_redundant_channels() -> None:
+    assert decide_channel(True, True, degraded=True) == "invalid"
+
+
+def test_sensor_health_falls_back_to_available_channel() -> None:
+    assert decide_channel(True, False) == "fallback_a"
+    assert decide_channel(False, True) == "fallback_b"
+
+
+def test_sensor_health_invalidates_missing_channels() -> None:
+    assert decide_channel(False, False) == "invalid"

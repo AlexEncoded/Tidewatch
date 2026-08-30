@@ -90,6 +90,7 @@ from .models import (
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+from .domain.sensor_health import decide_channel
 from .application.wave_analysis import analyze_wave_for_buoy
 from .metrics import (
     battery_percent,
@@ -2040,16 +2041,11 @@ def sensor_health(
     status_value = "degraded" if degraded_sensors or missing_sensors else status_value
     decisions = {}
     for sensor, channels in sensor_readings.items():
-        has_a = bool(channels["A"])
-        has_b = bool(channels["B"])
-        if has_a and has_b:
-            decisions[sensor] = "invalid" if sensor in degraded_sensors else "average"
-        elif has_a:
-            decisions[sensor] = "fallback_a"
-        elif has_b:
-            decisions[sensor] = "fallback_b"
-        else:
-            decisions[sensor] = "invalid"
+        decisions[sensor] = decide_channel(
+            bool(channels["A"]),
+            bool(channels["B"]),
+            sensor in degraded_sensors,
+        )
         for decision in ("average", "fallback_a", "fallback_b", "invalid"):
             sensor_health_decision.labels(
                 buoy_id=buoy_id, sensor=sensor, decision=decision
