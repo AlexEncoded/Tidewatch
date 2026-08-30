@@ -92,6 +92,7 @@ from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import decide_channel
 from .application.wave_analysis import analyze_wave_for_buoy
+from .application.movement_analysis import analyze_movement_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -824,7 +825,7 @@ def buoy_movement_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_movement(buoy_id, repository.list_locations(buoy_id, window))
+    return analyze_movement_for_buoy(repository, buoy_id, window)
 
 
 @app.get(

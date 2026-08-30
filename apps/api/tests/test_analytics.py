@@ -6,6 +6,7 @@ from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
+from app.application.movement_analysis import analyze_movement_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
@@ -36,6 +37,21 @@ def test_movement_analytics_adapter_preserves_buoy_contract() -> None:
     analysis = analyze_movement("TW-MOVE", locations)
 
     assert analysis.buoy_id == "TW-MOVE"
+    assert analysis.confidence == "experimental"
+
+
+def test_movement_application_service_uses_a_telemetry_port() -> None:
+    class FakeReader:
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(latitude=36.71, longitude=3.11, measured_at=datetime(2024, 1, 1, 0, 1)),
+                SimpleNamespace(latitude=36.7, longitude=3.1, measured_at=datetime(2024, 1, 1, 0, 0)),
+            ]
+
+    analysis = analyze_movement_for_buoy(FakeReader(), "TW-PORT", 10)
+
+    assert analysis.buoy_id == "TW-PORT"
+    assert analysis.sample_count == 2
     assert analysis.confidence == "experimental"
 
 
