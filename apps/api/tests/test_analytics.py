@@ -1,6 +1,9 @@
+from datetime import datetime
 from types import SimpleNamespace
 
 from app.analytics import analyze_pressure, analyze_wave, distance_between_points
+from app.analytics import analyze_movement
+from app.domain.movement import estimate_movement
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.domain.sensor_health import decide_channel
@@ -9,6 +12,31 @@ from app.models import PressureReading
 
 def test_distance_between_points_is_zero_for_same_coordinates() -> None:
     assert distance_between_points(36.7, 3.1, 36.7, 3.1) == 0
+
+
+def test_movement_domain_service_is_independent_from_persistence_models() -> None:
+    locations = [
+        SimpleNamespace(latitude=36.71, longitude=3.11, measured_at=datetime(2024, 1, 1, 0, 1)),
+        SimpleNamespace(latitude=36.7, longitude=3.1, measured_at=datetime(2024, 1, 1, 0, 0)),
+    ]
+
+    estimate = estimate_movement(locations)
+
+    assert estimate.sample_count == 2
+    assert estimate.distance_travelled_m is not None
+    assert estimate.confidence == "experimental"
+
+
+def test_movement_analytics_adapter_preserves_buoy_contract() -> None:
+    locations = [
+        SimpleNamespace(latitude=36.71, longitude=3.11, measured_at=datetime(2024, 1, 1, 0, 1)),
+        SimpleNamespace(latitude=36.7, longitude=3.1, measured_at=datetime(2024, 1, 1, 0, 0)),
+    ]
+
+    analysis = analyze_movement("TW-MOVE", locations)
+
+    assert analysis.buoy_id == "TW-MOVE"
+    assert analysis.confidence == "experimental"
 
 
 def test_pressure_analysis_requires_three_samples_for_wave_estimate() -> None:
