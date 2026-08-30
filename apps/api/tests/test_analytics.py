@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from app.analytics import analyze_pressure, analyze_wave, distance_between_points
 from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
+from app.domain.battery_health import estimate_battery_health
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -134,3 +135,18 @@ def test_sensor_health_falls_back_to_available_channel() -> None:
 
 def test_sensor_health_invalidates_missing_channels() -> None:
     assert decide_channel(False, False) == "invalid"
+
+
+def test_battery_health_domain_service_detects_lower_degraded_device() -> None:
+    estimate = estimate_battery_health(72.0, 85.0, threshold=5.0)
+
+    assert estimate.status == "degraded"
+    assert estimate.delta_percent == 13.0
+    assert estimate.degraded_devices == ["A"]
+
+
+def test_battery_health_domain_service_requires_both_devices() -> None:
+    estimate = estimate_battery_health(72.0, None, threshold=5.0)
+
+    assert estimate.status == "insufficient_data"
+    assert estimate.delta_percent is None

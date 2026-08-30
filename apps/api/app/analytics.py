@@ -14,6 +14,7 @@ from .models import (
 )
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave
 from .domain.movement import distance_between_points, estimate_movement
+from .domain.battery_health import estimate_battery_health
 
 
 KPA_TO_METRES_OF_WATER = 0.102
@@ -38,29 +39,19 @@ def analyze_battery_health(
 ) -> BatteryHealth:
     device_a = readings.get("A")
     device_b = readings.get("B")
-    if device_a is None or device_b is None:
-        return BatteryHealth(
-            buoy_id=buoy_id,
-            status="insufficient_data",
-            device_a_percent=device_a.battery_percent if device_a else None,
-            device_b_percent=device_b.battery_percent if device_b else None,
-            checked_at=datetime.now(timezone.utc),
-        )
-
-    delta = round(abs(device_a.battery_percent - device_b.battery_percent), 2)
-    degraded_devices = []
-    if delta > threshold:
-        degraded_devices = [
-            "A" if device_a.battery_percent < device_b.battery_percent else "B"
-        ]
+    estimate = estimate_battery_health(
+        device_a.battery_percent if device_a else None,
+        device_b.battery_percent if device_b else None,
+        threshold,
+    )
 
     return BatteryHealth(
         buoy_id=buoy_id,
-        status="degraded" if degraded_devices else "consistent",
-        device_a_percent=device_a.battery_percent,
-        device_b_percent=device_b.battery_percent,
-        delta_percent=delta,
-        degraded_devices=degraded_devices,
+        status=estimate.status,
+        device_a_percent=estimate.device_a_percent,
+        device_b_percent=estimate.device_b_percent,
+        delta_percent=estimate.delta_percent,
+        degraded_devices=estimate.degraded_devices or [],
         checked_at=datetime.now(timezone.utc),
     )
 
