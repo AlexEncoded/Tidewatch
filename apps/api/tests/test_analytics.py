@@ -11,6 +11,7 @@ from app.domain.pressure import estimate_pressure
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
+from app.application.pressure_analysis import analyze_pressure_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
@@ -79,6 +80,22 @@ def test_pressure_domain_service_estimates_wave_height_and_sea_state() -> None:
     assert estimate.estimated_wave_height_m == 0.071
     assert estimate.sea_state == "calm"
     assert estimate.confidence == "experimental"
+
+
+def test_pressure_application_service_filters_invalid_readings() -> None:
+    class FakeReader:
+        def list_pressures(self, buoy_id, limit, sensor_channel="A"):
+            return [
+                SimpleNamespace(pressure_kpa=101.3, quality="good"),
+                SimpleNamespace(pressure_kpa=102.0, quality="good"),
+                SimpleNamespace(pressure_kpa=110.0, quality="invalid"),
+            ]
+
+    analysis = analyze_pressure_for_buoy(FakeReader(), "TW-PRESS", 10)
+
+    assert analysis.sample_count == 2
+    assert analysis.estimated_wave_height_m is None
+    assert analysis.confidence == "insufficient_data"
 
 
 def test_wave_analysis_returns_insufficient_data_without_vertical_samples() -> None:

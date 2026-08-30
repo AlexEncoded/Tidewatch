@@ -93,6 +93,7 @@ from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import decide_channel
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
+from .application.pressure_analysis import analyze_pressure_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -956,12 +957,7 @@ def pressure_analysis(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
-    readings = [
-        PressureReading.model_validate(reading)
-        for reading in repository.list_pressures(buoy_id, window)
-        if reading.quality != "invalid"
-    ]
-    return analyze_pressure(buoy_id, readings)
+    return analyze_pressure_for_buoy(repository, buoy_id, window)
 
 
 @app.post(
