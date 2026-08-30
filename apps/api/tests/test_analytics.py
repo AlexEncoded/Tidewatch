@@ -7,6 +7,7 @@ from app.domain.movement import estimate_movement
 from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
 from app.domain.temperature import estimate_temperature
+from app.domain.pressure import estimate_pressure
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -69,6 +70,15 @@ def test_pressure_analysis_requires_three_samples_for_wave_estimate() -> None:
     assert analysis.pressure_range_kpa == 0.5
     assert analysis.estimated_wave_height_m is None
     assert analysis.confidence == "insufficient_data"
+
+
+def test_pressure_domain_service_estimates_wave_height_and_sea_state() -> None:
+    estimate = estimate_pressure([101.3, 102.0, 101.5])
+
+    assert estimate.pressure_range_kpa == 0.7
+    assert estimate.estimated_wave_height_m == 0.071
+    assert estimate.sea_state == "calm"
+    assert estimate.confidence == "experimental"
 
 
 def test_wave_analysis_returns_insufficient_data_without_vertical_samples() -> None:
