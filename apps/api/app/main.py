@@ -90,6 +90,7 @@ from .models import (
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+from .application.wave_analysis import analyze_wave_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -838,11 +839,11 @@ def buoy_wave_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_wave(
+    result = analyze_wave_for_buoy(
+        repository,
         buoy_id,
-        repository.list_imu(buoy_id, window, None),
-        repository.list_locations(buoy_id, window),
-        imu_wave_height_factor=configured_wave_imu_factor(),
+        window,
+        configured_wave_imu_factor(),
     )
     if result.estimated_wave_height_m is not None:
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(
