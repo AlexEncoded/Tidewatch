@@ -5,6 +5,7 @@ from app.analytics import analyze_pressure, analyze_wave, distance_between_point
 from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
 from app.domain.battery_health import estimate_battery_health
+from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
 from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -150,3 +151,17 @@ def test_battery_health_domain_service_requires_both_devices() -> None:
 
     assert estimate.status == "insufficient_data"
     assert estimate.delta_percent is None
+
+
+def test_battery_analysis_domain_service_estimates_discharge() -> None:
+    readings = [
+        BatterySample(80.0, datetime(2024, 1, 1, 2, 0)),
+        BatterySample(90.0, datetime(2024, 1, 1, 0, 0)),
+    ]
+
+    estimate = estimate_battery_discharge(readings)
+
+    assert estimate.change_percent == -10.0
+    assert estimate.discharge_rate_percent_per_hour == 5.0
+    assert estimate.estimated_hours_remaining == 16.0
+    assert estimate.confidence == "experimental"

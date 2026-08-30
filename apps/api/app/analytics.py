@@ -15,6 +15,7 @@ from .models import (
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave
 from .domain.movement import distance_between_points, estimate_movement
 from .domain.battery_health import estimate_battery_health
+from .domain.battery_analysis import BatterySample, estimate_battery_discharge
 
 
 KPA_TO_METRES_OF_WATER = 0.102
@@ -59,30 +60,26 @@ def analyze_battery_health(
 def analyze_battery(
     buoy_id: str, device_id: str, readings: list[BatteryReading]
 ) -> BatteryAnalysis:
-    if not readings:
-        return BatteryAnalysis(buoy_id=buoy_id, device_id=device_id, sample_count=0)
-
-    latest = readings[0]
-    oldest = readings[-1]
-    change = round(latest.battery_percent - oldest.battery_percent, 2)
-    elapsed_hours = (latest.measured_at - oldest.measured_at).total_seconds() / 3600
-    discharge_rate = None
-    estimated_hours = None
-    if len(readings) >= 2 and elapsed_hours > 0:
-        discharge_rate = round(max(0, -change) / elapsed_hours, 3)
-        if discharge_rate > 0:
-            estimated_hours = round(latest.battery_percent / discharge_rate, 2)
+    estimate = estimate_battery_discharge(
+        [
+            BatterySample(
+                battery_percent=reading.battery_percent,
+                measured_at=reading.measured_at,
+            )
+            for reading in readings
+        ]
+    )
 
     return BatteryAnalysis(
         buoy_id=buoy_id,
         device_id=device_id,
-        sample_count=len(readings),
-        latest_percent=latest.battery_percent,
-        oldest_percent=oldest.battery_percent,
-        change_percent=change,
-        discharge_rate_percent_per_hour=discharge_rate,
-        estimated_hours_remaining=estimated_hours,
-        confidence="experimental" if len(readings) >= 2 and discharge_rate is not None else "insufficient_data",
+        sample_count=estimate.sample_count,
+        latest_percent=estimate.latest_percent,
+        oldest_percent=estimate.oldest_percent,
+        change_percent=estimate.change_percent,
+        discharge_rate_percent_per_hour=estimate.discharge_rate_percent_per_hour,
+        estimated_hours_remaining=estimate.estimated_hours_remaining,
+        confidence=estimate.confidence,
     )
 
 
