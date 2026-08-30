@@ -58,3 +58,17 @@ def test_wave_application_service_uses_a_telemetry_port() -> None:
 
     assert analysis.buoy_id == "TW-PORT"
     assert analysis.estimated_wave_height_m == 0.225
+
+
+def test_wave_application_service_forwards_calibration_factor() -> None:
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return [SimpleNamespace(acceleration_z_mps2=value) for value in (9.7, 10.2)]
+
+        def list_locations(self, buoy_id, limit):
+            return [SimpleNamespace(altitude_meters=value) for value in (2.0, 2.1)]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-CAL", 10, 0.2)
+
+    assert analysis.gnss_vertical_range_m == 0.1
+    assert analysis.estimated_wave_height_m == 0.1
