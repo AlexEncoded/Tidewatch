@@ -1,19 +1,8 @@
 """Application service for the pressure-analysis use case."""
 
-from typing import Protocol
-
 from ..domain.pressure import estimate_pressure
 from ..models import PressureAnalysis
-
-
-class PressureTelemetryReader(Protocol):
-    def list_pressures(
-        self,
-        buoy_id: str,
-        limit: int,
-        sensor_channel: str | None = "A",
-    ) -> list:
-        ...
+from .ports import PressureTelemetryReader
 
 
 def analyze_pressure_for_buoy(

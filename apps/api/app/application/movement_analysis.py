@@ -1,14 +1,11 @@
 """Application service for the movement-analysis use case."""
 
-from typing import Protocol
-
 from ..domain.movement import estimate_movement
 from ..models import MovementAnalysis
+from .ports import LocationTelemetryReader
 
 
-class MovementTelemetryReader(Protocol):
-    def list_locations(self, buoy_id: str, limit: int) -> list:
-        ...
+MovementTelemetryReader = LocationTelemetryReader
 
 
 def analyze_movement_for_buoy(

@@ -1,17 +1,12 @@
 """Application service for the experimental wave-analysis use case."""
 
-from typing import Protocol
-
 from ..analytics import analyze_wave
 from ..models import WaveAnalysis
+from .ports import ImuTelemetryReader, LocationTelemetryReader
 
 
-class WaveTelemetryReader(Protocol):
-    def list_imu(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list:
-        ...
-
-    def list_locations(self, buoy_id: str, limit: int) -> list:
-        ...
+class WaveTelemetryReader(ImuTelemetryReader, LocationTelemetryReader):
+    """Input port required by the wave-analysis use case."""
 
 
 def analyze_wave_for_buoy(

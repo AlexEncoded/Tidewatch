@@ -1,19 +1,8 @@
 """Application service for historical battery analysis."""
 
-from typing import Protocol
-
 from ..domain.battery_analysis import BatterySample, estimate_battery_discharge
 from ..models import BatteryAnalysis
-
-
-class BatteryTelemetryReader(Protocol):
-    def list_batteries(
-        self,
-        buoy_id: str,
-        limit: int,
-        device_id: str | None = None,
-    ) -> list:
-        ...
+from .ports import BatteryTelemetryReader
 
 
 def analyze_battery_for_buoy(

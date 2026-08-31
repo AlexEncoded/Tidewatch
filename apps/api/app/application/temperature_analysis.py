@@ -1,19 +1,8 @@
 """Application service for historical temperature analysis."""
 
-from typing import Protocol
-
 from ..domain.temperature import estimate_temperature
 from ..models import TemperatureAnalysis
-
-
-class TemperatureTelemetryReader(Protocol):
-    def list_temperatures(
-        self,
-        buoy_id: str,
-        limit: int,
-        sensor_channel: str | None = "A",
-    ) -> list:
-        ...
+from .ports import TemperatureTelemetryReader
 
 
 def analyze_temperature_for_buoy(
