@@ -95,6 +95,7 @@ from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
+from .application.temperature_analysis import analyze_temperature_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -2341,12 +2342,7 @@ def temperature_analysis(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
-    readings = [
-        TemperatureReading.model_validate(reading)
-        for reading in repository.list_temperatures(buoy_id, window)
-        if reading.quality != "invalid"
-    ]
-    return analyze_temperatures(buoy_id, readings, threshold)
+    return analyze_temperature_for_buoy(repository, buoy_id, window, threshold)
 
 
 @app.get(

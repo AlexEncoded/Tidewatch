@@ -13,6 +13,7 @@ from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.application.pressure_analysis import analyze_pressure_for_buoy
 from app.application.battery_analysis import analyze_battery_for_buoy
+from app.application.temperature_analysis import analyze_temperature_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
@@ -218,3 +219,19 @@ def test_temperature_domain_service_detects_rising_anomaly() -> None:
     assert estimate.average_temperature == 23.33
     assert estimate.is_anomaly is True
     assert estimate.anomaly_reason is not None
+
+
+def test_temperature_application_service_filters_invalid_readings() -> None:
+    class FakeReader:
+        def list_temperatures(self, buoy_id, limit, sensor_channel="A"):
+            return [
+                SimpleNamespace(temperature_celsius=30.0, quality="good"),
+                SimpleNamespace(temperature_celsius=20.0, quality="good"),
+                SimpleNamespace(temperature_celsius=100.0, quality="invalid"),
+            ]
+
+    analysis = analyze_temperature_for_buoy(FakeReader(), "TW-TEMP", 10, 2.0)
+
+    assert analysis.sample_count == 2
+    assert analysis.latest_temperature == 30.0
+    assert analysis.trend == "rising"
