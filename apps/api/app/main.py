@@ -287,7 +287,7 @@ def ingest_telemetry(
             current_gnss_hdop.labels(buoy_id=buoy_id).set(location.hdop)
         if location.satellites is not None:
             current_gnss_satellites.labels(buoy_id=buoy_id).set(location.satellites)
-        movement = analyze_movement(buoy_id, repository.list_locations(buoy_id, 50))
+        movement = analyze_movement_for_buoy(repository, buoy_id, 50)
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(
                 movement.average_speed_mps
@@ -703,7 +703,8 @@ def update_buoy_location(
     buoy = BuoyRepository(db).update_location(buoy_id, payload)
     if buoy is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    movement = analyze_movement(buoy_id, BuoyRepository(db).list_locations(buoy_id, 50))
+    repository = BuoyRepository(db)
+    movement = analyze_movement_for_buoy(repository, buoy_id, 50)
     if movement.average_speed_mps is not None:
         buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(movement.average_speed_mps)
     return buoy
