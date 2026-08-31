@@ -96,6 +96,7 @@ from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
 from .application.temperature_analysis import analyze_temperature_for_buoy
+from .application.battery_health import analyze_battery_health_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -1628,16 +1629,15 @@ def battery_health(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    readings = {}
-    for device_id in ("A", "B"):
-        reading = repository.latest_battery(buoy_id, device_id)
-        readings[device_id] = BatteryReading.model_validate(reading) if reading else None
-    result = analyze_battery_health(buoy_id, readings, threshold)
-    for device_id, reading in readings.items():
-        if reading is not None:
+    result = analyze_battery_health_for_buoy(repository, buoy_id, threshold)
+    for device_id, percentage in (
+        ("A", result.device_a_percent),
+        ("B", result.device_b_percent),
+    ):
+        if percentage is not None:
             battery_device_percent.labels(
                 buoy_id=buoy_id, device_id=device_id
-            ).set(reading.battery_percent)
+            ).set(percentage)
     if result.delta_percent is not None:
         battery_delta_percent.labels(buoy_id=buoy_id).set(result.delta_percent)
     return result

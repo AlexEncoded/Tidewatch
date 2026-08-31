@@ -32,6 +32,9 @@ class BatteryTelemetryReader(Protocol):
     ) -> list:
         ...
 
+    def latest_battery(self, buoy_id: str, device_id: str | None = None):
+        ...
+
 
 class TemperatureTelemetryReader(Protocol):
     def list_temperatures(

@@ -14,6 +14,7 @@ from app.application.movement_analysis import analyze_movement_for_buoy
 from app.application.pressure_analysis import analyze_pressure_for_buoy
 from app.application.battery_analysis import analyze_battery_for_buoy
 from app.application.temperature_analysis import analyze_temperature_for_buoy
+from app.application.battery_health import analyze_battery_health_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
@@ -210,6 +211,19 @@ def test_battery_application_service_uses_device_port() -> None:
 
     assert analysis.device_id == "B"
     assert analysis.discharge_rate_percent_per_hour == 5.0
+
+
+def test_battery_health_application_service_reads_both_devices() -> None:
+    class FakeReader:
+        def latest_battery(self, buoy_id, device_id=None):
+            if device_id == "A":
+                return SimpleNamespace(battery_percent=72.0)
+            return SimpleNamespace(battery_percent=85.0)
+
+    health = analyze_battery_health_for_buoy(FakeReader(), "TW-HEALTH", 5.0)
+
+    assert health.status == "degraded"
+    assert health.degraded_devices == ["A"]
 
 
 def test_temperature_domain_service_detects_rising_anomaly() -> None:
