@@ -2219,22 +2219,26 @@ def maintenance_issues(
                     )
                 )
 
-        battery_readings = {}
-        for device_id in ("A", "B"):
-            reading = repository.latest_battery(buoy.id, device_id)
-            battery_readings[device_id] = BatteryReading.model_validate(reading) if reading else None
-        battery_health_result = analyze_battery_health(buoy.id, battery_readings, 10)
-        for device_id, reading in battery_readings.items():
-            if reading is not None:
+        battery_health_result = analyze_battery_health_for_buoy(repository, buoy.id, 10)
+        for device_id, percentage in (
+            ("A", battery_health_result.device_a_percent),
+            ("B", battery_health_result.device_b_percent),
+        ):
+            if percentage is not None:
                 battery_device_percent.labels(
                     buoy_id=buoy.id, device_id=device_id
-                ).set(reading.battery_percent)
+                ).set(percentage)
         if battery_health_result.delta_percent is not None:
             battery_delta_percent.labels(buoy_id=buoy.id).set(
                 battery_health_result.delta_percent
             )
         available_battery_devices = [
-            device_id for device_id, reading in battery_readings.items() if reading is not None
+            device_id
+            for device_id, percentage in (
+                ("A", battery_health_result.device_a_percent),
+                ("B", battery_health_result.device_b_percent),
+            )
+            if percentage is not None
         ]
         for device_id in ("A", "B"):
             redundant_device_missing.labels(
