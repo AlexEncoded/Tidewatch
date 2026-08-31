@@ -12,6 +12,7 @@ from app.domain.wave import estimate_wave
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.application.pressure_analysis import analyze_pressure_for_buoy
+from app.application.battery_analysis import analyze_battery_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.models import PressureReading
 
@@ -193,6 +194,21 @@ def test_battery_analysis_domain_service_estimates_discharge() -> None:
     assert estimate.discharge_rate_percent_per_hour == 5.0
     assert estimate.estimated_hours_remaining == 16.0
     assert estimate.confidence == "experimental"
+
+
+def test_battery_application_service_uses_device_port() -> None:
+    class FakeReader:
+        def list_batteries(self, buoy_id, limit, device_id=None):
+            assert device_id == "B"
+            return [
+                SimpleNamespace(battery_percent=80.0, measured_at=datetime(2024, 1, 1, 2, 0)),
+                SimpleNamespace(battery_percent=90.0, measured_at=datetime(2024, 1, 1, 0, 0)),
+            ]
+
+    analysis = analyze_battery_for_buoy(FakeReader(), "TW-BAT", "B", 10)
+
+    assert analysis.device_id == "B"
+    assert analysis.discharge_rate_percent_per_hour == 5.0
 
 
 def test_temperature_domain_service_detects_rising_anomaly() -> None:

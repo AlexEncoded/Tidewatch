@@ -94,6 +94,7 @@ from .domain.sensor_health import decide_channel
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
+from .application.battery_analysis import analyze_battery_for_buoy
 from .metrics import (
     battery_percent,
     battery_delta_percent,
@@ -1610,11 +1611,7 @@ def battery_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    readings = [
-        BatteryReading.model_validate(reading)
-        for reading in repository.list_batteries(buoy_id, window, device_id)
-    ]
-    return analyze_battery(buoy_id, device_id, readings)
+    return analyze_battery_for_buoy(repository, buoy_id, device_id, window)
 
 
 @app.get(
