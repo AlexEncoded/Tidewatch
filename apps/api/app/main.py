@@ -2267,7 +2267,7 @@ def maintenance_issues(
                 )
             )
 
-        movement = analyze_movement(buoy.id, repository.list_locations(buoy.id, 50))
+        movement = analyze_movement_for_buoy(repository, buoy.id, 50)
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
         if (
