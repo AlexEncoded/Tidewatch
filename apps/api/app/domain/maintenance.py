@@ -12,4 +12,6 @@ def is_buoy_silent(
         return False
     if last_seen_at.tzinfo is None:
         last_seen_at = last_seen_at.replace(tzinfo=timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
     return (now - last_seen_at).total_seconds() > max_age_seconds
