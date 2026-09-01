@@ -5,18 +5,25 @@ from ..models import TemperatureAnalysis
 from .ports import TemperatureTelemetryReader
 
 
-def analyze_temperature_for_buoy(
+def list_valid_temperature_readings(
     reader: TemperatureTelemetryReader,
     buoy_id: str,
     window: int,
-    threshold: float,
-) -> TemperatureAnalysis:
-    """Run temperature analysis through a persistence port."""
-    readings = [
+) -> list:
+    """Read a temperature window while excluding invalid telemetry."""
+    return [
         reading
         for reading in reader.list_temperatures(buoy_id, window)
         if reading.quality != "invalid"
     ]
+
+
+def analyze_temperature_readings(
+    buoy_id: str,
+    readings: list,
+    threshold: float,
+) -> TemperatureAnalysis:
+    """Map valid temperature readings into the public analysis contract."""
     estimate = estimate_temperature(
         [reading.temperature_celsius for reading in readings], threshold
     )
@@ -31,4 +38,18 @@ def analyze_temperature_for_buoy(
         trend=estimate.trend,
         is_anomaly=estimate.is_anomaly,
         anomaly_reason=estimate.anomaly_reason,
+    )
+
+
+def analyze_temperature_for_buoy(
+    reader: TemperatureTelemetryReader,
+    buoy_id: str,
+    window: int,
+    threshold: float,
+) -> TemperatureAnalysis:
+    """Run temperature analysis through a persistence port."""
+    return analyze_temperature_readings(
+        buoy_id,
+        list_valid_temperature_readings(reader, buoy_id, window),
+        threshold,
     )

@@ -95,7 +95,11 @@ from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
-from .application.temperature_analysis import analyze_temperature_for_buoy
+from .application.temperature_analysis import (
+    analyze_temperature_for_buoy,
+    analyze_temperature_readings,
+    list_valid_temperature_readings,
+)
 from .application.battery_health import analyze_battery_health_for_buoy
 from .metrics import (
     battery_percent,
@@ -2364,12 +2368,8 @@ def temperature_alerts(
     alerts: list[TemperatureAlert] = []
 
     for buoy in repository.list_buoys():
-        readings = [
-            TemperatureReading.model_validate(reading)
-            for reading in repository.list_temperatures(buoy.id, window)
-            if reading.quality != "invalid"
-        ]
-        analysis = analyze_temperatures(buoy.id, readings, threshold)
+        readings = list_valid_temperature_readings(repository, buoy.id, window)
+        analysis = analyze_temperature_readings(buoy.id, readings, threshold)
         if analysis.is_anomaly and analysis.latest_temperature is not None:
             alerts.append(
                 TemperatureAlert(
@@ -2415,12 +2415,8 @@ def evaluate_temperature_alerts(
     stored_alerts = []
 
     for buoy in repository.list_buoys():
-        readings = [
-            TemperatureReading.model_validate(reading)
-            for reading in repository.list_temperatures(buoy.id, window)
-            if reading.quality != "invalid"
-        ]
-        analysis = analyze_temperatures(buoy.id, readings, threshold)
+        readings = list_valid_temperature_readings(repository, buoy.id, window)
+        analysis = analyze_temperature_readings(buoy.id, readings, threshold)
         if not analysis.is_anomaly or not readings:
             continue
 
