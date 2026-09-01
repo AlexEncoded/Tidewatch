@@ -22,6 +22,7 @@ from app.application.battery_health import analyze_battery_health_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
+from app.domain.sensor_completeness import missing_sensor_channels
 from app.models import PressureReading
 
 
@@ -200,6 +201,18 @@ def test_reading_quality_domain_classifies_latest_sensor_states() -> None:
 
     assert invalid == ["temperature"]
     assert suspect == ["pressure"]
+
+
+def test_sensor_completeness_domain_lists_partial_redundancy() -> None:
+    missing = missing_sensor_channels(
+        {
+            "temperature": {"A": object(), "B": None},
+            "pressure": {"A": None, "B": None},
+            "salinity": {"A": object(), "B": object()},
+        }
+    )
+
+    assert missing == ["temperature:B"]
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

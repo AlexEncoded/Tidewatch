@@ -85,6 +85,7 @@ from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import decide_channel
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
+from .domain.sensor_completeness import missing_sensor_channels
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1806,13 +1807,7 @@ def sensor_health(
         "acoustic_altimeter": {"A": acoustic_altimeter_a, "B": acoustic_altimeter_b},
         "underwater_acoustic": {"A": underwater_acoustic_a, "B": underwater_acoustic_b},
     }
-    missing_sensors = [
-        f"{sensor}:{channel}"
-        for sensor, channels in sensor_readings.items()
-        if any(channels.values())
-        for channel, reading in channels.items()
-        if not reading
-    ]
+    missing_sensors = missing_sensor_channels(sensor_readings)
 
     deltas = {
         "temperature": (
