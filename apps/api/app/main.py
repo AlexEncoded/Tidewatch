@@ -17,14 +17,6 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .analytics import (
-    analyze_battery_health,
-    analyze_battery,
-    analyze_movement,
-    analyze_wave,
-    analyze_pressure,
-    analyze_temperatures,
-)
 from .models import (
     Buoy,
     BuoyCreate,
