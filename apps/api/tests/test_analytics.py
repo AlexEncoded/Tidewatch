@@ -23,6 +23,7 @@ from app.domain.sensor_health import decide_channel
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
 from app.domain.sensor_completeness import missing_sensor_channels
+from app.domain.telemetry import latest_usable_reading
 from app.models import PressureReading
 
 
@@ -213,6 +214,19 @@ def test_sensor_completeness_domain_lists_partial_redundancy() -> None:
     )
 
     assert missing == ["temperature:B"]
+
+
+def test_telemetry_domain_skips_invalid_and_stale_readings() -> None:
+    now = datetime(2024, 1, 1, 1, 0)
+    readings = [
+        SimpleNamespace(quality="invalid", measured_at=datetime(2024, 1, 1, 0, 59)),
+        SimpleNamespace(quality="good", measured_at=datetime(2024, 1, 1, 0, 0)),
+        SimpleNamespace(quality="good", measured_at=datetime(2024, 1, 1, 0, 59)),
+    ]
+
+    usable = latest_usable_reading(readings, max_age_seconds=300, now=now)
+
+    assert usable == [readings[2]]
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

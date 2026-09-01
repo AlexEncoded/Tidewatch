@@ -86,6 +86,7 @@ from .domain.sensor_health import decide_channel
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.sensor_completeness import missing_sensor_channels
+from .domain.telemetry import latest_usable_reading
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -177,23 +178,6 @@ def record_quality_metric(
         sensor_channel=sensor_channel,
         quality=quality,
     ).inc()
-
-
-def latest_usable_reading(
-    readings: list, max_age_seconds: float | None = None, now: datetime | None = None
-) -> list:
-    reference_time = now or datetime.now(timezone.utc)
-    for reading in readings:
-        if reading.quality == "invalid":
-            continue
-        if max_age_seconds is not None:
-            measured_at = reading.measured_at
-            if measured_at.tzinfo is None:
-                measured_at = measured_at.replace(tzinfo=timezone.utc)
-            if (reference_time - measured_at).total_seconds() > max_age_seconds:
-                continue
-        return [reading]
-    return []
 
 
 @asynccontextmanager
