@@ -84,6 +84,7 @@ from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import decide_channel
 from .domain.maintenance import is_buoy_silent
+from .domain.reading_quality import classify_latest_readings
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -2165,11 +2166,7 @@ def maintenance_issues(
             "pressure": repository.list_pressures(buoy.id, 1),
             "salinity": repository.list_salinity(buoy.id, 1),
         }
-        invalid_sensors = [
-            sensor
-            for sensor, readings in latest_readings.items()
-            if readings and readings[0].quality == "invalid"
-        ]
+        invalid_sensors, suspect_sensors = classify_latest_readings(latest_readings)
         if invalid_sensors:
             issues.append(
                 MaintenanceIssue(
@@ -2181,11 +2178,6 @@ def maintenance_issues(
                 )
             )
 
-        suspect_sensors = [
-            sensor
-            for sensor, readings in latest_readings.items()
-            if readings and readings[0].quality == "suspect"
-        ]
         if suspect_sensors:
             issues.append(
                 MaintenanceIssue(

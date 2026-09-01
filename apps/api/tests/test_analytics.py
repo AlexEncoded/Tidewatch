@@ -21,6 +21,7 @@ from app.application.temperature_analysis import (
 from app.application.battery_health import analyze_battery_health_for_buoy
 from app.domain.sensor_health import decide_channel
 from app.domain.maintenance import is_buoy_silent
+from app.domain.reading_quality import classify_latest_readings
 from app.models import PressureReading
 
 
@@ -185,6 +186,20 @@ def test_maintenance_domain_ignores_inactive_or_recent_buoys() -> None:
 
     assert is_buoy_silent("inactive", datetime(2024, 1, 1, 0, 0), now, 3000) is False
     assert is_buoy_silent("active", datetime(2024, 1, 1, 0, 59), now, 3000) is False
+
+
+def test_reading_quality_domain_classifies_latest_sensor_states() -> None:
+    invalid, suspect = classify_latest_readings(
+        {
+            "temperature": [SimpleNamespace(quality="invalid")],
+            "pressure": [SimpleNamespace(quality="suspect")],
+            "salinity": [SimpleNamespace(quality="good")],
+            "wind": [],
+        }
+    )
+
+    assert invalid == ["temperature"]
+    assert suspect == ["pressure"]
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:
