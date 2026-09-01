@@ -24,6 +24,7 @@ from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
 from app.domain.sensor_completeness import missing_sensor_channels
 from app.domain.telemetry import latest_usable_reading
+from app.domain.directions import circular_difference_degrees
 from app.models import PressureReading
 
 
@@ -227,6 +228,11 @@ def test_telemetry_domain_skips_invalid_and_stale_readings() -> None:
     usable = latest_usable_reading(readings, max_age_seconds=300, now=now)
 
     assert usable == [readings[2]]
+
+
+def test_direction_domain_uses_smallest_circular_difference() -> None:
+    assert circular_difference_degrees(359, 1) == 2
+    assert circular_difference_degrees(10, 190) == 180
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

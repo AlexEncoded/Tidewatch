@@ -87,6 +87,7 @@ from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.sensor_completeness import missing_sensor_channels
 from .domain.telemetry import latest_usable_reading
+from .domain.directions import circular_difference_degrees
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1843,17 +1844,10 @@ def sensor_health(
             else None
         ),
         "wind_direction": (
-            round(
-                min(
-                    abs(wind_a[0].wind_direction_degrees - wind_b[0].wind_direction_degrees),
-                    360
-                    - abs(
-                        wind_a[0].wind_direction_degrees
-                        - wind_b[0].wind_direction_degrees
-                    ),
-                ),
-                2,
-            )
+            round(circular_difference_degrees(
+                wind_a[0].wind_direction_degrees,
+                wind_b[0].wind_direction_degrees,
+            ), 2)
             if wind_a and wind_b
             else None
         ),
@@ -1869,20 +1863,10 @@ def sensor_health(
             else None
         ),
         "marine_current_direction": (
-            round(
-                min(
-                    abs(
-                        marine_current_a[0].current_direction_degrees
-                        - marine_current_b[0].current_direction_degrees
-                    ),
-                    360
-                    - abs(
-                        marine_current_a[0].current_direction_degrees
-                        - marine_current_b[0].current_direction_degrees
-                    ),
-                ),
-                2,
-            )
+            round(circular_difference_degrees(
+                marine_current_a[0].current_direction_degrees,
+                marine_current_b[0].current_direction_degrees,
+            ), 2)
             if marine_current_a and marine_current_b
             else None
         ),
