@@ -3,7 +3,6 @@ from csv import DictWriter
 from datetime import datetime, timezone
 from io import StringIO
 import logging
-from math import sqrt
 import os
 import time
 from uuid import uuid4
@@ -88,6 +87,7 @@ from .domain.reading_quality import classify_latest_readings
 from .domain.sensor_completeness import missing_sensor_channels
 from .domain.telemetry import latest_usable_reading
 from .domain.directions import circular_difference_degrees
+from .domain.vectors import euclidean_difference
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1811,19 +1811,10 @@ def sensor_health(
             else None
         ),
         "imu": (
-            round(
-                sqrt(
-                    sum(
-                        (
-                            getattr(imu_a[0], f"acceleration_{axis}_mps2")
-                            - getattr(imu_b[0], f"acceleration_{axis}_mps2")
-                        )
-                        ** 2
-                        for axis in ("x", "y", "z")
-                    )
-                ),
-                3,
-            )
+            round(euclidean_difference(
+                [getattr(imu_a[0], f"acceleration_{axis}_mps2") for axis in ("x", "y", "z")],
+                [getattr(imu_b[0], f"acceleration_{axis}_mps2") for axis in ("x", "y", "z")],
+            ), 3)
             if imu_a and imu_b
             else None
         ),
