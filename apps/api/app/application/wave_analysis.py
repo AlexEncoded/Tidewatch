@@ -1,6 +1,6 @@
 """Application service for the experimental wave-analysis use case."""
 
-from ..analytics import analyze_wave
+from ..domain.wave import estimate_wave
 from ..models import WaveAnalysis
 from .ports import ImuTelemetryReader, LocationTelemetryReader
 
@@ -16,9 +16,35 @@ def analyze_wave_for_buoy(
     imu_wave_height_factor: float,
 ) -> WaveAnalysis:
     """Run wave analysis without coupling the use case to a database adapter."""
-    return analyze_wave(
-        buoy_id,
-        reader.list_imu(buoy_id, window, None),
-        reader.list_locations(buoy_id, window),
+    imu_readings = reader.list_imu(buoy_id, window, None)
+    locations = reader.list_locations(buoy_id, window)
+    estimate = estimate_wave(
+        [
+            reading.altitude_meters
+            for reading in locations
+            if reading.altitude_meters is not None
+        ],
+        [reading.acceleration_z_mps2 for reading in imu_readings],
         imu_wave_height_factor=imu_wave_height_factor,
+    )
+    if estimate.estimated_wave_height_m is None:
+        return WaveAnalysis(
+            buoy_id=buoy_id,
+            sample_count=max(len(imu_readings), len(locations)),
+        )
+    return WaveAnalysis(
+        buoy_id=buoy_id,
+        sample_count=max(len(imu_readings), len(locations)),
+        gnss_vertical_range_m=(
+            round(estimate.gnss_vertical_range_m, 3)
+            if estimate.gnss_vertical_range_m is not None
+            else None
+        ),
+        imu_vertical_acceleration_range_mps2=(
+            round(estimate.imu_vertical_acceleration_range_mps2, 3)
+            if estimate.imu_vertical_acceleration_range_mps2 is not None
+            else None
+        ),
+        estimated_wave_height_m=round(estimate.estimated_wave_height_m, 3),
+        confidence=estimate.confidence,
     )
