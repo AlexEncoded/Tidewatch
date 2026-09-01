@@ -20,6 +20,7 @@ from app.application.temperature_analysis import (
 )
 from app.application.battery_health import analyze_battery_health_for_buoy
 from app.domain.sensor_health import decide_channel
+from app.domain.maintenance import is_buoy_silent
 from app.models import PressureReading
 
 
@@ -171,6 +172,19 @@ def test_sensor_health_falls_back_to_available_channel() -> None:
 
 def test_sensor_health_invalidates_missing_channels() -> None:
     assert decide_channel(False, False) == "invalid"
+
+
+def test_maintenance_domain_detects_stale_active_buoy() -> None:
+    now = datetime(2024, 1, 1, 1, 0)
+
+    assert is_buoy_silent("active", datetime(2024, 1, 1, 0, 0), now, 3000) is True
+
+
+def test_maintenance_domain_ignores_inactive_or_recent_buoys() -> None:
+    now = datetime(2024, 1, 1, 1, 0)
+
+    assert is_buoy_silent("inactive", datetime(2024, 1, 1, 0, 0), now, 3000) is False
+    assert is_buoy_silent("active", datetime(2024, 1, 1, 0, 59), now, 3000) is False
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

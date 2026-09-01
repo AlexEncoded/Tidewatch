@@ -83,6 +83,7 @@ from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import decide_channel
+from .domain.maintenance import is_buoy_silent
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -2122,20 +2123,16 @@ def maintenance_issues(
     issues: list[MaintenanceIssue] = []
 
     for buoy in repository.list_buoys():
-        if buoy.status == "active" and buoy.last_seen_at is not None:
-            last_seen = buoy.last_seen_at
-            if last_seen.tzinfo is None:
-                last_seen = last_seen.replace(tzinfo=timezone.utc)
-            if (now - last_seen).total_seconds() > max_age_seconds:
-                issues.append(
-                    MaintenanceIssue(
-                        buoy_id=buoy.id,
-                        buoy_name=buoy.name,
-                        issue_type="silent_buoy",
-                        severity="warning",
-                        message=f"No telemetry received for more than {max_age_minutes:g} minutes",
-                    )
+        if is_buoy_silent(buoy.status, buoy.last_seen_at, now, max_age_seconds):
+            issues.append(
+                MaintenanceIssue(
+                    buoy_id=buoy.id,
+                    buoy_name=buoy.name,
+                    issue_type="silent_buoy",
+                    severity="warning",
+                    message=f"No telemetry received for more than {max_age_minutes:g} minutes",
                 )
+            )
 
         health = sensor_health(buoy.id, max_age_minutes=max_age_minutes, db=db)
         if health.status == "degraded":
