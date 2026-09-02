@@ -88,6 +88,7 @@ from .domain.sensor_completeness import missing_sensor_channels
 from .domain.telemetry import latest_usable_reading
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
+from .domain.deltas import absolute_difference
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1796,17 +1797,17 @@ def sensor_health(
 
     deltas = {
         "temperature": (
-            round(abs(temperature_a[0].temperature_celsius - temperature_b[0].temperature_celsius), 3)
+            round(absolute_difference(temperature_a[0].temperature_celsius, temperature_b[0].temperature_celsius), 3)
             if temperature_a and temperature_b
             else None
         ),
         "pressure": (
-            round(abs(pressure_a[0].pressure_kpa - pressure_b[0].pressure_kpa), 3)
+            round(absolute_difference(pressure_a[0].pressure_kpa, pressure_b[0].pressure_kpa), 3)
             if pressure_a and pressure_b
             else None
         ),
         "salinity": (
-            round(abs(salinity_a[0].salinity_psu - salinity_b[0].salinity_psu), 3)
+            round(absolute_difference(salinity_a[0].salinity_psu, salinity_b[0].salinity_psu), 3)
             if salinity_a and salinity_b
             else None
         ),
@@ -1820,9 +1821,9 @@ def sensor_health(
         ),
         "ambient_light": (
             round(
-                abs(
-                    ambient_light_a[0].illuminance_lux
-                    - ambient_light_b[0].illuminance_lux
+                absolute_difference(
+                    ambient_light_a[0].illuminance_lux,
+                    ambient_light_b[0].illuminance_lux,
                 ),
                 2,
             )
