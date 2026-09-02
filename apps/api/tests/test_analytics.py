@@ -165,6 +165,26 @@ def test_wave_application_service_forwards_calibration_factor() -> None:
     assert analysis.estimated_wave_height_m == 0.1
 
 
+def test_wave_application_service_filters_invalid_telemetry() -> None:
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return [
+                SimpleNamespace(acceleration_z_mps2=9.7, quality="good"),
+                SimpleNamespace(acceleration_z_mps2=100.0, quality="invalid"),
+            ]
+
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(altitude_meters=2.0, quality="good"),
+                SimpleNamespace(altitude_meters=20.0, quality="invalid"),
+            ]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-WAVE", 10, 0.1)
+
+    assert analysis.sample_count == 1
+    assert analysis.confidence == "insufficient_data"
+
+
 def test_sensor_health_averages_consistent_redundant_channels() -> None:
     assert decide_channel(True, True) == "average"
 

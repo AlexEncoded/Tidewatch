@@ -16,8 +16,16 @@ def analyze_wave_for_buoy(
     imu_wave_height_factor: float,
 ) -> WaveAnalysis:
     """Run wave analysis without coupling the use case to a database adapter."""
-    imu_readings = reader.list_imu(buoy_id, window, None)
-    locations = reader.list_locations(buoy_id, window)
+    imu_readings = [
+        reading
+        for reading in reader.list_imu(buoy_id, window, None)
+        if getattr(reading, "quality", "good") != "invalid"
+    ]
+    locations = [
+        reading
+        for reading in reader.list_locations(buoy_id, window)
+        if getattr(reading, "quality", "good") != "invalid"
+    ]
     estimate = estimate_wave(
         [
             reading.altitude_meters
