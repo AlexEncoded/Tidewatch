@@ -274,6 +274,7 @@ def test_sensor_health_rules_include_aggregate_degraded_families() -> None:
 
 def test_sensor_status_domain_distinguishes_available_health_states() -> None:
     assert sensor_health_status(False, False, False) == "insufficient_data"
+    assert sensor_health_status(False, False, True) == "degraded"
     assert sensor_health_status(True, False, False) == "consistent"
     assert sensor_health_status(True, True, False) == "degraded"
     assert sensor_health_status(True, False, True) == "degraded"
