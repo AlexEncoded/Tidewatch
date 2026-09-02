@@ -27,6 +27,7 @@ from app.domain.telemetry import latest_usable_reading
 from app.domain.directions import circular_difference_degrees
 from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference
+from app.domain.sensor_health_rules import degraded_sensor_names
 from app.models import PressureReading
 
 
@@ -243,6 +244,19 @@ def test_vector_domain_calculates_euclidean_difference() -> None:
 
 def test_delta_domain_calculates_absolute_scalar_difference() -> None:
     assert absolute_difference(2.5, 7.0) == 4.5
+
+
+def test_sensor_health_rules_include_aggregate_degraded_families() -> None:
+    degraded = degraded_sensor_names(
+        {
+            "temperature": 0.6,
+            "wind_speed": 0.6,
+            "wind_direction": None,
+            "marine_current_speed": 0.3,
+        }
+    )
+
+    assert degraded == ["temperature", "wind_speed", "marine_current_speed", "wind", "marine_current"]
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

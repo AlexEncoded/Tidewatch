@@ -89,6 +89,7 @@ from .domain.telemetry import latest_usable_reading
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
+from .domain.sensor_health_rules import degraded_sensor_names
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1937,40 +1938,7 @@ def sensor_health(
         ),
     }
     available = [value for value in deltas.values() if value is not None]
-    thresholds = {
-        "temperature": 0.5,
-        "pressure": 0.25,
-        "salinity": 0.2,
-        "imu": 0.5,
-        "ambient_light": 5000,
-        "wind_speed": 0.5,
-        "wind_direction": 15,
-        "marine_current_speed": 0.25,
-        "marine_current_direction": 15,
-        "turbidity": 10,
-        "dissolved_oxygen": 1,
-        "ph": 0.2,
-        "conductivity": 2000,
-        "chlorophyll_a": 5,
-        "rainfall": 20,
-        "humidity": 5,
-        "air_temperature": 0.5,
-        "atmospheric_pressure": 0.25,
-        "acoustic_altimeter": 0.5,
-        "underwater_acoustic": 5,
-    }
-    degraded_sensors = [
-        sensor
-        for sensor, value in deltas.items()
-        if value is not None and value > thresholds[sensor]
-    ]
-    if "wind_speed" in degraded_sensors or "wind_direction" in degraded_sensors:
-        degraded_sensors.append("wind")
-    if (
-        "marine_current_speed" in degraded_sensors
-        or "marine_current_direction" in degraded_sensors
-    ):
-        degraded_sensors.append("marine_current")
+    degraded_sensors = degraded_sensor_names(deltas)
     status_value = "insufficient_data"
     if available:
         status_value = "degraded" if degraded_sensors else "consistent"
