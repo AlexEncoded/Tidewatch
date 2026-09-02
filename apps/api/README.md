@@ -153,3 +153,12 @@ y pueden pasar a `resolved`.
 ```bash
 pytest
 ```
+
+## Architecture direction
+
+The API is being migrated incrementally toward a hexagonal architecture with
+lightweight DDD boundaries while remaining a modular monolith. Domain rules
+live in `app/domain` and are independent of infrastructure. Application
+services in `app/application` coordinate use cases through telemetry input
+ports and map domain results to API contracts. SQLAlchemy repositories remain
+adapters at the edge.
