@@ -1831,7 +1831,7 @@ def sensor_health(
             else None
         ),
         "wind_speed": (
-            round(abs(wind_a[0].wind_speed_mps - wind_b[0].wind_speed_mps), 3)
+            round(absolute_difference(wind_a[0].wind_speed_mps, wind_b[0].wind_speed_mps), 3)
             if wind_a and wind_b
             else None
         ),
@@ -1845,9 +1845,9 @@ def sensor_health(
         ),
         "marine_current_speed": (
             round(
-                abs(
-                    marine_current_a[0].current_speed_mps
-                    - marine_current_b[0].current_speed_mps
+                absolute_difference(
+                    marine_current_a[0].current_speed_mps,
+                    marine_current_b[0].current_speed_mps,
                 ),
                 3,
             )
@@ -1863,15 +1863,15 @@ def sensor_health(
             else None
         ),
         "turbidity": (
-            round(abs(turbidity_a[0].turbidity_ntu - turbidity_b[0].turbidity_ntu), 3)
+            round(absolute_difference(turbidity_a[0].turbidity_ntu, turbidity_b[0].turbidity_ntu), 3)
             if turbidity_a and turbidity_b
             else None
         ),
         "dissolved_oxygen": (
             round(
-                abs(
-                    dissolved_oxygen_a[0].dissolved_oxygen_mg_l
-                    - dissolved_oxygen_b[0].dissolved_oxygen_mg_l
+                absolute_difference(
+                    dissolved_oxygen_a[0].dissolved_oxygen_mg_l,
+                    dissolved_oxygen_b[0].dissolved_oxygen_mg_l,
                 ),
                 3,
             )
@@ -1879,15 +1879,15 @@ def sensor_health(
             else None
         ),
         "ph": (
-            round(abs(ph_a[0].ph - ph_b[0].ph), 3)
+            round(absolute_difference(ph_a[0].ph, ph_b[0].ph), 3)
             if ph_a and ph_b
             else None
         ),
         "conductivity": (
             round(
-                abs(
-                    conductivity_a[0].conductivity_us_cm
-                    - conductivity_b[0].conductivity_us_cm
+                absolute_difference(
+                    conductivity_a[0].conductivity_us_cm,
+                    conductivity_b[0].conductivity_us_cm,
                 ),
                 2,
             )
@@ -1896,9 +1896,9 @@ def sensor_health(
         ),
         "chlorophyll_a": (
             round(
-                abs(
-                    chlorophyll_a[0].chlorophyll_a_ug_l
-                    - chlorophyll_b[0].chlorophyll_a_ug_l
+                absolute_difference(
+                    chlorophyll_a[0].chlorophyll_a_ug_l,
+                    chlorophyll_b[0].chlorophyll_a_ug_l,
                 ),
                 3,
             )
@@ -1906,32 +1906,32 @@ def sensor_health(
             else None
         ),
         "rainfall": (
-            round(abs(rainfall_a[0].rainfall_mm_h - rainfall_b[0].rainfall_mm_h), 2)
+            round(absolute_difference(rainfall_a[0].rainfall_mm_h, rainfall_b[0].rainfall_mm_h), 2)
             if rainfall_a and rainfall_b
             else None
         ),
         "humidity": (
-            round(abs(humidity_a[0].humidity_percent - humidity_b[0].humidity_percent), 2)
+            round(absolute_difference(humidity_a[0].humidity_percent, humidity_b[0].humidity_percent), 2)
             if humidity_a and humidity_b
             else None
         ),
         "air_temperature": (
-            round(abs(air_temperature_a[0].air_temperature_celsius - air_temperature_b[0].air_temperature_celsius), 2)
+            round(absolute_difference(air_temperature_a[0].air_temperature_celsius, air_temperature_b[0].air_temperature_celsius), 2)
             if air_temperature_a and air_temperature_b
             else None
         ),
         "atmospheric_pressure": (
-            round(abs(atmospheric_pressure_a[0].atmospheric_pressure_kpa - atmospheric_pressure_b[0].atmospheric_pressure_kpa), 3)
+            round(absolute_difference(atmospheric_pressure_a[0].atmospheric_pressure_kpa, atmospheric_pressure_b[0].atmospheric_pressure_kpa), 3)
             if atmospheric_pressure_a and atmospheric_pressure_b
             else None
         ),
         "acoustic_altimeter": (
-            round(abs(acoustic_altimeter_a[0].depth_meters - acoustic_altimeter_b[0].depth_meters), 3)
+            round(absolute_difference(acoustic_altimeter_a[0].depth_meters, acoustic_altimeter_b[0].depth_meters), 3)
             if acoustic_altimeter_a and acoustic_altimeter_b
             else None
         ),
         "underwater_acoustic": (
-            round(abs(underwater_acoustic_a[0].echo_intensity_db - underwater_acoustic_b[0].echo_intensity_db), 2)
+            round(absolute_difference(underwater_acoustic_a[0].echo_intensity_db, underwater_acoustic_b[0].echo_intensity_db), 2)
             if underwater_acoustic_a and underwater_acoustic_b
             else None
         ),
