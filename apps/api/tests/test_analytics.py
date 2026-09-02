@@ -19,7 +19,7 @@ from app.application.temperature_analysis import (
     list_valid_temperature_readings,
 )
 from app.application.battery_health import analyze_battery_health_for_buoy
-from app.domain.sensor_health import decide_channel
+from app.domain.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
 from app.domain.sensor_completeness import missing_sensor_channels
@@ -180,6 +180,18 @@ def test_sensor_health_falls_back_to_available_channel() -> None:
 
 def test_sensor_health_invalidates_missing_channels() -> None:
     assert decide_channel(False, False) == "invalid"
+
+
+def test_sensor_health_evaluation_composes_domain_rules() -> None:
+    evaluation = evaluate_sensor_health(
+        {"temperature": 0.6},
+        {"temperature": {"A": object(), "B": None}},
+    )
+
+    assert evaluation.status == "degraded"
+    assert evaluation.degraded_sensors == ["temperature"]
+    assert evaluation.missing_sensors == ["temperature:B"]
+    assert evaluation.decisions == {"temperature": "fallback_a"}
 
 
 def test_maintenance_domain_detects_stale_active_buoy() -> None:

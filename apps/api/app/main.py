@@ -81,16 +81,13 @@ from .models import (
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
-from .domain.sensor_health import decide_channel
+from .domain.sensor_health import evaluate_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
-from .domain.sensor_completeness import missing_sensor_channels
 from .domain.telemetry import latest_usable_reading
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
-from .domain.sensor_health_rules import degraded_sensor_names
-from .domain.sensor_status import sensor_health_status
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1795,8 +1792,6 @@ def sensor_health(
         "acoustic_altimeter": {"A": acoustic_altimeter_a, "B": acoustic_altimeter_b},
         "underwater_acoustic": {"A": underwater_acoustic_a, "B": underwater_acoustic_b},
     }
-    missing_sensors = missing_sensor_channels(sensor_readings)
-
     deltas = {
         "temperature": (
             round(absolute_difference(temperature_a[0].temperature_celsius, temperature_b[0].temperature_celsius), 3)
@@ -1938,11 +1933,10 @@ def sensor_health(
             else None
         ),
     }
-    available = [value for value in deltas.values() if value is not None]
-    degraded_sensors = degraded_sensor_names(deltas)
-    status_value = sensor_health_status(
-        bool(available), bool(degraded_sensors), bool(missing_sensors)
-    )
+    health_evaluation = evaluate_sensor_health(deltas, sensor_readings)
+    degraded_sensors = health_evaluation.degraded_sensors
+    missing_sensors = health_evaluation.missing_sensors
+    status_value = health_evaluation.status
 
     for sensor, channels in sensor_readings.items():
         has_reading = any(channels.values())
@@ -1956,13 +1950,8 @@ def sensor_health(
             ) else 0
         )
 
-    decisions = {}
-    for sensor, channels in sensor_readings.items():
-        decisions[sensor] = decide_channel(
-            bool(channels["A"]),
-            bool(channels["B"]),
-            sensor in degraded_sensors,
-        )
+    decisions = health_evaluation.decisions
+    for sensor in sensor_readings:
         for decision in ("average", "fallback_a", "fallback_b", "invalid"):
             sensor_health_decision.labels(
                 buoy_id=buoy_id, sensor=sensor, decision=decision
