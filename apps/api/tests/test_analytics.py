@@ -28,6 +28,7 @@ from app.domain.directions import circular_difference_degrees
 from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference
 from app.domain.sensor_health_rules import degraded_sensor_names
+from app.domain.sensor_status import sensor_health_status
 from app.models import PressureReading
 
 
@@ -257,6 +258,13 @@ def test_sensor_health_rules_include_aggregate_degraded_families() -> None:
     )
 
     assert degraded == ["temperature", "wind_speed", "marine_current_speed", "wind", "marine_current"]
+
+
+def test_sensor_status_domain_distinguishes_available_health_states() -> None:
+    assert sensor_health_status(False, False, False) == "insufficient_data"
+    assert sensor_health_status(True, False, False) == "consistent"
+    assert sensor_health_status(True, True, False) == "degraded"
+    assert sensor_health_status(True, False, True) == "degraded"
 
 
 def test_battery_health_domain_service_detects_lower_degraded_device() -> None:

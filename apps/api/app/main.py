@@ -90,6 +90,7 @@ from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
 from .domain.sensor_health_rules import degraded_sensor_names
+from .domain.sensor_status import sensor_health_status
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
@@ -1939,9 +1940,9 @@ def sensor_health(
     }
     available = [value for value in deltas.values() if value is not None]
     degraded_sensors = degraded_sensor_names(deltas)
-    status_value = "insufficient_data"
-    if available:
-        status_value = "degraded" if degraded_sensors else "consistent"
+    status_value = sensor_health_status(
+        bool(available), bool(degraded_sensors), bool(missing_sensors)
+    )
 
     for sensor, channels in sensor_readings.items():
         has_reading = any(channels.values())
@@ -1955,7 +1956,6 @@ def sensor_health(
             ) else 0
         )
 
-    status_value = "degraded" if degraded_sensors or missing_sensors else status_value
     decisions = {}
     for sensor, channels in sensor_readings.items():
         decisions[sensor] = decide_channel(
