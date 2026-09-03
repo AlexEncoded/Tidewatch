@@ -1,6 +1,6 @@
 """Application service for the experimental wave-analysis use case."""
 
-from ..domain.wave import estimate_wave
+from ..domain.wave import estimate_wave, estimate_wave_period
 from ..models import WaveAnalysis
 from .ports import ImuTelemetryReader, LocationTelemetryReader
 
@@ -35,10 +35,19 @@ def analyze_wave_for_buoy(
         [reading.acceleration_z_mps2 for reading in imu_readings],
         imu_wave_height_factor=imu_wave_height_factor,
     )
+    period = estimate_wave_period(
+        [
+            (reading.measured_at, reading.altitude_meters)
+            for reading in locations
+            if reading.altitude_meters is not None
+            and getattr(reading, "measured_at", None) is not None
+        ]
+    )
     if estimate.estimated_wave_height_m is None:
         return WaveAnalysis(
             buoy_id=buoy_id,
             sample_count=max(len(imu_readings), len(locations)),
+            estimated_period_seconds=period,
         )
     return WaveAnalysis(
         buoy_id=buoy_id,
@@ -54,5 +63,6 @@ def analyze_wave_for_buoy(
             else None
         ),
         estimated_wave_height_m=round(estimate.estimated_wave_height_m, 3),
+        estimated_period_seconds=period,
         confidence=estimate.confidence,
     )

@@ -474,6 +474,7 @@ class WaveAnalysis(BaseModel):
     gnss_vertical_range_m: float | None = None
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None
+    estimated_period_seconds: float | None = None
     confidence: str = "insufficient_data"
 
 

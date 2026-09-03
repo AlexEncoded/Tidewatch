@@ -10,7 +10,7 @@ from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
 from app.domain.temperature import estimate_temperature
 from app.domain.pressure import estimate_pressure
-from app.domain.wave import estimate_wave
+from app.domain.wave import estimate_wave, estimate_wave_period
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.application.pressure_analysis import analyze_pressure_for_buoy
@@ -156,6 +156,17 @@ def test_wave_domain_service_accepts_calibration_factor() -> None:
     estimate = estimate_wave((2.0, 2.4), (9.7, 10.2), imu_wave_height_factor=0.2)
 
     assert estimate.estimated_wave_height_m == 0.25
+
+
+def test_wave_domain_service_estimates_period_from_upward_crossings() -> None:
+    samples = [
+        (datetime(2024, 1, 1, 0, 0), -1.0),
+        (datetime(2024, 1, 1, 0, 1), 1.0),
+        (datetime(2024, 1, 1, 0, 2), -1.0),
+        (datetime(2024, 1, 1, 0, 3), 1.0),
+    ]
+
+    assert estimate_wave_period(samples) == 120.0
 
 
 def test_wave_application_service_uses_a_telemetry_port() -> None:

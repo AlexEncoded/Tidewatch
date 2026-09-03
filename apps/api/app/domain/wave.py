@@ -1,6 +1,7 @@
 """Domain calculations for experimental wave estimation."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from statistics import fmean
 from typing import Sequence
 
@@ -14,6 +15,29 @@ class WaveEstimate:
     imu_vertical_acceleration_range_mps2: float | None
     estimated_wave_height_m: float | None
     confidence: str
+    estimated_period_seconds: float | None = None
+
+
+def estimate_wave_period(
+    samples: Sequence[tuple[datetime, float]],
+) -> float | None:
+    """Estimate wave period from consecutive upward mean crossings."""
+    if len(samples) < 3:
+        return None
+    mean = fmean(value for _, value in samples)
+    crossings = [
+        timestamp
+        for (_, previous_value), (timestamp, value) in zip(samples, samples[1:])
+        if previous_value < mean <= value
+    ]
+    if len(crossings) < 2:
+        return None
+    periods = [
+        (current - previous).total_seconds()
+        for previous, current in zip(crossings, crossings[1:])
+        if (current - previous).total_seconds() > 0
+    ]
+    return round(fmean(periods), 3) if periods else None
 
 
 def estimate_wave(
