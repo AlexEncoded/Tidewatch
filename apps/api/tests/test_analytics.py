@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
+import pytest
+
 from app.analytics import analyze_pressure, analyze_wave, distance_between_points
 from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
@@ -292,6 +294,11 @@ def test_direction_domain_uses_smallest_circular_difference() -> None:
 
 def test_vector_domain_calculates_euclidean_difference() -> None:
     assert euclidean_difference((1, 2, 3), (4, 6, 3)) == 5
+
+
+def test_vector_domain_rejects_different_dimensions() -> None:
+    with pytest.raises(ValueError, match="same dimension"):
+        euclidean_difference((1, 2), (1, 2, 3))
 
 
 def test_delta_domain_calculates_absolute_scalar_difference() -> None:
