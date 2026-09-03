@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import timezone
 from math import asin, cos, radians, sin, sqrt
 
 
@@ -53,9 +54,13 @@ def estimate_movement(locations: list) -> MovementEstimate:
         chronological[-1].latitude,
         chronological[-1].longitude,
     )
-    elapsed_seconds = (
-        chronological[-1].measured_at - chronological[0].measured_at
-    ).total_seconds()
+    start_time = chronological[0].measured_at
+    end_time = chronological[-1].measured_at
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=timezone.utc)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=timezone.utc)
+    elapsed_seconds = (end_time - start_time).total_seconds()
 
     return MovementEstimate(
         sample_count=len(locations),

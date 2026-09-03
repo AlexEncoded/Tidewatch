@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from app.analytics import analyze_pressure, analyze_wave, distance_between_points
@@ -59,6 +59,25 @@ def test_movement_analytics_adapter_preserves_buoy_contract() -> None:
 
     assert analysis.buoy_id == "TW-MOVE"
     assert analysis.confidence == "experimental"
+
+
+def test_movement_domain_normalizes_mixed_datetime_awareness() -> None:
+    locations = [
+        SimpleNamespace(
+            latitude=36.71,
+            longitude=3.11,
+            measured_at=datetime(2024, 1, 1, 0, 1, tzinfo=timezone.utc),
+        ),
+        SimpleNamespace(
+            latitude=36.7,
+            longitude=3.1,
+            measured_at=datetime(2024, 1, 1, 0, 0),
+        ),
+    ]
+
+    estimate = estimate_movement(locations)
+
+    assert estimate.average_speed_mps is not None
 
 
 def test_movement_application_service_uses_a_telemetry_port() -> None:
