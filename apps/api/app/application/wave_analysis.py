@@ -35,14 +35,13 @@ def analyze_wave_for_buoy(
         [reading.acceleration_z_mps2 for reading in imu_readings],
         imu_wave_height_factor=imu_wave_height_factor,
     )
-    period = estimate_wave_period(
-        [
-            (reading.measured_at, reading.altitude_meters)
-            for reading in locations
-            if reading.altitude_meters is not None
-            and getattr(reading, "measured_at", None) is not None
-        ]
-    )
+    period_samples = [
+        (reading.measured_at, reading.altitude_meters)
+        for reading in reversed(locations)
+        if reading.altitude_meters is not None
+        and getattr(reading, "measured_at", None) is not None
+    ]
+    period = estimate_wave_period(period_samples)
     if estimate.estimated_wave_height_m is None:
         return WaveAnalysis(
             buoy_id=buoy_id,
