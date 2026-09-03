@@ -118,6 +118,8 @@ lecturas IMU y devuelve una estimación experimental. `window` controla el
 número máximo de muestras. El factor IMU se puede ajustar con
 `WAVE_IMU_WAVE_HEIGHT_FACTOR` (por defecto `0.1`, limitado entre `0` y `10`);
 la calibración con datos reales sigue pendiente.
+When timestamps are available, the response also includes the experimental
+`estimated_period_seconds` derived from consecutive upward GNSS crossings.
 
 La acústica submarina acepta intensidades de eco entre `-200` y `100 dB`, con
 canales redundantes A/B y persistencia en PostgreSQL.
