@@ -741,6 +741,30 @@ def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
     assert "tidewatch_current_estimated_wave_height_m" in client.get("/metrics").text
 
 
+def test_wave_analysis_endpoint_exposes_experimental_period() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Wave Period Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+    for index, altitude in enumerate((-1.0, 1.0, -1.0, 1.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "location": {
+                    "latitude": 36.7,
+                    "longitude": 3.1,
+                    "altitude_meters": altitude,
+                    "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+                },
+            },
+        )
+        assert response.status_code == 202
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["estimated_period_seconds"] == 120.0
+    assert "tidewatch_current_estimated_wave_period_seconds" in client.get("/metrics").text
+
+
 def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:
     response = client.get("/api/v1/buoys/unknown/wave-analysis")
 
