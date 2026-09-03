@@ -284,6 +284,12 @@ current_estimated_wave_height_m = Gauge(
     ["buoy_id"],
 )
 
+current_estimated_wave_period_seconds = Gauge(
+    "tidewatch_current_estimated_wave_period_seconds",
+    "Experimental GNSS/IMU estimated wave period in seconds by buoy.",
+    ["buoy_id"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

@@ -335,6 +335,15 @@
       "targets": [{"expr": "tidewatch_current_estimated_wave_height_m", "legendFormat": "{{buoy_id}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "lengthm", "decimals": 3}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 38,
+      "title": "Experimental wave period",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 212},
+      "targets": [{"expr": "tidewatch_current_estimated_wave_period_seconds", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 1}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,

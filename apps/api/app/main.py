@@ -132,6 +132,7 @@ from .metrics import (
     current_gnss_hdop,
     current_gnss_satellites,
     current_estimated_wave_height_m,
+    current_estimated_wave_period_seconds,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -839,6 +840,10 @@ def buoy_wave_analysis(
     if result.estimated_wave_height_m is not None:
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(
             result.estimated_wave_height_m
+        )
+    if result.estimated_period_seconds is not None:
+        current_estimated_wave_period_seconds.labels(buoy_id=buoy_id).set(
+            result.estimated_period_seconds
         )
     return result
 
