@@ -765,6 +765,27 @@ def test_wave_analysis_endpoint_exposes_experimental_period() -> None:
     assert "tidewatch_current_estimated_wave_period_seconds" in client.get("/metrics").text
 
 
+def test_wave_analysis_endpoint_handles_insufficient_samples() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Sparse Wave Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "location": {
+                "latitude": 36.7,
+                "longitude": 3.1,
+                "altitude_meters": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 202
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["estimated_wave_height_m"] is None
+    assert analysis.json()["estimated_period_seconds"] is None
+
+
 def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:
     response = client.get("/api/v1/buoys/unknown/wave-analysis")
 
