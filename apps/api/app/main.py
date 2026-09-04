@@ -22,6 +22,7 @@ from .models import (
     BuoyCreate,
     Device,
     DeviceCreate,
+    DeviceStatusUpdate,
     BuoyHealth,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -278,6 +279,26 @@ def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_devices(buoy_id)
+
+
+@app.patch(
+    "/api/v1/buoys/{buoy_id}/devices/{device_id}/status",
+    response_model=Device,
+    tags=["devices"],
+)
+def update_device_status(
+    buoy_id: str,
+    device_id: str,
+    payload: DeviceStatusUpdate,
+    db: Session = Depends(get_db),
+) -> Device:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    device = repository.update_device_status(buoy_id, device_id, payload)
+    if device is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
+    return device
 
 
 @app.post(

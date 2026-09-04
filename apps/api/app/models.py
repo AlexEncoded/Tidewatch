@@ -21,6 +21,10 @@ class DeviceCreate(BaseModel):
     firmware_version: str | None = Field(default=None, max_length=50)
 
 
+class DeviceStatusUpdate(BaseModel):
+    status: Literal["active", "maintenance", "inactive"]
+
+
 class Device(BaseModel):
     buoy_id: str
     device_id: str

@@ -159,6 +159,13 @@ def test_buoy_can_register_two_physical_devices() -> None:
     )
     assert duplicate_channel.status_code == 409
 
+    status_update = client.patch(
+        f"/api/v1/buoys/{buoy_id}/devices/buoy-unit-b/status",
+        json={"status": "maintenance"},
+    )
+    assert status_update.status_code == 200
+    assert status_update.json()["status"] == "maintenance"
+
 
 def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Batch Buoy"}).json()["id"]

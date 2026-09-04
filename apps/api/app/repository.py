@@ -32,6 +32,7 @@ from .entities import (
 from .models import (
     Buoy,
     DeviceCreate,
+    DeviceStatusUpdate,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -180,6 +181,17 @@ class BuoyRepository:
     def list_devices(self, buoy_id: str) -> list[DeviceEntity]:
         query = select(DeviceEntity).where(DeviceEntity.buoy_id == buoy_id).order_by(DeviceEntity.sensor_channel)
         return list(self.db.scalars(query).all())
+
+    def update_device_status(
+        self, buoy_id: str, device_id: str, update: DeviceStatusUpdate
+    ) -> DeviceEntity | None:
+        device = self.db.get(DeviceEntity, device_id)
+        if device is None or device.buoy_id != buoy_id:
+            return None
+        device.status = update.status
+        self.db.commit()
+        self.db.refresh(device)
+        return device
 
     def add_temperature(self, reading: TemperatureReading) -> TemperatureReadingEntity:
         entity = TemperatureReadingEntity(
