@@ -34,13 +34,17 @@ def estimate_wave_period(
         for timestamp, value in samples
     ]
     mean = fmean(value for _, value in normalized_samples)
-    crossings = [
-        timestamp
-        for (_, previous_value), (timestamp, value) in zip(
-            normalized_samples, normalized_samples[1:]
+    crossings = []
+    for (previous_timestamp, previous_value), (timestamp, value) in zip(
+        normalized_samples, normalized_samples[1:]
+    ):
+        if previous_value >= mean or value < mean or value == previous_value:
+            continue
+        crossing_fraction = (mean - previous_value) / (value - previous_value)
+        crossings.append(
+            previous_timestamp
+            + (timestamp - previous_timestamp) * crossing_fraction
         )
-        if previous_value < mean <= value
-    ]
     if len(crossings) < 2:
         return None
     periods = [
