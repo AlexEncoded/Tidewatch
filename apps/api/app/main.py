@@ -845,6 +845,8 @@ def buoy_wave_analysis(
         current_estimated_wave_period_seconds.labels(buoy_id=buoy_id).set(
             result.estimated_period_seconds
         )
+    else:
+        current_estimated_wave_period_seconds.remove(buoy_id)
     return result
 
 
