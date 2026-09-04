@@ -76,6 +76,24 @@ class BuoyEntity(Base):
     location_readings: Mapped[list["BuoyLocationReadingEntity"]] = relationship(
         back_populates="buoy", cascade="all, delete-orphan"
     )
+    devices: Mapped[list["DeviceEntity"]] = relationship(
+        back_populates="buoy", cascade="all, delete-orphan"
+    )
+
+
+class DeviceEntity(Base):
+    __tablename__ = "devices"
+    __table_args__ = (
+        UniqueConstraint("buoy_id", "sensor_channel", name="uq_devices_buoy_channel"),
+    )
+
+    device_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
+    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False)
+    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    buoy: Mapped[BuoyEntity] = relationship(back_populates="devices")
 
 
 class BuoyLocationReadingEntity(Base):

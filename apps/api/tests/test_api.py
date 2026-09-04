@@ -8,6 +8,7 @@ from sqlalchemy import delete
 from app.database import SessionLocal, create_tables, resolve_database_url
 from app.entities import (
     BuoyEntity,
+    DeviceEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
     ImuReadingEntity,
@@ -57,6 +58,7 @@ def test_database_url_can_be_resolved_from_mounted_secret(tmp_path, monkeypatch)
 
 def setup_function() -> None:
     with SessionLocal() as db:
+        db.execute(delete(DeviceEntity))
         db.execute(delete(PressureReadingEntity))
         db.execute(delete(SalinityReadingEntity))
         db.execute(delete(BatteryReadingEntity))
@@ -131,6 +133,31 @@ def test_create_buoy_and_record_temperature() -> None:
     assert reading.status_code == 201
     assert reading.json()["buoy_id"] == buoy_id
     assert reading.json()["temperature_celsius"] == 19.7
+
+
+def test_buoy_can_register_two_physical_devices() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Redundant Device Buoy"}).json()["id"]
+
+    device_a = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "buoy-unit-a", "sensor_channel": "A", "firmware_version": "3.0.0"},
+    )
+    device_b = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "buoy-unit-b", "sensor_channel": "B"},
+    )
+
+    assert device_a.status_code == 201
+    assert device_a.json()["buoy_id"] == buoy_id
+    assert device_a.json()["status"] == "active"
+    assert device_b.status_code == 201
+    assert [device["sensor_channel"] for device in client.get(f"/api/v1/buoys/{buoy_id}/devices").json()] == ["A", "B"]
+
+    duplicate_channel = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "buoy-unit-a2", "sensor_channel": "A"},
+    )
+    assert duplicate_channel.status_code == 409
 
 
 def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:

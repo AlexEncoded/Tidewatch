@@ -16,9 +16,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
+from .entities import DeviceEntity
 from .models import (
     Buoy,
     BuoyCreate,
+    Device,
+    DeviceCreate,
     BuoyHealth,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -244,6 +247,37 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
         created_at=datetime.now(timezone.utc),
     )
     return BuoyRepository(db).create_buoy(buoy)
+
+
+@app.post(
+    "/api/v1/buoys/{buoy_id}/devices",
+    response_model=Device,
+    status_code=status.HTTP_201_CREATED,
+    tags=["devices"],
+)
+def register_device(
+    buoy_id: str, payload: DeviceCreate, db: Session = Depends(get_db)
+) -> Device:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    if repository.db.get(DeviceEntity, payload.device_id) is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Device already registered")
+    if any(device.sensor_channel == payload.sensor_channel for device in repository.list_devices(buoy_id)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Sensor channel already registered")
+    return repository.create_device(buoy_id, payload)
+
+
+@app.get(
+    "/api/v1/buoys/{buoy_id}/devices",
+    response_model=list[Device],
+    tags=["devices"],
+)
+def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_devices(buoy_id)
 
 
 @app.post(

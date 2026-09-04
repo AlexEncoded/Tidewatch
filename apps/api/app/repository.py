@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .entities import (
     BuoyEntity,
+    DeviceEntity,
     SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
@@ -30,6 +31,7 @@ from .entities import (
 )
 from .models import (
     Buoy,
+    DeviceCreate,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -161,6 +163,23 @@ class BuoyRepository:
 
     def list_buoys(self) -> list[BuoyEntity]:
         return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
+
+    def create_device(self, buoy_id: str, device: DeviceCreate) -> DeviceEntity:
+        entity = DeviceEntity(
+            device_id=device.device_id,
+            buoy_id=buoy_id,
+            sensor_channel=device.sensor_channel,
+            firmware_version=device.firmware_version,
+            registered_at=datetime.now(timezone.utc),
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        return entity
+
+    def list_devices(self, buoy_id: str) -> list[DeviceEntity]:
+        query = select(DeviceEntity).where(DeviceEntity.buoy_id == buoy_id).order_by(DeviceEntity.sensor_channel)
+        return list(self.db.scalars(query).all())
 
     def add_temperature(self, reading: TemperatureReading) -> TemperatureReadingEntity:
         entity = TemperatureReadingEntity(
