@@ -841,6 +841,11 @@ def buoy_wave_analysis(
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(
             result.estimated_wave_height_m
         )
+    else:
+        try:
+            current_estimated_wave_height_m.remove(buoy_id)
+        except KeyError:
+            pass
     if result.estimated_period_seconds is not None:
         current_estimated_wave_period_seconds.labels(buoy_id=buoy_id).set(
             result.estimated_period_seconds
