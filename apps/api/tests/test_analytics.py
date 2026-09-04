@@ -169,6 +169,17 @@ def test_wave_domain_service_estimates_period_from_upward_crossings() -> None:
     assert estimate_wave_period(samples) == 120.0
 
 
+def test_wave_period_domain_normalizes_mixed_datetime_awareness() -> None:
+    samples = [
+        (datetime(2024, 1, 1, 0, 0), -1.0),
+        (datetime(2024, 1, 1, 0, 1, tzinfo=timezone.utc), 1.0),
+        (datetime(2024, 1, 1, 0, 2), -1.0),
+        (datetime(2024, 1, 1, 0, 3, tzinfo=timezone.utc), 1.0),
+    ]
+
+    assert estimate_wave_period(samples) == 120.0
+
+
 def test_wave_application_service_uses_a_telemetry_port() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):

@@ -1,7 +1,7 @@
 """Domain calculations for experimental wave estimation."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from statistics import fmean
 from typing import Sequence
 
@@ -24,10 +24,21 @@ def estimate_wave_period(
     """Estimate wave period from consecutive upward mean crossings."""
     if len(samples) < 3:
         return None
-    mean = fmean(value for _, value in samples)
+    normalized_samples = [
+        (
+            timestamp.replace(tzinfo=timezone.utc)
+            if timestamp.tzinfo is None
+            else timestamp,
+            value,
+        )
+        for timestamp, value in samples
+    ]
+    mean = fmean(value for _, value in normalized_samples)
     crossings = [
         timestamp
-        for (_, previous_value), (timestamp, value) in zip(samples, samples[1:])
+        for (_, previous_value), (timestamp, value) in zip(
+            normalized_samples, normalized_samples[1:]
+        )
         if previous_value < mean <= value
     ]
     if len(crossings) < 2:
