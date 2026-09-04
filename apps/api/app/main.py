@@ -846,7 +846,10 @@ def buoy_wave_analysis(
             result.estimated_period_seconds
         )
     else:
-        current_estimated_wave_period_seconds.remove(buoy_id)
+        try:
+            current_estimated_wave_period_seconds.remove(buoy_id)
+        except KeyError:
+            pass
     return result
 
 
