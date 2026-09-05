@@ -32,6 +32,7 @@ class Device(BaseModel):
     firmware_version: str | None = None
     status: Literal["active", "maintenance", "inactive"] = "active"
     registered_at: datetime
+    last_seen_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -388,6 +389,7 @@ class BatteryAnalysis(BaseModel):
 
 
 class TelemetryBatchCreate(BaseModel):
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)

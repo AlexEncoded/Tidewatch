@@ -60,6 +60,15 @@ from .models import (
 )
 
 
+def _is_newer(candidate: datetime, previous: datetime | None) -> bool:
+    """Compare timestamps consistently across PostgreSQL and SQLite."""
+    if previous is None:
+        return True
+    candidate_utc = candidate.astimezone(timezone.utc) if candidate.tzinfo else candidate.replace(tzinfo=timezone.utc)
+    previous_utc = previous.astimezone(timezone.utc) if previous.tzinfo else previous.replace(tzinfo=timezone.utc)
+    return candidate_utc > previous_utc
+
+
 class BuoyRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -182,6 +191,16 @@ class BuoyRepository:
         query = select(DeviceEntity).where(DeviceEntity.buoy_id == buoy_id).order_by(DeviceEntity.sensor_channel)
         return list(self.db.scalars(query).all())
 
+    def get_device(self, device_id: str) -> DeviceEntity | None:
+        return self.db.get(DeviceEntity, device_id)
+
+    def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
+        if device.last_seen_at is None or seen_at > device.last_seen_at:
+            device.last_seen_at = seen_at
+            self.db.commit()
+            self.db.refresh(device)
+        return device
+
     def update_device_status(
         self, buoy_id: str, device_id: str, update: DeviceStatusUpdate
     ) -> DeviceEntity | None:
@@ -207,9 +226,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
             self.db.refresh(buoy)
@@ -248,9 +265,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -288,9 +303,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -333,9 +346,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -375,9 +386,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -416,9 +425,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -459,9 +466,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -501,9 +506,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -543,9 +546,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -585,9 +586,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -625,9 +624,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -671,9 +668,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -715,9 +710,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -755,7 +748,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity
@@ -779,7 +772,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return entity
 
@@ -802,7 +795,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return entity
 
@@ -825,7 +818,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return entity
 
@@ -844,7 +837,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return entity
 
@@ -865,9 +858,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and (
-            buoy.last_seen_at is None or reading.measured_at > buoy.last_seen_at
-        ):
+        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return entity

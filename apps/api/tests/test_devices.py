@@ -61,3 +61,36 @@ def test_device_status_cannot_be_changed_from_another_buoy(client):
     )
     assert response.status_code == 404
     assert client.get(path).json()[0]["status"] == "active"
+
+
+def test_batch_telemetry_records_device_heartbeat(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Heartbeat"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "heartbeat-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"device_id": "heartbeat-unit", "location": {"latitude": 1, "longitude": 2}},
+    )
+
+    assert response.status_code == 202
+    device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
+    assert device["last_seen_at"] is not None
+
+
+def test_batch_telemetry_rejects_device_from_another_buoy(client):
+    owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
+    other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{owner}/devices",
+        json={"device_id": "owned-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{other}/telemetry",
+        json={"device_id": "owned-unit", "location": {"latitude": 1, "longitude": 2}},
+    )
+
+    assert response.status_code == 404

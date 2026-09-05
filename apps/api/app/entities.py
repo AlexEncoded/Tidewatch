@@ -93,6 +93,7 @@ class DeviceEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
     registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="devices")
 
 

@@ -328,6 +328,11 @@ def ingest_telemetry(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    if payload.device_id is not None:
+        device = repository.get_device(payload.device_id)
+        if device is None or device.buoy_id != buoy_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
+        repository.mark_device_seen(device, datetime.now(timezone.utc))
 
     if payload.location is not None:
         location = BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())

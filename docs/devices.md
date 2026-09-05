@@ -21,6 +21,11 @@ channels are unique within a buoy. Duplicate IDs or occupied channels return
 `GET /api/v1/buoys/{buoy_id}/devices` lists registered units in channel order.
 An existing buoy with no registered devices returns an empty list.
 
+Telemetry batches may include the optional `device_id` field. When present,
+the API verifies that the unit belongs to the buoy and records its latest
+communication time. A device from another buoy or an unknown device returns
+`404`. Batches without `device_id` remain supported for legacy senders.
+
 Use `PATCH /api/v1/buoys/{buoy_id}/devices/{device_id}/status` with
 `{"status": "maintenance"}` to update a unit. Allowed states are `active`,
 `maintenance` and `inactive`. Invalid states return `422`; unknown buoys,
