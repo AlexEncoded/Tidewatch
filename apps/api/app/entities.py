@@ -201,6 +201,7 @@ class WindReadingEntity(Base):
     wind_speed_mps: Mapped[float] = mapped_column(Float, nullable=False)
     wind_direction_degrees: Mapped[float] = mapped_column(Float, nullable=False)
     sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")

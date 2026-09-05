@@ -481,7 +481,10 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.wind:
-        reading = WindReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        reading_data = reading_payload.model_dump()
+        if payload.device_id is not None and reading_data["device_id"] is None:
+            reading_data["device_id"] = payload.device_id
+        reading = WindReading(buoy_id=buoy_id, **reading_data)
         repository.add_wind(reading)
         wind_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel

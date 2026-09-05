@@ -422,6 +422,7 @@ class BuoyRepository:
             wind_speed_mps=reading.wind_speed_mps,
             wind_direction_degrees=reading.wind_direction_degrees,
             sensor_channel=reading.sensor_channel,
+            device_id=reading.device_id,
             sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version,
             quality=reading.quality,

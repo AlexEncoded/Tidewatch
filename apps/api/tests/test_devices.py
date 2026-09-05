@@ -162,6 +162,25 @@ def test_batch_ambient_light_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/ambient-light").json()[0]["device_id"] == "light-unit"
 
 
+def test_batch_wind_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Wind Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "wind-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "wind-unit",
+            "wind": [{"wind_speed_mps": 4, "wind_direction_degrees": 90}],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/wind").json()[0]["device_id"] == "wind-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
