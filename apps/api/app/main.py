@@ -109,6 +109,7 @@ from .metrics import (
     battery_device_percent,
     buoy_movement_speed_mps,
     buoy_last_seen_timestamp_seconds,
+    device_last_seen_timestamp_seconds,
     current_pressure_kpa,
     current_salinity_psu,
     current_temperature_celsius,
@@ -332,7 +333,13 @@ def ingest_telemetry(
         device = repository.get_device(payload.device_id)
         if device is None or device.buoy_id != buoy_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
-        repository.mark_device_seen(device, datetime.now(timezone.utc))
+        seen_at = datetime.now(timezone.utc)
+        repository.mark_device_seen(device, seen_at)
+        device_last_seen_timestamp_seconds.labels(
+            buoy_id=buoy_id,
+            device_id=device.device_id,
+            sensor_channel=device.sensor_channel,
+        ).set(seen_at.timestamp())
 
     if payload.location is not None:
         location = BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())

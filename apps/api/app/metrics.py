@@ -308,6 +308,12 @@ buoy_last_seen_timestamp_seconds = Gauge(
     ["buoy_id"],
 )
 
+device_last_seen_timestamp_seconds = Gauge(
+    "tidewatch_device_last_seen_timestamp_seconds",
+    "Unix timestamp of the most recent batch received from each physical device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
 battery_percent = Gauge(
     "tidewatch_battery_percent",
     "Most recent battery percentage for each buoy.",

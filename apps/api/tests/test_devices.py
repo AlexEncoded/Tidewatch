@@ -78,6 +78,7 @@ def test_batch_telemetry_records_device_heartbeat(client):
     assert response.status_code == 202
     device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
     assert device["last_seen_at"] is not None
+    assert "tidewatch_device_last_seen_timestamp_seconds" in client.get("/metrics").text
 
 
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
