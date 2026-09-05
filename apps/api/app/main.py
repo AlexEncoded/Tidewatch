@@ -383,7 +383,10 @@ def ingest_telemetry(
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
-        reading = TemperatureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        reading_data = reading_payload.model_dump()
+        if payload.device_id is not None and reading_data["device_id"] is None:
+            reading_data["device_id"] = payload.device_id
+        reading = TemperatureReading(buoy_id=buoy_id, **reading_data)
         repository.add_temperature(reading)
         temperature_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
@@ -399,7 +402,10 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.pressures:
-        reading = PressureReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        reading_data = reading_payload.model_dump()
+        if payload.device_id is not None and reading_data["device_id"] is None:
+            reading_data["device_id"] = payload.device_id
+        reading = PressureReading(buoy_id=buoy_id, **reading_data)
         repository.add_pressure(reading)
         pressure_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
@@ -412,7 +418,10 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.salinity:
-        reading = SalinityReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        reading_data = reading_payload.model_dump()
+        if payload.device_id is not None and reading_data["device_id"] is None:
+            reading_data["device_id"] = payload.device_id
+        reading = SalinityReading(buoy_id=buoy_id, **reading_data)
         repository.add_salinity(reading)
         salinity_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
