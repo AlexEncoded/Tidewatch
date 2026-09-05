@@ -342,7 +342,10 @@ def ingest_telemetry(
         ).set(seen_at.timestamp())
 
     if payload.location is not None:
-        location = BuoyLocationReading(buoy_id=buoy_id, **payload.location.model_dump())
+        location_data = payload.location.model_dump()
+        if payload.device_id is not None and location_data["device_id"] is None:
+            location_data["device_id"] = payload.device_id
+        location = BuoyLocationReading(buoy_id=buoy_id, **location_data)
         repository.add_location(location)
         if location.altitude_meters is not None:
             current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)

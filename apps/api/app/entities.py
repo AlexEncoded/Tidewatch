@@ -108,6 +108,7 @@ class BuoyLocationReadingEntity(Base):
     speed_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
     hdop: Mapped[float | None] = mapped_column(Float, nullable=True)
     satellites: Mapped[int | None] = mapped_column(nullable=True)
+    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="location_readings")
 

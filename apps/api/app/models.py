@@ -47,6 +47,7 @@ class BuoyLocationReadingCreate(BuoyLocationUpdate):
     speed_mps: float | None = Field(default=None, ge=0, le=100)
     hdop: float | None = Field(default=None, gt=0, le=100)
     satellites: int | None = Field(default=None, ge=0, le=100)
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

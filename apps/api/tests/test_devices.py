@@ -81,6 +81,22 @@ def test_batch_telemetry_records_device_heartbeat(client):
     assert "tidewatch_device_last_seen_timestamp_seconds" in client.get("/metrics").text
 
 
+def test_batch_location_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "GNSS Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "gnss-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"device_id": "gnss-unit", "location": {"latitude": 1, "longitude": 2}},
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]["device_id"] == "gnss-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]

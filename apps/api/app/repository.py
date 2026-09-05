@@ -121,6 +121,7 @@ class BuoyRepository:
             speed_mps=reading.speed_mps,
             hdop=reading.hdop,
             satellites=reading.satellites,
+            device_id=reading.device_id,
             measured_at=reading.measured_at,
         )
         self.db.add(entity)
