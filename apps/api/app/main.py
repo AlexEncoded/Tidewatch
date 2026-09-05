@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .database import get_db
@@ -266,7 +267,19 @@ def register_device(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Device already registered")
     if any(device.sensor_channel == payload.sensor_channel for device in repository.list_devices(buoy_id)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Sensor channel already registered")
-    return repository.create_device(buoy_id, payload)
+    try:
+        return repository.create_device(buoy_id, payload)
+    except IntegrityError:
+        db.rollback()
+        if db.get(DeviceEntity, payload.device_id) is not None or any(
+            device.sensor_channel == payload.sensor_channel
+            for device in repository.list_devices(buoy_id)
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Device or sensor channel already registered",
+            ) from None
+        raise
 
 
 @app.get(
