@@ -131,6 +131,7 @@ class ImuReadingCreate(BaseModel):
     angular_velocity_y_dps: float = Field(ge=-2000, le=2000)
     angular_velocity_z_dps: float = Field(ge=-2000, le=2000)
     sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
     quality: Literal["good", "suspect", "invalid"] = "good"

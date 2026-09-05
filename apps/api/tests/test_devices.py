@@ -97,6 +97,32 @@ def test_batch_location_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]["device_id"] == "gnss-unit"
 
 
+def test_batch_imu_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "IMU Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "imu-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "imu-unit",
+            "imu": [{
+                "acceleration_x_mps2": 0,
+                "acceleration_y_mps2": 0,
+                "acceleration_z_mps2": 9.8,
+                "angular_velocity_x_dps": 0,
+                "angular_velocity_y_dps": 0,
+                "angular_velocity_z_dps": 0,
+            }],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/imu").json()[0]["device_id"] == "imu-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]

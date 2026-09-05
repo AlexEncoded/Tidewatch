@@ -338,6 +338,7 @@ class BuoyRepository:
             angular_velocity_y_dps=reading.angular_velocity_y_dps,
             angular_velocity_z_dps=reading.angular_velocity_z_dps,
             sensor_channel=reading.sensor_channel,
+            device_id=reading.device_id,
             sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version,
             quality=reading.quality,

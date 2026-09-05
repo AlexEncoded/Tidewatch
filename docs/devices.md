@@ -33,4 +33,5 @@ unknown devices and devices belonging to another buoy return `404`.
 
 The registry currently records administrative identity and status. Changing
 a device's status does not change the buoy's status or filter telemetry.
-Linking sensor readings to registered device IDs remains future work.
+Batch GNSS positions and IMU readings now retain their originating
+`device_id`; other sensor families will be associated incrementally.
