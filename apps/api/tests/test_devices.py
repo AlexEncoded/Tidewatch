@@ -321,6 +321,25 @@ def test_batch_humidity_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/humidity").json()[0]["device_id"] == "humidity-unit"
 
 
+def test_batch_air_temperature_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Air Temperature Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "air-temperature-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "air-temperature-unit",
+            "air_temperature": [{"air_temperature_celsius": 22}],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/air-temperature").json()[0]["device_id"] == "air-temperature-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
