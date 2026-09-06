@@ -216,6 +216,25 @@ def test_batch_turbidity_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/turbidity").json()[0]["device_id"] == "turbidity-unit"
 
 
+def test_batch_dissolved_oxygen_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Oxygen Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "oxygen-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "oxygen-unit",
+            "dissolved_oxygen": [{"dissolved_oxygen_mg_l": 8}],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/dissolved-oxygen").json()[0]["device_id"] == "oxygen-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
