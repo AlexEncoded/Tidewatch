@@ -251,6 +251,25 @@ def test_batch_ph_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/ph").json()[0]["device_id"] == "ph-unit"
 
 
+def test_batch_conductivity_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Conductivity Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "conductivity-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "conductivity-unit",
+            "conductivity": [{"conductivity_us_cm": 50000}],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/conductivity").json()[0]["device_id"] == "conductivity-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
