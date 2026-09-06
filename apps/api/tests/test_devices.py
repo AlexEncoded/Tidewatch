@@ -200,6 +200,22 @@ def test_batch_marine_current_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/marine-current").json()[0]["device_id"] == "current-unit"
 
 
+def test_batch_turbidity_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Turbidity Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "turbidity-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"device_id": "turbidity-unit", "turbidity": [{"turbidity_ntu": 12}]},
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/turbidity").json()[0]["device_id"] == "turbidity-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
