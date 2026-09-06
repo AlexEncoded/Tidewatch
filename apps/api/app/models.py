@@ -280,6 +280,7 @@ class ChlorophyllAReading(ChlorophyllAReadingCreate):
 class RainfallReadingCreate(BaseModel):
     rainfall_mm_h: float = Field(ge=0, le=500)
     sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
     quality: Literal["good", "suspect", "invalid"] = "good"
