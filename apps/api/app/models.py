@@ -296,6 +296,7 @@ class RainfallReading(RainfallReadingCreate):
 class HumidityReadingCreate(BaseModel):
     humidity_percent: float = Field(ge=0, le=100)
     sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
     quality: Literal["good", "suspect", "invalid"] = "good"

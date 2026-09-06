@@ -753,6 +753,7 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             humidity_percent=reading.humidity_percent,
             sensor_channel=reading.sensor_channel,
+            device_id=reading.device_id,
             sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version,
             quality=reading.quality,
