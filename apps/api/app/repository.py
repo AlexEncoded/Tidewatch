@@ -671,6 +671,7 @@ class BuoyRepository:
             buoy_id=reading.buoy_id,
             chlorophyll_a_ug_l=reading.chlorophyll_a_ug_l,
             sensor_channel=reading.sensor_channel,
+            device_id=reading.device_id,
             sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version,
             quality=reading.quality,
