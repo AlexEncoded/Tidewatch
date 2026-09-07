@@ -805,7 +805,8 @@ class BuoyRepository:
     def add_atmospheric_pressure(self, reading: AtmosphericPressureReading) -> AtmosphericPressureReadingEntity:
         entity = AtmosphericPressureReadingEntity(
             buoy_id=reading.buoy_id, atmospheric_pressure_kpa=reading.atmospheric_pressure_kpa,
-            sensor_channel=reading.sensor_channel, sensor_id=reading.sensor_id,
+            sensor_channel=reading.sensor_channel, device_id=reading.device_id,
+            sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version, quality=reading.quality,
             measured_at=reading.measured_at,
         )
