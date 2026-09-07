@@ -48,6 +48,14 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall -q app tests alembic
 
+      - name: Wait for database
+        run: |
+          for attempt in {1..30}; do
+            pg_isready -h localhost -p 5432 -U tidewatch -d tidewatch && exit 0
+            sleep 1
+          done
+          exit 1
+
       - name: Apply database migrations
         run: alembic upgrade head
 
