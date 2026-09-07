@@ -849,7 +849,8 @@ class BuoyRepository:
     def add_underwater_acoustic(self, reading: UnderwaterAcousticReading) -> UnderwaterAcousticReadingEntity:
         entity = UnderwaterAcousticReadingEntity(
             buoy_id=reading.buoy_id, echo_intensity_db=reading.echo_intensity_db,
-            sensor_channel=reading.sensor_channel, sensor_id=reading.sensor_id,
+            sensor_channel=reading.sensor_channel, device_id=reading.device_id,
+            sensor_id=reading.sensor_id,
             firmware_version=reading.firmware_version, quality=reading.quality,
             measured_at=reading.measured_at,
         )

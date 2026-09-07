@@ -673,7 +673,10 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.underwater_acoustic:
-        reading = UnderwaterAcousticReading(buoy_id=buoy_id, **reading_payload.model_dump())
+        reading_data = reading_payload.model_dump()
+        if payload.device_id is not None and reading_data["device_id"] is None:
+            reading_data["device_id"] = payload.device_id
+        reading = UnderwaterAcousticReading(buoy_id=buoy_id, **reading_data)
         repository.add_underwater_acoustic(reading)
         underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)

@@ -378,6 +378,25 @@ def test_batch_acoustic_altimeter_keeps_originating_device(client):
     assert client.get(f"/api/v1/buoys/{buoy_id}/acoustic-altimeter").json()[0]["device_id"] == "altimeter-unit"
 
 
+def test_batch_underwater_acoustic_keeps_originating_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Underwater Acoustic Device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "underwater-acoustic-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "underwater-acoustic-unit",
+            "underwater_acoustic": [{"echo_intensity_db": -42}],
+        },
+    )
+
+    assert response.status_code == 202
+    assert client.get(f"/api/v1/buoys/{buoy_id}/underwater-acoustic").json()[0]["device_id"] == "underwater-acoustic-unit"
+
+
 def test_batch_telemetry_rejects_device_from_another_buoy(client):
     owner = client.post("/api/v1/buoys", json={"name": "Owner"}).json()["id"]
     other = client.post("/api/v1/buoys", json={"name": "Other"}).json()["id"]
