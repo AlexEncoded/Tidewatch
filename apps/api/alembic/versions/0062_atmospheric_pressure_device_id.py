@@ -12,15 +12,6 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    if bind.dialect.name == "postgresql":
-        op.execute(
-            sa.text(
-                "ALTER TABLE atmospheric_pressure_readings "
-                "ADD COLUMN IF NOT EXISTS device_id VARCHAR(100)"
-            )
-        )
-        return
-
     inspector = sa.inspect(bind)
     columns = {column["name"] for column in inspector.get_columns("atmospheric_pressure_readings")}
     if "device_id" not in columns:
