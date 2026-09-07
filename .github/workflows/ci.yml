@@ -56,10 +56,11 @@ jobs:
           done
           exit 1
 
-      - name: Apply database migrations
-        run: |
-          alembic upgrade 0062_atmospheric_pressure_device_id
-          alembic upgrade head
+      - name: Apply atmospheric pressure migration
+        run: alembic upgrade 0062_atmospheric_pressure_device_id
+
+      - name: Apply remaining database migrations
+        run: alembic upgrade head
 
       - name: Run tests
         run: pytest
