@@ -56,6 +56,9 @@ jobs:
           done
           exit 1
 
+      - name: Apply migrations through air temperature
+        run: alembic upgrade 0061_air_temperature_device_id
+
       - name: Apply atmospheric pressure migration
         run: alembic upgrade 0062_atmospheric_pressure_device_id
 
