@@ -19,12 +19,6 @@ def upgrade() -> None:
                 "ADD COLUMN IF NOT EXISTS device_id VARCHAR(100)"
             )
         )
-        op.execute(
-            sa.text(
-                "CREATE INDEX IF NOT EXISTS ix_atmospheric_pressure_readings_device_id "
-                "ON atmospheric_pressure_readings (device_id)"
-            )
-        )
         return
 
     inspector = sa.inspect(bind)
@@ -34,18 +28,7 @@ def upgrade() -> None:
             "atmospheric_pressure_readings",
             sa.Column("device_id", sa.String(length=100), nullable=True),
         )
-    indexes = {index["name"] for index in inspector.get_indexes("atmospheric_pressure_readings")}
-    if "ix_atmospheric_pressure_readings_device_id" not in indexes:
-        op.create_index(
-            "ix_atmospheric_pressure_readings_device_id",
-            "atmospheric_pressure_readings",
-            ["device_id"],
-        )
 
 
 def downgrade() -> None:
-    op.drop_index(
-        "ix_atmospheric_pressure_readings_device_id",
-        table_name="atmospheric_pressure_readings",
-    )
     op.drop_column("atmospheric_pressure_readings", "device_id")
