@@ -5,7 +5,7 @@ import sqlalchemy as sa
 
 
 revision = "0063_acoustic_altimeter_device_id"
-down_revision = "0062_atmospheric_pressure_device_id"
+down_revision = "0062_atm_pressure_device_id"
 branch_labels = None
 depends_on = None
 

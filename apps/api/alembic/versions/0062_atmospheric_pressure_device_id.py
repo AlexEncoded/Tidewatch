@@ -4,7 +4,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0062_atmospheric_pressure_device_id"
+revision = "0062_atm_pressure_device_id"
 down_revision = "0061_air_temperature_device_id"
 branch_labels = None
 depends_on = None
