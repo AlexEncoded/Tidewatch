@@ -97,6 +97,7 @@ from .domain.deltas import absolute_difference
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.device_registration import register_device as register_device_use_case
 from .application.device_status import update_device_status as update_device_status_use_case
+from .application.device_heartbeat import record_device_heartbeat
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -331,13 +332,10 @@ def ingest_telemetry(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if payload.device_id is not None:
-        device = repository.get_device(payload.device_id)
         try:
-            validate_device_ownership(device, buoy_id)
+            device, seen_at = record_device_heartbeat(repository, buoy_id, payload.device_id)
         except DeviceOwnershipError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
-        seen_at = datetime.now(timezone.utc)
-        repository.mark_device_seen(device, seen_at)
         device_last_seen_timestamp_seconds.labels(
             buoy_id=buoy_id,
             device_id=device.device_id,

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -10,6 +11,7 @@ from app.domain.devices import (
 )
 from app.application.device_registration import register_device
 from app.application.device_status import update_device_status
+from app.application.device_heartbeat import record_device_heartbeat
 
 
 def test_device_registration_accepts_the_other_redundant_channel() -> None:
@@ -114,3 +116,30 @@ def test_update_device_status_application_service_rejects_missing_device() -> No
 
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
         update_device_status(Registry(), "buoy-1", "missing", SimpleNamespace(status="active"))
+
+
+def test_record_device_heartbeat_updates_registry_with_supplied_time() -> None:
+    class Registry:
+        def get_device(self, device_id):
+            return SimpleNamespace(device_id=device_id, buoy_id="buoy-1")
+
+        def mark_device_seen(self, device, seen_at):
+            return SimpleNamespace(device_id=device.device_id, last_seen_at=seen_at)
+
+    seen_at = datetime(2026, 9, 8, tzinfo=timezone.utc)
+    device, timestamp = record_device_heartbeat(Registry(), "buoy-1", "device-a", seen_at)
+
+    assert timestamp == seen_at
+    assert device.last_seen_at == seen_at
+
+
+def test_record_device_heartbeat_rejects_foreign_device() -> None:
+    class Registry:
+        def get_device(self, device_id):
+            return SimpleNamespace(device_id=device_id, buoy_id="other-buoy")
+
+        def mark_device_seen(self, device, seen_at):
+            raise AssertionError("foreign devices must not update their heartbeat")
+
+    with pytest.raises(DeviceOwnershipError, match="Device not found"):
+        record_device_heartbeat(Registry(), "buoy-1", "device-a")
