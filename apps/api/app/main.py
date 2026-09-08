@@ -85,6 +85,7 @@ from .domain.sensor_health import evaluate_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
+from .domain.staleness import stale_age_seconds
 from .domain.devices import DeviceOwnershipError, validate_device_ownership
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
@@ -711,16 +712,19 @@ def stale_buoys(
         if buoy.status != "active" or buoy.last_seen_at is None:
             continue
         last_seen = buoy.last_seen_at
-        if last_seen.tzinfo is None:
-            last_seen = last_seen.replace(tzinfo=timezone.utc)
-        age_seconds = (now - last_seen).total_seconds()
-        if age_seconds > max_age_seconds:
+        age_seconds = stale_age_seconds(buoy.status, last_seen, max_age_seconds, now)
+        if age_seconds is not None:
+            normalized_last_seen = (
+                last_seen.replace(tzinfo=timezone.utc)
+                if last_seen.tzinfo is None
+                else last_seen
+            )
             stale.append(
                 BuoyHealth(
                     buoy_id=buoy.id,
                     buoy_name=buoy.name,
                     status=buoy.status,
-                    last_seen_at=last_seen,
+                    last_seen_at=normalized_last_seen,
                     age_seconds=round(age_seconds, 2),
                     is_stale=True,
                 )

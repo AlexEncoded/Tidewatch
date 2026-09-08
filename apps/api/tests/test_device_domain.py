@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -9,6 +9,7 @@ from app.domain.devices import (
     validate_device_ownership,
     validate_device_registration,
 )
+from app.domain.staleness import stale_age_seconds
 from app.application.device_registration import register_device
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
@@ -143,3 +144,17 @@ def test_record_device_heartbeat_rejects_foreign_device() -> None:
 
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
         record_device_heartbeat(Registry(), "buoy-1", "device-a")
+
+
+def test_stale_age_seconds_returns_age_only_after_threshold() -> None:
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+
+    assert stale_age_seconds("active", now - timedelta(seconds=61), 60, now) == 61
+    assert stale_age_seconds("active", now - timedelta(seconds=60), 60, now) is None
+
+
+def test_stale_age_seconds_ignores_inactive_or_never_seen_buoys() -> None:
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+
+    assert stale_age_seconds("maintenance", now - timedelta(hours=1), 60, now) is None
+    assert stale_age_seconds("active", None, 60, now) is None
