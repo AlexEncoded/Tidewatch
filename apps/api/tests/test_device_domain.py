@@ -51,3 +51,28 @@ def test_register_device_application_service_uses_registry() -> None:
     result = register_device(registry, "buoy-1", device)
 
     assert result == ("buoy-1", device)
+
+
+@pytest.mark.parametrize(
+    ("existing", "message"),
+    [
+        ([SimpleNamespace(device_id="device-a", sensor_channel="A")], "Device already registered"),
+        ([SimpleNamespace(device_id="device-b", sensor_channel="A")], "Sensor channel already registered"),
+    ],
+)
+def test_register_device_application_service_rejects_conflicts(existing, message: str) -> None:
+    class Registry:
+        def get_device(self, device_id):
+            return existing[0] if existing[0].device_id == device_id else None
+
+        def list_devices(self, buoy_id):
+            return existing
+
+        def create_device(self, buoy_id, device):
+            raise AssertionError("conflicting registrations must not be persisted")
+
+    device_id = existing[0].device_id if message == "Device already registered" else "device-c"
+    device = SimpleNamespace(device_id=device_id, sensor_channel="A")
+
+    with pytest.raises(DeviceRegistrationConflict, match=message):
+        register_device(Registry(), "buoy-1", device)
