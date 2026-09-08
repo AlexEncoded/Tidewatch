@@ -2,7 +2,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.domain.devices import DeviceRegistrationConflict, validate_device_registration
+from app.domain.devices import (
+    DeviceOwnershipError,
+    DeviceRegistrationConflict,
+    validate_device_ownership,
+    validate_device_registration,
+)
 from app.application.device_registration import register_device
 
 
@@ -12,6 +17,16 @@ def test_device_registration_accepts_the_other_redundant_channel() -> None:
         "B",
         [SimpleNamespace(device_id="device-a", sensor_channel="A")],
     )
+
+
+def test_device_ownership_accepts_device_from_target_buoy() -> None:
+    validate_device_ownership(SimpleNamespace(buoy_id="buoy-1"), "buoy-1")
+
+
+@pytest.mark.parametrize("device", [None, SimpleNamespace(buoy_id="other-buoy")])
+def test_device_ownership_rejects_unknown_or_foreign_device(device) -> None:
+    with pytest.raises(DeviceOwnershipError, match="Device not found"):
+        validate_device_ownership(device, "buoy-1")
 
 
 @pytest.mark.parametrize(

@@ -7,6 +7,16 @@ class DeviceRegistrationConflict(ValueError):
     """Raised when a device registration violates a buoy invariant."""
 
 
+class DeviceOwnershipError(ValueError):
+    """Raised when telemetry references an unknown or foreign device."""
+
+
+def validate_device_ownership(device: object | None, buoy_id: str) -> None:
+    """Ensure a telemetry device belongs to the buoy receiving the data."""
+    if device is None or getattr(device, "buoy_id", None) != buoy_id:
+        raise DeviceOwnershipError("Device not found")
+
+
 def validate_device_registration(
     device_id: str,
     sensor_channel: str,
