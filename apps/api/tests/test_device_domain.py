@@ -9,6 +9,7 @@ from app.domain.devices import (
     validate_device_registration,
 )
 from app.application.device_registration import register_device
+from app.application.device_status import update_device_status
 
 
 def test_device_registration_accepts_the_other_redundant_channel() -> None:
@@ -91,3 +92,25 @@ def test_register_device_application_service_rejects_conflicts(existing, message
 
     with pytest.raises(DeviceRegistrationConflict, match=message):
         register_device(Registry(), "buoy-1", device)
+
+
+def test_update_device_status_application_service_returns_updated_device() -> None:
+    class Registry:
+        def update_device_status(self, buoy_id, device_id, update):
+            return SimpleNamespace(device_id=device_id, status=update.status)
+
+    update = SimpleNamespace(status="maintenance")
+
+    result = update_device_status(Registry(), "buoy-1", "device-a", update)
+
+    assert result.device_id == "device-a"
+    assert result.status == "maintenance"
+
+
+def test_update_device_status_application_service_rejects_missing_device() -> None:
+    class Registry:
+        def update_device_status(self, buoy_id, device_id, update):
+            return None
+
+    with pytest.raises(DeviceOwnershipError, match="Device not found"):
+        update_device_status(Registry(), "buoy-1", "missing", SimpleNamespace(status="active"))

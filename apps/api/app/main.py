@@ -96,6 +96,7 @@ from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.device_registration import register_device as register_device_use_case
+from .application.device_status import update_device_status as update_device_status_use_case
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -309,10 +310,10 @@ def update_device_status(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    device = repository.update_device_status(buoy_id, device_id, payload)
-    if device is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
-    return device
+    try:
+        return update_device_status_use_case(repository, buoy_id, device_id, payload)
+    except DeviceOwnershipError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @app.post(
