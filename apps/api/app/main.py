@@ -13,17 +13,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .entities import DeviceEntity
 from .models import (
     Buoy,
     BuoyCreate,
-    Device,
-    DeviceCreate,
-    DeviceStatusUpdate,
     BuoyHealth,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -90,14 +85,13 @@ from .domain.sensor_health import evaluate_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
-from .domain.devices import DeviceOwnershipError, DeviceRegistrationConflict, validate_device_ownership
+from .domain.devices import DeviceOwnershipError, validate_device_ownership
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
 from .application.wave_analysis import analyze_wave_for_buoy
-from .application.device_registration import register_device as register_device_use_case
-from .application.device_status import update_device_status as update_device_status_use_case
 from .application.device_heartbeat import record_device_heartbeat
+from .routers.devices import router as devices_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -204,6 +198,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.otel_enabled = configure_telemetry(app)
+app.include_router(devices_router)
 
 
 @app.middleware("http")
@@ -254,67 +249,6 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
         created_at=datetime.now(timezone.utc),
     )
     return BuoyRepository(db).create_buoy(buoy)
-
-
-@app.post(
-    "/api/v1/buoys/{buoy_id}/devices",
-    response_model=Device,
-    status_code=status.HTTP_201_CREATED,
-    tags=["devices"],
-)
-def register_device(
-    buoy_id: str, payload: DeviceCreate, db: Session = Depends(get_db)
-) -> Device:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    try:
-        return register_device_use_case(repository, buoy_id, payload)
-    except DeviceRegistrationConflict as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    except IntegrityError:
-        db.rollback()
-        if db.get(DeviceEntity, payload.device_id) is not None or any(
-            device.sensor_channel == payload.sensor_channel
-            for device in repository.list_devices(buoy_id)
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Device or sensor channel already registered",
-            ) from None
-        raise
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/devices",
-    response_model=list[Device],
-    tags=["devices"],
-)
-def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_devices(buoy_id)
-
-
-@app.patch(
-    "/api/v1/buoys/{buoy_id}/devices/{device_id}/status",
-    response_model=Device,
-    tags=["devices"],
-)
-def update_device_status(
-    buoy_id: str,
-    device_id: str,
-    payload: DeviceStatusUpdate,
-    db: Session = Depends(get_db),
-) -> Device:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    try:
-        return update_device_status_use_case(repository, buoy_id, device_id, payload)
-    except DeviceOwnershipError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @app.post(
