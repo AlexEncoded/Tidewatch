@@ -90,6 +90,7 @@ from .domain.sensor_health import evaluate_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
+from .domain.devices import DeviceRegistrationConflict, validate_device_registration
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
@@ -266,8 +267,14 @@ def register_device(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if repository.db.get(DeviceEntity, payload.device_id) is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Device already registered")
-    if any(device.sensor_channel == payload.sensor_channel for device in repository.list_devices(buoy_id)):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Sensor channel already registered")
+    try:
+        validate_device_registration(
+            payload.device_id,
+            payload.sensor_channel,
+            repository.list_devices(buoy_id),
+        )
+    except DeviceRegistrationConflict as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
     try:
         return repository.create_device(buoy_id, payload)
     except IntegrityError:
