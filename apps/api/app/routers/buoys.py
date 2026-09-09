@@ -1,16 +1,27 @@
 """HTTP routes for core buoy operations."""
 
 from datetime import datetime, timezone
+from csv import DictWriter
+from io import StringIO
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
 from ..domain.staleness import stale_age_seconds
 from ..metrics import buoy_movement_speed_mps
-from ..models import Buoy, BuoyCreate, BuoyHealth, BuoyLocationUpdate, BuoyStatusUpdate, BuoySummary
+from ..models import (
+    Buoy,
+    BuoyCreate,
+    BuoyHealth,
+    BuoyLocationReading,
+    BuoyLocationUpdate,
+    BuoyStatusUpdate,
+    BuoySummary,
+)
 from ..repository import BuoyRepository
 
 
@@ -148,3 +159,65 @@ def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
         )
         for buoy in repository.list_buoys()
     ]
+
+
+@router.get(
+    "/api/v1/buoys/{buoy_id}/locations",
+    response_model=list[BuoyLocationReading],
+    tags=["buoys"],
+)
+def list_buoy_locations(
+    buoy_id: str,
+    limit: int = Query(default=100, ge=1, le=500),
+    since: datetime | None = Query(default=None),
+    until: datetime | None = Query(default=None),
+    db: Session = Depends(get_db),
+) -> list[BuoyLocationReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    if since is not None and until is not None and since > until:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="since must be earlier than or equal to until",
+        )
+    return repository.list_locations(buoy_id, limit, since, until)
+
+
+@router.get(
+    "/api/v1/buoys/{buoy_id}/locations/export",
+    response_class=Response,
+    tags=["buoys"],
+)
+def export_buoy_locations(
+    buoy_id: str,
+    limit: int = Query(default=500, ge=1, le=5000),
+    since: datetime | None = Query(default=None),
+    until: datetime | None = Query(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    if since is not None and until is not None and since > until:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="since must be earlier than or equal to until",
+        )
+    output = StringIO()
+    writer = DictWriter(output, fieldnames=["buoy_id", "latitude", "longitude", "measured_at"])
+    writer.writeheader()
+    for location in repository.list_locations(buoy_id, limit, since, until):
+        writer.writerow(
+            {
+                "buoy_id": location.buoy_id,
+                "latitude": location.latitude,
+                "longitude": location.longitude,
+                "measured_at": location.measured_at.isoformat(),
+            }
+        )
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{buoy_id}-locations.csv"'},
+    )
