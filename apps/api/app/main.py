@@ -5,7 +5,6 @@ from io import StringIO
 import logging
 import os
 import time
-from uuid import uuid4
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, status
@@ -18,11 +17,8 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import (
     Buoy,
-    BuoyCreate,
     BuoyHealth,
-    BuoyLocationUpdate,
     BuoyLocationReading,
-    BuoyStatusUpdate,
     BuoySummary,
     BatteryReading,
     BatteryReadingCreate,
@@ -93,6 +89,7 @@ from .domain.deltas import absolute_difference
 from .application.wave_analysis import analyze_wave_for_buoy
 from .application.device_heartbeat import record_device_heartbeat
 from .routers.devices import router as devices_router
+from .routers.buoys import router as buoys_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -200,6 +197,7 @@ app = FastAPI(
 )
 app.state.otel_enabled = configure_telemetry(app)
 app.include_router(devices_router)
+app.include_router(buoys_router)
 
 
 @app.middleware("http")
@@ -238,18 +236,6 @@ def health(db: Session = Depends(get_db)) -> dict[str, str]:
 @app.get("/metrics", include_in_schema=False)
 def metrics() -> Response:
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
-
-
-@app.post("/api/v1/buoys", response_model=Buoy, status_code=status.HTTP_201_CREATED, tags=["buoys"])
-def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
-    buoy = Buoy(
-        id=f"TW-{uuid4().hex[:8].upper()}",
-        name=payload.name,
-        latitude=payload.latitude,
-        longitude=payload.longitude,
-        created_at=datetime.now(timezone.utc),
-    )
-    return BuoyRepository(db).create_buoy(buoy)
 
 
 @app.post(
@@ -731,34 +717,6 @@ def stale_buoys(
             )
 
     return stale
-
-
-@app.patch("/api/v1/buoys/{buoy_id}/status", response_model=Buoy, tags=["buoys"])
-def update_buoy_status(
-    buoy_id: str,
-    payload: BuoyStatusUpdate,
-    db: Session = Depends(get_db),
-) -> Buoy:
-    buoy = BuoyRepository(db).update_status(buoy_id, payload)
-    if buoy is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return buoy
-
-
-@app.patch("/api/v1/buoys/{buoy_id}/location", response_model=Buoy, tags=["buoys"])
-def update_buoy_location(
-    buoy_id: str,
-    payload: BuoyLocationUpdate,
-    db: Session = Depends(get_db),
-) -> Buoy:
-    buoy = BuoyRepository(db).update_location(buoy_id, payload)
-    if buoy is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    repository = BuoyRepository(db)
-    movement = analyze_movement_for_buoy(repository, buoy_id, 50)
-    if movement.average_speed_mps is not None:
-        buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(movement.average_speed_mps)
-    return buoy
 
 
 @app.get(
