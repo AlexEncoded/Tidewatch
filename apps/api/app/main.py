@@ -18,7 +18,6 @@ from .database import get_db
 from .models import (
     Buoy,
     BuoyLocationReading,
-    BuoySummary,
     BatteryReading,
     BatteryReadingCreate,
     BatteryHealth,
@@ -619,68 +618,6 @@ def ingest_telemetry(
         accepted_readings=accepted,
         accepted_by_family=accepted_by_family,
     )
-
-
-@app.get("/api/v1/buoys", response_model=list[BuoySummary], tags=["buoys"])
-def list_buoys(db: Session = Depends(get_db)) -> list[BuoySummary]:
-    repository = BuoyRepository(db)
-    return [
-        BuoySummary(
-            buoy=buoy,
-            latest_temperature=repository.latest_temperature(buoy.id),
-            latest_temperature_a=repository.latest_temperature(buoy.id, "A"),
-            latest_temperature_b=repository.latest_temperature(buoy.id, "B"),
-            latest_pressure=repository.latest_pressure(buoy.id),
-            latest_pressure_a=repository.latest_pressure(buoy.id, "A"),
-            latest_pressure_b=repository.latest_pressure(buoy.id, "B"),
-            latest_salinity=repository.latest_salinity(buoy.id),
-            latest_salinity_a=repository.latest_salinity(buoy.id, "A"),
-            latest_salinity_b=repository.latest_salinity(buoy.id, "B"),
-            latest_imu=repository.latest_imu(buoy.id),
-            latest_imu_a=repository.latest_imu(buoy.id, "A"),
-            latest_imu_b=repository.latest_imu(buoy.id, "B"),
-            latest_ambient_light=repository.latest_ambient_light(buoy.id),
-            latest_ambient_light_a=repository.latest_ambient_light(buoy.id, "A"),
-            latest_ambient_light_b=repository.latest_ambient_light(buoy.id, "B"),
-            latest_wind=repository.latest_wind(buoy.id),
-            latest_wind_a=repository.latest_wind(buoy.id, "A"),
-            latest_wind_b=repository.latest_wind(buoy.id, "B"),
-            latest_marine_current=repository.latest_marine_current(buoy.id),
-            latest_marine_current_a=repository.latest_marine_current(buoy.id, "A"),
-            latest_marine_current_b=repository.latest_marine_current(buoy.id, "B"),
-            latest_turbidity=repository.latest_turbidity(buoy.id),
-            latest_turbidity_a=repository.latest_turbidity(buoy.id, "A"),
-            latest_turbidity_b=repository.latest_turbidity(buoy.id, "B"),
-            latest_dissolved_oxygen=repository.latest_dissolved_oxygen(buoy.id),
-            latest_dissolved_oxygen_a=repository.latest_dissolved_oxygen(buoy.id, "A"),
-            latest_dissolved_oxygen_b=repository.latest_dissolved_oxygen(buoy.id, "B"),
-            latest_ph=repository.latest_ph(buoy.id),
-            latest_ph_a=repository.latest_ph(buoy.id, "A"),
-            latest_ph_b=repository.latest_ph(buoy.id, "B"),
-            latest_conductivity=repository.latest_conductivity(buoy.id),
-            latest_conductivity_a=repository.latest_conductivity(buoy.id, "A"),
-            latest_conductivity_b=repository.latest_conductivity(buoy.id, "B"),
-            latest_chlorophyll_a=repository.latest_chlorophyll_a(buoy.id),
-            latest_chlorophyll_a_a=repository.latest_chlorophyll_a(buoy.id, "A"),
-            latest_chlorophyll_a_b=repository.latest_chlorophyll_a(buoy.id, "B"),
-            latest_rainfall=repository.latest_rainfall(buoy.id),
-            latest_rainfall_a=repository.latest_rainfall(buoy.id, "A"),
-            latest_rainfall_b=repository.latest_rainfall(buoy.id, "B"),
-            latest_humidity=repository.latest_humidity(buoy.id),
-            latest_humidity_a=repository.latest_humidity(buoy.id, "A"),
-            latest_humidity_b=repository.latest_humidity(buoy.id, "B"),
-            latest_air_temperature=repository.latest_air_temperature(buoy.id),
-            latest_air_temperature_a=repository.latest_air_temperature(buoy.id, "A"),
-            latest_air_temperature_b=repository.latest_air_temperature(buoy.id, "B"),
-            latest_atmospheric_pressure=repository.latest_atmospheric_pressure(buoy.id),
-            latest_atmospheric_pressure_a=repository.latest_atmospheric_pressure(buoy.id, "A"),
-            latest_atmospheric_pressure_b=repository.latest_atmospheric_pressure(buoy.id, "B"),
-            latest_battery=repository.latest_battery(buoy.id),
-            latest_battery_a=repository.latest_battery(buoy.id, "A"),
-            latest_battery_b=repository.latest_battery(buoy.id, "B"),
-        )
-        for buoy in repository.list_buoys()
-    ]
 
 
 @app.get(
