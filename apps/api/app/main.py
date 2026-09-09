@@ -56,7 +56,6 @@ from .models import (
     SalinityReadingCreate,
     SensorHealth,
     SensorHealthCheck,
-    QualitySummary,
     TemperatureReading,
     TemperatureReadingCreate,
     TemperatureAnalysis,
@@ -82,6 +81,7 @@ from .routers.buoys import router as buoys_router
 from .routers.telemetry import router as telemetry_router
 from .routers.analytics import router as analytics_router
 from .routers.battery import router as battery_router
+from .routers.quality import router as quality_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.temperature_analysis import (
@@ -181,6 +181,7 @@ app.include_router(buoys_router)
 app.include_router(telemetry_router)
 app.include_router(analytics_router)
 app.include_router(battery_router)
+app.include_router(quality_router)
 
 
 @app.middleware("http")
@@ -1292,25 +1293,6 @@ def list_underwater_acoustic(buoy_id: str, limit: int = Query(default=50, ge=1, 
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_underwater_acoustic(buoy_id, limit, sensor_channel)
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/quality-summary",
-    response_model=QualitySummary,
-    tags=["quality"],
-)
-def quality_summary(buoy_id: str, db: Session = Depends(get_db)) -> QualitySummary:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    counts = repository.quality_counts(buoy_id)
-    return QualitySummary(
-        buoy_id=buoy_id,
-        total_readings=sum(counts.values()),
-        good_readings=counts["good"],
-        suspect_readings=counts["suspect"],
-        invalid_readings=counts["invalid"],
-    )
 
 
 @app.get(
