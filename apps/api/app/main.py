@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
-from csv import DictWriter
 from datetime import datetime, timezone
-from io import StringIO
 import logging
 import os
 import time
@@ -87,6 +85,7 @@ from .application.wave_analysis import analyze_wave_for_buoy
 from .application.device_heartbeat import record_device_heartbeat
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
+from .routers.telemetry import router as telemetry_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -195,6 +194,7 @@ app = FastAPI(
 app.state.otel_enabled = configure_telemetry(app)
 app.include_router(devices_router)
 app.include_router(buoys_router)
+app.include_router(telemetry_router)
 
 
 @app.middleware("http")
@@ -617,46 +617,6 @@ def ingest_telemetry(
         buoy_id=buoy_id,
         accepted_readings=accepted,
         accepted_by_family=accepted_by_family,
-    )
-
-
-@app.get(
-    "/api/v1/locations/export",
-    response_class=Response,
-    tags=["telemetry"],
-)
-def export_fleet_locations(
-    limit: int = Query(default=5000, ge=1, le=50000),
-    since: datetime | None = Query(default=None),
-    until: datetime | None = Query(default=None),
-    db: Session = Depends(get_db),
-) -> Response:
-    if since is not None and until is not None and since > until:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="since must be earlier than or equal to until",
-        )
-
-    output = StringIO()
-    writer = DictWriter(
-        output,
-        fieldnames=["buoy_id", "latitude", "longitude", "measured_at"],
-    )
-    writer.writeheader()
-    for location in BuoyRepository(db).list_all_locations(limit, since, until):
-        writer.writerow(
-            {
-                "buoy_id": location.buoy_id,
-                "latitude": location.latitude,
-                "longitude": location.longitude,
-                "measured_at": location.measured_at.isoformat(),
-            }
-        )
-
-    return Response(
-        content=output.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="tidewatch-locations.csv"'},
     )
 
 
