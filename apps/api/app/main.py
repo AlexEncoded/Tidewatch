@@ -50,8 +50,6 @@ from .models import (
     BatteryAnalysis,
     MaintenanceIssue,
     MaintenanceNotificationResult,
-    MovementAnalysis,
-    WaveAnalysis,
     ImuReading,
     ImuReadingCreate,
     PressureReading,
@@ -72,7 +70,6 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
-from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 from .domain.sensor_health import evaluate_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
@@ -81,11 +78,12 @@ from .domain.devices import DeviceOwnershipError, validate_device_ownership
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
 from .domain.deltas import absolute_difference
-from .application.wave_analysis import analyze_wave_for_buoy
+from .application.wave_analysis import configured_wave_imu_factor
 from .application.device_heartbeat import record_device_heartbeat
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
 from .routers.telemetry import router as telemetry_router
+from .routers.analytics import router as analytics_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_analysis import analyze_battery_for_buoy
@@ -129,8 +127,6 @@ from .metrics import (
     current_gnss_speed_mps,
     current_gnss_hdop,
     current_gnss_satellites,
-    current_estimated_wave_height_m,
-    current_estimated_wave_period_seconds,
     http_request_duration_seconds,
     http_requests_total,
     imu_readings_total,
@@ -160,15 +156,6 @@ from .metrics import (
 logger = logging.getLogger("tidewatch.api")
 
 
-def configured_wave_imu_factor() -> float:
-    """Return the bounded experimental IMU calibration factor from the environment."""
-    try:
-        value = float(os.getenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", str(DEFAULT_IMU_WAVE_HEIGHT_FACTOR)))
-    except ValueError:
-        return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
-    return max(0.0, min(10.0, value))
-
-
 def record_quality_metric(
     buoy_id: str, sensor_family: str, sensor_channel: str, quality: str
 ) -> None:
@@ -195,6 +182,7 @@ app.state.otel_enabled = configure_telemetry(app)
 app.include_router(devices_router)
 app.include_router(buoys_router)
 app.include_router(telemetry_router)
+app.include_router(analytics_router)
 
 
 @app.middleware("http")
@@ -618,62 +606,6 @@ def ingest_telemetry(
         accepted_readings=accepted,
         accepted_by_family=accepted_by_family,
     )
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/movement-analysis",
-    response_model=MovementAnalysis,
-    tags=["buoys"],
-)
-def buoy_movement_analysis(
-    buoy_id: str,
-    window: int = Query(default=100, ge=2, le=500),
-    db: Session = Depends(get_db),
-) -> MovementAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_movement_for_buoy(repository, buoy_id, window)
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/wave-analysis",
-    response_model=WaveAnalysis,
-    tags=["analytics"],
-)
-def buoy_wave_analysis(
-    buoy_id: str,
-    window: int = Query(default=100, ge=2, le=500),
-    db: Session = Depends(get_db),
-) -> WaveAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_wave_for_buoy(
-        repository,
-        buoy_id,
-        window,
-        configured_wave_imu_factor(),
-    )
-    if result.estimated_wave_height_m is not None:
-        current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(
-            result.estimated_wave_height_m
-        )
-    else:
-        try:
-            current_estimated_wave_height_m.remove(buoy_id)
-        except KeyError:
-            pass
-    if result.estimated_period_seconds is not None:
-        current_estimated_wave_period_seconds.labels(buoy_id=buoy_id).set(
-            result.estimated_period_seconds
-        )
-    else:
-        try:
-            current_estimated_wave_period_seconds.remove(buoy_id)
-        except KeyError:
-            pass
-    return result
 
 
 @app.post(

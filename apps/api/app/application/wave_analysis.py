@@ -1,12 +1,23 @@
 """Application service for the experimental wave-analysis use case."""
 
-from ..domain.wave import estimate_wave, estimate_wave_period
+import os
+
+from ..domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave, estimate_wave_period
 from ..models import WaveAnalysis
 from .ports import ImuTelemetryReader, LocationTelemetryReader
 
 
 class WaveTelemetryReader(ImuTelemetryReader, LocationTelemetryReader):
     """Input port required by the wave-analysis use case."""
+
+
+def configured_wave_imu_factor() -> float:
+    """Return the bounded experimental IMU calibration factor."""
+    try:
+        value = float(os.getenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", str(DEFAULT_IMU_WAVE_HEIGHT_FACTOR)))
+    except ValueError:
+        return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+    return max(0.0, min(10.0, value))
 
 
 def analyze_wave_for_buoy(
