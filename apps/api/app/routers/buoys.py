@@ -3,13 +3,14 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
+from ..domain.staleness import stale_age_seconds
 from ..metrics import buoy_movement_speed_mps
-from ..models import Buoy, BuoyCreate, BuoyLocationUpdate, BuoyStatusUpdate
+from ..models import Buoy, BuoyCreate, BuoyHealth, BuoyLocationUpdate, BuoyStatusUpdate
 from ..repository import BuoyRepository
 
 
@@ -54,3 +55,34 @@ def update_buoy_location(
     if movement.average_speed_mps is not None:
         buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(movement.average_speed_mps)
     return buoy
+
+
+@router.get("/api/v1/buoys/stale", response_model=list[BuoyHealth], tags=["buoys"])
+def stale_buoys(
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> list[BuoyHealth]:
+    now = datetime.now(timezone.utc)
+    max_age_seconds = max_age_minutes * 60
+    stale: list[BuoyHealth] = []
+    for buoy in BuoyRepository(db).list_buoys():
+        last_seen = buoy.last_seen_at
+        age_seconds = stale_age_seconds(buoy.status, last_seen, max_age_seconds, now)
+        if age_seconds is None or last_seen is None:
+            continue
+        normalized_last_seen = (
+            last_seen.replace(tzinfo=timezone.utc)
+            if last_seen.tzinfo is None
+            else last_seen
+        )
+        stale.append(
+            BuoyHealth(
+                buoy_id=buoy.id,
+                buoy_name=buoy.name,
+                status=buoy.status,
+                last_seen_at=normalized_last_seen,
+                age_seconds=round(age_seconds, 2),
+                is_stale=True,
+            )
+        )
+    return stale
