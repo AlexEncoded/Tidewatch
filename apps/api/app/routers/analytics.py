@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.temperature_analysis import analyze_temperature_for_buoy
 from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_imu_factor
 from ..database import get_db
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
-from ..models import MovementAnalysis, WaveAnalysis
+from ..models import MovementAnalysis, TemperatureAnalysis, WaveAnalysis
 from ..repository import BuoyRepository
 
 
@@ -51,3 +52,20 @@ def buoy_wave_analysis(
         except KeyError:
             pass
     return result
+
+
+@router.get(
+    "/api/v1/buoys/{buoy_id}/temperature-analysis",
+    response_model=TemperatureAnalysis,
+    tags=["temperature"],
+)
+def temperature_analysis(
+    buoy_id: str,
+    threshold: float = Query(default=2.0, gt=0, le=20),
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> TemperatureAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return analyze_temperature_for_buoy(repository, buoy_id, window, threshold)

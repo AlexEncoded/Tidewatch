@@ -58,7 +58,6 @@ from .models import (
     SensorHealthCheck,
     TemperatureReading,
     TemperatureReadingCreate,
-    TemperatureAnalysis,
     TemperatureAlert,
     StoredTemperatureAlert,
     TelemetryBatchCreate,
@@ -85,7 +84,6 @@ from .routers.quality import router as quality_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.temperature_analysis import (
-    analyze_temperature_for_buoy,
     analyze_temperature_readings,
     list_valid_temperature_readings,
 )
@@ -1875,24 +1873,6 @@ def notify_maintenance(
         ) from exc
 
     return MaintenanceNotificationResult(status="sent", issue_count=len(issues))
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/temperature-analysis",
-    response_model=TemperatureAnalysis,
-    tags=["temperature"],
-)
-def temperature_analysis(
-    buoy_id: str,
-    threshold: float = Query(default=2.0, gt=0, le=20),
-    window: int = Query(default=50, ge=1, le=500),
-    db: Session = Depends(get_db),
-) -> TemperatureAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-
-    return analyze_temperature_for_buoy(repository, buoy_id, window, threshold)
 
 
 @app.get(
