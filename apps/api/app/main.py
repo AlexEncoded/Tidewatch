@@ -1875,38 +1875,6 @@ def notify_maintenance(
     return MaintenanceNotificationResult(status="sent", issue_count=len(issues))
 
 
-@app.get(
-    "/api/v1/alerts/temperature",
-    response_model=list[TemperatureAlert],
-    tags=["alerts"],
-)
-def temperature_alerts(
-    threshold: float = Query(default=2.0, gt=0, le=20),
-    window: int = Query(default=50, ge=1, le=500),
-    db: Session = Depends(get_db),
-) -> list[TemperatureAlert]:
-    repository = BuoyRepository(db)
-    alerts: list[TemperatureAlert] = []
-
-    for buoy in repository.list_buoys():
-        readings = list_valid_temperature_readings(repository, buoy.id, window)
-        analysis = analyze_temperature_readings(buoy.id, readings, threshold)
-        if analysis.is_anomaly and analysis.latest_temperature is not None:
-            alerts.append(
-                TemperatureAlert(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    severity="warning",
-                    temperature_celsius=analysis.latest_temperature,
-                    average_temperature=analysis.average_temperature or 0,
-                    created_at=readings[0].measured_at,
-                    message=analysis.anomaly_reason or "Temperature anomaly detected",
-                )
-            )
-
-    return alerts
-
-
 def stored_alert_response(alert) -> StoredTemperatureAlert:
     return StoredTemperatureAlert(
         id=alert.id,
