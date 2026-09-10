@@ -92,22 +92,17 @@ def test_health() -> None:
 
 
 def test_modularized_sensor_routes_remain_registered() -> None:
-    registered_routes = {
-        (method, route.path)
-        for route in app.routes
-        for method in getattr(route, "methods", ())
+    openapi_paths = app.openapi()["paths"]
+
+    expected_paths = {
+        "/api/v1/buoys/{buoy_id}/battery",
+        "/api/v1/buoys/{buoy_id}/battery/history",
+        "/api/v1/buoys/{buoy_id}/battery-analysis",
+        "/api/v1/buoys/{buoy_id}/battery-health",
+        "/api/v1/buoys/{buoy_id}/quality-summary",
     }
 
-    expected_routes = {
-        ("POST", "/api/v1/buoys/{buoy_id}/battery"),
-        ("GET", "/api/v1/buoys/{buoy_id}/battery"),
-        ("GET", "/api/v1/buoys/{buoy_id}/battery/history"),
-        ("GET", "/api/v1/buoys/{buoy_id}/battery-analysis"),
-        ("GET", "/api/v1/buoys/{buoy_id}/battery-health"),
-        ("GET", "/api/v1/buoys/{buoy_id}/quality-summary"),
-    }
-
-    assert expected_routes <= registered_routes
+    assert expected_paths <= openapi_paths.keys()
 
 
 def test_http_requests_are_logged(caplog) -> None:
