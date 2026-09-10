@@ -95,7 +95,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
     registered_routes = {
         (method, route.path)
         for route in app.routes
-        for method in route.methods or set()
+        for method in getattr(route, "methods", ())
     }
 
     expected_routes = {
