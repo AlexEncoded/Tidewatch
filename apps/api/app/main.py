@@ -66,7 +66,7 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
-from .domain.sensor_health import evaluate_sensor_health
+from .application.sensor_health import assess_sensor_health
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
@@ -1581,7 +1581,7 @@ def sensor_health(
             else None
         ),
     }
-    health_evaluation = evaluate_sensor_health(deltas, sensor_readings)
+    health_evaluation = assess_sensor_health(deltas, sensor_readings)
     degraded_sensors = health_evaluation.degraded_sensors
     missing_sensors = health_evaluation.missing_sensors
     status_value = health_evaluation.status
