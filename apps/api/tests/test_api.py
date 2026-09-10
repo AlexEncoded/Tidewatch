@@ -91,6 +91,25 @@ def test_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_modularized_sensor_routes_remain_registered() -> None:
+    registered_routes = {
+        (method, route.path)
+        for route in app.routes
+        for method in route.methods or set()
+    }
+
+    expected_routes = {
+        ("POST", "/api/v1/buoys/{buoy_id}/battery"),
+        ("GET", "/api/v1/buoys/{buoy_id}/battery"),
+        ("GET", "/api/v1/buoys/{buoy_id}/battery/history"),
+        ("GET", "/api/v1/buoys/{buoy_id}/battery-analysis"),
+        ("GET", "/api/v1/buoys/{buoy_id}/battery-health"),
+        ("GET", "/api/v1/buoys/{buoy_id}/quality-summary"),
+    }
+
+    assert expected_routes <= registered_routes
+
+
 def test_http_requests_are_logged(caplog) -> None:
     with caplog.at_level(logging.INFO, logger="tidewatch.api"):
         response = client.get("/health")
