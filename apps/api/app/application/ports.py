@@ -36,6 +36,11 @@ class BatteryTelemetryReader(Protocol):
         ...
 
 
+class QualitySummaryReader(Protocol):
+    def quality_counts(self, buoy_id: str) -> dict[str, int]:
+        ...
+
+
 class TemperatureTelemetryReader(Protocol):
     def list_temperatures(
         self,
