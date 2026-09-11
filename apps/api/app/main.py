@@ -64,6 +64,7 @@ from .models import (
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .application.sensor_health import assess_sensor_health
+from .application.maintenance_notifications import build_maintenance_notification_payload
 from .domain.maintenance import is_buoy_silent
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
@@ -1855,10 +1856,7 @@ def notify_maintenance(
     issues = maintenance_issues(
         max_age_minutes=max_age_minutes, drift_speed_mps=drift_speed_mps, db=db
     )
-    payload = {
-        "source": "tidewatch",
-        "issues": [issue.model_dump(mode="json") for issue in issues],
-    }
+    payload = build_maintenance_notification_payload(issues)
     try:
         response = httpx.post(webhook_url, json=payload, timeout=5)
         response.raise_for_status()
