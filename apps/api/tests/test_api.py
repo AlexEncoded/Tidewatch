@@ -100,6 +100,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
         "/api/v1/buoys/{buoy_id}/battery-analysis",
         "/api/v1/buoys/{buoy_id}/battery-health",
         "/api/v1/buoys/{buoy_id}/quality-summary",
+        "/api/v1/buoys/{buoy_id}/temperature-analysis",
         "/api/v1/alerts/temperature",
         "/api/v1/alerts/temperature/evaluate",
         "/api/v1/alerts/temperature/stored",
