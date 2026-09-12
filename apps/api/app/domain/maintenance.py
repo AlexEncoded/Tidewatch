@@ -1,4 +1,17 @@
 from datetime import datetime, timezone
+from typing import Literal
+
+
+BatterySeverity = Literal["warning", "critical"]
+
+
+def low_battery_severity(battery_percent: float) -> BatterySeverity | None:
+    """Return the maintenance severity for a battery reading, if it is low."""
+    if battery_percent < 10:
+        return "critical"
+    if battery_percent < 20:
+        return "warning"
+    return None
 
 
 def is_buoy_silent(
