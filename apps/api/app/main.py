@@ -1255,27 +1255,6 @@ def list_atmospheric_pressure(buoy_id: str, limit: int = Query(default=50, ge=1,
     return repository.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
 
 
-@app.post("/api/v1/buoys/{buoy_id}/acoustic-altimeter", response_model=AcousticAltimeterReading, status_code=status.HTTP_201_CREATED, tags=["acoustic-altimeter"])
-def record_acoustic_altimeter(buoy_id: str, payload: AcousticAltimeterReadingCreate, db: Session = Depends(get_db)) -> AcousticAltimeterReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = AcousticAltimeterReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_acoustic_altimeter(reading)
-    acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-    current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
-    record_quality_metric(buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get("/api/v1/buoys/{buoy_id}/acoustic-altimeter", response_model=list[AcousticAltimeterReading], tags=["acoustic-altimeter"])
-def list_acoustic_altimeter(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[AcousticAltimeterReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_acoustic_altimeter(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
