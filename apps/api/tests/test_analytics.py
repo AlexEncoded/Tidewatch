@@ -367,6 +367,14 @@ def test_battery_health_domain_service_detects_lower_degraded_device() -> None:
     assert estimate.degraded_devices == ["A"]
 
 
+def test_battery_health_domain_service_accepts_exact_threshold() -> None:
+    estimate = estimate_battery_health(80.0, 85.0, threshold=5.0)
+
+    assert estimate.status == "consistent"
+    assert estimate.delta_percent == 5.0
+    assert estimate.degraded_devices == []
+
+
 def test_battery_health_domain_service_requires_both_devices() -> None:
     estimate = estimate_battery_health(72.0, None, threshold=5.0)
 
