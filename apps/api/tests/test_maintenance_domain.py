@@ -23,6 +23,7 @@ def test_missing_redundant_battery_device(device_a_percent, device_b_percent, ex
     [
         ("inactive", datetime(2026, 1, 1, tzinfo=timezone.utc), 1, False),
         ("active", None, 1, False),
+        ("active", datetime(2026, 1, 1, 0, 1), 60, False),
         ("active", datetime(2026, 1, 1), 60, True),
     ],
 )
