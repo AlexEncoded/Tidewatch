@@ -105,6 +105,11 @@ def test_modularized_sensor_routes_remain_registered() -> None:
         "/api/v1/alerts/temperature/evaluate",
         "/api/v1/alerts/temperature/stored",
         "/api/v1/alerts/temperature/{alert_id}/resolve",
+        "/api/v1/buoys/{buoy_id}/sensor-health",
+        "/api/v1/buoys/{buoy_id}/sensor-health/check",
+        "/api/v1/buoys/{buoy_id}/sensor-health/history",
+        "/api/v1/maintenance/issues",
+        "/api/v1/maintenance/notifications",
     }
 
     assert expected_paths <= openapi_paths.keys()
