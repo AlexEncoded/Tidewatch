@@ -1,6 +1,24 @@
+from datetime import datetime, timezone
+
 import pytest
 
-from app.domain.maintenance import is_buoy_drifting, low_battery_severity
+from app.domain.maintenance import is_buoy_drifting, is_buoy_silent, low_battery_severity
+
+
+@pytest.mark.parametrize(
+    ("status", "last_seen_at", "max_age_seconds", "expected"),
+    [
+        ("inactive", datetime(2026, 1, 1, tzinfo=timezone.utc), 1, False),
+        ("active", None, 1, False),
+        ("active", datetime(2026, 1, 1), 60, True),
+    ],
+)
+def test_buoy_silence_requires_active_recent_telemetry(
+    status, last_seen_at, max_age_seconds, expected
+) -> None:
+    now = datetime(2026, 1, 1, 0, 2, tzinfo=timezone.utc)
+
+    assert is_buoy_silent(status, last_seen_at, now, max_age_seconds) is expected
 
 
 @pytest.mark.parametrize(
