@@ -5,6 +5,18 @@ from typing import Literal
 BatterySeverity = Literal["warning", "critical"]
 
 
+def missing_redundant_battery_device(
+    device_a_percent: float | None,
+    device_b_percent: float | None,
+) -> Literal["A", "B"] | None:
+    """Return the missing redundant unit when exactly one unit has telemetry."""
+    if device_a_percent is not None and device_b_percent is None:
+        return "B"
+    if device_b_percent is not None and device_a_percent is None:
+        return "A"
+    return None
+
+
 def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
     """Return whether observed movement exceeds the configured drift limit."""
     return average_speed_mps is not None and average_speed_mps > limit_mps

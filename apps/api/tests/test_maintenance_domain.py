@@ -2,7 +2,20 @@ from datetime import datetime, timezone
 
 import pytest
 
-from app.domain.maintenance import is_buoy_drifting, is_buoy_silent, low_battery_severity
+from app.domain.maintenance import (
+    is_buoy_drifting,
+    is_buoy_silent,
+    low_battery_severity,
+    missing_redundant_battery_device,
+)
+
+
+@pytest.mark.parametrize(
+    ("device_a_percent", "device_b_percent", "expected"),
+    [(90, None, "B"), (None, 90, "A"), (90, 90, None), (None, None, None)],
+)
+def test_missing_redundant_battery_device(device_a_percent, device_b_percent, expected) -> None:
+    assert missing_redundant_battery_device(device_a_percent, device_b_percent) == expected
 
 
 @pytest.mark.parametrize(

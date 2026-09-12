@@ -65,7 +65,12 @@ from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .application.sensor_health import assess_sensor_health
 from .application.maintenance_notifications import build_maintenance_notification_payload
-from .domain.maintenance import is_buoy_drifting, is_buoy_silent, low_battery_severity
+from .domain.maintenance import (
+    is_buoy_drifting,
+    is_buoy_silent,
+    low_battery_severity,
+    missing_redundant_battery_device,
+)
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
 from .domain.devices import DeviceOwnershipError, validate_device_ownership
@@ -1788,8 +1793,11 @@ def maintenance_issues(
             redundant_device_missing.labels(
                 buoy_id=buoy.id, device_id=device_id
             ).set(0 if device_id in available_battery_devices else 1)
-        if len(available_battery_devices) == 1:
-            missing_device = "B" if available_battery_devices[0] == "A" else "A"
+        missing_device = missing_redundant_battery_device(
+            battery_health_result.device_a_percent,
+            battery_health_result.device_b_percent,
+        )
+        if missing_device is not None:
             issues.append(
                 MaintenanceIssue(
                     buoy_id=buoy.id,
