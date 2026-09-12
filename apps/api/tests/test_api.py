@@ -103,6 +103,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
         "/api/v1/buoys/{buoy_id}/movement-analysis",
         "/api/v1/buoys/{buoy_id}/wave-analysis",
         "/api/v1/buoys/{buoy_id}/temperature-analysis",
+        "/api/v1/buoys/{buoy_id}/underwater-acoustic",
         "/api/v1/alerts/temperature",
         "/api/v1/alerts/temperature/evaluate",
         "/api/v1/alerts/temperature/stored",
