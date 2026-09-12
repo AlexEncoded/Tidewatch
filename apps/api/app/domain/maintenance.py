@@ -5,6 +5,11 @@ from typing import Literal
 BatterySeverity = Literal["warning", "critical"]
 
 
+def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
+    """Return whether observed movement exceeds the configured drift limit."""
+    return average_speed_mps is not None and average_speed_mps > limit_mps
+
+
 def low_battery_severity(battery_percent: float) -> BatterySeverity | None:
     """Return the maintenance severity for a battery reading, if it is low."""
     if battery_percent < 10:

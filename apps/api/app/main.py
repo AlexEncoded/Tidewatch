@@ -65,7 +65,7 @@ from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .application.sensor_health import assess_sensor_health
 from .application.maintenance_notifications import build_maintenance_notification_payload
-from .domain.maintenance import is_buoy_silent, low_battery_severity
+from .domain.maintenance import is_buoy_drifting, is_buoy_silent, low_battery_severity
 from .domain.reading_quality import classify_latest_readings
 from .domain.telemetry import latest_usable_reading
 from .domain.devices import DeviceOwnershipError, validate_device_ownership
@@ -1819,8 +1819,7 @@ def maintenance_issues(
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
         if (
-            movement.average_speed_mps is not None
-            and movement.average_speed_mps > drift_speed_mps
+            is_buoy_drifting(movement.average_speed_mps, drift_speed_mps)
         ):
             issues.append(
                 MaintenanceIssue(
