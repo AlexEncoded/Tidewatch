@@ -1126,51 +1126,6 @@ def list_conductivity(
     return repository.list_conductivity(buoy_id, limit, sensor_channel)
 
 
-@app.post(
-    "/api/v1/buoys/{buoy_id}/chlorophyll-a",
-    response_model=ChlorophyllAReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["chlorophyll-a"],
-)
-def record_chlorophyll_a(
-    buoy_id: str,
-    payload: ChlorophyllAReadingCreate,
-    db: Session = Depends(get_db),
-) -> ChlorophyllAReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = ChlorophyllAReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_chlorophyll_a(reading)
-    chlorophyll_a_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    current_chlorophyll_a_ug_l.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.chlorophyll_a_ug_l)
-    record_quality_metric(
-        buoy_id, "chlorophyll_a", reading.sensor_channel, reading.quality
-    )
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/chlorophyll-a",
-    response_model=list[ChlorophyllAReading],
-    tags=["chlorophyll-a"],
-)
-def list_chlorophyll_a(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[ChlorophyllAReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_chlorophyll_a(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
