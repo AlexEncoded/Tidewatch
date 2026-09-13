@@ -7,7 +7,9 @@ from ..database import get_db
 from ..metrics import (
     acoustic_altimeter_readings_total,
     atmospheric_pressure_readings_total,
+    air_temperature_readings_total,
     current_acoustic_altimeter_depth_meters,
+    current_air_temperature_celsius,
     current_atmospheric_pressure_kpa,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
@@ -18,12 +20,35 @@ from ..models import (
     AcousticAltimeterReadingCreate,
     AtmosphericPressureReading,
     AtmosphericPressureReadingCreate,
+    AirTemperatureReading,
+    AirTemperatureReadingCreate,
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/air-temperature", response_model=AirTemperatureReading, status_code=status.HTTP_201_CREATED, tags=["air-temperature"])
+def record_air_temperature(buoy_id: str, payload: AirTemperatureReadingCreate, db: Session = Depends(get_db)) -> AirTemperatureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = AirTemperatureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_air_temperature(reading)
+    air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="air_temperature", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/air-temperature", response_model=list[AirTemperatureReading], tags=["air-temperature"])
+def list_air_temperature(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[AirTemperatureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_air_temperature(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=AtmosphericPressureReading, status_code=status.HTTP_201_CREATED, tags=["atmospheric-pressure"])
