@@ -10,12 +10,14 @@ from ..metrics import (
     air_temperature_readings_total,
     humidity_readings_total,
     chlorophyll_a_readings_total,
+    conductivity_readings_total,
     rainfall_readings_total,
     current_acoustic_altimeter_depth_meters,
     current_air_temperature_celsius,
     current_atmospheric_pressure_kpa,
     current_humidity_percent,
     current_chlorophyll_a_ug_l,
+    current_conductivity_us_cm,
     current_rainfall_mm_h,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
@@ -32,6 +34,8 @@ from ..models import (
     HumidityReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
+    ConductivityReading,
+    ConductivityReadingCreate,
     RainfallReading,
     RainfallReadingCreate,
     UnderwaterAcousticReading,
@@ -40,6 +44,27 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/conductivity", response_model=ConductivityReading, status_code=status.HTTP_201_CREATED, tags=["conductivity"])
+def record_conductivity(buoy_id: str, payload: ConductivityReadingCreate, db: Session = Depends(get_db)) -> ConductivityReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = ConductivityReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_conductivity(reading)
+    conductivity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_conductivity_us_cm.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.conductivity_us_cm)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="conductivity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/conductivity", response_model=list[ConductivityReading], tags=["conductivity"])
+def list_conductivity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[ConductivityReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_conductivity(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/chlorophyll-a", response_model=ChlorophyllAReading, status_code=status.HTTP_201_CREATED, tags=["chlorophyll-a"])
