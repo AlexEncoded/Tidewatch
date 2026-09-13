@@ -1192,27 +1192,6 @@ def list_rainfall(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), se
     return repository.list_rainfall(buoy_id, limit, sensor_channel)
 
 
-@app.post("/api/v1/buoys/{buoy_id}/humidity", response_model=HumidityReading, status_code=status.HTTP_201_CREATED, tags=["humidity"])
-def record_humidity(buoy_id: str, payload: HumidityReadingCreate, db: Session = Depends(get_db)) -> HumidityReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = HumidityReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_humidity(reading)
-    humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-    current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
-    record_quality_metric(buoy_id, "humidity", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get("/api/v1/buoys/{buoy_id}/humidity", response_model=list[HumidityReading], tags=["humidity"])
-def list_humidity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[HumidityReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_humidity(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
