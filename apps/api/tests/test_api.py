@@ -108,6 +108,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
         "/api/v1/buoys/{buoy_id}/atmospheric-pressure",
         "/api/v1/buoys/{buoy_id}/air-temperature",
         "/api/v1/buoys/{buoy_id}/humidity",
+        "/api/v1/buoys/{buoy_id}/rainfall",
         "/api/v1/alerts/temperature",
         "/api/v1/alerts/temperature/evaluate",
         "/api/v1/alerts/temperature/stored",

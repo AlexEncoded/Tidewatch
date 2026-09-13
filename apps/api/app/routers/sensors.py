@@ -9,10 +9,12 @@ from ..metrics import (
     atmospheric_pressure_readings_total,
     air_temperature_readings_total,
     humidity_readings_total,
+    rainfall_readings_total,
     current_acoustic_altimeter_depth_meters,
     current_air_temperature_celsius,
     current_atmospheric_pressure_kpa,
     current_humidity_percent,
+    current_rainfall_mm_h,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
     underwater_acoustic_readings_total,
@@ -26,12 +28,35 @@ from ..models import (
     AirTemperatureReadingCreate,
     HumidityReading,
     HumidityReadingCreate,
+    RainfallReading,
+    RainfallReadingCreate,
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/rainfall", response_model=RainfallReading, status_code=status.HTTP_201_CREATED, tags=["rainfall"])
+def record_rainfall(buoy_id: str, payload: RainfallReadingCreate, db: Session = Depends(get_db)) -> RainfallReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = RainfallReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_rainfall(reading)
+    rainfall_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_rainfall_mm_h.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.rainfall_mm_h)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="rainfall", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/rainfall", response_model=list[RainfallReading], tags=["rainfall"])
+def list_rainfall(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[RainfallReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_rainfall(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/humidity", response_model=HumidityReading, status_code=status.HTTP_201_CREATED, tags=["humidity"])
