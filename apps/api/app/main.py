@@ -1038,49 +1038,6 @@ def list_dissolved_oxygen(
     return repository.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 
 
-@app.post(
-    "/api/v1/buoys/{buoy_id}/ph",
-    response_model=PHReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["ph"],
-)
-def record_ph(
-    buoy_id: str,
-    payload: PHReadingCreate,
-    db: Session = Depends(get_db),
-) -> PHReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = PHReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_ph(reading)
-    ph_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    current_ph.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.ph)
-    record_quality_metric(buoy_id, "ph", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/ph",
-    response_model=list[PHReading],
-    tags=["ph"],
-)
-def list_ph(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[PHReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_ph(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
