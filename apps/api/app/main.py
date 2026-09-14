@@ -902,54 +902,6 @@ def list_wind(
     return repository.list_wind(buoy_id, limit, sensor_channel)
 
 
-@app.post(
-    "/api/v1/buoys/{buoy_id}/marine-current",
-    response_model=MarineCurrentReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["marine-current"],
-)
-def record_marine_current(
-    buoy_id: str,
-    payload: MarineCurrentReadingCreate,
-    db: Session = Depends(get_db),
-) -> MarineCurrentReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = MarineCurrentReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_marine_current(reading)
-    marine_current_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    current_marine_current_speed_mps.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.current_speed_mps)
-    current_marine_current_direction_degrees.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.current_direction_degrees)
-    record_quality_metric(
-        buoy_id, "marine_current", reading.sensor_channel, reading.quality
-    )
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/marine-current",
-    response_model=list[MarineCurrentReading],
-    tags=["marine-current"],
-)
-def list_marine_current(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[MarineCurrentReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_marine_current(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,

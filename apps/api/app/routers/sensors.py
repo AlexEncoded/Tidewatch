@@ -18,12 +18,15 @@ from ..metrics import (
     current_turbidity_ntu,
     current_atmospheric_pressure_kpa,
     current_humidity_percent,
+    current_marine_current_direction_degrees,
+    current_marine_current_speed_mps,
     current_ph,
     current_chlorophyll_a_ug_l,
     current_conductivity_us_cm,
     ph_readings_total,
     current_rainfall_mm_h,
     dissolved_oxygen_readings_total,
+    marine_current_readings_total,
     turbidity_readings_total,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
@@ -38,6 +41,8 @@ from ..models import (
     AirTemperatureReadingCreate,
     HumidityReading,
     HumidityReadingCreate,
+    MarineCurrentReading,
+    MarineCurrentReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -56,6 +61,28 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])
+def record_marine_current(buoy_id: str, payload: MarineCurrentReadingCreate, db: Session = Depends(get_db)) -> MarineCurrentReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = MarineCurrentReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_marine_current(reading)
+    marine_current_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_marine_current_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_speed_mps)
+    current_marine_current_direction_degrees.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_direction_degrees)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="marine_current", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/marine-current", response_model=list[MarineCurrentReading], tags=["marine-current"])
+def list_marine_current(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[MarineCurrentReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_marine_current(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/turbidity", response_model=TurbidityReading, status_code=status.HTTP_201_CREATED, tags=["turbidity"])
