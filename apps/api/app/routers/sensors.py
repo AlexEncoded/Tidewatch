@@ -14,6 +14,7 @@ from ..metrics import (
     rainfall_readings_total,
     current_acoustic_altimeter_depth_meters,
     current_air_temperature_celsius,
+    current_dissolved_oxygen_mg_l,
     current_atmospheric_pressure_kpa,
     current_humidity_percent,
     current_ph,
@@ -21,6 +22,7 @@ from ..metrics import (
     current_conductivity_us_cm,
     ph_readings_total,
     current_rainfall_mm_h,
+    dissolved_oxygen_readings_total,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
     underwater_acoustic_readings_total,
@@ -38,6 +40,8 @@ from ..models import (
     ChlorophyllAReadingCreate,
     ConductivityReading,
     ConductivityReadingCreate,
+    DissolvedOxygenReading,
+    DissolvedOxygenReadingCreate,
     PHReading,
     PHReadingCreate,
     RainfallReading,
@@ -50,6 +54,25 @@ from ..repository import BuoyRepository
 router = APIRouter()
 
 
+@router.post("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=DissolvedOxygenReading, status_code=status.HTTP_201_CREATED, tags=["dissolved-oxygen"])
+def record_dissolved_oxygen(buoy_id: str, payload: DissolvedOxygenReadingCreate, db: Session = Depends(get_db)) -> DissolvedOxygenReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = DissolvedOxygenReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_dissolved_oxygen(reading)
+    dissolved_oxygen_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_dissolved_oxygen_mg_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.dissolved_oxygen_mg_l)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="dissolved_oxygen", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=list[DissolvedOxygenReading], tags=["dissolved-oxygen"])
+def list_dissolved_oxygen(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[DissolvedOxygenReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 @router.post("/api/v1/buoys/{buoy_id}/ph", response_model=PHReading, status_code=status.HTTP_201_CREATED, tags=["ph"])
 def record_ph(buoy_id: str, payload: PHReadingCreate, db: Session = Depends(get_db)) -> PHReading:
     repository = BuoyRepository(db)
