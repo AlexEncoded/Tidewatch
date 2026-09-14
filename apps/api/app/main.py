@@ -627,62 +627,6 @@ def pressure_analysis(
 
 
 @app.post(
-    "/api/v1/buoys/{buoy_id}/imu",
-    response_model=ImuReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["imu"],
-)
-def record_imu(
-    buoy_id: str,
-    payload: ImuReadingCreate,
-    db: Session = Depends(get_db),
-) -> ImuReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = ImuReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_imu(reading)
-    imu_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    for axis, value in {
-        "x": reading.acceleration_x_mps2,
-        "y": reading.acceleration_y_mps2,
-        "z": reading.acceleration_z_mps2,
-    }.items():
-        current_imu_acceleration_mps2.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
-        ).set(value)
-    for axis, value in {
-        "x": reading.angular_velocity_x_dps,
-        "y": reading.angular_velocity_y_dps,
-        "z": reading.angular_velocity_z_dps,
-    }.items():
-        current_imu_angular_velocity_dps.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
-        ).set(value)
-    record_quality_metric(buoy_id, "imu", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/imu",
-    response_model=list[ImuReading],
-    tags=["imu"],
-)
-def list_imu(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[ImuReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_imu(buoy_id, limit, sensor_channel)
-
-
-@app.post(
     "/api/v1/buoys/{buoy_id}/ambient-light",
     response_model=AmbientLightReading,
     status_code=status.HTTP_201_CREATED,
