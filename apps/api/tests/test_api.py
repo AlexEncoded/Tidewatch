@@ -113,6 +113,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
         "/api/v1/buoys/{buoy_id}/conductivity",
         "/api/v1/buoys/{buoy_id}/ph",
         "/api/v1/buoys/{buoy_id}/dissolved-oxygen",
+        "/api/v1/buoys/{buoy_id}/turbidity",
         "/api/v1/alerts/temperature",
         "/api/v1/alerts/temperature/evaluate",
         "/api/v1/alerts/temperature/stored",

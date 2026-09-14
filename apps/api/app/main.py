@@ -950,49 +950,6 @@ def list_marine_current(
     return repository.list_marine_current(buoy_id, limit, sensor_channel)
 
 
-@app.post(
-    "/api/v1/buoys/{buoy_id}/turbidity",
-    response_model=TurbidityReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["turbidity"],
-)
-def record_turbidity(
-    buoy_id: str,
-    payload: TurbidityReadingCreate,
-    db: Session = Depends(get_db),
-) -> TurbidityReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = TurbidityReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_turbidity(reading)
-    turbidity_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    current_turbidity_ntu.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.turbidity_ntu)
-    record_quality_metric(buoy_id, "turbidity", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/turbidity",
-    response_model=list[TurbidityReading],
-    tags=["turbidity"],
-)
-def list_turbidity(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[TurbidityReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_turbidity(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,

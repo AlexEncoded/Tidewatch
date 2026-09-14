@@ -15,6 +15,7 @@ from ..metrics import (
     current_acoustic_altimeter_depth_meters,
     current_air_temperature_celsius,
     current_dissolved_oxygen_mg_l,
+    current_turbidity_ntu,
     current_atmospheric_pressure_kpa,
     current_humidity_percent,
     current_ph,
@@ -23,6 +24,7 @@ from ..metrics import (
     ph_readings_total,
     current_rainfall_mm_h,
     dissolved_oxygen_readings_total,
+    turbidity_readings_total,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
     underwater_acoustic_readings_total,
@@ -42,6 +44,8 @@ from ..models import (
     ConductivityReadingCreate,
     DissolvedOxygenReading,
     DissolvedOxygenReadingCreate,
+    TurbidityReading,
+    TurbidityReadingCreate,
     PHReading,
     PHReadingCreate,
     RainfallReading,
@@ -52,6 +56,27 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/turbidity", response_model=TurbidityReading, status_code=status.HTTP_201_CREATED, tags=["turbidity"])
+def record_turbidity(buoy_id: str, payload: TurbidityReadingCreate, db: Session = Depends(get_db)) -> TurbidityReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = TurbidityReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_turbidity(reading)
+    turbidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_turbidity_ntu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.turbidity_ntu)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="turbidity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/turbidity", response_model=list[TurbidityReading], tags=["turbidity"])
+def list_turbidity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[TurbidityReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_turbidity(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=DissolvedOxygenReading, status_code=status.HTTP_201_CREATED, tags=["dissolved-oxygen"])
