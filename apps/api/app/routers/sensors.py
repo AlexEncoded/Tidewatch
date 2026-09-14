@@ -8,6 +8,7 @@ from ..metrics import (
     acoustic_altimeter_readings_total,
     atmospheric_pressure_readings_total,
     air_temperature_readings_total,
+    buoy_last_seen_timestamp_seconds,
     humidity_readings_total,
     chlorophyll_a_readings_total,
     conductivity_readings_total,
@@ -20,6 +21,7 @@ from ..metrics import (
     current_humidity_percent,
     current_marine_current_direction_degrees,
     current_marine_current_speed_mps,
+    current_temperature_celsius,
     current_ph,
     current_chlorophyll_a_ug_l,
     current_conductivity_us_cm,
@@ -28,6 +30,7 @@ from ..metrics import (
     dissolved_oxygen_readings_total,
     marine_current_readings_total,
     turbidity_readings_total,
+    temperature_readings_total,
     current_underwater_acoustic_echo_intensity_db,
     reading_quality_total,
     underwater_acoustic_readings_total,
@@ -43,6 +46,8 @@ from ..models import (
     HumidityReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
+    TemperatureReading,
+    TemperatureReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -61,6 +66,28 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.post("/api/v1/buoys/{buoy_id}/temperatures", response_model=TemperatureReading, status_code=status.HTTP_201_CREATED, tags=["temperature"])
+def record_temperature(buoy_id: str, payload: TemperatureReadingCreate, db: Session = Depends(get_db)) -> TemperatureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = TemperatureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_temperature(reading)
+    temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.temperature_celsius)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="temperature", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(reading.measured_at.timestamp())
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/temperatures", response_model=list[TemperatureReading], tags=["temperature"])
+def list_temperatures(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[TemperatureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_temperatures(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])
