@@ -22,10 +22,12 @@ from ..metrics import (
     current_marine_current_direction_degrees,
     current_marine_current_speed_mps,
     current_temperature_celsius,
+    current_pressure_kpa,
     current_ph,
     current_chlorophyll_a_ug_l,
     current_conductivity_us_cm,
     ph_readings_total,
+    pressure_readings_total,
     current_rainfall_mm_h,
     dissolved_oxygen_readings_total,
     marine_current_readings_total,
@@ -48,6 +50,8 @@ from ..models import (
     MarineCurrentReadingCreate,
     TemperatureReading,
     TemperatureReadingCreate,
+    PressureReading,
+    PressureReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -88,6 +92,27 @@ def list_temperatures(buoy_id: str, limit: int = Query(default=50, ge=1, le=500)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_temperatures(buoy_id, limit, sensor_channel)
+
+
+@router.post("/api/v1/buoys/{buoy_id}/pressures", response_model=PressureReading, status_code=status.HTTP_201_CREATED, tags=["pressure"])
+def record_pressure(buoy_id: str, payload: PressureReadingCreate, db: Session = Depends(get_db)) -> PressureReading:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    reading = PressureReading(buoy_id=buoy_id, **payload.model_dump())
+    saved_reading = repository.add_pressure(reading)
+    pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+    current_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.pressure_kpa)
+    reading_quality_total.labels(buoy_id=buoy_id, sensor_family="pressure", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
+    return saved_reading
+
+
+@router.get("/api/v1/buoys/{buoy_id}/pressures", response_model=list[PressureReading], tags=["pressure"])
+def list_pressures(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[PressureReading]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_pressures(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])
