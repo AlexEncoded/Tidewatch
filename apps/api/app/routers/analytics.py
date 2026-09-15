@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.pressure_analysis import analyze_pressure_for_buoy
 from ..application.temperature_analysis import (
     analyze_temperature_for_buoy,
     analyze_temperature_readings,
@@ -12,11 +13,23 @@ from ..application.temperature_analysis import (
 from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_imu_factor
 from ..database import get_db
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
-from ..models import MovementAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
+from ..models import MovementAnalysis, PressureAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
 from ..repository import BuoyRepository
 
 
 router = APIRouter()
+
+
+@router.get("/api/v1/buoys/{buoy_id}/pressure-analysis", response_model=PressureAnalysis, tags=["pressure"])
+def pressure_analysis(
+    buoy_id: str,
+    window: int = Query(default=50, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> PressureAnalysis:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return analyze_pressure_for_buoy(repository, buoy_id, window)
 
 
 @router.get("/api/v1/buoys/{buoy_id}/movement-analysis", response_model=MovementAnalysis, tags=["buoys"])
