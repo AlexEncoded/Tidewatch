@@ -43,6 +43,25 @@ snapshot export for offline analysis. Pressure-based wave height, movement and
 sea-state classification are explicitly experimental until real sensor
 calibration is available.
 
+## API adapter boundaries
+
+The FastAPI application is a modular monolith. HTTP adapters are progressively
+grouped by responsibility under `apps/api/app/routers/`:
+
+- `devices.py` and `buoys.py` expose fleet and device management;
+- `sensors.py` exposes the individual sensor reading contracts and sensor-health
+  history;
+- `analytics.py`, `battery.py`, `quality.py` and `alerts.py` expose analytical
+  and operational use cases;
+- `telemetry.py` exposes fleet telemetry exports;
+- `system.py` exposes health and Prometheus endpoints.
+
+Domain rules remain in `apps/api/app/domain/`, while application services in
+`apps/api/app/application/` coordinate use cases and ports. The remaining
+large adapters (`sensor-health` evaluation, maintenance orchestration and
+batch telemetry ingestion) are intentionally being extracted incrementally so
+each boundary can be validated by the API and worker test suites.
+
 ## Servicios Azure
 
 - AKS para ejecutar las cargas de trabajo.
