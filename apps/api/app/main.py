@@ -48,7 +48,6 @@ from .models import (
     ImuReadingCreate,
     PressureReading,
     PressureReadingCreate,
-    PressureAnalysis,
     SalinityReading,
     SalinityReadingCreate,
     SensorHealth,
@@ -86,7 +85,6 @@ from .routers.alerts import router as alerts_router
 from .routers.sensors import router as sensors_router
 from .routers.system import router as system_router
 from .application.movement_analysis import analyze_movement_for_buoy
-from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_health import analyze_battery_health_for_buoy
 from .metrics import (
     battery_percent,
