@@ -68,6 +68,34 @@ servicio en el backend de trazas.
 | `GET` | `/api/v1/buoys/{id}/pressure-analysis` | Estimar oleaje experimental |
 | `POST` | `/api/v1/buoys/{id}/salinity` | Registrar salinidad |
 | `GET` | `/api/v1/buoys/{id}/salinity` | Consultar salinidad |
+| `POST` | `/api/v1/buoys/{id}/imu` | Registrar movimiento IMU |
+| `GET` | `/api/v1/buoys/{id}/imu` | Consultar movimiento IMU |
+| `POST` | `/api/v1/buoys/{id}/ambient-light` | Registrar luz ambiental |
+| `GET` | `/api/v1/buoys/{id}/ambient-light` | Consultar luz ambiental |
+| `POST` | `/api/v1/buoys/{id}/wind` | Registrar viento |
+| `GET` | `/api/v1/buoys/{id}/wind` | Consultar viento |
+| `POST` | `/api/v1/buoys/{id}/marine-current` | Registrar corriente marina |
+| `GET` | `/api/v1/buoys/{id}/marine-current` | Consultar corriente marina |
+| `POST` | `/api/v1/buoys/{id}/turbidity` | Registrar turbidez |
+| `GET` | `/api/v1/buoys/{id}/turbidity` | Consultar turbidez |
+| `POST` | `/api/v1/buoys/{id}/dissolved-oxygen` | Registrar oxígeno disuelto |
+| `GET` | `/api/v1/buoys/{id}/dissolved-oxygen` | Consultar oxígeno disuelto |
+| `POST` | `/api/v1/buoys/{id}/ph` | Registrar pH |
+| `GET` | `/api/v1/buoys/{id}/ph` | Consultar pH |
+| `POST` | `/api/v1/buoys/{id}/conductivity` | Registrar conductividad |
+| `GET` | `/api/v1/buoys/{id}/conductivity` | Consultar conductividad |
+| `POST` | `/api/v1/buoys/{id}/chlorophyll-a` | Registrar clorofila-a |
+| `GET` | `/api/v1/buoys/{id}/chlorophyll-a` | Consultar clorofila-a |
+| `POST` | `/api/v1/buoys/{id}/rainfall` | Registrar lluvia |
+| `GET` | `/api/v1/buoys/{id}/rainfall` | Consultar lluvia |
+| `POST` | `/api/v1/buoys/{id}/humidity` | Registrar humedad |
+| `GET` | `/api/v1/buoys/{id}/humidity` | Consultar humedad |
+| `POST` | `/api/v1/buoys/{id}/air-temperature` | Registrar temperatura del aire |
+| `GET` | `/api/v1/buoys/{id}/air-temperature` | Consultar temperatura del aire |
+| `POST` | `/api/v1/buoys/{id}/atmospheric-pressure` | Registrar presión atmosférica |
+| `GET` | `/api/v1/buoys/{id}/atmospheric-pressure` | Consultar presión atmosférica |
+| `POST` | `/api/v1/buoys/{id}/acoustic-altimeter` | Registrar altímetro acústico |
+| `GET` | `/api/v1/buoys/{id}/acoustic-altimeter` | Consultar altímetro acústico |
 | `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería A/B |
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar batería, opcionalmente por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery/history` | Consultar histórico de batería por unidad |
@@ -80,6 +108,8 @@ servicio en el backend de trazas.
 | `GET` | `/api/v1/buoys/{id}/underwater-acoustic` | Consultar eco submarino |
 | `GET` | `/api/v1/locations/export` | Exportar posiciones de toda la flota |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar sensores A/B |
+| `POST` | `/api/v1/buoys/{id}/sensor-health/check` | Guardar evaluación de salud |
+| `GET` | `/api/v1/buoys/{id}/sensor-health/history` | Consultar historial de salud |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias |
 | `GET` | `/api/v1/buoys/{id}/temperature-analysis` | Analizar anomalías |
 | `GET` | `/api/v1/alerts/temperature` | Listar alertas de temperatura |
