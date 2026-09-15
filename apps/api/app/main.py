@@ -626,52 +626,6 @@ def pressure_analysis(
     return analyze_pressure_for_buoy(repository, buoy_id, window)
 
 
-@app.post(
-    "/api/v1/buoys/{buoy_id}/wind",
-    response_model=WindReading,
-    status_code=status.HTTP_201_CREATED,
-    tags=["wind"],
-)
-def record_wind(
-    buoy_id: str,
-    payload: WindReadingCreate,
-    db: Session = Depends(get_db),
-) -> WindReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = WindReading(buoy_id=buoy_id, **payload.model_dump())
-    saved_reading = repository.add_wind(reading)
-    wind_readings_total.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).inc()
-    current_wind_speed_mps.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.wind_speed_mps)
-    current_wind_direction_degrees.labels(
-        buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-    ).set(reading.wind_direction_degrees)
-    record_quality_metric(buoy_id, "wind", reading.sensor_channel, reading.quality)
-    return saved_reading
-
-
-@app.get(
-    "/api/v1/buoys/{buoy_id}/wind",
-    response_model=list[WindReading],
-    tags=["wind"],
-)
-def list_wind(
-    buoy_id: str,
-    limit: int = Query(default=50, ge=1, le=500),
-    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
-    db: Session = Depends(get_db),
-) -> list[WindReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_wind(buoy_id, limit, sensor_channel)
-
-
 @app.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
