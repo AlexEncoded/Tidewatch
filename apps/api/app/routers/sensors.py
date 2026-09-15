@@ -70,6 +70,7 @@ from ..models import (
     AmbientLightReadingCreate,
     WindReading,
     WindReadingCreate,
+    SensorHealthCheck,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -88,6 +89,14 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+@router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
+def sensor_health_history(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), db: Session = Depends(get_db)) -> list[SensorHealthCheck]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return repository.list_sensor_health_checks(buoy_id, limit)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/wind", response_model=WindReading, status_code=status.HTTP_201_CREATED, tags=["wind"])
