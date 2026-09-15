@@ -7,9 +7,6 @@ import time
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import get_db
@@ -87,6 +84,7 @@ from .routers.battery import router as battery_router
 from .routers.quality import router as quality_router
 from .routers.alerts import router as alerts_router
 from .routers.sensors import router as sensors_router
+from .routers.system import router as system_router
 from .application.movement_analysis import analyze_movement_for_buoy
 from .application.pressure_analysis import analyze_pressure_for_buoy
 from .application.battery_health import analyze_battery_health_for_buoy
@@ -184,6 +182,7 @@ app.include_router(battery_router)
 app.include_router(quality_router)
 app.include_router(alerts_router)
 app.include_router(sensors_router)
+app.include_router(system_router)
 
 
 @app.middleware("http")
@@ -211,17 +210,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["*"],
 )
-
-
-@app.get("/health", tags=["system"])
-def health(db: Session = Depends(get_db)) -> dict[str, str]:
-    db.execute(text("SELECT 1"))
-    return {"status": "ok"}
-
-
-@app.get("/metrics", include_in_schema=False)
-def metrics() -> Response:
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.post(
