@@ -95,6 +95,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
     openapi_paths = app.openapi()["paths"]
 
     expected_paths = {
+        "/health",
         "/api/v1/buoys/{buoy_id}/battery",
         "/api/v1/buoys/{buoy_id}/battery/history",
         "/api/v1/buoys/{buoy_id}/battery-analysis",
