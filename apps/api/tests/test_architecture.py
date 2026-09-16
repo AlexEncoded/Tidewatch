@@ -31,3 +31,4 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert "fastapi" not in modules
     assert "sqlalchemy" not in modules
     assert not any(module.endswith(".database") for module in modules)
+    assert not any(module.endswith(".repository") for module in modules)
