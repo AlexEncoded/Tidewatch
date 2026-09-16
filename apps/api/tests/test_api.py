@@ -136,6 +136,30 @@ def test_modularized_sensor_routes_remain_registered() -> None:
     assert expected_paths <= openapi_paths.keys()
 
 
+def test_modularized_sensor_routes_are_owned_by_routers() -> None:
+    modularized_paths = {
+        "/health",
+        "/api/v1/buoys/{buoy_id}/temperatures",
+        "/api/v1/buoys/{buoy_id}/pressures",
+        "/api/v1/buoys/{buoy_id}/salinity",
+        "/api/v1/buoys/{buoy_id}/imu",
+        "/api/v1/buoys/{buoy_id}/ambient-light",
+        "/api/v1/buoys/{buoy_id}/wind",
+        "/api/v1/buoys/{buoy_id}/marine-current",
+        "/api/v1/buoys/{buoy_id}/sensor-health/history",
+        "/api/v1/buoys/{buoy_id}/pressure-analysis",
+    }
+    route_modules = {
+        route.path: route.endpoint.__module__
+        for route in app.routes
+        if hasattr(route, "path") and hasattr(route, "endpoint")
+    }
+
+    assert all(
+        route_modules[path].startswith("app.routers.") for path in modularized_paths
+    )
+
+
 def test_http_requests_are_logged(caplog) -> None:
     with caplog.at_level(logging.INFO, logger="tidewatch.api"):
         response = client.get("/health")
