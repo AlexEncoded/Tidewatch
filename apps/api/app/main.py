@@ -59,7 +59,7 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
-from .application.sensor_health import assess_sensor_health
+from .application.sensor_health import assess_sensor_health, persist_sensor_health_check
 from .application.maintenance_notifications import build_maintenance_notification_payload
 from .domain.maintenance import (
     is_buoy_drifting,
@@ -949,7 +949,7 @@ def record_sensor_health_check(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, db=db)
-    return repository.add_sensor_health_check(health)
+    return persist_sensor_health_check(repository, health)
 
 
 @app.get(
