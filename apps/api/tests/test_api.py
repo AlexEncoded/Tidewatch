@@ -32,6 +32,9 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app, configured_wave_imu_factor
+from app.routers.analytics import router as analytics_router
+from app.routers.sensors import router as sensors_router
+from app.routers.system import router as system_router
 from app.analytics import analyze_wave
 from app.telemetry import configure_telemetry
 import app.main as main_module
@@ -151,8 +154,8 @@ def test_modularized_sensor_routes_are_owned_by_routers() -> None:
     }
     route_modules = {
         route.path: route.endpoint.__module__
-        for route in app.routes
-        if hasattr(route, "path") and hasattr(route, "endpoint")
+        for router in (analytics_router, sensors_router, system_router)
+        for route in router.routes
     }
 
     assert all(
