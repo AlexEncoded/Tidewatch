@@ -59,7 +59,11 @@ from .models import (
 )
 from .repository import BuoyRepository
 from .telemetry import configure_telemetry
-from .application.sensor_health import assess_sensor_health, persist_sensor_health_check
+from .application.sensor_health import (
+    assess_sensor_health,
+    collect_sensor_readings,
+    persist_sensor_health_check,
+)
 from .application.maintenance_notifications import build_maintenance_notification_payload
 from .domain.maintenance import (
     is_buoy_drifting,
@@ -611,135 +615,46 @@ def sensor_health(
 
     now = datetime.now(timezone.utc)
     max_age_seconds = max_age_minutes * 60
-    temperature_a = latest_usable_reading(
-        repository.list_temperatures(buoy_id, 50, "A"), max_age_seconds, now
+    sensor_readings = collect_sensor_readings(
+        repository, buoy_id, max_age_seconds, now
     )
-    temperature_b = latest_usable_reading(
-        repository.list_temperatures(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    pressure_a = latest_usable_reading(
-        repository.list_pressures(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    pressure_b = latest_usable_reading(
-        repository.list_pressures(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    salinity_a = latest_usable_reading(
-        repository.list_salinity(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    salinity_b = latest_usable_reading(
-        repository.list_salinity(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    imu_a = latest_usable_reading(
-        repository.list_imu(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    imu_b = latest_usable_reading(
-        repository.list_imu(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    ambient_light_a = latest_usable_reading(
-        repository.list_ambient_light(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    ambient_light_b = latest_usable_reading(
-        repository.list_ambient_light(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    wind_a = latest_usable_reading(
-        repository.list_wind(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    wind_b = latest_usable_reading(
-        repository.list_wind(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    marine_current_a = latest_usable_reading(
-        repository.list_marine_current(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    marine_current_b = latest_usable_reading(
-        repository.list_marine_current(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    turbidity_a = latest_usable_reading(
-        repository.list_turbidity(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    turbidity_b = latest_usable_reading(
-        repository.list_turbidity(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    dissolved_oxygen_a = latest_usable_reading(
-        repository.list_dissolved_oxygen(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    dissolved_oxygen_b = latest_usable_reading(
-        repository.list_dissolved_oxygen(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    ph_a = latest_usable_reading(
-        repository.list_ph(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    ph_b = latest_usable_reading(
-        repository.list_ph(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    conductivity_a = latest_usable_reading(
-        repository.list_conductivity(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    conductivity_b = latest_usable_reading(
-        repository.list_conductivity(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    chlorophyll_a = latest_usable_reading(
-        repository.list_chlorophyll_a(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    chlorophyll_b = latest_usable_reading(
-        repository.list_chlorophyll_a(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    rainfall_a = latest_usable_reading(
-        repository.list_rainfall(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    rainfall_b = latest_usable_reading(
-        repository.list_rainfall(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    humidity_a = latest_usable_reading(
-        repository.list_humidity(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    humidity_b = latest_usable_reading(
-        repository.list_humidity(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    air_temperature_a = latest_usable_reading(
-        repository.list_air_temperature(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    air_temperature_b = latest_usable_reading(
-        repository.list_air_temperature(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    atmospheric_pressure_a = latest_usable_reading(
-        repository.list_atmospheric_pressure(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    atmospheric_pressure_b = latest_usable_reading(
-        repository.list_atmospheric_pressure(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    acoustic_altimeter_a = latest_usable_reading(
-        repository.list_acoustic_altimeter(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    acoustic_altimeter_b = latest_usable_reading(
-        repository.list_acoustic_altimeter(buoy_id, 50, "B"), max_age_seconds, now
-    )
-    underwater_acoustic_a = latest_usable_reading(
-        repository.list_underwater_acoustic(buoy_id, 50, "A"), max_age_seconds, now
-    )
-    underwater_acoustic_b = latest_usable_reading(
-        repository.list_underwater_acoustic(buoy_id, 50, "B"), max_age_seconds, now
-    )
+    temperature_a = sensor_readings["temperature"]["A"]
+    temperature_b = sensor_readings["temperature"]["B"]
+    pressure_a = sensor_readings["pressure"]["A"]
+    pressure_b = sensor_readings["pressure"]["B"]
+    salinity_a = sensor_readings["salinity"]["A"]
+    salinity_b = sensor_readings["salinity"]["B"]
+    imu_a = sensor_readings["imu"]["A"]
+    imu_b = sensor_readings["imu"]["B"]
+    ambient_light_a = sensor_readings["ambient_light"]["A"]
+    ambient_light_b = sensor_readings["ambient_light"]["B"]
+    wind_a = sensor_readings["wind"]["A"]
+    wind_b = sensor_readings["wind"]["B"]
+    marine_current_a = sensor_readings["marine_current"]["A"]
+    marine_current_b = sensor_readings["marine_current"]["B"]
+    turbidity_a = sensor_readings["turbidity"]["A"]
+    turbidity_b = sensor_readings["turbidity"]["B"]
+    dissolved_oxygen_a = sensor_readings["dissolved_oxygen"]["A"]
+    dissolved_oxygen_b = sensor_readings["dissolved_oxygen"]["B"]
+    ph_a = sensor_readings["ph"]["A"]
+    ph_b = sensor_readings["ph"]["B"]
+    conductivity_a = sensor_readings["conductivity"]["A"]
+    conductivity_b = sensor_readings["conductivity"]["B"]
+    chlorophyll_a = sensor_readings["chlorophyll_a"]["A"]
+    chlorophyll_b = sensor_readings["chlorophyll_a"]["B"]
+    rainfall_a = sensor_readings["rainfall"]["A"]
+    rainfall_b = sensor_readings["rainfall"]["B"]
+    humidity_a = sensor_readings["humidity"]["A"]
+    humidity_b = sensor_readings["humidity"]["B"]
+    air_temperature_a = sensor_readings["air_temperature"]["A"]
+    air_temperature_b = sensor_readings["air_temperature"]["B"]
+    atmospheric_pressure_a = sensor_readings["atmospheric_pressure"]["A"]
+    atmospheric_pressure_b = sensor_readings["atmospheric_pressure"]["B"]
+    acoustic_altimeter_a = sensor_readings["acoustic_altimeter"]["A"]
+    acoustic_altimeter_b = sensor_readings["acoustic_altimeter"]["B"]
+    underwater_acoustic_a = sensor_readings["underwater_acoustic"]["A"]
+    underwater_acoustic_b = sensor_readings["underwater_acoustic"]["B"]
 
-    sensor_readings = {
-        "temperature": {"A": temperature_a, "B": temperature_b},
-        "pressure": {"A": pressure_a, "B": pressure_b},
-        "salinity": {"A": salinity_a, "B": salinity_b},
-        "imu": {"A": imu_a, "B": imu_b},
-        "ambient_light": {"A": ambient_light_a, "B": ambient_light_b},
-        "wind": {"A": wind_a, "B": wind_b},
-        "marine_current": {"A": marine_current_a, "B": marine_current_b},
-        "turbidity": {"A": turbidity_a, "B": turbidity_b},
-        "dissolved_oxygen": {"A": dissolved_oxygen_a, "B": dissolved_oxygen_b},
-        "ph": {"A": ph_a, "B": ph_b},
-        "conductivity": {"A": conductivity_a, "B": conductivity_b},
-        "chlorophyll_a": {"A": chlorophyll_a, "B": chlorophyll_b},
-        "rainfall": {"A": rainfall_a, "B": rainfall_b},
-        "humidity": {"A": humidity_a, "B": humidity_b},
-        "air_temperature": {"A": air_temperature_a, "B": air_temperature_b},
-        "atmospheric_pressure": {"A": atmospheric_pressure_a, "B": atmospheric_pressure_b},
-        "acoustic_altimeter": {"A": acoustic_altimeter_a, "B": acoustic_altimeter_b},
-        "underwater_acoustic": {"A": underwater_acoustic_a, "B": underwater_acoustic_b},
-    }
     deltas = {
         "temperature": (
             round(absolute_difference(temperature_a[0].temperature_celsius, temperature_b[0].temperature_celsius), 3)
