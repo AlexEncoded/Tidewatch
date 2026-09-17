@@ -72,7 +72,6 @@ from .domain.maintenance import (
     missing_redundant_battery_device,
 )
 from .domain.reading_quality import classify_latest_readings
-from .domain.telemetry import latest_usable_reading
 from .domain.devices import DeviceOwnershipError, validate_device_ownership
 from .domain.directions import circular_difference_degrees
 from .domain.vectors import euclidean_difference
