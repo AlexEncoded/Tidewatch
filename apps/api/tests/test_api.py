@@ -32,9 +32,14 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app, configured_wave_imu_factor
+from app.routers.alerts import router as alerts_router
 from app.routers.analytics import router as analytics_router
+from app.routers.battery import router as battery_router
+from app.routers.buoys import router as buoys_router
+from app.routers.devices import router as devices_router
 from app.routers.ingestion import router as ingestion_router
 from app.routers.maintenance import router as maintenance_router
+from app.routers.quality import router as quality_router
 from app.routers.telemetry import router as telemetry_router
 import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
@@ -143,7 +148,7 @@ def test_modularized_sensor_routes_remain_registered() -> None:
     assert expected_paths <= openapi_paths.keys()
 
 
-def test_modularized_sensor_routes_are_owned_by_routers() -> None:
+def test_modularized_routes_are_owned_by_routers() -> None:
     modularized_paths = {
         "/health",
         "/api/v1/buoys/{buoy_id}/temperatures",
@@ -163,9 +168,14 @@ def test_modularized_sensor_routes_are_owned_by_routers() -> None:
     route_modules = {
         route.path: route.endpoint.__module__
         for router in (
+            alerts_router,
             analytics_router,
+            battery_router,
+            buoys_router,
+            devices_router,
             ingestion_router,
             maintenance_router,
+            quality_router,
             sensors_router,
             system_router,
             telemetry_router,
