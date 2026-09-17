@@ -1,9 +1,17 @@
 """Specialized sensor telemetry endpoints."""
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..application.sensor_health import (
+    assess_sensor_health,
+    calculate_sensor_health_deltas,
+    collect_sensor_readings,
+    persist_sensor_health_check,
+)
 from ..metrics import (
     acoustic_altimeter_readings_total,
     atmospheric_pressure_readings_total,
@@ -30,6 +38,9 @@ from ..metrics import (
     current_ambient_light_lux,
     current_wind_speed_mps,
     current_wind_direction_degrees,
+    sensor_channel_missing,
+    sensor_degraded,
+    sensor_health_decision,
     current_ph,
     current_chlorophyll_a_ug_l,
     current_conductivity_us_cm,
@@ -71,6 +82,7 @@ from ..models import (
     WindReading,
     WindReadingCreate,
     SensorHealthCheck,
+    SensorHealth,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -479,3 +491,129 @@ def list_underwater_acoustic(buoy_id: str, limit: int = Query(default=50, ge=1, 
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_underwater_acoustic(buoy_id, limit, sensor_channel)
+@router.get(
+    "/api/v1/buoys/{buoy_id}/sensor-health",
+    response_model=SensorHealth,
+    tags=["sensors"],
+)
+def sensor_health(
+    buoy_id: str,
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> SensorHealth:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+
+    now = datetime.now(timezone.utc)
+    max_age_seconds = max_age_minutes * 60
+    sensor_readings = collect_sensor_readings(
+        repository, buoy_id, max_age_seconds, now
+    )
+    temperature_a = sensor_readings["temperature"]["A"]
+    temperature_b = sensor_readings["temperature"]["B"]
+    pressure_a = sensor_readings["pressure"]["A"]
+    pressure_b = sensor_readings["pressure"]["B"]
+    salinity_a = sensor_readings["salinity"]["A"]
+    salinity_b = sensor_readings["salinity"]["B"]
+    imu_a = sensor_readings["imu"]["A"]
+    imu_b = sensor_readings["imu"]["B"]
+    ambient_light_a = sensor_readings["ambient_light"]["A"]
+    ambient_light_b = sensor_readings["ambient_light"]["B"]
+    wind_a = sensor_readings["wind"]["A"]
+    wind_b = sensor_readings["wind"]["B"]
+    marine_current_a = sensor_readings["marine_current"]["A"]
+    marine_current_b = sensor_readings["marine_current"]["B"]
+    turbidity_a = sensor_readings["turbidity"]["A"]
+    turbidity_b = sensor_readings["turbidity"]["B"]
+    dissolved_oxygen_a = sensor_readings["dissolved_oxygen"]["A"]
+    dissolved_oxygen_b = sensor_readings["dissolved_oxygen"]["B"]
+    ph_a = sensor_readings["ph"]["A"]
+    ph_b = sensor_readings["ph"]["B"]
+    conductivity_a = sensor_readings["conductivity"]["A"]
+    conductivity_b = sensor_readings["conductivity"]["B"]
+    chlorophyll_a = sensor_readings["chlorophyll_a"]["A"]
+    chlorophyll_b = sensor_readings["chlorophyll_a"]["B"]
+    rainfall_a = sensor_readings["rainfall"]["A"]
+    rainfall_b = sensor_readings["rainfall"]["B"]
+    humidity_a = sensor_readings["humidity"]["A"]
+    humidity_b = sensor_readings["humidity"]["B"]
+    air_temperature_a = sensor_readings["air_temperature"]["A"]
+    air_temperature_b = sensor_readings["air_temperature"]["B"]
+    atmospheric_pressure_a = sensor_readings["atmospheric_pressure"]["A"]
+    atmospheric_pressure_b = sensor_readings["atmospheric_pressure"]["B"]
+    acoustic_altimeter_a = sensor_readings["acoustic_altimeter"]["A"]
+    acoustic_altimeter_b = sensor_readings["acoustic_altimeter"]["B"]
+    underwater_acoustic_a = sensor_readings["underwater_acoustic"]["A"]
+    underwater_acoustic_b = sensor_readings["underwater_acoustic"]["B"]
+
+    deltas = calculate_sensor_health_deltas(sensor_readings)
+    health_evaluation = assess_sensor_health(deltas, sensor_readings)
+    degraded_sensors = health_evaluation.degraded_sensors
+    missing_sensors = health_evaluation.missing_sensors
+    status_value = health_evaluation.status
+
+    for sensor, channels in sensor_readings.items():
+        has_reading = any(channels.values())
+        for channel, reading in channels.items():
+            sensor_channel_missing.labels(
+                buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
+            ).set(1 if has_reading and not reading else 0)
+        sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
+            1 if sensor in degraded_sensors or any(
+                missing.startswith(f"{sensor}:") for missing in missing_sensors
+            ) else 0
+        )
+
+    decisions = health_evaluation.decisions
+    for sensor in sensor_readings:
+        for decision in ("average", "fallback_a", "fallback_b", "invalid"):
+            sensor_health_decision.labels(
+                buoy_id=buoy_id, sensor=sensor, decision=decision
+            ).set(1 if decisions[sensor] == decision else 0)
+    return SensorHealth(
+        buoy_id=buoy_id,
+        status=status_value,
+        temperature_delta_celsius=deltas["temperature"],
+        pressure_delta_kpa=deltas["pressure"],
+        salinity_delta_psu=deltas["salinity"],
+        imu_acceleration_delta_mps2=deltas["imu"],
+        ambient_light_delta_lux=deltas["ambient_light"],
+        wind_speed_delta_mps=deltas["wind_speed"],
+        wind_direction_delta_degrees=deltas["wind_direction"],
+        marine_current_speed_delta_mps=deltas["marine_current_speed"],
+        marine_current_direction_delta_degrees=deltas["marine_current_direction"],
+        turbidity_delta_ntu=deltas["turbidity"],
+        dissolved_oxygen_delta_mg_l=deltas["dissolved_oxygen"],
+        ph_delta=deltas["ph"],
+        conductivity_delta_us_cm=deltas["conductivity"],
+        chlorophyll_a_delta_ug_l=deltas["chlorophyll_a"],
+        rainfall_delta_mm_h=deltas["rainfall"],
+        humidity_delta_percent=deltas["humidity"],
+        air_temperature_delta_celsius=deltas["air_temperature"],
+        atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
+        acoustic_altimeter_delta_meters=deltas["acoustic_altimeter"],
+        underwater_acoustic_delta_db=deltas["underwater_acoustic"],
+        degraded_sensors=degraded_sensors,
+        missing_sensors=missing_sensors,
+        decisions=decisions,
+        checked_at=now,
+    )
+
+
+@router.post(
+    "/api/v1/buoys/{buoy_id}/sensor-health/check",
+    response_model=SensorHealthCheck,
+    status_code=status.HTTP_201_CREATED,
+    tags=["sensors"],
+)
+def record_sensor_health_check(
+    buoy_id: str,
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> SensorHealthCheck:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, db=db)
+    return persist_sensor_health_check(repository, health)
