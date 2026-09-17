@@ -32,3 +32,19 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert "sqlalchemy" not in modules
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
+
+
+def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:
+    tree = ast.parse((API_APP / "main.py").read_text(encoding="utf-8"))
+    route_decorators = {"get", "post", "put", "patch", "delete"}
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
+                assert not (
+                    isinstance(decorator.func.value, ast.Name)
+                    and decorator.func.value.id == "app"
+                    and decorator.func.attr in route_decorators
+                )
