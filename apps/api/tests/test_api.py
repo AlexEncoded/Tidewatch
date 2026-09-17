@@ -173,6 +173,7 @@ def test_modularized_sensor_routes_are_owned_by_routers() -> None:
         for route in router.routes
     }
 
+    assert all(module.startswith("app.routers.") for module in route_modules.values())
     assert all(
         route_modules[path].startswith("app.routers.") for path in modularized_paths
     )
