@@ -74,9 +74,6 @@ from .domain.maintenance import (
 )
 from .domain.reading_quality import classify_latest_readings
 from .domain.devices import DeviceOwnershipError, validate_device_ownership
-from .domain.directions import circular_difference_degrees
-from .domain.vectors import euclidean_difference
-from .domain.deltas import absolute_difference
 from .application.wave_analysis import configured_wave_imu_factor
 from .application.device_heartbeat import record_device_heartbeat
 from .routers.devices import router as devices_router
