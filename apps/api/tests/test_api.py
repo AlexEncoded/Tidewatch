@@ -35,6 +35,7 @@ from app.main import app, configured_wave_imu_factor
 from app.routers.analytics import router as analytics_router
 from app.routers.ingestion import router as ingestion_router
 from app.routers.maintenance import router as maintenance_router
+from app.routers.telemetry import router as telemetry_router
 import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
@@ -155,6 +156,7 @@ def test_modularized_sensor_routes_are_owned_by_routers() -> None:
         "/api/v1/buoys/{buoy_id}/sensor-health/history",
         "/api/v1/buoys/{buoy_id}/pressure-analysis",
         "/api/v1/buoys/{buoy_id}/telemetry",
+        "/api/v1/locations/export",
         "/api/v1/maintenance/issues",
         "/api/v1/maintenance/notifications",
     }
@@ -166,6 +168,7 @@ def test_modularized_sensor_routes_are_owned_by_routers() -> None:
             maintenance_router,
             sensors_router,
             system_router,
+            telemetry_router,
         )
         for route in router.routes
     }
