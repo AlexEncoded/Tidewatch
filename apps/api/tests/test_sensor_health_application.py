@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from app.application.sensor_health import (
     assess_sensor_health,
+    calculate_sensor_health_deltas,
     collect_sensor_readings,
     persist_sensor_health_check,
 )
@@ -48,3 +50,29 @@ def test_sensor_health_application_service_collects_redundant_channels() -> None
     assert len(readings) == 18
     assert set(readings["temperature"]) == {"A", "B"}
     assert readings["underwater_acoustic"]["A"] == []
+
+
+def test_sensor_health_application_service_calculates_scalar_and_circular_deltas() -> None:
+    families = {
+        family: {"A": [], "B": []}
+        for family in (
+            "temperature", "pressure", "salinity", "imu", "ambient_light", "wind",
+            "marine_current", "turbidity", "dissolved_oxygen", "ph", "conductivity",
+            "chlorophyll_a", "rainfall", "humidity", "air_temperature",
+            "atmospheric_pressure", "acoustic_altimeter", "underwater_acoustic",
+        )
+    }
+    families["temperature"] = {
+        "A": [SimpleNamespace(temperature_celsius=20.0)],
+        "B": [SimpleNamespace(temperature_celsius=18.5)],
+    }
+    families["wind"] = {
+        "A": [SimpleNamespace(wind_speed_mps=2.0, wind_direction_degrees=359.0)],
+        "B": [SimpleNamespace(wind_speed_mps=1.0, wind_direction_degrees=1.0)],
+    }
+
+    deltas = calculate_sensor_health_deltas(families)
+
+    assert deltas["temperature"] == 1.5
+    assert deltas["wind_speed"] == 1.0
+    assert deltas["wind_direction"] == 2.0
