@@ -33,6 +33,7 @@ from app.entities import (
 )
 from app.main import app, configured_wave_imu_factor
 from app.routers.analytics import router as analytics_router
+import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
 from app.analytics import analyze_wave
@@ -1043,7 +1044,7 @@ def test_maintenance_notification_delivers_current_issues(monkeypatch) -> None:
         return WebhookResponse()
 
     monkeypatch.setenv("MAINTENANCE_WEBHOOK_URL", "https://hooks.example.test/tidewatch")
-    monkeypatch.setattr(main_module.httpx, "post", fake_post)
+    monkeypatch.setattr(maintenance_module.httpx, "post", fake_post)
 
     response = client.post("/api/v1/maintenance/notifications")
 
