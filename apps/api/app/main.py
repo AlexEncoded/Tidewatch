@@ -61,6 +61,7 @@ from .repository import BuoyRepository
 from .telemetry import configure_telemetry
 from .application.sensor_health import (
     assess_sensor_health,
+    calculate_sensor_health_deltas,
     collect_sensor_readings,
     persist_sensor_health_check,
 )
@@ -795,6 +796,7 @@ def sensor_health(
             else None
         ),
     }
+    deltas = calculate_sensor_health_deltas(sensor_readings)
     health_evaluation = assess_sensor_health(deltas, sensor_readings)
     degraded_sensors = health_evaluation.degraded_sensors
     missing_sensors = health_evaluation.missing_sensors
