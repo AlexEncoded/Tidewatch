@@ -53,14 +53,17 @@ grouped by responsibility under `apps/api/app/routers/`:
   history;
 - `analytics.py`, `battery.py`, `quality.py` and `alerts.py` expose analytical
   and operational use cases;
-- `telemetry.py` exposes fleet telemetry exports;
+- `telemetry.py` exposes fleet telemetry exports and `ingestion.py` handles
+  batch telemetry ingestion;
+- `maintenance.py` exposes maintenance issues and webhook notifications;
 - `system.py` exposes health and Prometheus endpoints.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. The remaining
-large adapters (`sensor-health` evaluation, maintenance orchestration and
-batch telemetry ingestion) are intentionally being extracted incrementally so
-each boundary can be validated by the API and worker test suites.
+large cross-cutting work is now concentrated in the application services behind
+maintenance orchestration and telemetry ingestion. Their HTTP boundaries are
+isolated so the use cases can be extracted incrementally and validated by the
+API and worker test suites.
 
 ## Servicios Azure
 
