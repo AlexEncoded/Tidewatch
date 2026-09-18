@@ -2,6 +2,7 @@ from app.application.maintenance_notifications import (
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
 )
+from app.application.maintenance_issues import build_reading_quality_issues
 from app.models import MaintenanceIssue
 
 
@@ -44,3 +45,18 @@ def test_maintenance_notification_delivery_uses_injected_transport() -> None:
     assert calls[0][0] == "https://example.test/hook"
     assert calls[0][2] == 5
     assert calls[1] == "raised"
+
+
+def test_reading_quality_issues_are_built_without_api_dependencies() -> None:
+    issues = build_reading_quality_issues(
+        "buoy-1",
+        "North buoy",
+        {
+            "temperature": [type("Reading", (), {"quality": "invalid"})()],
+            "pressure": [],
+            "salinity": [],
+        },
+    )
+
+    assert len(issues) == 1
+    assert issues[0].issue_type == "invalid_reading"

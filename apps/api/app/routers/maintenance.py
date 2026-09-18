@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.battery_health import analyze_battery_health_for_buoy
+from ..application.maintenance_issues import build_reading_quality_issues
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
@@ -17,7 +18,6 @@ from ..domain.maintenance import (
     low_battery_severity,
     missing_redundant_battery_device,
 )
-from ..domain.reading_quality import classify_latest_readings
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,
@@ -90,28 +90,9 @@ def maintenance_issues(
             "pressure": repository.list_pressures(buoy.id, 1),
             "salinity": repository.list_salinity(buoy.id, 1),
         }
-        invalid_sensors, suspect_sensors = classify_latest_readings(latest_readings)
-        if invalid_sensors:
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="invalid_reading",
-                    severity="warning",
-                    message=f"Invalid latest readings: {', '.join(invalid_sensors)}",
-                )
-            )
-
-        if suspect_sensors:
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="suspect_reading",
-                    severity="warning",
-                    message=f"Suspect latest readings: {', '.join(suspect_sensors)}",
-                )
-            )
+        issues.extend(
+            build_reading_quality_issues(buoy.id, buoy.name, latest_readings)
+        )
 
         for device_id in ("A", "B"):
             battery = repository.latest_battery(buoy.id, device_id)
