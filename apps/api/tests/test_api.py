@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import logging
+from typing import get_args
 
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
@@ -32,6 +33,7 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app, configured_wave_imu_factor
+from app.models import TelemetryBatchCreate
 from app.routers.alerts import router as alerts_router
 from app.routers.analytics import router as analytics_router
 from app.routers.battery import router as battery_router
@@ -187,6 +189,24 @@ def test_modularized_routes_are_owned_by_routers() -> None:
     assert all(
         route_modules[path].startswith("app.routers.") for path in modularized_paths
     )
+
+
+def test_current_telemetry_contracts_preserve_device_provenance() -> None:
+    for field_name, field in TelemetryBatchCreate.model_fields.items():
+        if field_name == "device_id":
+            continue
+        reading_types = [
+            candidate
+            for candidate in get_args(field.annotation)
+            if hasattr(candidate, "model_fields")
+        ]
+        if not reading_types:
+            reading_types = [field.annotation]
+
+        for reading_type in reading_types:
+            assert "device_id" in reading_type.model_fields, (
+                f"Telemetry family {field_name} must preserve device provenance"
+            )
 
 
 def test_http_requests_are_logged(caplog) -> None:
