@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.telemetry_ingestion import with_device_provenance
 from ..database import get_db
 from ..domain.devices import DeviceOwnershipError
 from ..metrics import (
@@ -81,9 +82,9 @@ def ingest_telemetry(
         ).set(seen_at.timestamp())
 
     if payload.location is not None:
-        location_data = payload.location.model_dump()
-        if payload.device_id is not None and location_data["device_id"] is None:
-            location_data["device_id"] = payload.device_id
+        location_data = with_device_provenance(
+            payload.location.model_dump(), payload.device_id
+        )
         location = BuoyLocationReading(buoy_id=buoy_id, **location_data)
         repository.add_location(location)
         if location.altitude_meters is not None:
@@ -122,9 +123,9 @@ def ingest_telemetry(
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = TemperatureReading(buoy_id=buoy_id, **reading_data)
         repository.add_temperature(reading)
         temperature_readings_total.labels(
