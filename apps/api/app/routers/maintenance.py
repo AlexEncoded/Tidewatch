@@ -43,7 +43,6 @@ def maintenance_issues(
 ) -> list[MaintenanceIssue]:
     repository = BuoyRepository(db)
     now = datetime.now(timezone.utc)
-    max_age_seconds = max_age_minutes * 60
     issues: list[MaintenanceIssue] = []
 
     for buoy in repository.list_buoys():

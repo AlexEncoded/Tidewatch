@@ -26,3 +26,8 @@ repository implementation.
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while
 payload construction and delivery remain testable without an HTTP client.
+
+Maintenance issue classification is split into application services for sensor
+health, reading quality, redundant battery health, and operational state. The
+router coordinates repository reads and metrics, then delegates issue
+construction to those services.
