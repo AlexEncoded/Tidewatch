@@ -16,6 +16,7 @@ from ..application.maintenance_issues import (
 )
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.sensor_health import evaluate_sensor_health_snapshot
 from ..database import get_db
 from ..metrics import (
     battery_delta_percent,
@@ -25,7 +26,6 @@ from ..metrics import (
 )
 from ..models import MaintenanceIssue, MaintenanceNotificationResult
 from ..repository import BuoyRepository
-from .sensors import sensor_health
 
 
 router = APIRouter()
@@ -46,7 +46,9 @@ def maintenance_issues(
     issues: list[MaintenanceIssue] = []
 
     for buoy in repository.list_buoys():
-        health = sensor_health(buoy.id, max_age_minutes=max_age_minutes, db=db)
+        health = evaluate_sensor_health_snapshot(
+            repository, buoy.id, max_age_minutes * 60, now
+        ).health
         issues.extend(
             build_sensor_health_maintenance_issues(buoy.id, buoy.name, health)
         )
