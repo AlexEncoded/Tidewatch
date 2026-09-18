@@ -59,11 +59,11 @@ grouped by responsibility under `apps/api/app/routers/`:
 - `system.py` exposes health and Prometheus endpoints.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
-`apps/api/app/application/` coordinate use cases and ports. The remaining
-large cross-cutting work is now concentrated in the application services behind
-maintenance orchestration and telemetry ingestion. Their HTTP boundaries are
-isolated so the use cases can be extracted incrementally and validated by the
-API and worker test suites.
+`apps/api/app/application/` coordinate use cases and ports. Maintenance
+notifications now use an application transport port; the remaining large
+cross-cutting work is concentrated in maintenance issue evaluation and
+telemetry ingestion. Their HTTP boundaries are isolated so the use cases can
+be extracted incrementally and validated by the API and worker test suites.
 
 ## Servicios Azure
 
