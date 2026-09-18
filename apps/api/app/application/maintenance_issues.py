@@ -1,7 +1,9 @@
 """Application services for maintenance issue classification."""
 
 from collections.abc import Mapping, Sequence
+from datetime import datetime
 
+from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.reading_quality import classify_latest_readings
 from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
 from ..models import BatteryHealth, MaintenanceIssue
@@ -97,6 +99,48 @@ def build_battery_maintenance_issues(
                 message=(
                     f"Battery units diverge by {health.delta_percent:.1f}% "
                     f"(unit {', '.join(health.degraded_devices)} suspected)"
+                ),
+            )
+        )
+
+    return issues
+
+
+def build_operational_maintenance_issues(
+    buoy_id: str,
+    buoy_name: str,
+    status: str,
+    last_seen_at: datetime | None,
+    now: datetime,
+    max_age_minutes: float,
+    average_speed_mps: float | None,
+    drift_speed_mps: float,
+) -> list[MaintenanceIssue]:
+    """Build maintenance issues for silence and unexpected buoy movement."""
+    issues: list[MaintenanceIssue] = []
+    if is_buoy_silent(status, last_seen_at, now, max_age_minutes * 60):
+        issues.append(
+            MaintenanceIssue(
+                buoy_id=buoy_id,
+                buoy_name=buoy_name,
+                issue_type="silent_buoy",
+                severity="warning",
+                message=(
+                    f"No telemetry received for more than {max_age_minutes:g} minutes"
+                ),
+            )
+        )
+
+    if is_buoy_drifting(average_speed_mps, drift_speed_mps):
+        issues.append(
+            MaintenanceIssue(
+                buoy_id=buoy_id,
+                buoy_name=buoy_name,
+                issue_type="drift_detected",
+                severity="warning",
+                message=(
+                    f"Average movement speed is {average_speed_mps:.3f} m/s, "
+                    f"above the configured limit of {drift_speed_mps:g} m/s"
                 ),
             )
         )

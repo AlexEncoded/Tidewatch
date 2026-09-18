@@ -10,15 +10,12 @@ from sqlalchemy.orm import Session
 from ..application.battery_health import analyze_battery_health_for_buoy
 from ..application.maintenance_issues import (
     build_battery_maintenance_issues,
+    build_operational_maintenance_issues,
     build_reading_quality_issues,
 )
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
-from ..domain.maintenance import (
-    is_buoy_drifting,
-    is_buoy_silent,
-)
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,
@@ -49,17 +46,6 @@ def maintenance_issues(
     issues: list[MaintenanceIssue] = []
 
     for buoy in repository.list_buoys():
-        if is_buoy_silent(buoy.status, buoy.last_seen_at, now, max_age_seconds):
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="silent_buoy",
-                    severity="warning",
-                    message=f"No telemetry received for more than {max_age_minutes:g} minutes",
-                )
-            )
-
         health = sensor_health(buoy.id, max_age_minutes=max_age_minutes, db=db)
         if health.status == "degraded":
             if health.degraded_sensors:
@@ -133,21 +119,18 @@ def maintenance_issues(
         movement = analyze_movement_for_buoy(repository, buoy.id, 50)
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
-        if (
-            is_buoy_drifting(movement.average_speed_mps, drift_speed_mps)
-        ):
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="drift_detected",
-                    severity="warning",
-                    message=(
-                        f"Average movement speed is {movement.average_speed_mps:.3f} m/s, "
-                        f"above the configured limit of {drift_speed_mps:g} m/s"
-                    ),
-                )
+        issues.extend(
+            build_operational_maintenance_issues(
+                buoy.id,
+                buoy.name,
+                buoy.status,
+                buoy.last_seen_at,
+                now,
+                max_age_minutes,
+                movement.average_speed_mps,
+                drift_speed_mps,
             )
+        )
 
     return issues
 
