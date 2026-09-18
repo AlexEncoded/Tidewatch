@@ -7,9 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..application.sensor_health import (
-    assess_sensor_health,
-    calculate_sensor_health_deltas,
-    collect_sensor_readings,
+    evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
 from ..metrics import (
@@ -507,51 +505,14 @@ def sensor_health(
 
     now = datetime.now(timezone.utc)
     max_age_seconds = max_age_minutes * 60
-    sensor_readings = collect_sensor_readings(
+    snapshot = evaluate_sensor_health_snapshot(
         repository, buoy_id, max_age_seconds, now
     )
-    temperature_a = sensor_readings["temperature"]["A"]
-    temperature_b = sensor_readings["temperature"]["B"]
-    pressure_a = sensor_readings["pressure"]["A"]
-    pressure_b = sensor_readings["pressure"]["B"]
-    salinity_a = sensor_readings["salinity"]["A"]
-    salinity_b = sensor_readings["salinity"]["B"]
-    imu_a = sensor_readings["imu"]["A"]
-    imu_b = sensor_readings["imu"]["B"]
-    ambient_light_a = sensor_readings["ambient_light"]["A"]
-    ambient_light_b = sensor_readings["ambient_light"]["B"]
-    wind_a = sensor_readings["wind"]["A"]
-    wind_b = sensor_readings["wind"]["B"]
-    marine_current_a = sensor_readings["marine_current"]["A"]
-    marine_current_b = sensor_readings["marine_current"]["B"]
-    turbidity_a = sensor_readings["turbidity"]["A"]
-    turbidity_b = sensor_readings["turbidity"]["B"]
-    dissolved_oxygen_a = sensor_readings["dissolved_oxygen"]["A"]
-    dissolved_oxygen_b = sensor_readings["dissolved_oxygen"]["B"]
-    ph_a = sensor_readings["ph"]["A"]
-    ph_b = sensor_readings["ph"]["B"]
-    conductivity_a = sensor_readings["conductivity"]["A"]
-    conductivity_b = sensor_readings["conductivity"]["B"]
-    chlorophyll_a = sensor_readings["chlorophyll_a"]["A"]
-    chlorophyll_b = sensor_readings["chlorophyll_a"]["B"]
-    rainfall_a = sensor_readings["rainfall"]["A"]
-    rainfall_b = sensor_readings["rainfall"]["B"]
-    humidity_a = sensor_readings["humidity"]["A"]
-    humidity_b = sensor_readings["humidity"]["B"]
-    air_temperature_a = sensor_readings["air_temperature"]["A"]
-    air_temperature_b = sensor_readings["air_temperature"]["B"]
-    atmospheric_pressure_a = sensor_readings["atmospheric_pressure"]["A"]
-    atmospheric_pressure_b = sensor_readings["atmospheric_pressure"]["B"]
-    acoustic_altimeter_a = sensor_readings["acoustic_altimeter"]["A"]
-    acoustic_altimeter_b = sensor_readings["acoustic_altimeter"]["B"]
-    underwater_acoustic_a = sensor_readings["underwater_acoustic"]["A"]
-    underwater_acoustic_b = sensor_readings["underwater_acoustic"]["B"]
-
-    deltas = calculate_sensor_health_deltas(sensor_readings)
-    health_evaluation = assess_sensor_health(deltas, sensor_readings)
+    sensor_readings = snapshot.readings
+    deltas = snapshot.deltas
+    health_evaluation = snapshot.evaluation
     degraded_sensors = health_evaluation.degraded_sensors
     missing_sensors = health_evaluation.missing_sensors
-    status_value = health_evaluation.status
 
     for sensor, channels in sensor_readings.items():
         has_reading = any(channels.values())
@@ -571,34 +532,7 @@ def sensor_health(
             sensor_health_decision.labels(
                 buoy_id=buoy_id, sensor=sensor, decision=decision
             ).set(1 if decisions[sensor] == decision else 0)
-    return SensorHealth(
-        buoy_id=buoy_id,
-        status=status_value,
-        temperature_delta_celsius=deltas["temperature"],
-        pressure_delta_kpa=deltas["pressure"],
-        salinity_delta_psu=deltas["salinity"],
-        imu_acceleration_delta_mps2=deltas["imu"],
-        ambient_light_delta_lux=deltas["ambient_light"],
-        wind_speed_delta_mps=deltas["wind_speed"],
-        wind_direction_delta_degrees=deltas["wind_direction"],
-        marine_current_speed_delta_mps=deltas["marine_current_speed"],
-        marine_current_direction_delta_degrees=deltas["marine_current_direction"],
-        turbidity_delta_ntu=deltas["turbidity"],
-        dissolved_oxygen_delta_mg_l=deltas["dissolved_oxygen"],
-        ph_delta=deltas["ph"],
-        conductivity_delta_us_cm=deltas["conductivity"],
-        chlorophyll_a_delta_ug_l=deltas["chlorophyll_a"],
-        rainfall_delta_mm_h=deltas["rainfall"],
-        humidity_delta_percent=deltas["humidity"],
-        air_temperature_delta_celsius=deltas["air_temperature"],
-        atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
-        acoustic_altimeter_delta_meters=deltas["acoustic_altimeter"],
-        underwater_acoustic_delta_db=deltas["underwater_acoustic"],
-        degraded_sensors=degraded_sensors,
-        missing_sensors=missing_sensors,
-        decisions=decisions,
-        checked_at=now,
-    )
+    return snapshot.health
 
 
 @router.post(

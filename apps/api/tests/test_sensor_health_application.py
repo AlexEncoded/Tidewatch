@@ -5,6 +5,7 @@ from app.application.sensor_health import (
     assess_sensor_health,
     calculate_sensor_health_deltas,
     collect_sensor_readings,
+    evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
 from app.models import SensorHealthCheck
@@ -50,6 +51,22 @@ def test_sensor_health_application_service_collects_redundant_channels() -> None
     assert len(readings) == 18
     assert set(readings["temperature"]) == {"A", "B"}
     assert readings["underwater_acoustic"]["A"] == []
+
+
+def test_sensor_health_application_service_maps_a_complete_snapshot() -> None:
+    class Reader:
+        def __getattr__(self, name):
+            if name.startswith("list_"):
+                return lambda buoy_id, limit, channel: []
+            raise AttributeError(name)
+
+    snapshot = evaluate_sensor_health_snapshot(
+        Reader(), "buoy-1", 1800, datetime.now(timezone.utc)
+    )
+
+    assert snapshot.health.buoy_id == "buoy-1"
+    assert snapshot.health.status == "insufficient_data"
+    assert snapshot.readings["temperature"]["A"] == []
 
 
 def test_sensor_health_application_service_calculates_scalar_and_circular_deltas() -> None:

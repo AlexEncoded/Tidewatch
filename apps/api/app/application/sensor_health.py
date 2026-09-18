@@ -1,10 +1,11 @@
 """Application service for sensor-health evaluation."""
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
-from ..models import SensorHealthCheck
+from ..models import SensorHealth, SensorHealthCheck
 from ..domain.sensor_health import SensorHealthEvaluation, evaluate_sensor_health
 from ..domain.telemetry import latest_usable_reading
 from ..domain.deltas import absolute_difference
@@ -19,12 +20,63 @@ class SensorHealthCheckWriter(Protocol):
         ...
 
 
+@dataclass(frozen=True)
+class SensorHealthSnapshot:
+    """Application result shared by the HTTP and maintenance adapters."""
+
+    readings: dict[str, dict[str, object | None]]
+    deltas: dict[str, float | None]
+    evaluation: SensorHealthEvaluation
+    health: SensorHealth
+
+
 def assess_sensor_health(
     deltas: Mapping[str, float | None],
     sensor_readings: Mapping[str, Mapping[str, object | None]],
 ) -> SensorHealthEvaluation:
     """Evaluate a sensor snapshot through the sensor-health domain rules."""
     return evaluate_sensor_health(deltas, sensor_readings)
+
+
+def evaluate_sensor_health_snapshot(
+    reader: object,
+    buoy_id: str,
+    max_age_seconds: float,
+    now: datetime,
+) -> SensorHealthSnapshot:
+    """Collect, compare and map a buoy's redundant sensor readings."""
+    readings = collect_sensor_readings(reader, buoy_id, max_age_seconds, now)
+    deltas = calculate_sensor_health_deltas(readings)
+    evaluation = assess_sensor_health(deltas, readings)
+    health = SensorHealth(
+        buoy_id=buoy_id,
+        status=evaluation.status,
+        temperature_delta_celsius=deltas["temperature"],
+        pressure_delta_kpa=deltas["pressure"],
+        salinity_delta_psu=deltas["salinity"],
+        imu_acceleration_delta_mps2=deltas["imu"],
+        ambient_light_delta_lux=deltas["ambient_light"],
+        wind_speed_delta_mps=deltas["wind_speed"],
+        wind_direction_delta_degrees=deltas["wind_direction"],
+        marine_current_speed_delta_mps=deltas["marine_current_speed"],
+        marine_current_direction_delta_degrees=deltas["marine_current_direction"],
+        turbidity_delta_ntu=deltas["turbidity"],
+        dissolved_oxygen_delta_mg_l=deltas["dissolved_oxygen"],
+        ph_delta=deltas["ph"],
+        conductivity_delta_us_cm=deltas["conductivity"],
+        chlorophyll_a_delta_ug_l=deltas["chlorophyll_a"],
+        rainfall_delta_mm_h=deltas["rainfall"],
+        humidity_delta_percent=deltas["humidity"],
+        air_temperature_delta_celsius=deltas["air_temperature"],
+        atmospheric_pressure_delta_kpa=deltas["atmospheric_pressure"],
+        acoustic_altimeter_delta_meters=deltas["acoustic_altimeter"],
+        underwater_acoustic_delta_db=deltas["underwater_acoustic"],
+        degraded_sensors=evaluation.degraded_sensors,
+        missing_sensors=evaluation.missing_sensors,
+        decisions=evaluation.decisions,
+        checked_at=now,
+    )
+    return SensorHealthSnapshot(readings, deltas, evaluation, health)
 
 
 def persist_sensor_health_check(
