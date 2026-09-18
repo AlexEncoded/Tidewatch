@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.battery_health import analyze_battery_health_for_buoy
-from ..application.maintenance_notifications import build_maintenance_notification_payload
+from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
 from ..domain.maintenance import (
@@ -230,14 +230,12 @@ def notify_maintenance(
     issues = maintenance_issues(
         max_age_minutes=max_age_minutes, drift_speed_mps=drift_speed_mps, db=db
     )
-    payload = build_maintenance_notification_payload(issues)
     try:
-        response = httpx.post(webhook_url, json=payload, timeout=5)
-        response.raise_for_status()
+        issue_count = deliver_maintenance_notification(webhook_url, issues, httpx.post)
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Maintenance webhook delivery failed",
         ) from exc
 
-    return MaintenanceNotificationResult(status="sent", issue_count=len(issues))
+    return MaintenanceNotificationResult(status="sent", issue_count=issue_count)
