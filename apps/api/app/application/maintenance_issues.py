@@ -6,7 +6,7 @@ from datetime import datetime
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.reading_quality import classify_latest_readings
 from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
-from ..models import BatteryHealth, MaintenanceIssue
+from ..models import BatteryHealth, MaintenanceIssue, SensorHealth
 
 
 def build_reading_quality_issues(
@@ -145,4 +145,40 @@ def build_operational_maintenance_issues(
             )
         )
 
+    return issues
+
+
+def build_sensor_health_maintenance_issues(
+    buoy_id: str,
+    buoy_name: str,
+    health: SensorHealth,
+) -> list[MaintenanceIssue]:
+    """Build maintenance issues for degraded or missing sensor channels."""
+    if health.status != "degraded":
+        return []
+
+    issues: list[MaintenanceIssue] = []
+    if health.degraded_sensors:
+        issues.append(
+            MaintenanceIssue(
+                buoy_id=buoy_id,
+                buoy_name=buoy_name,
+                issue_type="degraded_sensor",
+                severity="warning",
+                message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+            )
+        )
+    if health.missing_sensors:
+        issues.append(
+            MaintenanceIssue(
+                buoy_id=buoy_id,
+                buoy_name=buoy_name,
+                issue_type="missing_sensor_channel",
+                severity="warning",
+                message=(
+                    "No recent telemetry received from sensor channels: "
+                    f"{', '.join(health.missing_sensors)}"
+                ),
+            )
+        )
     return issues

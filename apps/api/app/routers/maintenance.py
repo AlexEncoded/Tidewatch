@@ -12,6 +12,7 @@ from ..application.maintenance_issues import (
     build_battery_maintenance_issues,
     build_operational_maintenance_issues,
     build_reading_quality_issues,
+    build_sensor_health_maintenance_issues,
 )
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
@@ -47,30 +48,9 @@ def maintenance_issues(
 
     for buoy in repository.list_buoys():
         health = sensor_health(buoy.id, max_age_minutes=max_age_minutes, db=db)
-        if health.status == "degraded":
-            if health.degraded_sensors:
-                issues.append(
-                    MaintenanceIssue(
-                        buoy_id=buoy.id,
-                        buoy_name=buoy.name,
-                        issue_type="degraded_sensor",
-                        severity="warning",
-                        message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
-                    )
-                )
-            if health.missing_sensors:
-                issues.append(
-                    MaintenanceIssue(
-                        buoy_id=buoy.id,
-                        buoy_name=buoy.name,
-                        issue_type="missing_sensor_channel",
-                        severity="warning",
-                        message=(
-                            "No recent telemetry received from sensor channels: "
-                            f"{', '.join(health.missing_sensors)}"
-                        ),
-                    )
-                )
+        issues.extend(
+            build_sensor_health_maintenance_issues(buoy.id, buoy.name, health)
+        )
 
         latest_readings = {
             "temperature": repository.list_temperatures(buoy.id, 1),

@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 from app.application.maintenance_issues import (
     build_battery_maintenance_issues,
     build_operational_maintenance_issues,
+    build_sensor_health_maintenance_issues,
 )
-from app.models import BatteryHealth
+from app.models import BatteryHealth, SensorHealth
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
@@ -45,4 +46,23 @@ def test_operational_maintenance_service_reports_silence_and_drift() -> None:
     assert [issue.issue_type for issue in issues] == [
         "silent_buoy",
         "drift_detected",
+    ]
+
+
+def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
+    health = SensorHealth(
+        buoy_id="buoy-1",
+        status="degraded",
+        degraded_sensors=["temperature"],
+        missing_sensors=["pressure:B"],
+        checked_at=datetime.now(timezone.utc),
+    )
+
+    issues = build_sensor_health_maintenance_issues(
+        "buoy-1", "North buoy", health
+    )
+
+    assert [issue.issue_type for issue in issues] == [
+        "degraded_sensor",
+        "missing_sensor_channel",
     ]
