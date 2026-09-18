@@ -8,15 +8,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..application.battery_health import analyze_battery_health_for_buoy
-from ..application.maintenance_issues import build_reading_quality_issues
+from ..application.maintenance_issues import (
+    build_battery_maintenance_issues,
+    build_reading_quality_issues,
+)
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..database import get_db
 from ..domain.maintenance import (
     is_buoy_drifting,
     is_buoy_silent,
-    low_battery_severity,
-    missing_redundant_battery_device,
 )
 from ..metrics import (
     battery_delta_percent,
@@ -94,26 +95,16 @@ def maintenance_issues(
             build_reading_quality_issues(buoy.id, buoy.name, latest_readings)
         )
 
-        for device_id in ("A", "B"):
-            battery = repository.latest_battery(buoy.id, device_id)
-            battery_severity = (
-                low_battery_severity(battery.battery_percent) if battery is not None else None
-            )
-            if battery is not None and battery_severity is not None:
-                issues.append(
-                    MaintenanceIssue(
-                        buoy_id=buoy.id,
-                        buoy_name=buoy.name,
-                        issue_type="low_battery",
-                        severity=battery_severity,
-                        message=(
-                            f"Battery level for device {device_id} is "
-                            f"{battery.battery_percent:.1f}%"
-                        ),
-                    )
-                )
-
         battery_health_result = analyze_battery_health_for_buoy(repository, buoy.id, 10)
+        latest_batteries = {
+            device_id: repository.latest_battery(buoy.id, device_id)
+            for device_id in ("A", "B")
+        }
+        issues.extend(
+            build_battery_maintenance_issues(
+                buoy.id, buoy.name, latest_batteries, battery_health_result
+            )
+        )
         for device_id, percentage in (
             ("A", battery_health_result.device_a_percent),
             ("B", battery_health_result.device_b_percent),
@@ -138,35 +129,6 @@ def maintenance_issues(
             redundant_device_missing.labels(
                 buoy_id=buoy.id, device_id=device_id
             ).set(0 if device_id in available_battery_devices else 1)
-        missing_device = missing_redundant_battery_device(
-            battery_health_result.device_a_percent,
-            battery_health_result.device_b_percent,
-        )
-        if missing_device is not None:
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="missing_redundant_device",
-                    severity="warning",
-                    message=(
-                        f"No battery telemetry received from redundant device {missing_device}"
-                    ),
-                )
-            )
-        if battery_health_result.status == "degraded":
-            issues.append(
-                MaintenanceIssue(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    issue_type="degraded_battery",
-                    severity="warning",
-                    message=(
-                        f"Battery units diverge by {battery_health_result.delta_percent:.1f}% "
-                        f"(unit {', '.join(battery_health_result.degraded_devices)} suspected)"
-                    ),
-                )
-            )
 
         movement = analyze_movement_for_buoy(repository, buoy.id, 50)
         if movement.average_speed_mps is not None:
