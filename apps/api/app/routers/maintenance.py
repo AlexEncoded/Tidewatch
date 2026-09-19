@@ -9,10 +9,7 @@ from sqlalchemy.orm import Session
 
 from ..application.battery_health import analyze_battery_health_for_buoy
 from ..application.maintenance_issues import (
-    build_battery_maintenance_issues,
-    build_operational_maintenance_issues,
-    build_reading_quality_issues,
-    build_sensor_health_maintenance_issues,
+    build_maintenance_issues_for_buoy,
 )
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..application.movement_analysis import analyze_movement_for_buoy
@@ -49,29 +46,16 @@ def maintenance_issues(
         health = evaluate_sensor_health_snapshot(
             repository, buoy.id, max_age_minutes * 60, now
         ).health
-        issues.extend(
-            build_sensor_health_maintenance_issues(buoy.id, buoy.name, health)
-        )
-
         latest_readings = {
             "temperature": repository.list_temperatures(buoy.id, 1),
             "pressure": repository.list_pressures(buoy.id, 1),
             "salinity": repository.list_salinity(buoy.id, 1),
         }
-        issues.extend(
-            build_reading_quality_issues(buoy.id, buoy.name, latest_readings)
-        )
-
         battery_health_result = analyze_battery_health_for_buoy(repository, buoy.id, 10)
         latest_batteries = {
             device_id: repository.latest_battery(buoy.id, device_id)
             for device_id in ("A", "B")
         }
-        issues.extend(
-            build_battery_maintenance_issues(
-                buoy.id, buoy.name, latest_batteries, battery_health_result
-            )
-        )
         for device_id, percentage in (
             ("A", battery_health_result.device_a_percent),
             ("B", battery_health_result.device_b_percent),
@@ -101,15 +85,19 @@ def maintenance_issues(
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
         issues.extend(
-            build_operational_maintenance_issues(
+            build_maintenance_issues_for_buoy(
                 buoy.id,
                 buoy.name,
                 buoy.status,
                 buoy.last_seen_at,
                 now,
                 max_age_minutes,
-                movement.average_speed_mps,
                 drift_speed_mps,
+                health,
+                latest_readings,
+                latest_batteries,
+                battery_health_result,
+                movement.average_speed_mps,
             )
         )
 

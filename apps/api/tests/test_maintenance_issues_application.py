@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.application.maintenance_issues import (
     build_battery_maintenance_issues,
+    build_maintenance_issues_for_buoy,
     build_operational_maintenance_issues,
     build_sensor_health_maintenance_issues,
 )
@@ -66,3 +67,37 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         "degraded_sensor",
         "missing_sensor_channel",
     ]
+
+
+def test_maintenance_issue_service_composes_buoy_snapshot() -> None:
+    now = datetime.now(timezone.utc)
+    health = SensorHealth(
+        buoy_id="buoy-1",
+        status="degraded",
+        degraded_sensors=["temperature"],
+        checked_at=now,
+    )
+    battery_health = BatteryHealth(
+        buoy_id="buoy-1",
+        status="healthy",
+        device_a_percent=80,
+        device_b_percent=80,
+        checked_at=now,
+    )
+
+    issues = build_maintenance_issues_for_buoy(
+        "buoy-1",
+        "North buoy",
+        "active",
+        now,
+        now,
+        30,
+        1,
+        health,
+        {"temperature": []},
+        {"A": None, "B": None},
+        battery_health,
+        2,
+    )
+
+    assert [issue.issue_type for issue in issues] == ["degraded_sensor", "drift_detected"]

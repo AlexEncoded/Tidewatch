@@ -182,3 +182,42 @@ def build_sensor_health_maintenance_issues(
             )
         )
     return issues
+
+
+def build_maintenance_issues_for_buoy(
+    buoy_id: str,
+    buoy_name: str,
+    status: str,
+    last_seen_at: datetime | None,
+    now: datetime,
+    max_age_minutes: float,
+    drift_speed_mps: float,
+    sensor_health: SensorHealth,
+    latest_readings: Mapping[str, Sequence[object]],
+    latest_batteries: Mapping[str, object | None],
+    battery_health: BatteryHealth,
+    average_speed_mps: float | None,
+) -> list[MaintenanceIssue]:
+    """Compose all maintenance issue types for one buoy snapshot."""
+    issues = build_sensor_health_maintenance_issues(
+        buoy_id, buoy_name, sensor_health
+    )
+    issues.extend(build_reading_quality_issues(buoy_id, buoy_name, latest_readings))
+    issues.extend(
+        build_battery_maintenance_issues(
+            buoy_id, buoy_name, latest_batteries, battery_health
+        )
+    )
+    issues.extend(
+        build_operational_maintenance_issues(
+            buoy_id,
+            buoy_name,
+            status,
+            last_seen_at,
+            now,
+            max_age_minutes,
+            average_speed_mps,
+            drift_speed_mps,
+        )
+    )
+    return issues
