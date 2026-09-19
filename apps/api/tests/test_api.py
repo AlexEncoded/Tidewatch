@@ -34,6 +34,7 @@ from app.entities import (
 )
 from app.main import app, configured_wave_imu_factor
 from app.models import TelemetryBatchCreate
+from app.application.telemetry_ingestion import TELEMETRY_FAMILIES
 from app.routers.alerts import router as alerts_router
 from app.routers.analytics import router as analytics_router
 from app.routers.battery import router as battery_router
@@ -103,6 +104,22 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_empty_telemetry_batch_returns_stable_family_counters() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Empty telemetry buoy"}
+    ).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"location": {"latitude": 36.9, "longitude": 2.7}},
+    )
+
+    assert response.status_code == 202
+    counts = response.json()["accepted_by_family"]
+    assert tuple(counts) == TELEMETRY_FAMILIES
+    assert all(value == 0 for value in counts.values())
 
 
 def test_modularized_sensor_routes_remain_registered() -> None:
