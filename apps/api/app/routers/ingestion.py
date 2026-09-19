@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
-from ..application.telemetry_ingestion import with_device_provenance
+from ..application.telemetry_ingestion import (
+    empty_accepted_reading_counts,
+    with_device_provenance,
+)
 from ..database import get_db
 from ..domain.devices import DeviceOwnershipError
 from ..metrics import (
@@ -102,27 +105,7 @@ def ingest_telemetry(
             )
 
     accepted = 0
-    accepted_by_family = {
-        "temperature": 0,
-        "pressure": 0,
-        "salinity": 0,
-        "imu": 0,
-        "ambient_light": 0,
-        "wind": 0,
-        "marine_current": 0,
-        "turbidity": 0,
-        "dissolved_oxygen": 0,
-        "ph": 0,
-        "conductivity": 0,
-        "chlorophyll_a": 0,
-        "rainfall": 0,
-        "humidity": 0,
-        "air_temperature": 0,
-        "atmospheric_pressure": 0,
-        "acoustic_altimeter": 0,
-        "underwater_acoustic": 0,
-        "battery": 0,
-    }
+    accepted_by_family = empty_accepted_reading_counts()
     for reading_payload in payload.temperatures:
         reading_data = with_device_provenance(
             reading_payload.model_dump(), payload.device_id

@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from app.application.telemetry_ingestion import with_device_provenance
+from app.application.telemetry_ingestion import (
+    TELEMETRY_FAMILIES,
+    empty_accepted_reading_counts,
+    with_device_provenance,
+)
 
 
 def test_batch_device_is_used_when_reading_has_no_owner() -> None:
@@ -15,6 +19,13 @@ def test_explicit_reading_owner_is_preserved() -> None:
     assert with_device_provenance({"device_id": "unit-b"}, "unit-a") == {
         "device_id": "unit-b"
     }
+
+
+def test_accepted_reading_counts_cover_all_supported_families() -> None:
+    counts = empty_accepted_reading_counts()
+
+    assert tuple(counts) == TELEMETRY_FAMILIES
+    assert all(value == 0 for value in counts.values())
 
 
 def test_ingestion_router_delegates_device_provenance_to_application() -> None:
