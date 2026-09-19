@@ -4,9 +4,11 @@ from app.application.telemetry_ingestion import with_device_provenance
 
 
 def test_batch_device_is_used_when_reading_has_no_owner() -> None:
-    assert with_device_provenance({"device_id": None}, "unit-a") == {
+    reading = {"device_id": None}
+    assert with_device_provenance(reading, "unit-a") == {
         "device_id": "unit-a"
     }
+    assert reading == {"device_id": None}
 
 
 def test_explicit_reading_owner_is_preserved() -> None:
