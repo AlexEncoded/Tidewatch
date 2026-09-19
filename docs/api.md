@@ -70,7 +70,10 @@ una incidencia `missing_sensor_channel`.
 
 La respuesta de ingestión incluye `accepted_readings` y el desglose
 `accepted_by_family` para confirmar cuántas lecturas de cada sensor se han
-procesado. El lote puede incluir opcionalmente `location` para actualizar las
+procesado. `accepted_by_family` siempre contiene todas las familias de
+telemetría soportadas, aunque su contador sea `0`; una actualización que solo
+incluya `location` no incrementa ninguna familia. El lote puede incluir
+opcionalmente `location` para actualizar las
 coordenadas de la boya en la misma operación. También puede incluir hasta dos
 objetos `battery`, uno por `device_id` A/B; el formato antiguo de un único
 objeto sigue siendo compatible. Un lote no puede repetir el mismo
