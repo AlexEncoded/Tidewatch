@@ -120,6 +120,7 @@ def ingest_telemetry(
         "air_temperature": 0,
         "atmospheric_pressure": 0,
         "acoustic_altimeter": 0,
+        "underwater_acoustic": 0,
         "battery": 0,
     }
     for reading_payload in payload.temperatures:
@@ -421,7 +422,7 @@ def ingest_telemetry(
         underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
         record_quality_metric(buoy_id, "underwater_acoustic", reading.sensor_channel, reading.quality)
-        accepted_by_family["underwater_acoustic"] = accepted_by_family.get("underwater_acoustic", 0) + 1
+        accepted_by_family["underwater_acoustic"] += 1
         accepted += 1
 
     for battery_payload in payload.battery:
