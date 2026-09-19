@@ -48,3 +48,12 @@ def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:
                     and decorator.func.value.id == "app"
                     and decorator.func.attr in route_decorators
                 )
+
+
+def test_http_routers_do_not_import_other_http_adapters() -> None:
+    for source_file in (API_APP / "routers").glob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        assert not any(
+            isinstance(node, ast.ImportFrom) and node.level == 1
+            for node in ast.walk(tree)
+        ), f"{source_file.name} must depend on application ports, not sibling routers"
