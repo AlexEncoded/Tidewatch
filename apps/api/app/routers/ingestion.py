@@ -142,9 +142,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.pressures:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = PressureReading(buoy_id=buoy_id, **reading_data)
         repository.add_pressure(reading)
         pressure_readings_total.labels(
@@ -158,9 +158,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.salinity:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = SalinityReading(buoy_id=buoy_id, **reading_data)
         repository.add_salinity(reading)
         salinity_readings_total.labels(
@@ -174,9 +174,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.imu:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = ImuReading(buoy_id=buoy_id, **reading_data)
         repository.add_imu(reading)
         imu_readings_total.labels(
@@ -203,9 +203,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.ambient_light:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = AmbientLightReading(buoy_id=buoy_id, **reading_data)
         repository.add_ambient_light(reading)
         ambient_light_readings_total.labels(
@@ -221,9 +221,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.wind:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = WindReading(buoy_id=buoy_id, **reading_data)
         repository.add_wind(reading)
         wind_readings_total.labels(
@@ -240,9 +240,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.marine_current:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = MarineCurrentReading(buoy_id=buoy_id, **reading_data)
         repository.add_marine_current(reading)
         marine_current_readings_total.labels(
@@ -261,9 +261,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.turbidity:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = TurbidityReading(buoy_id=buoy_id, **reading_data)
         repository.add_turbidity(reading)
         turbidity_readings_total.labels(
@@ -279,9 +279,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.dissolved_oxygen:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = DissolvedOxygenReading(buoy_id=buoy_id, **reading_data)
         repository.add_dissolved_oxygen(reading)
         dissolved_oxygen_readings_total.labels(
@@ -297,9 +297,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.ph:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = PHReading(buoy_id=buoy_id, **reading_data)
         repository.add_ph(reading)
         ph_readings_total.labels(
@@ -313,9 +313,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.conductivity:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = ConductivityReading(buoy_id=buoy_id, **reading_data)
         repository.add_conductivity(reading)
         conductivity_readings_total.labels(
@@ -331,9 +331,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.chlorophyll_a:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = ChlorophyllAReading(buoy_id=buoy_id, **reading_data)
         repository.add_chlorophyll_a(reading)
         chlorophyll_a_readings_total.labels(
@@ -349,9 +349,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.rainfall:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = RainfallReading(buoy_id=buoy_id, **reading_data)
         repository.add_rainfall(reading)
         rainfall_readings_total.labels(
@@ -365,9 +365,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.humidity:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = HumidityReading(buoy_id=buoy_id, **reading_data)
         repository.add_humidity(reading)
         humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -377,9 +377,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.air_temperature:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = AirTemperatureReading(buoy_id=buoy_id, **reading_data)
         repository.add_air_temperature(reading)
         air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -389,9 +389,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.atmospheric_pressure:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = AtmosphericPressureReading(buoy_id=buoy_id, **reading_data)
         repository.add_atmospheric_pressure(reading)
         atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -401,9 +401,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.acoustic_altimeter:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = AcousticAltimeterReading(buoy_id=buoy_id, **reading_data)
         repository.add_acoustic_altimeter(reading)
         acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -413,9 +413,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.underwater_acoustic:
-        reading_data = reading_payload.model_dump()
-        if payload.device_id is not None and reading_data["device_id"] is None:
-            reading_data["device_id"] = payload.device_id
+        reading_data = with_device_provenance(
+            reading_payload.model_dump(), payload.device_id
+        )
         reading = UnderwaterAcousticReading(buoy_id=buoy_id, **reading_data)
         repository.add_underwater_acoustic(reading)
         underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
