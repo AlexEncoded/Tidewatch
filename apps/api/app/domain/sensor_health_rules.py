@@ -1,7 +1,8 @@
 from collections.abc import Mapping
+from types import MappingProxyType
 
 
-SENSOR_DEGRADATION_THRESHOLDS = {
+SENSOR_DEGRADATION_THRESHOLDS: Mapping[str, float] = MappingProxyType({
     "temperature": 0.5,
     "pressure": 0.25,
     "salinity": 0.2,
@@ -22,7 +23,7 @@ SENSOR_DEGRADATION_THRESHOLDS = {
     "atmospheric_pressure": 0.25,
     "acoustic_altimeter": 0.5,
     "underwater_acoustic": 5,
-}
+})
 
 
 def degraded_sensor_names(deltas: Mapping[str, float | None]) -> list[str]:

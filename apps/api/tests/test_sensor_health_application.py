@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
+import pytest
 
 from app.application.sensor_health import (
     assess_sensor_health,
@@ -111,3 +112,8 @@ def test_every_sensor_health_delta_has_an_explicit_degradation_margin() -> None:
 
     assert set(deltas) == set(SENSOR_DEGRADATION_THRESHOLDS)
     assert all(threshold > 0 for threshold in SENSOR_DEGRADATION_THRESHOLDS.values())
+
+
+def test_sensor_health_degradation_margins_are_immutable() -> None:
+    with pytest.raises(TypeError):
+        SENSOR_DEGRADATION_THRESHOLDS["temperature"] = 1.0
