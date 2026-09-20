@@ -8,6 +8,7 @@ from app.application.sensor_health import (
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
+from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from app.models import SensorHealthCheck
 
 
@@ -93,3 +94,20 @@ def test_sensor_health_application_service_calculates_scalar_and_circular_deltas
     assert deltas["temperature"] == 1.5
     assert deltas["wind_speed"] == 1.0
     assert deltas["wind_direction"] == 2.0
+
+
+def test_every_sensor_health_delta_has_an_explicit_degradation_margin() -> None:
+    families = {
+        family: {"A": [], "B": []}
+        for family in (
+            "temperature", "pressure", "salinity", "imu", "ambient_light", "wind",
+            "marine_current", "turbidity", "dissolved_oxygen", "ph", "conductivity",
+            "chlorophyll_a", "rainfall", "humidity", "air_temperature",
+            "atmospheric_pressure", "acoustic_altimeter", "underwater_acoustic",
+        )
+    }
+
+    deltas = calculate_sensor_health_deltas(families)
+
+    assert set(deltas) == set(SENSOR_DEGRADATION_THRESHOLDS)
+    assert all(threshold > 0 for threshold in SENSOR_DEGRADATION_THRESHOLDS.values())
