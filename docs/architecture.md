@@ -60,10 +60,11 @@ grouped by responsibility under `apps/api/app/routers/`:
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
-notifications now use an application transport port; the remaining large
-cross-cutting work is concentrated in maintenance issue evaluation and
-telemetry ingestion. Their HTTP boundaries are isolated so the use cases can
-be extracted incrementally and validated by the API and worker test suites.
+notifications use an application transport port, and `maintenance_evaluation`
+coordinates the per-buoy issue snapshot. The remaining large cross-cutting
+work is concentrated in telemetry ingestion. HTTP boundaries are isolated so
+the use cases can be extracted incrementally and validated by the API and
+worker test suites.
 
 ## Servicios Azure
 

@@ -31,3 +31,7 @@ Maintenance issue classification is split into application services for sensor
 health, reading quality, redundant battery health, and operational state. The
 router coordinates repository reads and metrics, then delegates issue
 construction to those services.
+
+`evaluate_maintenance_buoy` coordinates those services for one buoy and
+returns both the issue contracts and the values needed by the metrics adapter.
+This keeps maintenance orchestration independent from FastAPI and SQLAlchemy.
