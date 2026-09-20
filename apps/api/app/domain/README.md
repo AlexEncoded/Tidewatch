@@ -8,7 +8,9 @@ or decisions.
 Current rules include:
 
 - redundant sensor channel decisions and completeness;
-- sensor health thresholds and aggregate status;
+- sensor health thresholds and aggregate status. The
+  `SENSOR_DEGRADATION_THRESHOLDS` map is the explicit margin contract for
+  every delta produced by the sensor-health application service;
 - usable telemetry selection and reading quality classification;
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates.
