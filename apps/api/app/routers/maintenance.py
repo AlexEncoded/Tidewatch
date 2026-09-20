@@ -7,13 +7,8 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from ..application.battery_health import analyze_battery_health_for_buoy
-from ..application.maintenance_issues import (
-    build_maintenance_issues_for_buoy,
-)
+from ..application.maintenance_evaluation import evaluate_maintenance_buoy
 from ..application.maintenance_notifications import deliver_maintenance_notification
-from ..application.movement_analysis import analyze_movement_for_buoy
-from ..application.sensor_health import evaluate_sensor_health_snapshot
 from ..database import get_db
 from ..metrics import (
     battery_delta_percent,
@@ -43,36 +38,26 @@ def maintenance_issues(
     issues: list[MaintenanceIssue] = []
 
     for buoy in repository.list_buoys():
-        health = evaluate_sensor_health_snapshot(
-            repository, buoy.id, max_age_minutes * 60, now
-        ).health
-        latest_readings = {
-            "temperature": repository.list_temperatures(buoy.id, 1),
-            "pressure": repository.list_pressures(buoy.id, 1),
-            "salinity": repository.list_salinity(buoy.id, 1),
-        }
-        battery_health_result = analyze_battery_health_for_buoy(repository, buoy.id, 10)
-        latest_batteries = {
-            device_id: repository.latest_battery(buoy.id, device_id)
-            for device_id in ("A", "B")
-        }
+        evaluation = evaluate_maintenance_buoy(
+            repository, buoy, now, max_age_minutes, drift_speed_mps
+        )
         for device_id, percentage in (
-            ("A", battery_health_result.device_a_percent),
-            ("B", battery_health_result.device_b_percent),
+            ("A", evaluation.battery_health.device_a_percent),
+            ("B", evaluation.battery_health.device_b_percent),
         ):
             if percentage is not None:
                 battery_device_percent.labels(
                     buoy_id=buoy.id, device_id=device_id
                 ).set(percentage)
-        if battery_health_result.delta_percent is not None:
+        if evaluation.battery_health.delta_percent is not None:
             battery_delta_percent.labels(buoy_id=buoy.id).set(
-                battery_health_result.delta_percent
+                evaluation.battery_health.delta_percent
             )
         available_battery_devices = [
             device_id
             for device_id, percentage in (
-                ("A", battery_health_result.device_a_percent),
-                ("B", battery_health_result.device_b_percent),
+                ("A", evaluation.battery_health.device_a_percent),
+                ("B", evaluation.battery_health.device_b_percent),
             )
             if percentage is not None
         ]
@@ -81,25 +66,11 @@ def maintenance_issues(
                 buoy_id=buoy.id, device_id=device_id
             ).set(0 if device_id in available_battery_devices else 1)
 
-        movement = analyze_movement_for_buoy(repository, buoy.id, 50)
-        if movement.average_speed_mps is not None:
-            buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(movement.average_speed_mps)
-        issues.extend(
-            build_maintenance_issues_for_buoy(
-                buoy.id,
-                buoy.name,
-                buoy.status,
-                buoy.last_seen_at,
-                now,
-                max_age_minutes,
-                drift_speed_mps,
-                health,
-                latest_readings,
-                latest_batteries,
-                battery_health_result,
-                movement.average_speed_mps,
+        if evaluation.average_speed_mps is not None:
+            buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(
+                evaluation.average_speed_mps
             )
-        )
+        issues.extend(evaluation.issues)
 
     return issues
 
