@@ -48,6 +48,10 @@ dispara una alerta de mantenimiento tras cinco minutos.
 La tasa de errores de servidor de la API se calcula con
 `tidewatch_http_requests_total`; `TidewatchApiServerErrors` avisa cuando los
 errores 5xx superan el 1% durante cinco minutos.
+La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
+de medición en un entorno desplegado. Para esa validación se combinarán la
+tasa de errores API, el tiempo desde la última lectura y los resultados de las
+pruebas RPO/RTO documentadas.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.
