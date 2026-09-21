@@ -66,6 +66,22 @@ work is concentrated in telemetry ingestion. HTTP boundaries are isolated so
 the use cases can be extracted incrementally and validated by the API and
 worker test suites.
 
+## Bounded contexts
+
+The current modular-monolith boundaries are:
+
+| Context | Main responsibility | Current HTTP adapters |
+|---|---|---|
+| `fleet` | Buoys, physical devices and operational identity | `devices.py`, `buoys.py` |
+| `telemetry` | Batch ingestion, provenance and historical exports | `ingestion.py`, `telemetry.py` |
+| `sensors` | Sensor readings, redundancy and health decisions | `sensors.py` |
+| `maintenance` | Incidents, drift, battery degradation and notifications | `maintenance.py` |
+| `analytics` | Quality, battery, alerts, movement and wave estimates | `analytics.py`, `battery.py`, `quality.py`, `alerts.py` |
+
+These are domain boundaries inside one deployment, not independently deployed
+services. The application layer is the seam for extracting a use case later;
+the decision to split a service remains dependent on operational evidence.
+
 ## Servicios Azure
 
 - AKS para ejecutar las cargas de trabajo.
