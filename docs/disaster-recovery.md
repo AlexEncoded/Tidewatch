@@ -47,6 +47,22 @@ Después de restaurar, ejecutar los smoke checks de `/health`, `/metrics`, una
 ingesta y una consulta. Los helpers no se ejecutan automáticamente ni apuntan
 a Azure por defecto.
 
+## Medición de RPO/RTO
+
+En cada simulación o incidente registrar en UTC:
+
+- `T0`: instante de la última telemetría confirmada antes del fallo.
+- `T1`: instante del fallo detectado por monitorización.
+- `T2`: instante en que la base restaurada acepta migraciones.
+- `T3`: instante en que `/health` y `/metrics` responden correctamente.
+- `T4`: instante en que una nueva ingesta y su consulta posterior tienen éxito.
+
+El RPO observado es la antigüedad de la última lectura recuperada frente a
+`T0`. El RTO observado es `T4 - T1`; debe anotarse junto con la versión de la
+imagen, el punto de restauración y cualquier intervención manual. Estos
+valores son de observación: no se consideran objetivos cumplidos hasta probar
+la recuperación en el entorno Azure correspondiente.
+
 ## Pruebas pendientes
 
 - Restauración real de PostgreSQL Flexible Server.
