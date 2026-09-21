@@ -1,11 +1,16 @@
 groups:
   - name: tidewatch-buoys
     rules:
+      - record: tidewatch:api_availability_ratio5m
+        expr: |
+          1 - (
+            sum(rate(tidewatch_http_requests_total{status_code=~"5.."}[5m]))
+              /
+            clamp_min(sum(rate(tidewatch_http_requests_total[5m])), 1e-9)
+          )
       - alert: TidewatchApiServerErrors
         expr: |
-          sum(rate(tidewatch_http_requests_total{status_code=~"5.."}[5m]))
-            /
-          sum(rate(tidewatch_http_requests_total[5m])) > 0.01
+          tidewatch:api_availability_ratio5m < 0.99
         for: 5m
         labels:
           severity: warning

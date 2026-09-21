@@ -45,9 +45,12 @@ y dispara una alerta crítica tras cinco minutos.
 La ausencia de un canal ambiental se publica como
 `tidewatch_sensor_channel_missing` con las etiquetas de familia y canal, y
 dispara una alerta de mantenimiento tras cinco minutos.
-La tasa de errores de servidor de la API se calcula con
-`tidewatch_http_requests_total`; `TidewatchApiServerErrors` avisa cuando los
-errores 5xx superan el 1% durante cinco minutos.
+La disponibilidad de la API se publica como la recording rule
+`tidewatch:api_availability_ratio5m`, calculada a partir de
+`tidewatch_http_requests_total` y protegida contra divisiones por cero. La
+alerta `TidewatchApiServerErrors` avisa cuando esa disponibilidad cae por
+debajo del 99% durante cinco minutos; el panel de errores 5xx reutiliza la
+misma serie para mantener una única definición operativa.
 La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
 de medición en un entorno desplegado. Para esa validación se combinarán la
 tasa de errores API, el tiempo desde la última lectura y los resultados de las
