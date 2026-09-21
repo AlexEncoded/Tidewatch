@@ -23,6 +23,11 @@ The SQLAlchemy repository is passed in by the API adapter and satisfies this
 port structurally; the application layer therefore does not depend on the
 repository implementation.
 
+Its read side uses the `SensorHealthReader` input port, which lists every
+supported redundant A/B sensor family. Storage adapters therefore implement an
+explicit query contract instead of being passed as an untyped repository
+object.
+
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while
 payload construction and delivery remain testable without an HTTP client.

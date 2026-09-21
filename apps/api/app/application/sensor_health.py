@@ -11,6 +11,7 @@ from ..domain.telemetry import latest_usable_reading
 from ..domain.deltas import absolute_difference
 from ..domain.directions import circular_difference_degrees
 from ..domain.vectors import euclidean_difference
+from .ports import SensorHealthReader
 
 
 class SensorHealthCheckWriter(Protocol):
@@ -39,7 +40,7 @@ def assess_sensor_health(
 
 
 def evaluate_sensor_health_snapshot(
-    reader: object,
+    reader: SensorHealthReader,
     buoy_id: str,
     max_age_seconds: float,
     now: datetime,
@@ -87,7 +88,7 @@ def persist_sensor_health_check(
 
 
 def collect_sensor_readings(
-    reader: object,
+    reader: SensorHealthReader,
     buoy_id: str,
     max_age_seconds: float,
     now: datetime,
