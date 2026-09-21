@@ -6,6 +6,7 @@ autogestionada.
 El dashboard `tidewatch-overview.json` muestra:
 
 - Número total de lecturas aceptadas.
+- Tasa de errores HTTP 5xx de la API.
 - Temperatura actual por boya.
 - Boyas silenciosas.
 - Tiempo desde la última lectura.

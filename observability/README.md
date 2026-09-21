@@ -45,6 +45,9 @@ y dispara una alerta crítica tras cinco minutos.
 La ausencia de un canal ambiental se publica como
 `tidewatch_sensor_channel_missing` con las etiquetas de familia y canal, y
 dispara una alerta de mantenimiento tras cinco minutos.
+La tasa de errores de servidor de la API se calcula con
+`tidewatch_http_requests_total`; `TidewatchApiServerErrors` avisa cuando los
+errores 5xx superan el 1% durante cinco minutos.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.
