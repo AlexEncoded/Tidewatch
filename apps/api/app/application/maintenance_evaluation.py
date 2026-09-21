@@ -6,6 +6,7 @@ from datetime import datetime
 from .battery_health import analyze_battery_health_for_buoy
 from .maintenance_issues import build_maintenance_issues_for_buoy
 from .movement_analysis import analyze_movement_for_buoy
+from .ports import MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
 from ..models import BatteryHealth, MaintenanceIssue
 
@@ -20,7 +21,7 @@ class MaintenanceBuoyEvaluation:
 
 
 def evaluate_maintenance_buoy(
-    reader: object,
+    reader: MaintenanceReader,
     buoy: object,
     now: datetime,
     max_age_minutes: float,

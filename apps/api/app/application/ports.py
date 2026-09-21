@@ -49,3 +49,21 @@ class TemperatureTelemetryReader(Protocol):
         sensor_channel: str | None = "A",
     ) -> list:
         ...
+
+
+class MaintenanceReader(
+    LocationTelemetryReader,
+    BatteryTelemetryReader,
+    PressureTelemetryReader,
+    TemperatureTelemetryReader,
+    Protocol,
+):
+    """Read-only queries required by the maintenance application service."""
+
+    def list_salinity(
+        self,
+        buoy_id: str,
+        limit: int,
+        sensor_channel: str | None = "A",
+    ) -> list:
+        ...

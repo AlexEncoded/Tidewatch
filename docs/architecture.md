@@ -66,6 +66,11 @@ work is concentrated in telemetry ingestion. HTTP boundaries are isolated so
 the use cases can be extracted incrementally and validated by the API and
 worker test suites.
 
+The maintenance use case now declares a read-only `MaintenanceReader` input
+port composed from the telemetry and battery query ports. `BuoyRepository` is
+the current infrastructure adapter; the application service does not need to
+know about its SQLAlchemy session.
+
 ## Bounded contexts
 
 The current modular-monolith boundaries are:
