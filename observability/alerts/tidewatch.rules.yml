@@ -1,6 +1,17 @@
 groups:
   - name: tidewatch-buoys
     rules:
+      - alert: TidewatchApiServerErrors
+        expr: |
+          sum(rate(tidewatch_http_requests_total{status_code=~"5.."}[5m]))
+            /
+          sum(rate(tidewatch_http_requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch API is returning server errors"
+          description: "More than one percent of API requests have returned 5xx responses during the last five minutes."
       - alert: TidewatchBuoySilent
         expr: time() - tidewatch_buoy_last_seen_timestamp_seconds > 1800
         for: 5m
