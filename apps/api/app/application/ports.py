@@ -1,6 +1,6 @@
 """Input ports shared by application services."""
 
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 
 class LocationTelemetryReader(Protocol):
@@ -51,6 +51,7 @@ class TemperatureTelemetryReader(Protocol):
         ...
 
 
+@runtime_checkable
 class SensorHealthReader(Protocol):
     """Read-only port for the redundant sensor-health snapshot."""
 
@@ -109,6 +110,7 @@ class SensorHealthReader(Protocol):
         ...
 
 
+@runtime_checkable
 class MaintenanceReader(
     LocationTelemetryReader,
     BatteryTelemetryReader,

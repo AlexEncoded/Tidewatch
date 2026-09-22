@@ -1,6 +1,9 @@
 import ast
 from pathlib import Path
 
+from app.application.ports import MaintenanceReader
+from app.repository import BuoyRepository
+
 
 API_APP = Path(__file__).parents[1] / "app"
 
@@ -32,6 +35,12 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert "sqlalchemy" not in modules
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
+
+
+def test_repository_implements_the_maintenance_read_port() -> None:
+    adapter = BuoyRepository.__new__(BuoyRepository)
+
+    assert isinstance(adapter, MaintenanceReader)
 
 
 def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:
