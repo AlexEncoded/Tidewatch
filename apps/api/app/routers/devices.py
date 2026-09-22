@@ -11,7 +11,7 @@ from ..application.device_status import update_device_status as update_device_st
 from ..database import get_db
 from ..domain.devices import DeviceOwnershipError, DeviceRegistrationConflict
 from ..entities import DeviceEntity
-from ..application.device_health import summarize_device_health
+from ..application.device_health import summarize_device_health_for_buoy
 from ..models import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
 from ..repository import BuoyRepository
 
@@ -73,8 +73,9 @@ def device_health(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return summarize_device_health(
-        repository.list_devices(buoy_id),
+    return summarize_device_health_for_buoy(
+        repository,
+        buoy_id,
         datetime.now(timezone.utc),
         max_age_minutes * 60,
     )

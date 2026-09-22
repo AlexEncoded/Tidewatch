@@ -71,6 +71,10 @@ port composed from the telemetry and battery query ports. `BuoyRepository` is
 the current infrastructure adapter; the application service does not need to
 know about its SQLAlchemy session.
 
+The physical-device health summary follows the same pattern through the
+`DeviceHealthReader` port, keeping heartbeat and status mapping outside the
+HTTP adapter.
+
 ## Bounded contexts
 
 The current modular-monolith boundaries are:

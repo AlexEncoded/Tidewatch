@@ -41,6 +41,13 @@ class QualitySummaryReader(Protocol):
         ...
 
 
+class DeviceHealthReader(Protocol):
+    """Read-only port for registered physical devices."""
+
+    def list_devices(self, buoy_id: str) -> list:
+        ...
+
+
 class TemperatureTelemetryReader(Protocol):
     def list_temperatures(
         self,

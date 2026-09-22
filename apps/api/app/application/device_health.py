@@ -4,6 +4,17 @@ from collections.abc import Sequence
 from datetime import datetime, timezone
 
 from ..models import DeviceHealth
+from .ports import DeviceHealthReader
+
+
+def summarize_device_health_for_buoy(
+    reader: DeviceHealthReader,
+    buoy_id: str,
+    now: datetime,
+    max_age_seconds: float,
+) -> list[DeviceHealth]:
+    """Load one buoy's devices through the application input port."""
+    return summarize_device_health(reader.list_devices(buoy_id), now, max_age_seconds)
 
 
 def summarize_device_health(
