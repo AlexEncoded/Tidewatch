@@ -8,6 +8,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Número total de lecturas aceptadas.
 - Tasa de errores HTTP 5xx de la API.
 - Disponibilidad de cada boya durante los últimos cinco minutos.
+- Disponibilidad de cada unidad física durante los últimos cinco minutos.
 - Temperatura actual por boya.
 - Boyas silenciosas.
 - Tiempo desde la última lectura.

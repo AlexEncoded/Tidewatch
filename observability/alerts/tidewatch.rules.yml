@@ -30,6 +30,19 @@ groups:
         annotations:
           summary: "Tidewatch buoy availability is below target"
           description: "The buoy has been available for less than 99.99% of the last five minutes."
+      - record: tidewatch:device_availability_ratio5m
+        expr: |
+          avg_over_time(
+            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 1800)[5m:]
+          )
+      - alert: TidewatchDeviceAvailabilityBelowTarget
+        expr: tidewatch:device_availability_ratio5m < 0.9999
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch physical device availability is below target"
+          description: "A physical device has been available for less than 99.99% of the last five minutes."
       - alert: TidewatchBuoySilent
         expr: time() - tidewatch_buoy_last_seen_timestamp_seconds > 1800
         for: 5m

@@ -56,8 +56,10 @@ de validación completa en un entorno desplegado. La recording rule
 `tidewatch:buoy_availability_ratio5m` ya mide, por `buoy_id`, la proporción de
 los últimos cinco minutos en la que el heartbeat de lecturas estuvo disponible;
 `TidewatchBuoyAvailabilityBelowTarget` avisa por debajo del 99,99%. La
-disponibilidad de cada unidad física y la correlación con RPO/RTO siguen
-pendientes de pruebas de despliegue.
+`tidewatch:device_availability_ratio5m` y `TidewatchDeviceAvailabilityBelowTarget`
+ofrecen la misma medición por unidad física, conservando las etiquetas
+`buoy_id`, `device_id` y `sensor_channel`. La correlación con RPO/RTO sigue
+pendiente de pruebas de despliegue.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.
