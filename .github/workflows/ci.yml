@@ -76,6 +76,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate frontend JavaScript
+        run: node --check apps/frontend/app.js
+
       - name: Build API image
         run: docker build --tag tidewatch-api:ci apps/api
 
