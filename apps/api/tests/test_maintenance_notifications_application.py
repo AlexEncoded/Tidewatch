@@ -1,9 +1,17 @@
 from app.application.maintenance_notifications import (
+    MaintenanceNotificationTransport,
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
 )
 from app.application.maintenance_issues import build_reading_quality_issues
 from app.models import MaintenanceIssue
+
+
+def test_callable_satisfies_notification_transport_port() -> None:
+    def transport(url: str, *, json: dict, timeout: float):
+        return None
+
+    assert isinstance(transport, MaintenanceNotificationTransport)
 
 
 def test_maintenance_notification_payload_serializes_issue_contracts() -> None:

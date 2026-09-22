@@ -1,8 +1,9 @@
 """Application services for maintenance notifications."""
 
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 
+@runtime_checkable
 class MaintenanceNotificationTransport(Protocol):
     """Port used to deliver a maintenance notification payload."""
 
