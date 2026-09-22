@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from ..models import SensorHealth, SensorHealthCheck
 from ..domain.sensor_health import SensorHealthEvaluation, evaluate_sensor_health
@@ -14,6 +14,7 @@ from ..domain.vectors import euclidean_difference
 from .ports import SensorHealthReader
 
 
+@runtime_checkable
 class SensorHealthCheckWriter(Protocol):
     """Persistence port required to store a sensor-health evaluation."""
 

@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 
 from app.application.ports import MaintenanceReader
+from app.application.sensor_health import SensorHealthCheckWriter
 from app.repository import BuoyRepository
 
 
@@ -41,6 +42,12 @@ def test_repository_implements_the_maintenance_read_port() -> None:
     adapter = BuoyRepository.__new__(BuoyRepository)
 
     assert isinstance(adapter, MaintenanceReader)
+
+
+def test_repository_implements_the_sensor_health_writer_port() -> None:
+    adapter = BuoyRepository.__new__(BuoyRepository)
+
+    assert isinstance(adapter, SensorHealthCheckWriter)
 
 
 def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:
