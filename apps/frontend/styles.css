@@ -55,6 +55,12 @@ dl { margin: 0; } dl div { border-top: 1px solid #1d3b51; padding: 10px 0; } dt,
 .battery-health-consistent { background: #123f38; color: #7af0c3; }
 .battery-health-degraded { background: #43232d; color: #ff9da9; }
 .battery-health-unknown { background: #263849; color: #9bb1c5; }
+.device-health-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.device-health { border-radius: 999px; display: inline-block; font-size: 0.68rem; padding: 4px 8px; white-space: nowrap; }
+.device-health-active { background: #123f38; color: #7af0c3; }
+.device-health-stale { background: #43232d; color: #ff9da9; }
+.device-health-maintenance { background: #47371a; color: #ffd27a; }
+.device-health-inactive, .device-health-unknown { background: #263849; color: #9bb1c5; }
 .quality-summary { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 .quality { border-radius: 999px; font-size: 0.68rem; padding: 4px 7px; white-space: nowrap; }
 .quality-good { background: #123f38; color: #7af0c3; }

@@ -2,6 +2,8 @@
 
 Dashboard operativo para consultar la flota de boyas, sus condiciones
 ambientales, estado, batería redundante, movimiento y última comunicación.
+Cada tarjeta muestra también el estado, canal y antigüedad del heartbeat de sus
+unidades físicas A/B.
 
 ## Ejecutar con Docker Compose
 

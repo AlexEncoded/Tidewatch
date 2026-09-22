@@ -37,6 +37,19 @@ function formatBatteryAutonomy(analysis) {
   return `${analysis.estimated_hours_remaining.toFixed(1)} h`;
 }
 
+function formatDeviceHealth(devices) {
+  if (!devices?.length) {
+    return '<span class="device-health device-health-unknown">No units registered</span>';
+  }
+  return devices.map((device) => {
+    const state = device.is_stale ? "stale" : device.status;
+    const age = device.age_seconds == null
+      ? "no heartbeat"
+      : `${Math.round(device.age_seconds)}s ago`;
+    return `<span class="device-health device-health-${state}">${escapeHtml(device.sensor_channel)} · ${escapeHtml(device.device_id)} · ${state} · ${age}</span>`;
+  }).join(" ");
+}
+
 function formatWave(analysis) {
   return analysis?.estimated_wave_height_m == null
     ? "Insufficient data"
@@ -125,6 +138,7 @@ function renderBuoys(
   movements,
   batteryHealth,
   batteryAnalyses,
+  deviceHealth,
   locationHistory,
 ) {
   document.querySelector("#total-buoys").textContent = buoys.length;
@@ -148,6 +162,7 @@ function renderBuoys(
       const movement = movements[index];
       const batteryStatus = batteryHealth[index];
       const batteryAnalysis = batteryAnalyses[index];
+      const devices = deviceHealth[index];
       const seaState = analysis?.sea_state ?? "unknown";
       const sensorStatus = health?.status ?? "unknown";
       const movementSpeed = movement?.average_speed_mps;
@@ -172,6 +187,7 @@ function renderBuoys(
             <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Battery A/B</dt><dd>${formatBatteryHealth(batteryStatus)}</dd></div>
             <div><dt>Autonomy A/B</dt><dd>${formatBatteryAutonomy(batteryAnalysis.A)} / ${formatBatteryAutonomy(batteryAnalysis.B)}</dd></div>
+            <div><dt>Physical units</dt><dd class="device-health-list">${formatDeviceHealth(devices)}</dd></div>
             <div><dt>Wave estimate</dt><dd>${formatWave(analysis)}</dd></div>
             <div><dt>Sea state</dt><dd><span class="sea-state sea-state-${seaState}">${seaState}</span></dd></div>
             <div><dt>Movement</dt><dd><span class="movement movement-${movementStatus}">${formatMovement(movement)}</span></dd></div>
@@ -280,6 +296,14 @@ async function loadBuoys() {
         return { A: analysisA, B: analysisB };
       }),
     );
+    const deviceHealth = await Promise.all(
+      buoys.map(async ({ buoy }) => {
+        const healthResponse = await fetch(
+          `/api/v1/buoys/${buoy.id}/devices/health`,
+        );
+        return healthResponse.ok ? healthResponse.json() : [];
+      }),
+    );
     renderBuoys(
       buoys,
       analyses,
@@ -288,6 +312,7 @@ async function loadBuoys() {
       movements,
       batteryHealth,
       batteryAnalyses,
+      deviceHealth,
       Object.fromEntries(locationHistoryEntries),
     );
   } catch (error) {
