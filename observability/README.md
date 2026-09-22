@@ -52,9 +52,12 @@ alerta `TidewatchApiServerErrors` avisa cuando esa disponibilidad cae por
 debajo del 99% durante cinco minutos; el panel de errores 5xx reutiliza la
 misma serie para mantener una única definición operativa.
 La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
-de medición en un entorno desplegado. Para esa validación se combinarán la
-tasa de errores API, el tiempo desde la última lectura y los resultados de las
-pruebas RPO/RTO documentadas.
+de validación completa en un entorno desplegado. La recording rule
+`tidewatch:buoy_availability_ratio5m` ya mide, por `buoy_id`, la proporción de
+los últimos cinco minutos en la que el heartbeat de lecturas estuvo disponible;
+`TidewatchBuoyAvailabilityBelowTarget` avisa por debajo del 99,99%. La
+disponibilidad de cada unidad física y la correlación con RPO/RTO siguen
+pendientes de pruebas de despliegue.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.

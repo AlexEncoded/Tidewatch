@@ -17,6 +17,19 @@ groups:
         annotations:
           summary: "Tidewatch API is returning server errors"
           description: "More than one percent of API requests have returned 5xx responses during the last five minutes."
+      - record: tidewatch:buoy_availability_ratio5m
+        expr: |
+          avg_over_time(
+            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 1800)[5m:]
+          )
+      - alert: TidewatchBuoyAvailabilityBelowTarget
+        expr: tidewatch:buoy_availability_ratio5m < 0.9999
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch buoy availability is below target"
+          description: "The buoy has been available for less than 99.99% of the last five minutes."
       - alert: TidewatchBuoySilent
         expr: time() - tidewatch_buoy_last_seen_timestamp_seconds > 1800
         for: 5m
