@@ -24,15 +24,18 @@ def estimate_wave_period(
     """Estimate wave period from consecutive upward mean crossings."""
     if len(samples) < 3:
         return None
-    normalized_samples = [
-        (
-            timestamp.replace(tzinfo=timezone.utc)
-            if timestamp.tzinfo is None
-            else timestamp,
-            value,
-        )
-        for timestamp, value in samples
-    ]
+    normalized_samples = sorted(
+        [
+            (
+                timestamp.replace(tzinfo=timezone.utc)
+                if timestamp.tzinfo is None
+                else timestamp,
+                value,
+            )
+            for timestamp, value in samples
+        ],
+        key=lambda sample: sample[0],
+    )
     mean = fmean(value for _, value in normalized_samples)
     crossings = []
     for (previous_timestamp, previous_value), (timestamp, value) in zip(
