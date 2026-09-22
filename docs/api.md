@@ -44,6 +44,7 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/buoys/{id}/battery-analysis` | Estimar descarga y autonomía por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery-health` | Comparar baterías A/B |
 | `GET` | `/api/v1/buoys/{id}/sensor-health` | Comparar canales A/B |
+| `GET` | `/api/v1/buoys/{id}/devices/health` | Estado y heartbeat de unidades físicas |
 | `POST` | `/api/v1/buoys/{id}/sensor-health/check` | Evaluar y persistir salud A/B |
 | `GET` | `/api/v1/buoys/{id}/sensor-health/history` | Consultar histórico de salud |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |

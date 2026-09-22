@@ -1,6 +1,8 @@
 """HTTP routes for buoy device management."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -9,7 +11,8 @@ from ..application.device_status import update_device_status as update_device_st
 from ..database import get_db
 from ..domain.devices import DeviceOwnershipError, DeviceRegistrationConflict
 from ..entities import DeviceEntity
-from ..models import Device, DeviceCreate, DeviceStatusUpdate
+from ..application.device_health import summarize_device_health
+from ..models import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
 from ..repository import BuoyRepository
 
 
@@ -55,6 +58,26 @@ def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return repository.list_devices(buoy_id)
+
+
+@router.get(
+    "/api/v1/buoys/{buoy_id}/devices/health",
+    response_model=list[DeviceHealth],
+    tags=["devices"],
+)
+def device_health(
+    buoy_id: str,
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    db: Session = Depends(get_db),
+) -> list[DeviceHealth]:
+    repository = BuoyRepository(db)
+    if repository.get_buoy(buoy_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return summarize_device_health(
+        repository.list_devices(buoy_id),
+        datetime.now(timezone.utc),
+        max_age_minutes * 60,
+    )
 
 
 @router.patch(

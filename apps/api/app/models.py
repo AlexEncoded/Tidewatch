@@ -37,6 +37,16 @@ class Device(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class DeviceHealth(BaseModel):
+    buoy_id: str
+    device_id: str
+    sensor_channel: Literal["A", "B"]
+    status: Literal["active", "maintenance", "inactive"]
+    last_seen_at: datetime | None = None
+    age_seconds: float | None = None
+    is_stale: bool
+
+
 class BuoyLocationUpdate(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)

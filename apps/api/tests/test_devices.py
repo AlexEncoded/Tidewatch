@@ -81,6 +81,20 @@ def test_batch_telemetry_records_device_heartbeat(client):
     assert "tidewatch_device_last_seen_timestamp_seconds" in client.get("/metrics").text
 
 
+def test_device_health_endpoint_exposes_stale_registered_unit(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Device health"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "health-unit", "sensor_channel": "A"},
+    )
+
+    response = client.get(f"/api/v1/buoys/{buoy_id}/devices/health")
+
+    assert response.status_code == 200
+    assert response.json()[0]["device_id"] == "health-unit"
+    assert response.json()[0]["is_stale"] is True
+
+
 def test_batch_location_keeps_originating_device(client):
     buoy_id = client.post("/api/v1/buoys", json={"name": "GNSS Device"}).json()["id"]
     client.post(
