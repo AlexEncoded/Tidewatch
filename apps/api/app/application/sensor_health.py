@@ -18,7 +18,7 @@ from .ports import SensorHealthReader
 class SensorHealthCheckWriter(Protocol):
     """Persistence port required to store a sensor-health evaluation."""
 
-    def add_sensor_health_check(self, health: SensorHealthCheck) -> SensorHealthCheck:
+    def add_sensor_health_check(self, health: SensorHealth) -> SensorHealthCheck:
         ...
 
 
@@ -82,7 +82,7 @@ def evaluate_sensor_health_snapshot(
 
 
 def persist_sensor_health_check(
-    writer: SensorHealthCheckWriter, health: SensorHealthCheck
+    writer: SensorHealthCheckWriter, health: SensorHealth
 ) -> SensorHealthCheck:
     """Persist a completed sensor-health evaluation through its input port."""
     return writer.add_sensor_health_check(health)

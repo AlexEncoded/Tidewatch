@@ -10,7 +10,7 @@ from app.application.sensor_health import (
     persist_sensor_health_check,
 )
 from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
-from app.models import SensorHealthCheck
+from app.models import SensorHealth, SensorHealthCheck
 
 
 def test_sensor_health_application_service_delegates_snapshot_evaluation() -> None:
@@ -24,19 +24,19 @@ def test_sensor_health_application_service_delegates_snapshot_evaluation() -> No
 
 
 def test_sensor_health_application_service_persists_through_writer_port() -> None:
-    health = SensorHealthCheck(
-        id=7,
+    health = SensorHealth(
         buoy_id="buoy-1",
         status="consistent",
         checked_at=datetime.now(timezone.utc),
     )
+    stored = SensorHealthCheck(id=7, **health.model_dump())
 
     class Writer:
-        def add_sensor_health_check(self, value: SensorHealthCheck) -> SensorHealthCheck:
+        def add_sensor_health_check(self, value: SensorHealth) -> SensorHealthCheck:
             assert value is health
-            return value
+            return stored
 
-    assert persist_sensor_health_check(Writer(), health) is health
+    assert persist_sensor_health_check(Writer(), health) is stored
 
 
 def test_sensor_health_application_service_collects_redundant_channels() -> None:
