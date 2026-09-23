@@ -95,6 +95,23 @@ def test_device_health_endpoint_exposes_stale_registered_unit(client):
     assert response.json()[0]["is_stale"] is True
 
 
+def test_stale_device_is_included_in_maintenance_queue(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Maintenance device"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "maintenance-unit", "sensor_channel": "A"},
+    )
+
+    response = client.get("/api/v1/maintenance/issues")
+
+    assert response.status_code == 200
+    assert any(
+        issue["issue_type"] == "stale_device"
+        and "maintenance-unit" in issue["message"]
+        for issue in response.json()
+    )
+
+
 def test_batch_location_keeps_originating_device(client):
     buoy_id = client.post("/api/v1/buoys", json={"name": "GNSS Device"}).json()["id"]
     client.post(
