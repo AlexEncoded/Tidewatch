@@ -2,8 +2,12 @@
 
 import os
 
-from ..domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave, estimate_wave_period
-from ..models import WaveAnalysis
+from ..domain.wave import (
+    DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
+    WaveAnalysisSnapshot,
+    estimate_wave,
+    estimate_wave_period,
+)
 from .ports import ImuTelemetryReader, LocationTelemetryReader
 
 
@@ -25,7 +29,7 @@ def analyze_wave_for_buoy(
     buoy_id: str,
     window: int,
     imu_wave_height_factor: float,
-) -> WaveAnalysis:
+) -> WaveAnalysisSnapshot:
     """Run wave analysis without coupling the use case to a database adapter."""
     imu_readings = [
         reading
@@ -54,12 +58,12 @@ def analyze_wave_for_buoy(
     ]
     period = estimate_wave_period(period_samples)
     if estimate.estimated_wave_height_m is None:
-        return WaveAnalysis(
+        return WaveAnalysisSnapshot(
             buoy_id=buoy_id,
             sample_count=max(len(imu_readings), len(locations)),
             estimated_period_seconds=period,
         )
-    return WaveAnalysis(
+    return WaveAnalysisSnapshot(
         buoy_id=buoy_id,
         sample_count=max(len(imu_readings), len(locations)),
         gnss_vertical_range_m=(

@@ -70,7 +70,7 @@ def buoy_wave_analysis(
             current_estimated_wave_period_seconds.remove(buoy_id)
         except KeyError:
             pass
-    return result
+    return WaveAnalysis.model_validate(result, from_attributes=True)
 
 
 @router.get(

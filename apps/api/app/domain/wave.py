@@ -18,6 +18,19 @@ class WaveEstimate:
     estimated_period_seconds: float | None = None
 
 
+@dataclass(frozen=True)
+class WaveAnalysisSnapshot:
+    """Domain result exposed by the experimental wave-analysis use case."""
+
+    buoy_id: str
+    sample_count: int
+    gnss_vertical_range_m: float | None = None
+    imu_vertical_acceleration_range_mps2: float | None = None
+    estimated_wave_height_m: float | None = None
+    estimated_period_seconds: float | None = None
+    confidence: str = "insufficient_data"
+
+
 def estimate_wave_period(
     samples: Sequence[tuple[datetime, float]],
 ) -> float | None:
