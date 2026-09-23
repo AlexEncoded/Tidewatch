@@ -73,12 +73,10 @@ def device_health(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return summarize_device_health_for_buoy(
-        repository,
-        buoy_id,
-        datetime.now(timezone.utc),
-        max_age_minutes * 60,
+    snapshots = summarize_device_health_for_buoy(
+        repository, buoy_id, datetime.now(timezone.utc), max_age_minutes * 60
     )
+    return [DeviceHealth.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
 
 @router.patch(

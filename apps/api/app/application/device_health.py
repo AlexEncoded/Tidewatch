@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from datetime import datetime, timezone
 
-from ..models import DeviceHealth
+from ..domain.device_health import DeviceHealthSnapshot
 from .ports import DeviceHealthReader
 
 
@@ -12,7 +12,7 @@ def summarize_device_health_for_buoy(
     buoy_id: str,
     now: datetime,
     max_age_seconds: float,
-) -> list[DeviceHealth]:
+) -> list[DeviceHealthSnapshot]:
     """Load one buoy's devices through the application input port."""
     return summarize_device_health(reader.list_devices(buoy_id), now, max_age_seconds)
 
@@ -21,10 +21,10 @@ def summarize_device_health(
     devices: Sequence[object],
     now: datetime,
     max_age_seconds: float,
-) -> list[DeviceHealth]:
+) -> list[DeviceHealthSnapshot]:
     """Map persisted device state and heartbeats into operational health."""
     reference = now.replace(tzinfo=timezone.utc) if now.tzinfo is None else now
-    summaries: list[DeviceHealth] = []
+    summaries: list[DeviceHealthSnapshot] = []
     for device in devices:
         last_seen = getattr(device, "last_seen_at", None)
         normalized_last_seen = None
@@ -40,7 +40,7 @@ def summarize_device_health(
             )
         status = device.status
         summaries.append(
-            DeviceHealth(
+            DeviceHealthSnapshot(
                 buoy_id=device.buoy_id,
                 device_id=device.device_id,
                 sensor_channel=device.sensor_channel,

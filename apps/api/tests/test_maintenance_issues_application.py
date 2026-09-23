@@ -7,7 +7,8 @@ from app.application.maintenance_issues import (
     build_operational_maintenance_issues,
     build_sensor_health_maintenance_issues,
 )
-from app.models import BatteryHealth, DeviceHealth, SensorHealth
+from app.domain.device_health import DeviceHealthSnapshot
+from app.models import BatteryHealth, SensorHealth
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
@@ -72,14 +73,14 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
 
 def test_device_maintenance_service_reports_stale_physical_units() -> None:
     devices = [
-        DeviceHealth(
+        DeviceHealthSnapshot(
             buoy_id="buoy-1",
             device_id="unit-a",
             sensor_channel="A",
             status="active",
             is_stale=True,
         ),
-        DeviceHealth(
+        DeviceHealthSnapshot(
             buoy_id="buoy-1",
             device_id="unit-b",
             sensor_channel="B",

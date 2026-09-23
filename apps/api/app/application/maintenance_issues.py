@@ -4,9 +4,10 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime
 
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
+from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import classify_latest_readings
 from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
-from ..models import BatteryHealth, DeviceHealth, MaintenanceIssue, SensorHealth
+from ..models import BatteryHealth, MaintenanceIssue, SensorHealth
 
 
 def build_reading_quality_issues(
@@ -187,7 +188,7 @@ def build_sensor_health_maintenance_issues(
 def build_device_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
-    devices: Sequence[DeviceHealth],
+    devices: Sequence[DeviceHealthSnapshot],
 ) -> list[MaintenanceIssue]:
     """Build maintenance issues for physical devices without a heartbeat."""
     return [
@@ -219,7 +220,7 @@ def build_maintenance_issues_for_buoy(
     latest_batteries: Mapping[str, object | None],
     battery_health: BatteryHealth,
     average_speed_mps: float | None,
-    device_health: Sequence[DeviceHealth] = (),
+    device_health: Sequence[DeviceHealthSnapshot] = (),
 ) -> list[MaintenanceIssue]:
     """Compose all maintenance issue types for one buoy snapshot."""
     issues = build_sensor_health_maintenance_issues(
