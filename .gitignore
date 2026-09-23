@@ -19,3 +19,6 @@ azureProfile.json
 __pycache__/
 *.py[cod]
 .venv/
+
+# Base de datos local generada durante el desarrollo y los tests
+*.db
