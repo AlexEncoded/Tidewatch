@@ -21,6 +21,24 @@ class MaintenanceBuoyEvaluation:
     average_speed_mps: float | None
 
 
+def evaluate_maintenance_fleet(
+    reader: MaintenanceReader,
+    now: datetime,
+    max_age_minutes: float,
+    drift_speed_mps: float,
+) -> list[tuple[object, MaintenanceBuoyEvaluation]]:
+    """Evaluate every buoy through the maintenance input port."""
+    return [
+        (
+            buoy,
+            evaluate_maintenance_buoy(
+                reader, buoy, now, max_age_minutes, drift_speed_mps
+            ),
+        )
+        for buoy in reader.list_buoys()
+    ]
+
+
 def evaluate_maintenance_buoy(
     reader: MaintenanceReader,
     buoy: object,

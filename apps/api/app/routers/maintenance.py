@@ -7,7 +7,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from ..application.maintenance_evaluation import evaluate_maintenance_buoy
+from ..application.maintenance_evaluation import evaluate_maintenance_fleet
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..database import get_db
 from ..metrics import (
@@ -37,10 +37,9 @@ def maintenance_issues(
     now = datetime.now(timezone.utc)
     issues: list[MaintenanceIssue] = []
 
-    for buoy in repository.list_buoys():
-        evaluation = evaluate_maintenance_buoy(
-            repository, buoy, now, max_age_minutes, drift_speed_mps
-        )
+    for buoy, evaluation in evaluate_maintenance_fleet(
+        repository, now, max_age_minutes, drift_speed_mps
+    ):
         for device_id, percentage in (
             ("A", evaluation.battery_health.device_a_percent),
             ("B", evaluation.battery_health.device_b_percent),

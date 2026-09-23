@@ -127,3 +127,6 @@ class MaintenanceReader(
     Protocol,
 ):
     """Read-only queries required by the maintenance application service."""
+
+    def list_buoys(self) -> list:
+        ...

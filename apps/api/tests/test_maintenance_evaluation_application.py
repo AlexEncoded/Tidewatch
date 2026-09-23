@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from app.application.maintenance_evaluation import evaluate_maintenance_buoy
+from app.application.maintenance_evaluation import (
+    evaluate_maintenance_buoy,
+    evaluate_maintenance_fleet,
+)
 
 
 def test_maintenance_evaluation_coordinates_application_services() -> None:
@@ -33,3 +36,15 @@ def test_maintenance_evaluation_coordinates_application_services() -> None:
     assert result.issues == []
     assert result.battery_health.status == "insufficient_data"
     assert result.average_speed_mps is None
+
+
+def test_maintenance_fleet_evaluation_reads_buoys_through_the_port() -> None:
+    class Reader:
+        def list_buoys(self):
+            return []
+
+    evaluations = evaluate_maintenance_fleet(
+        Reader(), datetime.now(timezone.utc), 30, 1
+    )
+
+    assert evaluations == []
