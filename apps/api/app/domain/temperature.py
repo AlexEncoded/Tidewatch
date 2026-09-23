@@ -15,6 +15,22 @@ class TemperatureEstimate:
     anomaly_reason: str | None = None
 
 
+@dataclass(frozen=True)
+class TemperatureAnalysisSnapshot:
+    """Domain result exposed by the historical temperature use case."""
+
+    buoy_id: str
+    sample_count: int
+    latest_temperature: float | None = None
+    average_temperature: float | None = None
+    minimum_temperature: float | None = None
+    maximum_temperature: float | None = None
+    change_celsius: float | None = None
+    trend: str = "insufficient_data"
+    is_anomaly: bool = False
+    anomaly_reason: str | None = None
+
+
 def estimate_temperature(
     values: list[float],
     threshold: float,

@@ -23,6 +23,7 @@ from app.application.temperature_analysis import (
     analyze_temperature_readings,
     list_valid_temperature_readings,
 )
+from app.domain.temperature import TemperatureAnalysisSnapshot
 from app.application.battery_health import analyze_battery_health_for_buoy
 from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.sensor_health import decide_channel, evaluate_sensor_health
@@ -463,6 +464,7 @@ def test_temperature_application_service_filters_invalid_readings() -> None:
 
     analysis = analyze_temperature_for_buoy(FakeReader(), "TW-TEMP", 10, 2.0)
 
+    assert isinstance(analysis, TemperatureAnalysisSnapshot)
     assert analysis.sample_count == 2
     assert analysis.latest_temperature == 30.0
     assert analysis.trend == "rising"

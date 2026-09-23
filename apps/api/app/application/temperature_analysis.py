@@ -1,7 +1,6 @@
 """Application service for historical temperature analysis."""
 
-from ..domain.temperature import estimate_temperature
-from ..models import TemperatureAnalysis
+from ..domain.temperature import TemperatureAnalysisSnapshot, estimate_temperature
 from .ports import TemperatureTelemetryReader
 
 
@@ -22,12 +21,12 @@ def analyze_temperature_readings(
     buoy_id: str,
     readings: list,
     threshold: float,
-) -> TemperatureAnalysis:
+) -> TemperatureAnalysisSnapshot:
     """Map valid temperature readings into the public analysis contract."""
     estimate = estimate_temperature(
         [reading.temperature_celsius for reading in readings], threshold
     )
-    return TemperatureAnalysis(
+    return TemperatureAnalysisSnapshot(
         buoy_id=buoy_id,
         sample_count=estimate.sample_count,
         latest_temperature=estimate.latest_temperature,
@@ -46,7 +45,7 @@ def analyze_temperature_for_buoy(
     buoy_id: str,
     window: int,
     threshold: float,
-) -> TemperatureAnalysis:
+) -> TemperatureAnalysisSnapshot:
     """Run temperature analysis through a persistence port."""
     return analyze_temperature_readings(
         buoy_id,

@@ -87,7 +87,8 @@ def temperature_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_temperature_for_buoy(repository, buoy_id, window, threshold)
+    result = analyze_temperature_for_buoy(repository, buoy_id, window, threshold)
+    return TemperatureAnalysis.model_validate(result, from_attributes=True)
 
 
 @router.get(
