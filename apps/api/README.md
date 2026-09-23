@@ -58,6 +58,7 @@ servicio en el backend de trazas.
 | `POST` | `/api/v1/buoys` | Registrar una boya y su ubicación |
 | `GET` | `/api/v1/buoys` | Listar boyas y resumen de última telemetría |
 | `GET` | `/api/v1/buoys/stale` | Detectar boyas sin comunicación |
+| `GET` | `/api/v1/buoys/{id}/devices/health` | Estado y heartbeat de unidades físicas |
 | `PATCH` | `/api/v1/buoys/{id}/status` | Cambiar estado operativo |
 | `PATCH` | `/api/v1/buoys/{id}/location` | Actualizar posición |
 | `POST` | `/api/v1/buoys/{id}/telemetry` | Ingerir un lote de telemetría |
@@ -163,6 +164,11 @@ La misma actividad se mide con las métricas Prometheus
 `/api/v1/buoys/{id}/sensor-health` acepta `max_age_minutes` para distinguir un
 canal sin telemetría reciente de uno que todavía está operativo. El mismo
 umbral se aplica a la cola de `/api/v1/maintenance/issues`.
+
+`/api/v1/buoys/{id}/devices/health` devuelve el estado administrativo y el
+heartbeat de cada unidad física. Las unidades activas sin heartbeat reciente
+se marcan con `is_stale=true` y la cola de mantenimiento las publica como
+incidencias `stale_device`.
 
 `POST /api/v1/buoys/{id}/sensor-health/check` guarda una evaluación con sus
 divergencias y canales ausentes. `GET /api/v1/buoys/{id}/sensor-health/history`

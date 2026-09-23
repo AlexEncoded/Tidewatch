@@ -21,6 +21,13 @@ channels are unique within a buoy. Duplicate IDs or occupied channels return
 `GET /api/v1/buoys/{buoy_id}/devices` lists registered units in channel order.
 An existing buoy with no registered devices returns an empty list.
 
+`GET /api/v1/buoys/{buoy_id}/devices/health` returns the operational summary
+for each registered unit: administrative status, last heartbeat, age in
+seconds and `is_stale`. Active units without a heartbeat, or whose heartbeat
+is older than the `max_age_minutes` query parameter (30 by default), are
+marked stale. Units in `maintenance` or `inactive` status are not marked stale
+by telemetry age alone.
+
 Telemetry batches may include the optional `device_id` field. When present,
 the API verifies that the unit belongs to the buoy and records its latest
 communication time. A device from another buoy or an unknown device returns
@@ -36,3 +43,7 @@ a device's status does not change the buoy's status or filter telemetry.
 Batch GNSS positions, IMU readings and all current sensor families retain the
 originating batch `device_id` when supplied. Battery readings continue to use
 their redundant channel identifier (`A` or `B`) as their device key.
+
+Active units marked stale by the same heartbeat rule generate a
+`stale_device` maintenance issue so the operational queue and device-health
+endpoint expose the same condition.
