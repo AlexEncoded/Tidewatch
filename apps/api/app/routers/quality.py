@@ -20,4 +20,5 @@ def quality_summary(buoy_id: str, db: Session = Depends(get_db)) -> QualitySumma
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return summarize_quality(repository, buoy_id)
+    summary = summarize_quality(repository, buoy_id)
+    return QualitySummary.model_validate(summary, from_attributes=True)

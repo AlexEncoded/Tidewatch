@@ -1,4 +1,5 @@
 from app.application.quality_summary import summarize_quality
+from app.domain.quality import QualitySummarySnapshot
 
 
 class FakeQualityReader:
@@ -15,3 +16,4 @@ def test_quality_summary_is_built_through_reader_port() -> None:
     assert summary.good_readings == 7
     assert summary.suspect_readings == 2
     assert summary.invalid_readings == 1
+    assert isinstance(summary, QualitySummarySnapshot)
