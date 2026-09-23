@@ -41,6 +41,7 @@ class QualitySummaryReader(Protocol):
         ...
 
 
+@runtime_checkable
 class DeviceHealthReader(Protocol):
     """Read-only port for registered physical devices."""
 
