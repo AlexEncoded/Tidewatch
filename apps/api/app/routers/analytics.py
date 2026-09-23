@@ -41,7 +41,8 @@ def buoy_movement_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_movement_for_buoy(repository, buoy_id, window)
+    result = analyze_movement_for_buoy(repository, buoy_id, window)
+    return MovementAnalysis.model_validate(result, from_attributes=True)
 
 
 @router.get("/api/v1/buoys/{buoy_id}/wave-analysis", response_model=WaveAnalysis, tags=["analytics"])

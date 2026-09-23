@@ -15,6 +15,16 @@ class MovementEstimate:
     confidence: str = "insufficient_data"
 
 
+@dataclass(frozen=True)
+class MovementAnalysisSnapshot:
+    buoy_id: str
+    sample_count: int
+    distance_travelled_m: float | None = None
+    displacement_m: float | None = None
+    average_speed_mps: float | None = None
+    confidence: str = "insufficient_data"
+
+
 def distance_between_points(
     latitude_a: float,
     longitude_a: float,
