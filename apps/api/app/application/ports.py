@@ -123,6 +123,7 @@ class MaintenanceReader(
     LocationTelemetryReader,
     BatteryTelemetryReader,
     SensorHealthReader,
+    DeviceHealthReader,
     Protocol,
 ):
     """Read-only queries required by the maintenance application service."""

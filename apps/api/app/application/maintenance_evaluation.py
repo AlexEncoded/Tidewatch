@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .battery_health import analyze_battery_health_for_buoy
+from .device_health import summarize_device_health_for_buoy
 from .maintenance_issues import build_maintenance_issues_for_buoy
 from .movement_analysis import analyze_movement_for_buoy
 from .ports import MaintenanceReader
@@ -43,6 +44,9 @@ def evaluate_maintenance_buoy(
         for device_id in ("A", "B")
     }
     movement = analyze_movement_for_buoy(reader, buoy_id, 50)
+    device_health = summarize_device_health_for_buoy(
+        reader, buoy_id, now, max_age_minutes * 60
+    )
     issues = build_maintenance_issues_for_buoy(
         buoy_id,
         buoy.name,
@@ -56,6 +60,7 @@ def evaluate_maintenance_buoy(
         latest_batteries,
         battery_health,
         movement.average_speed_mps,
+        device_health,
     )
     return MaintenanceBuoyEvaluation(
         issues=issues,

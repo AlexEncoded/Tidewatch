@@ -6,7 +6,7 @@ from datetime import datetime
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.reading_quality import classify_latest_readings
 from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
-from ..models import BatteryHealth, MaintenanceIssue, SensorHealth
+from ..models import BatteryHealth, DeviceHealth, MaintenanceIssue, SensorHealth
 
 
 def build_reading_quality_issues(
@@ -184,6 +184,28 @@ def build_sensor_health_maintenance_issues(
     return issues
 
 
+def build_device_maintenance_issues(
+    buoy_id: str,
+    buoy_name: str,
+    devices: Sequence[DeviceHealth],
+) -> list[MaintenanceIssue]:
+    """Build maintenance issues for physical devices without a heartbeat."""
+    return [
+        MaintenanceIssue(
+            buoy_id=buoy_id,
+            buoy_name=buoy_name,
+            issue_type="stale_device",
+            severity="warning",
+            message=(
+                f"Physical device {device.device_id} "
+                f"(channel {device.sensor_channel}) has no recent heartbeat"
+            ),
+        )
+        for device in devices
+        if device.is_stale
+    ]
+
+
 def build_maintenance_issues_for_buoy(
     buoy_id: str,
     buoy_name: str,
@@ -197,11 +219,13 @@ def build_maintenance_issues_for_buoy(
     latest_batteries: Mapping[str, object | None],
     battery_health: BatteryHealth,
     average_speed_mps: float | None,
+    device_health: Sequence[DeviceHealth] = (),
 ) -> list[MaintenanceIssue]:
     """Compose all maintenance issue types for one buoy snapshot."""
     issues = build_sensor_health_maintenance_issues(
         buoy_id, buoy_name, sensor_health
     )
+    issues.extend(build_device_maintenance_issues(buoy_id, buoy_name, device_health))
     issues.extend(build_reading_quality_issues(buoy_id, buoy_name, latest_readings))
     issues.extend(
         build_battery_maintenance_issues(

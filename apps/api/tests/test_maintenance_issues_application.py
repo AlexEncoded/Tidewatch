@@ -2,11 +2,12 @@ from datetime import datetime, timedelta, timezone
 
 from app.application.maintenance_issues import (
     build_battery_maintenance_issues,
+    build_device_maintenance_issues,
     build_maintenance_issues_for_buoy,
     build_operational_maintenance_issues,
     build_sensor_health_maintenance_issues,
 )
-from app.models import BatteryHealth, SensorHealth
+from app.models import BatteryHealth, DeviceHealth, SensorHealth
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
@@ -67,6 +68,30 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         "degraded_sensor",
         "missing_sensor_channel",
     ]
+
+
+def test_device_maintenance_service_reports_stale_physical_units() -> None:
+    devices = [
+        DeviceHealth(
+            buoy_id="buoy-1",
+            device_id="unit-a",
+            sensor_channel="A",
+            status="active",
+            is_stale=True,
+        ),
+        DeviceHealth(
+            buoy_id="buoy-1",
+            device_id="unit-b",
+            sensor_channel="B",
+            status="active",
+            is_stale=False,
+        ),
+    ]
+
+    issues = build_device_maintenance_issues("buoy-1", "North buoy", devices)
+
+    assert [issue.issue_type for issue in issues] == ["stale_device"]
+    assert "unit-a" in issues[0].message
 
 
 def test_maintenance_issue_service_composes_buoy_snapshot() -> None:
