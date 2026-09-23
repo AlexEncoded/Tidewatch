@@ -1,7 +1,6 @@
 """Application service for the pressure-analysis use case."""
 
-from ..domain.pressure import estimate_pressure
-from ..models import PressureAnalysis
+from ..domain.pressure import PressureAnalysisSnapshot, estimate_pressure
 from .ports import PressureTelemetryReader
 
 
@@ -9,7 +8,7 @@ def analyze_pressure_for_buoy(
     reader: PressureTelemetryReader,
     buoy_id: str,
     window: int,
-) -> PressureAnalysis:
+) -> PressureAnalysisSnapshot:
     """Run pressure analysis through a persistence port."""
     readings = [
         reading
@@ -17,7 +16,7 @@ def analyze_pressure_for_buoy(
         if reading.quality != "invalid"
     ]
     estimate = estimate_pressure([reading.pressure_kpa for reading in readings])
-    return PressureAnalysis(
+    return PressureAnalysisSnapshot(
         buoy_id=buoy_id,
         sample_count=estimate.sample_count,
         latest_pressure_kpa=estimate.latest_pressure_kpa,

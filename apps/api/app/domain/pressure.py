@@ -18,6 +18,20 @@ class PressureEstimate:
     sea_state: str = "unknown"
 
 
+@dataclass(frozen=True)
+class PressureAnalysisSnapshot:
+    buoy_id: str
+    sample_count: int
+    latest_pressure_kpa: float | None = None
+    average_pressure_kpa: float | None = None
+    minimum_pressure_kpa: float | None = None
+    maximum_pressure_kpa: float | None = None
+    pressure_range_kpa: float | None = None
+    estimated_wave_height_m: float | None = None
+    confidence: str = "insufficient_data"
+    sea_state: str = "unknown"
+
+
 def estimate_pressure(values: list[float]) -> PressureEstimate:
     """Estimate pressure variation and an educational wave-height proxy."""
     if not values:

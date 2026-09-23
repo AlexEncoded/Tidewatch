@@ -15,6 +15,7 @@ from app.application.wave_analysis import analyze_wave_for_buoy
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.domain.movement import MovementAnalysisSnapshot
 from app.application.pressure_analysis import analyze_pressure_for_buoy
+from app.domain.pressure import PressureAnalysisSnapshot
 from app.application.battery_analysis import analyze_battery_for_buoy
 from app.application.temperature_analysis import (
     analyze_temperature_for_buoy,
@@ -133,6 +134,7 @@ def test_pressure_application_service_filters_invalid_readings() -> None:
 
     analysis = analyze_pressure_for_buoy(FakeReader(), "TW-PRESS", 10)
 
+    assert isinstance(analysis, PressureAnalysisSnapshot)
     assert analysis.sample_count == 2
     assert analysis.estimated_wave_height_m is None
     assert analysis.confidence == "insufficient_data"

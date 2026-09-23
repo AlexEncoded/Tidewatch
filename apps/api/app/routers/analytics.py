@@ -29,7 +29,8 @@ def pressure_analysis(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return analyze_pressure_for_buoy(repository, buoy_id, window)
+    result = analyze_pressure_for_buoy(repository, buoy_id, window)
+    return PressureAnalysis.model_validate(result, from_attributes=True)
 
 
 @router.get("/api/v1/buoys/{buoy_id}/movement-analysis", response_model=MovementAnalysis, tags=["buoys"])
