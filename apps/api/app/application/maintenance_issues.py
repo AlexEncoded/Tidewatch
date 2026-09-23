@@ -3,11 +3,12 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 
+from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import classify_latest_readings
 from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
-from ..models import BatteryHealth, MaintenanceIssue, SensorHealth
+from ..models import MaintenanceIssue, SensorHealth
 
 
 def build_reading_quality_issues(
@@ -48,7 +49,7 @@ def build_battery_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
     latest_batteries: Mapping[str, object | None],
-    health: BatteryHealth,
+    health: BatteryHealthSnapshot,
 ) -> list[MaintenanceIssue]:
     """Build maintenance issues from redundant battery readings and health."""
     issues: list[MaintenanceIssue] = []
@@ -218,7 +219,7 @@ def build_maintenance_issues_for_buoy(
     sensor_health: SensorHealth,
     latest_readings: Mapping[str, Sequence[object]],
     latest_batteries: Mapping[str, object | None],
-    battery_health: BatteryHealth,
+    battery_health: BatteryHealthSnapshot,
     average_speed_mps: float | None,
     device_health: Sequence[DeviceHealthSnapshot] = (),
 ) -> list[MaintenanceIssue]:

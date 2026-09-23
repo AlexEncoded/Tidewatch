@@ -56,4 +56,4 @@ def battery_health(buoy_id: str, threshold: float = Query(default=10, gt=0, le=1
             battery_device_percent.labels(buoy_id=buoy_id, device_id=device_id).set(percentage)
     if result.delta_percent is not None:
         battery_delta_percent.labels(buoy_id=buoy_id).set(result.delta_percent)
-    return result
+    return BatteryHealth.model_validate(result, from_attributes=True)

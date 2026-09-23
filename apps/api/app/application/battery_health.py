@@ -2,8 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.battery_health import estimate_battery_health
-from ..models import BatteryHealth
+from ..domain.battery_health import BatteryHealthSnapshot, estimate_battery_health
 from .ports import BatteryTelemetryReader
 
 
@@ -11,7 +10,7 @@ def analyze_battery_health_for_buoy(
     reader: BatteryTelemetryReader,
     buoy_id: str,
     threshold: float,
-) -> BatteryHealth:
+) -> BatteryHealthSnapshot:
     """Evaluate both battery devices through the persistence port."""
     readings = {
         device_id: reader.latest_battery(buoy_id, device_id)
@@ -22,7 +21,7 @@ def analyze_battery_health_for_buoy(
         readings["B"].battery_percent if readings["B"] else None,
         threshold,
     )
-    return BatteryHealth(
+    return BatteryHealthSnapshot(
         buoy_id=buoy_id,
         status=estimate.status,
         device_a_percent=estimate.device_a_percent,

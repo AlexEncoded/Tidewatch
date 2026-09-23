@@ -1,4 +1,16 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
+
+
+@dataclass(frozen=True)
+class BatteryHealthSnapshot:
+    buoy_id: str
+    status: str
+    device_a_percent: float | None
+    device_b_percent: float | None
+    checked_at: datetime
+    delta_percent: float | None = None
+    degraded_devices: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

@@ -22,6 +22,7 @@ from app.application.temperature_analysis import (
     list_valid_temperature_readings,
 )
 from app.application.battery_health import analyze_battery_health_for_buoy
+from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
@@ -433,6 +434,7 @@ def test_battery_health_application_service_reads_both_devices() -> None:
 
     health = analyze_battery_health_for_buoy(FakeReader(), "TW-HEALTH", 5.0)
 
+    assert isinstance(health, BatteryHealthSnapshot)
     assert health.status == "degraded"
     assert health.degraded_devices == ["A"]
 

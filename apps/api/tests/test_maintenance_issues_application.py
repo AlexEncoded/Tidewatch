@@ -7,13 +7,14 @@ from app.application.maintenance_issues import (
     build_operational_maintenance_issues,
     build_sensor_health_maintenance_issues,
 )
+from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.device_health import DeviceHealthSnapshot
-from app.models import BatteryHealth, SensorHealth
+from app.models import SensorHealth
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
     battery_a = type("Battery", (), {"battery_percent": 8.0})()
-    health = BatteryHealth(
+    health = BatteryHealthSnapshot(
         buoy_id="buoy-1",
         status="healthy",
         device_a_percent=8.0,
@@ -103,7 +104,7 @@ def test_maintenance_issue_service_composes_buoy_snapshot() -> None:
         degraded_sensors=["temperature"],
         checked_at=now,
     )
-    battery_health = BatteryHealth(
+    battery_health = BatteryHealthSnapshot(
         buoy_id="buoy-1",
         status="healthy",
         device_a_percent=80,
