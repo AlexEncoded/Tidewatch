@@ -62,14 +62,24 @@ def test_register_device_application_service_uses_registry() -> None:
 
         def create_device(self, buoy_id, device):
             self.created = (buoy_id, device)
-            return self.created
+            return SimpleNamespace(
+                buoy_id=buoy_id,
+                device_id=device.device_id,
+                sensor_channel=device.sensor_channel,
+                firmware_version=getattr(device, "firmware_version", None),
+                status="active",
+                registered_at=datetime.now(timezone.utc),
+                last_seen_at=None,
+            )
 
     device = SimpleNamespace(device_id="device-a", sensor_channel="A")
     registry = Registry()
 
     result = register_device(registry, "buoy-1", device)
 
-    assert result == ("buoy-1", device)
+    assert result.buoy_id == "buoy-1"
+    assert result.device_id == "device-a"
+    assert result.status == "active"
 
 
 @pytest.mark.parametrize(
@@ -100,7 +110,15 @@ def test_register_device_application_service_rejects_conflicts(existing, message
 def test_update_device_status_application_service_returns_updated_device() -> None:
     class Registry:
         def update_device_status(self, buoy_id, device_id, update):
-            return SimpleNamespace(device_id=device_id, status=update.status)
+            return SimpleNamespace(
+                buoy_id=buoy_id,
+                device_id=device_id,
+                sensor_channel="A",
+                firmware_version=None,
+                status=update.status,
+                registered_at=datetime.now(timezone.utc),
+                last_seen_at=None,
+            )
 
     update = SimpleNamespace(status="maintenance")
 

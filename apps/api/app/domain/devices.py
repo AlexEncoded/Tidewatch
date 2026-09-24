@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import datetime
 
 
 class DeviceRegistrationConflict(ValueError):
@@ -26,6 +27,19 @@ class DeviceStatusCommand:
     """Domain input for changing a device operational status."""
 
     status: str
+
+
+@dataclass(frozen=True)
+class DeviceSnapshot:
+    """Domain view of a registered physical device."""
+
+    buoy_id: str
+    device_id: str
+    sensor_channel: str
+    registered_at: datetime
+    firmware_version: str | None = None
+    status: str = "active"
+    last_seen_at: datetime | None = None
 
 
 def validate_device_ownership(device: object | None, buoy_id: str) -> None:

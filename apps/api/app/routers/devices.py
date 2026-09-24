@@ -42,7 +42,8 @@ def register_device(
             sensor_channel=payload.sensor_channel,
             firmware_version=payload.firmware_version,
         )
-        return register_device_use_case(repository, buoy_id, command)
+        result = register_device_use_case(repository, buoy_id, command)
+        return Device.model_validate(result, from_attributes=True)
     except DeviceRegistrationConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
     except IntegrityError:
@@ -104,11 +105,12 @@ def update_device_status(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
-        return update_device_status_use_case(
+        result = update_device_status_use_case(
             repository,
             buoy_id,
             device_id,
             DeviceStatusCommand(status=payload.status),
         )
+        return Device.model_validate(result, from_attributes=True)
     except DeviceOwnershipError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
