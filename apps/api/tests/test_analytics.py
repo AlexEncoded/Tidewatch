@@ -8,6 +8,7 @@ from app.analytics import analyze_movement
 from app.domain.movement import estimate_movement
 from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
+from app.domain.battery_analysis import BatteryAnalysisSnapshot
 from app.domain.temperature import estimate_temperature
 from app.domain.pressure import estimate_pressure
 from app.domain.wave import estimate_wave, estimate_wave_period
@@ -426,6 +427,7 @@ def test_battery_application_service_uses_device_port() -> None:
 
     analysis = analyze_battery_for_buoy(FakeReader(), "TW-BAT", "B", 10)
 
+    assert isinstance(analysis, BatteryAnalysisSnapshot)
     assert analysis.device_id == "B"
     assert analysis.discharge_rate_percent_per_hour == 5.0
 

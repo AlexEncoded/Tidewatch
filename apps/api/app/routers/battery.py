@@ -44,7 +44,8 @@ def battery_history(buoy_id: str, limit: int = Query(default=100, ge=1, le=500),
 @router.get("/api/v1/buoys/{buoy_id}/battery-analysis", response_model=BatteryAnalysis, tags=["battery"])
 def battery_analysis(buoy_id: str, device_id: str = Query(default="A", pattern="^(A|B)$"), window: int = Query(default=50, ge=1, le=500), db: Session = Depends(get_db)) -> BatteryAnalysis:
     repository = get_battery_repository(buoy_id, db)
-    return analyze_battery_for_buoy(repository, buoy_id, device_id, window)
+    result = analyze_battery_for_buoy(repository, buoy_id, device_id, window)
+    return BatteryAnalysis.model_validate(result, from_attributes=True)
 
 
 @router.get("/api/v1/buoys/{buoy_id}/battery-health", response_model=BatteryHealth, tags=["battery"])

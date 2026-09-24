@@ -19,6 +19,21 @@ class BatteryDischargeEstimate:
     confidence: str = "insufficient_data"
 
 
+@dataclass(frozen=True)
+class BatteryAnalysisSnapshot:
+    """Domain result exposed by the historical battery use case."""
+
+    buoy_id: str
+    device_id: str
+    sample_count: int
+    latest_percent: float | None = None
+    oldest_percent: float | None = None
+    change_percent: float | None = None
+    discharge_rate_percent_per_hour: float | None = None
+    estimated_hours_remaining: float | None = None
+    confidence: str = "insufficient_data"
+
+
 def estimate_battery_discharge(
     readings: list[BatterySample],
 ) -> BatteryDischargeEstimate:

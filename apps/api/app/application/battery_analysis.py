@@ -1,7 +1,10 @@
 """Application service for historical battery analysis."""
 
-from ..domain.battery_analysis import BatterySample, estimate_battery_discharge
-from ..models import BatteryAnalysis
+from ..domain.battery_analysis import (
+    BatteryAnalysisSnapshot,
+    BatterySample,
+    estimate_battery_discharge,
+)
 from .ports import BatteryTelemetryReader
 
 
@@ -10,7 +13,7 @@ def analyze_battery_for_buoy(
     buoy_id: str,
     device_id: str,
     window: int,
-) -> BatteryAnalysis:
+) -> BatteryAnalysisSnapshot:
     """Run battery analysis through a persistence port."""
     readings = reader.list_batteries(buoy_id, window, device_id)
     estimate = estimate_battery_discharge(
@@ -22,7 +25,7 @@ def analyze_battery_for_buoy(
             for reading in readings
         ]
     )
-    return BatteryAnalysis(
+    return BatteryAnalysisSnapshot(
         buoy_id=buoy_id,
         device_id=device_id,
         sample_count=estimate.sample_count,
