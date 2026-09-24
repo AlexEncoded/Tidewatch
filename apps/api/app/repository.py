@@ -32,6 +32,7 @@ from .entities import (
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
+    AmbientLightTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
     SalinityTelemetrySnapshot,
@@ -42,7 +43,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    AmbientLightReading,
     WindReading,
     MarineCurrentReading,
     TurbidityReading,
@@ -386,7 +386,7 @@ class BuoyRepository:
         return readings[0] if readings else None
 
     def add_ambient_light(
-        self, reading: AmbientLightReading
+        self, reading: AmbientLightTelemetrySnapshot
     ) -> AmbientLightReadingEntity:
         entity = AmbientLightReadingEntity(
             buoy_id=reading.buoy_id,
