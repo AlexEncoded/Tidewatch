@@ -31,13 +31,12 @@ from .entities import (
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.pressure import PressureTelemetrySnapshot
-from .domain.telemetry import LocationTelemetrySnapshot
+from .domain.telemetry import LocationTelemetrySnapshot, SalinityTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
     Buoy,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
-    SalinityReading,
     BatteryReading,
     ImuReading,
     AmbientLightReading,
@@ -298,7 +297,9 @@ class BuoyRepository:
         readings = self.list_pressures(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_salinity(self, reading: SalinityReading) -> SalinityReadingEntity:
+    def add_salinity(
+        self, reading: SalinityTelemetrySnapshot
+    ) -> SalinityReadingEntity:
         entity = SalinityReadingEntity(
             buoy_id=reading.buoy_id,
             salinity_psu=reading.salinity_psu,
