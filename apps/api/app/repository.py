@@ -30,11 +30,11 @@ from .entities import (
     TemperatureReadingEntity,
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
+from .domain.telemetry import LocationTelemetrySnapshot
 from .models import (
     Buoy,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
-    BuoyLocationReading,
     PressureReading,
     SalinityReading,
     BatteryReading,
@@ -103,15 +103,16 @@ class BuoyRepository:
         if buoy is None:
             return None
         self.add_location(
-            BuoyLocationReading(
+            LocationTelemetrySnapshot(
                 buoy_id=buoy_id,
                 latitude=update.latitude,
                 longitude=update.longitude,
+                measured_at=datetime.now(timezone.utc),
             )
         )
         return self.get_buoy(buoy_id)
 
-    def add_location(self, reading: BuoyLocationReading) -> BuoyLocationReadingEntity:
+    def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
         entity = BuoyLocationReadingEntity(
             buoy_id=reading.buoy_id,
             latitude=reading.latitude,

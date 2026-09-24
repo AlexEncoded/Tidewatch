@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
+    build_location_snapshot,
     empty_accepted_reading_counts,
     with_device_provenance,
 )
@@ -37,7 +38,7 @@ from ..metrics import (
 )
 from ..models import (
     AcousticAltimeterReading, AirTemperatureReading, AmbientLightReading,
-    AtmosphericPressureReading, BatteryReading, BuoyLocationReading,
+    AtmosphericPressureReading, BatteryReading,
     ChlorophyllAReading, ConductivityReading, DissolvedOxygenReading,
     HumidityReading, ImuReading, MarineCurrentReading, PHReading,
     PressureReading, RainfallReading, SalinityReading, TelemetryBatchCreate,
@@ -85,10 +86,9 @@ def ingest_telemetry(
         ).set(seen_at.timestamp())
 
     if payload.location is not None:
-        location_data = with_device_provenance(
-            payload.location.model_dump(), payload.device_id
+        location = build_location_snapshot(
+            buoy_id, payload.location.model_dump(), payload.device_id
         )
-        location = BuoyLocationReading(buoy_id=buoy_id, **location_data)
         repository.add_location(location)
         if location.altitude_meters is not None:
             current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)

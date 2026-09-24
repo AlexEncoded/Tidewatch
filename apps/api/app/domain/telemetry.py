@@ -1,4 +1,20 @@
+from dataclasses import dataclass
 from datetime import datetime, timezone
+
+
+@dataclass(frozen=True)
+class LocationTelemetrySnapshot:
+    """Domain representation of one buoy position telemetry sample."""
+
+    buoy_id: str
+    latitude: float
+    longitude: float
+    measured_at: datetime
+    altitude_meters: float | None = None
+    speed_mps: float | None = None
+    hdop: float | None = None
+    satellites: int | None = None
+    device_id: str | None = None
 
 
 def latest_usable_reading(
