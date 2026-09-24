@@ -532,7 +532,7 @@ def sensor_health(
             sensor_health_decision.labels(
                 buoy_id=buoy_id, sensor=sensor, decision=decision
             ).set(1 if decisions[sensor] == decision else 0)
-    return snapshot.health
+    return SensorHealth.model_validate(snapshot.health, from_attributes=True)
 
 
 @router.post(
@@ -550,4 +550,5 @@ def record_sensor_health_check(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, db=db)
-    return persist_sensor_health_check(repository, health)
+    stored = persist_sensor_health_check(repository, health)
+    return SensorHealthCheck.model_validate(stored, from_attributes=True)

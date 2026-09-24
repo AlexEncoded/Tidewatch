@@ -5,8 +5,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from ..models import SensorHealth, SensorHealthCheck
-from ..domain.sensor_health import SensorHealthEvaluation, evaluate_sensor_health
+from ..domain.sensor_health import (
+    SensorHealthEvaluation,
+    SensorHealthSnapshot as DomainSensorHealthSnapshot,
+    evaluate_sensor_health,
+)
 from ..domain.telemetry import latest_usable_reading
 from ..domain.deltas import absolute_difference
 from ..domain.directions import circular_difference_degrees
@@ -18,7 +21,7 @@ from .ports import SensorHealthReader
 class SensorHealthCheckWriter(Protocol):
     """Persistence port required to store a sensor-health evaluation."""
 
-    def add_sensor_health_check(self, health: SensorHealth) -> SensorHealthCheck:
+    def add_sensor_health_check(self, health: DomainSensorHealthSnapshot):
         ...
 
 
@@ -29,7 +32,7 @@ class SensorHealthSnapshot:
     readings: dict[str, dict[str, object | None]]
     deltas: dict[str, float | None]
     evaluation: SensorHealthEvaluation
-    health: SensorHealth
+    health: DomainSensorHealthSnapshot
 
 
 def assess_sensor_health(
@@ -50,7 +53,7 @@ def evaluate_sensor_health_snapshot(
     readings = collect_sensor_readings(reader, buoy_id, max_age_seconds, now)
     deltas = calculate_sensor_health_deltas(readings)
     evaluation = assess_sensor_health(deltas, readings)
-    health = SensorHealth(
+    health = DomainSensorHealthSnapshot(
         buoy_id=buoy_id,
         status=evaluation.status,
         temperature_delta_celsius=deltas["temperature"],
@@ -81,9 +84,7 @@ def evaluate_sensor_health_snapshot(
     return SensorHealthSnapshot(readings, deltas, evaluation, health)
 
 
-def persist_sensor_health_check(
-    writer: SensorHealthCheckWriter, health: SensorHealth
-) -> SensorHealthCheck:
+def persist_sensor_health_check(writer: SensorHealthCheckWriter, health: DomainSensorHealthSnapshot):
     """Persist a completed sensor-health evaluation through its input port."""
     return writer.add_sensor_health_check(health)
 
