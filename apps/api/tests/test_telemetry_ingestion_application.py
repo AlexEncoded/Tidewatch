@@ -4,6 +4,7 @@ from pathlib import Path
 from app.application.telemetry_ingestion import (
     TELEMETRY_FAMILIES,
     build_location_snapshot,
+    build_imu_snapshot,
     build_pressure_snapshot,
     build_salinity_snapshot,
     build_temperature_snapshot,
@@ -116,6 +117,31 @@ def test_salinity_payload_maps_to_domain_snapshot_with_batch_provenance() -> Non
     assert snapshot.measured_at == measured_at
 
 
+def test_imu_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 24, tzinfo=timezone.utc)
+    fields = {
+        "acceleration_x_mps2": 0.1,
+        "acceleration_y_mps2": -0.2,
+        "acceleration_z_mps2": 9.81,
+        "angular_velocity_x_dps": 1.0,
+        "angular_velocity_y_dps": 2.0,
+        "angular_velocity_z_dps": 3.0,
+        "sensor_channel": "A",
+        "device_id": None,
+        "sensor_id": "imu-a",
+        "firmware_version": "3.0",
+        "quality": "good",
+        "measured_at": measured_at,
+    }
+
+    snapshot = build_imu_snapshot("buoy-1", fields, "unit-a")
+
+    assert snapshot.acceleration_z_mps2 == 9.81
+    assert snapshot.angular_velocity_y_dps == 2.0
+    assert snapshot.device_id == "unit-a"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -130,8 +156,9 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 15
+    assert router_source.count("with_device_provenance(") == 14
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
     assert "reading = SalinityReading(" not in router_source
+    assert "reading = ImuReading(" not in router_source

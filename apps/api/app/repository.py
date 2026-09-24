@@ -31,14 +31,17 @@ from .entities import (
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.pressure import PressureTelemetrySnapshot
-from .domain.telemetry import LocationTelemetrySnapshot, SalinityTelemetrySnapshot
+from .domain.telemetry import (
+    ImuTelemetrySnapshot,
+    LocationTelemetrySnapshot,
+    SalinityTelemetrySnapshot,
+)
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
     Buoy,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    ImuReading,
     AmbientLightReading,
     WindReading,
     MarineCurrentReading,
@@ -338,7 +341,7 @@ class BuoyRepository:
         readings = self.list_salinity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_imu(self, reading: ImuReading) -> ImuReadingEntity:
+    def add_imu(self, reading: ImuTelemetrySnapshot) -> ImuReadingEntity:
         entity = ImuReadingEntity(
             buoy_id=reading.buoy_id,
             acceleration_x_mps2=reading.acceleration_x_mps2,

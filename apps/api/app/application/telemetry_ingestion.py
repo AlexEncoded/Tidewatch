@@ -1,6 +1,10 @@
 """Application helpers for normalising incoming telemetry batches."""
 
-from ..domain.telemetry import LocationTelemetrySnapshot, SalinityTelemetrySnapshot
+from ..domain.telemetry import (
+    ImuTelemetrySnapshot,
+    LocationTelemetrySnapshot,
+    SalinityTelemetrySnapshot,
+)
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
 
@@ -77,6 +81,16 @@ def build_salinity_snapshot(
     """Normalize a validated salinity payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return SalinityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_imu_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> ImuTelemetrySnapshot:
+    """Normalize a validated IMU payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return ImuTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:
