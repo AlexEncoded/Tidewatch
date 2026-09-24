@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_temperature_snapshot,
     empty_accepted_reading_counts,
     with_device_provenance,
 )
@@ -42,7 +43,7 @@ from ..models import (
     ChlorophyllAReading, ConductivityReading, DissolvedOxygenReading,
     HumidityReading, ImuReading, MarineCurrentReading, PHReading,
     PressureReading, RainfallReading, SalinityReading, TelemetryBatchCreate,
-    TelemetryIngestResponse, TemperatureReading, TurbidityReading,
+    TelemetryIngestResponse, TurbidityReading,
     UnderwaterAcousticReading, WindReading,
 )
 from ..repository import BuoyRepository
@@ -107,10 +108,9 @@ def ingest_telemetry(
     accepted = 0
     accepted_by_family = empty_accepted_reading_counts()
     for reading_payload in payload.temperatures:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_temperature_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = TemperatureReading(buoy_id=buoy_id, **reading_data)
         repository.add_temperature(reading)
         temperature_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel

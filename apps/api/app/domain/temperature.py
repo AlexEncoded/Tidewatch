@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from statistics import fmean
 
 
@@ -13,6 +14,20 @@ class TemperatureEstimate:
     trend: str = "insufficient_data"
     is_anomaly: bool = False
     anomaly_reason: str | None = None
+
+
+@dataclass(frozen=True)
+class TemperatureTelemetrySnapshot:
+    """Domain representation of one measured water temperature."""
+
+    buoy_id: str
+    temperature_celsius: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
 
 
 @dataclass(frozen=True)

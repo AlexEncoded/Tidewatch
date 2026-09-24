@@ -31,6 +31,7 @@ from .entities import (
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.telemetry import LocationTelemetrySnapshot
+from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
     Buoy,
     BuoyStatusUpdate,
@@ -55,7 +56,6 @@ from .models import (
     UnderwaterAcousticReading,
     SensorHealth,
     TemperatureAlert,
-    TemperatureReading,
 )
 
 
@@ -215,7 +215,9 @@ class BuoyRepository:
         self.db.refresh(device)
         return device
 
-    def add_temperature(self, reading: TemperatureReading) -> TemperatureReadingEntity:
+    def add_temperature(
+        self, reading: TemperatureTelemetrySnapshot
+    ) -> TemperatureReadingEntity:
         entity = TemperatureReadingEntity(
             buoy_id=reading.buoy_id,
             temperature_celsius=reading.temperature_celsius,
