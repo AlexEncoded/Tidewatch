@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_pressure_snapshot,
     build_temperature_snapshot,
     empty_accepted_reading_counts,
     with_device_provenance,
@@ -42,7 +43,7 @@ from ..models import (
     AtmosphericPressureReading, BatteryReading,
     ChlorophyllAReading, ConductivityReading, DissolvedOxygenReading,
     HumidityReading, ImuReading, MarineCurrentReading, PHReading,
-    PressureReading, RainfallReading, SalinityReading, TelemetryBatchCreate,
+    RainfallReading, SalinityReading, TelemetryBatchCreate,
     TelemetryIngestResponse, TurbidityReading,
     UnderwaterAcousticReading, WindReading,
 )
@@ -126,10 +127,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.pressures:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_pressure_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = PressureReading(buoy_id=buoy_id, **reading_data)
         repository.add_pressure(reading)
         pressure_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel

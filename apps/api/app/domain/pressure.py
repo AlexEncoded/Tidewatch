@@ -1,8 +1,23 @@
 from dataclasses import dataclass
+from datetime import datetime
 from statistics import fmean
 
 
 KPA_TO_METRES_OF_WATER = 0.102
+
+
+@dataclass(frozen=True)
+class PressureTelemetrySnapshot:
+    """Domain representation of one water-pressure sample."""
+
+    buoy_id: str
+    pressure_kpa: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
 
 
 @dataclass(frozen=True)

@@ -4,6 +4,7 @@ from pathlib import Path
 from app.application.telemetry_ingestion import (
     TELEMETRY_FAMILIES,
     build_location_snapshot,
+    build_pressure_snapshot,
     build_temperature_snapshot,
     empty_accepted_reading_counts,
     with_device_provenance,
@@ -69,6 +70,29 @@ def test_temperature_payload_maps_to_domain_snapshot_with_batch_provenance() -> 
     assert snapshot.measured_at == measured_at
 
 
+def test_pressure_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 24, tzinfo=timezone.utc)
+    snapshot = build_pressure_snapshot(
+        "buoy-1",
+        {
+            "pressure_kpa": 101.4,
+            "sensor_channel": "A",
+            "device_id": None,
+            "sensor_id": "pressure-a",
+            "firmware_version": "2.0",
+            "quality": "suspect",
+            "measured_at": measured_at,
+        },
+        "unit-a",
+    )
+
+    assert snapshot.pressure_kpa == 101.4
+    assert snapshot.sensor_id == "pressure-a"
+    assert snapshot.device_id == "unit-a"
+    assert snapshot.quality == "suspect"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -83,6 +107,7 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 17
+    assert router_source.count("with_device_provenance(") == 16
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
+    assert "reading = PressureReading(" not in router_source
