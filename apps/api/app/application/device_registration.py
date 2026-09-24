@@ -2,8 +2,11 @@
 
 from typing import Protocol
 
-from ..domain.devices import DeviceRegistrationConflict, validate_device_registration
-from ..models import DeviceCreate
+from ..domain.devices import (
+    DeviceRegistrationCommand,
+    DeviceRegistrationConflict,
+    validate_device_registration,
+)
 
 
 class DeviceRegistry(Protocol):
@@ -13,11 +16,11 @@ class DeviceRegistry(Protocol):
     def list_devices(self, buoy_id: str) -> list:
         ...
 
-    def create_device(self, buoy_id: str, device: DeviceCreate):
+    def create_device(self, buoy_id: str, device: DeviceRegistrationCommand):
         ...
 
 
-def register_device(registry: DeviceRegistry, buoy_id: str, device: DeviceCreate):
+def register_device(registry: DeviceRegistry, buoy_id: str, device: DeviceRegistrationCommand):
     """Register a device after enforcing domain uniqueness rules."""
     if registry.get_device(device.device_id) is not None:
         raise DeviceRegistrationConflict("Device already registered")

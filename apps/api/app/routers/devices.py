@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from ..application.device_registration import register_device as register_device_use_case
 from ..application.device_status import update_device_status as update_device_status_use_case
 from ..database import get_db
-from ..domain.devices import DeviceOwnershipError, DeviceRegistrationConflict
+from ..domain.devices import (
+    DeviceOwnershipError,
+    DeviceRegistrationConflict,
+)
 from ..entities import DeviceEntity
 from ..application.device_health import summarize_device_health_for_buoy
 from ..models import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate

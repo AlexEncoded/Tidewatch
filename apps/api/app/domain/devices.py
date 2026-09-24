@@ -1,6 +1,7 @@
 """Domain rules for the physical devices assigned to a buoy."""
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 
 class DeviceRegistrationConflict(ValueError):
@@ -9,6 +10,22 @@ class DeviceRegistrationConflict(ValueError):
 
 class DeviceOwnershipError(ValueError):
     """Raised when telemetry references an unknown or foreign device."""
+
+
+@dataclass(frozen=True)
+class DeviceRegistrationCommand:
+    """Domain input for registering a physical device."""
+
+    device_id: str
+    sensor_channel: str
+    firmware_version: str | None = None
+
+
+@dataclass(frozen=True)
+class DeviceStatusCommand:
+    """Domain input for changing a device operational status."""
+
+    status: str
 
 
 def validate_device_ownership(device: object | None, buoy_id: str) -> None:

@@ -2,8 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.devices import DeviceOwnershipError
-from ..models import DeviceStatusUpdate
+from ..domain.devices import DeviceOwnershipError, DeviceStatusCommand
 
 
 class DeviceStatusRegistry(Protocol):
@@ -11,7 +10,7 @@ class DeviceStatusRegistry(Protocol):
         self,
         buoy_id: str,
         device_id: str,
-        update: DeviceStatusUpdate,
+        update: DeviceStatusCommand,
     ):
         ...
 
@@ -20,7 +19,7 @@ def update_device_status(
     registry: DeviceStatusRegistry,
     buoy_id: str,
     device_id: str,
-    update: DeviceStatusUpdate,
+    update: DeviceStatusCommand,
 ):
     """Update a device state or reject an unknown/foreign device."""
     device = registry.update_device_status(buoy_id, device_id, update)
