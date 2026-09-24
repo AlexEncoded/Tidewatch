@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..application.device_registration import register_device as register_device_use_case
+from ..application.device_listing import list_devices_for_buoy
 from ..application.device_status import update_device_status as update_device_status_use_case
 from ..database import get_db
 from ..domain.devices import (
@@ -68,7 +69,8 @@ def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_devices(buoy_id)
+    snapshots = list_devices_for_buoy(repository, buoy_id)
+    return [Device.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
 
 @router.get(

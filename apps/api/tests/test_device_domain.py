@@ -11,8 +11,32 @@ from app.domain.devices import (
 )
 from app.domain.staleness import stale_age_seconds
 from app.application.device_registration import register_device
+from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
+
+
+def test_device_listing_application_service_returns_domain_snapshots() -> None:
+    registered_at = datetime(2026, 9, 24, tzinfo=timezone.utc)
+
+    class Reader:
+        def list_devices(self, buoy_id):
+            assert buoy_id == "buoy-1"
+            return [SimpleNamespace(
+                buoy_id=buoy_id,
+                device_id="unit-a",
+                sensor_channel="A",
+                firmware_version="1.2.3",
+                status="active",
+                registered_at=registered_at,
+                last_seen_at=None,
+            )]
+
+    snapshots = list_devices_for_buoy(Reader(), "buoy-1")
+
+    assert len(snapshots) == 1
+    assert snapshots[0].device_id == "unit-a"
+    assert snapshots[0].registered_at == registered_at
 
 
 def test_device_registration_accepts_the_other_redundant_channel() -> None:
