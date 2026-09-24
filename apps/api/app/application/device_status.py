@@ -3,6 +3,7 @@
 from typing import Protocol
 
 from ..domain.devices import DeviceOwnershipError, DeviceSnapshot, DeviceStatusCommand
+from .device_snapshots import to_device_snapshot
 
 
 class DeviceStatusRegistry(Protocol):
@@ -25,12 +26,4 @@ def update_device_status(
     device = registry.update_device_status(buoy_id, device_id, update)
     if device is None:
         raise DeviceOwnershipError("Device not found")
-    return DeviceSnapshot(
-        buoy_id=device.buoy_id,
-        device_id=device.device_id,
-        sensor_channel=device.sensor_channel,
-        firmware_version=device.firmware_version,
-        status=device.status,
-        registered_at=device.registered_at,
-        last_seen_at=device.last_seen_at,
-    )
+    return to_device_snapshot(device)

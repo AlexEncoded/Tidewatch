@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Protocol
 
 from ..domain.devices import DeviceSnapshot, validate_device_ownership
+from .device_snapshots import to_device_snapshot
 
 
 class DeviceHeartbeatRegistry(Protocol):
@@ -25,15 +26,4 @@ def record_device_heartbeat(
     validate_device_ownership(device, buoy_id)
     timestamp = seen_at or datetime.now(timezone.utc)
     updated = registry.mark_device_seen(device, timestamp)
-    return (
-        DeviceSnapshot(
-            buoy_id=updated.buoy_id,
-            device_id=updated.device_id,
-            sensor_channel=updated.sensor_channel,
-            firmware_version=updated.firmware_version,
-            status=updated.status,
-            registered_at=updated.registered_at,
-            last_seen_at=updated.last_seen_at,
-        ),
-        timestamp,
-    )
+    return to_device_snapshot(updated), timestamp
