@@ -1,5 +1,7 @@
 """Device registration conflicts and ownership boundaries."""
 
+from dataclasses import replace
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -39,8 +41,9 @@ def test_registration_handles_conflict_after_precheck(client, monkeypatch, same_
 
     def conflicting_create(repository, buoy_id, payload):
         # The precheck succeeded, but a competing insert has claimed the key.
-        winner = payload.model_copy(
-            update={"sensor_channel": "B"} if same_id else {"device_id": "winner"}
+        winner = replace(
+            payload,
+            **({"sensor_channel": "B"} if same_id else {"device_id": "winner"}),
         )
         original_create(repository, buoy_id, winner)
         return original_create(repository, buoy_id, payload)

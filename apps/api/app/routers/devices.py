@@ -11,7 +11,9 @@ from ..application.device_status import update_device_status as update_device_st
 from ..database import get_db
 from ..domain.devices import (
     DeviceOwnershipError,
+    DeviceRegistrationCommand,
     DeviceRegistrationConflict,
+    DeviceStatusCommand,
 )
 from ..entities import DeviceEntity
 from ..application.device_health import summarize_device_health_for_buoy
@@ -35,7 +37,12 @@ def register_device(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
-        return register_device_use_case(repository, buoy_id, payload)
+        command = DeviceRegistrationCommand(
+            device_id=payload.device_id,
+            sensor_channel=payload.sensor_channel,
+            firmware_version=payload.firmware_version,
+        )
+        return register_device_use_case(repository, buoy_id, command)
     except DeviceRegistrationConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
     except IntegrityError:
@@ -97,6 +104,11 @@ def update_device_status(
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
-        return update_device_status_use_case(repository, buoy_id, device_id, payload)
+        return update_device_status_use_case(
+            repository,
+            buoy_id,
+            device_id,
+            DeviceStatusCommand(status=payload.status),
+        )
     except DeviceOwnershipError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None

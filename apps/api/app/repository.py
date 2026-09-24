@@ -29,10 +29,9 @@ from .entities import (
     TemperatureAlertEntity,
     TemperatureReadingEntity,
 )
+from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .models import (
     Buoy,
-    DeviceCreate,
-    DeviceStatusUpdate,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BuoyLocationReading,
@@ -175,7 +174,9 @@ class BuoyRepository:
     def list_buoys(self) -> list[BuoyEntity]:
         return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
 
-    def create_device(self, buoy_id: str, device: DeviceCreate) -> DeviceEntity:
+    def create_device(
+        self, buoy_id: str, device: DeviceRegistrationCommand
+    ) -> DeviceEntity:
         entity = DeviceEntity(
             device_id=device.device_id,
             buoy_id=buoy_id,
@@ -203,7 +204,7 @@ class BuoyRepository:
         return device
 
     def update_device_status(
-        self, buoy_id: str, device_id: str, update: DeviceStatusUpdate
+        self, buoy_id: str, device_id: str, update: DeviceStatusCommand
     ) -> DeviceEntity | None:
         device = self.db.get(DeviceEntity, device_id)
         if device is None or device.buoy_id != buoy_id:
