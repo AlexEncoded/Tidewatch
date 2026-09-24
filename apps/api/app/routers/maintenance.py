@@ -69,7 +69,10 @@ def maintenance_issues(
             buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(
                 evaluation.average_speed_mps
             )
-        issues.extend(evaluation.issues)
+        issues.extend(
+            MaintenanceIssue.model_validate(issue, from_attributes=True)
+            for issue in evaluation.issues
+        )
 
     return issues
 

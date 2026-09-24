@@ -1,6 +1,13 @@
 """Application services for maintenance notifications."""
 
+from dataclasses import asdict, is_dataclass
 from typing import Protocol, runtime_checkable
+
+
+def _serialize_issue(issue) -> dict:
+    if is_dataclass(issue):
+        return asdict(issue)
+    return issue.model_dump(mode="json")
 
 
 @runtime_checkable
@@ -15,7 +22,7 @@ def build_maintenance_notification_payload(issues: list) -> dict:
     """Build the stable webhook payload from maintenance issue contracts."""
     return {
         "source": "tidewatch",
-        "issues": [issue.model_dump(mode="json") for issue in issues],
+        "issues": [_serialize_issue(issue) for issue in issues],
     }
 
 

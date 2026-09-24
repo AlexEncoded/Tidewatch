@@ -1,8 +1,20 @@
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from typing import Literal
 
 
 BatterySeverity = Literal["warning", "critical"]
+
+
+@dataclass(frozen=True)
+class MaintenanceIssueSnapshot:
+    """Domain representation of a maintenance issue."""
+
+    buoy_id: str
+    buoy_name: str
+    issue_type: str
+    severity: str
+    message: str
 
 
 def missing_redundant_battery_device(

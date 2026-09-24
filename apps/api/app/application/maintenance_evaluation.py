@@ -9,15 +9,16 @@ from .maintenance_issues import build_maintenance_issues_for_buoy
 from .movement_analysis import analyze_movement_for_buoy
 from .ports import MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
-from ..models import BatteryHealth, MaintenanceIssue
+from ..domain.battery_health import BatteryHealthSnapshot
+from ..domain.maintenance import MaintenanceIssueSnapshot
 
 
 @dataclass(frozen=True)
 class MaintenanceBuoyEvaluation:
     """Maintenance result plus values needed by the metrics adapter."""
 
-    issues: list[MaintenanceIssue]
-    battery_health: BatteryHealth
+    issues: list[MaintenanceIssueSnapshot]
+    battery_health: BatteryHealthSnapshot
     average_speed_mps: float | None
 
 

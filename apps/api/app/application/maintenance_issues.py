@@ -7,22 +7,25 @@ from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import classify_latest_readings
-from ..domain.maintenance import low_battery_severity, missing_redundant_battery_device
-from ..models import MaintenanceIssue, SensorHealth
+from ..domain.maintenance import (
+    MaintenanceIssueSnapshot,
+    low_battery_severity,
+    missing_redundant_battery_device,
+)
 
 
 def build_reading_quality_issues(
     buoy_id: str,
     buoy_name: str,
     latest_readings: Mapping[str, Sequence[object]],
-) -> list[MaintenanceIssue]:
+) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for invalid or suspect latest readings."""
     invalid_sensors, suspect_sensors = classify_latest_readings(latest_readings)
-    issues: list[MaintenanceIssue] = []
+    issues: list[MaintenanceIssueSnapshot] = []
 
     if invalid_sensors:
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="invalid_reading",
@@ -33,7 +36,7 @@ def build_reading_quality_issues(
 
     if suspect_sensors:
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="suspect_reading",
@@ -50,9 +53,9 @@ def build_battery_maintenance_issues(
     buoy_name: str,
     latest_batteries: Mapping[str, object | None],
     health: BatteryHealthSnapshot,
-) -> list[MaintenanceIssue]:
+) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues from redundant battery readings and health."""
-    issues: list[MaintenanceIssue] = []
+    issues: list[MaintenanceIssueSnapshot] = []
     for device_id in ("A", "B"):
         battery = latest_batteries.get(device_id)
         battery_percent = getattr(battery, "battery_percent", None)
@@ -63,7 +66,7 @@ def build_battery_maintenance_issues(
         )
         if severity is not None:
             issues.append(
-                MaintenanceIssue(
+                MaintenanceIssueSnapshot(
                     buoy_id=buoy_id,
                     buoy_name=buoy_name,
                     issue_type="low_battery",
@@ -80,7 +83,7 @@ def build_battery_maintenance_issues(
     )
     if missing_device is not None:
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="missing_redundant_device",
@@ -93,7 +96,7 @@ def build_battery_maintenance_issues(
 
     if health.status == "degraded":
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="degraded_battery",
@@ -117,12 +120,12 @@ def build_operational_maintenance_issues(
     max_age_minutes: float,
     average_speed_mps: float | None,
     drift_speed_mps: float,
-) -> list[MaintenanceIssue]:
+) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for silence and unexpected buoy movement."""
-    issues: list[MaintenanceIssue] = []
+    issues: list[MaintenanceIssueSnapshot] = []
     if is_buoy_silent(status, last_seen_at, now, max_age_minutes * 60):
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="silent_buoy",
@@ -135,7 +138,7 @@ def build_operational_maintenance_issues(
 
     if is_buoy_drifting(average_speed_mps, drift_speed_mps):
         issues.append(
-            MaintenanceIssue(
+                MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="drift_detected",
@@ -153,16 +156,16 @@ def build_operational_maintenance_issues(
 def build_sensor_health_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
-    health: SensorHealth,
-) -> list[MaintenanceIssue]:
+    health: object,
+) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for degraded or missing sensor channels."""
     if health.status != "degraded":
         return []
 
-    issues: list[MaintenanceIssue] = []
+    issues: list[MaintenanceIssueSnapshot] = []
     if health.degraded_sensors:
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="degraded_sensor",
@@ -172,7 +175,7 @@ def build_sensor_health_maintenance_issues(
         )
     if health.missing_sensors:
         issues.append(
-            MaintenanceIssue(
+            MaintenanceIssueSnapshot(
                 buoy_id=buoy_id,
                 buoy_name=buoy_name,
                 issue_type="missing_sensor_channel",
@@ -190,10 +193,10 @@ def build_device_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
     devices: Sequence[DeviceHealthSnapshot],
-) -> list[MaintenanceIssue]:
+) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for physical devices without a heartbeat."""
     return [
-        MaintenanceIssue(
+        MaintenanceIssueSnapshot(
             buoy_id=buoy_id,
             buoy_name=buoy_name,
             issue_type="stale_device",
@@ -216,13 +219,13 @@ def build_maintenance_issues_for_buoy(
     now: datetime,
     max_age_minutes: float,
     drift_speed_mps: float,
-    sensor_health: SensorHealth,
+    sensor_health: object,
     latest_readings: Mapping[str, Sequence[object]],
     latest_batteries: Mapping[str, object | None],
     battery_health: BatteryHealthSnapshot,
     average_speed_mps: float | None,
     device_health: Sequence[DeviceHealthSnapshot] = (),
-) -> list[MaintenanceIssue]:
+) -> list[MaintenanceIssueSnapshot]:
     """Compose all maintenance issue types for one buoy snapshot."""
     issues = build_sensor_health_maintenance_issues(
         buoy_id, buoy_name, sensor_health
