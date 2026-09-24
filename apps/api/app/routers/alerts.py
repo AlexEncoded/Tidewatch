@@ -34,13 +34,22 @@ def evaluate_temperature_alerts(threshold: float = Query(default=2.0, gt=0, le=2
                 ),
                 current_reading.measured_at,
             )
-        stored_alerts.append(to_stored_temperature_alert(existing))
+        stored_alerts.append(
+            StoredTemperatureAlert.model_validate(
+                to_stored_temperature_alert(existing), from_attributes=True
+            )
+        )
     return stored_alerts
 
 
 @router.get("/api/v1/alerts/temperature/stored", response_model=list[StoredTemperatureAlert], tags=["alerts"])
 def stored_temperature_alerts(status_filter: str = Query(default="open", alias="status", pattern="^(open|resolved)$"), db: Session = Depends(get_db)) -> list[StoredTemperatureAlert]:
-    return [to_stored_temperature_alert(alert) for alert in BuoyRepository(db).list_alerts(status_filter)]
+    return [
+        StoredTemperatureAlert.model_validate(
+            to_stored_temperature_alert(alert), from_attributes=True
+        )
+        for alert in BuoyRepository(db).list_alerts(status_filter)
+    ]
 
 
 @router.post("/api/v1/alerts/temperature/{alert_id}/resolve", response_model=StoredTemperatureAlert, tags=["alerts"])
@@ -48,4 +57,6 @@ def resolve_temperature_alert(alert_id: int, db: Session = Depends(get_db)) -> S
     alert = BuoyRepository(db).resolve_alert(alert_id)
     if alert is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alert not found")
-    return to_stored_temperature_alert(alert)
+    return StoredTemperatureAlert.model_validate(
+        to_stored_temperature_alert(alert), from_attributes=True
+    )

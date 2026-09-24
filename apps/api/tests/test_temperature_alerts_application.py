@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from app.application.temperature_alerts import to_stored_temperature_alert
+from app.domain.temperature_alert import TemperatureAlertSnapshot
 
 
 def test_temperature_alert_mapping_preserves_persisted_values() -> None:
@@ -21,6 +22,7 @@ def test_temperature_alert_mapping_preserves_persisted_values() -> None:
 
     result = to_stored_temperature_alert(alert)
 
+    assert isinstance(result, TemperatureAlertSnapshot)
     assert result.id == 4
     assert result.buoy_name == "North buoy"
     assert result.temperature_celsius == 28.5

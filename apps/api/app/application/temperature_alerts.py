@@ -1,11 +1,11 @@
 """Application mappings for persisted temperature alerts."""
 
-from ..models import StoredTemperatureAlert
+from ..domain.temperature_alert import TemperatureAlertSnapshot
 
 
-def to_stored_temperature_alert(alert) -> StoredTemperatureAlert:
-    """Map a persisted alert entity to the API contract."""
-    return StoredTemperatureAlert(
+def to_stored_temperature_alert(alert) -> TemperatureAlertSnapshot:
+    """Map a persisted alert entity to an application snapshot."""
+    return TemperatureAlertSnapshot(
         id=alert.id,
         buoy_id=alert.buoy_id,
         buoy_name=alert.buoy.name,
