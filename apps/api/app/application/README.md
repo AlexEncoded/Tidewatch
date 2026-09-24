@@ -1,8 +1,8 @@
 # Application layer
 
 This package contains the application services that coordinate Tidewatch use
-cases. Services depend on input ports from `ports.py`, call domain services,
-and map domain results to the API response models.
+cases. Services depend on input ports from `ports.py` and call domain
+services. HTTP adapters map application and domain results to response models.
 
 The intended dependency direction is:
 
@@ -18,10 +18,10 @@ Repository implementations satisfy the protocols structurally, so the use
 cases remain testable without PostgreSQL.
 
 The sensor-health application service exposes a
-`SensorHealthCheckWriter` input port for persisting completed evaluations.
-The SQLAlchemy repository is passed in by the API adapter and satisfies this
-port structurally; the application layer therefore does not depend on the
-repository implementation.
+`SensorHealthCheckWriter` input port for persisting completed evaluations as
+domain snapshots. The SQLAlchemy repository is passed in by the API adapter and
+satisfies this port structurally; the application layer therefore does not
+depend on the repository implementation or HTTP response models.
 
 Its read side uses the `SensorHealthReader` input port, which lists every
 supported redundant A/B sensor family. Storage adapters therefore implement an

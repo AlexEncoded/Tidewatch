@@ -33,6 +33,7 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
 def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
+    assert not any(module.startswith("app.models") for module in modules)
     assert "fastapi" not in modules
     assert "sqlalchemy" not in modules
     assert not any(module.endswith(".database") for module in modules)
