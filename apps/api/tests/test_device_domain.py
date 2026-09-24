@@ -140,10 +140,26 @@ def test_update_device_status_application_service_rejects_missing_device() -> No
 def test_record_device_heartbeat_updates_registry_with_supplied_time() -> None:
     class Registry:
         def get_device(self, device_id):
-            return SimpleNamespace(device_id=device_id, buoy_id="buoy-1")
+            return SimpleNamespace(
+                device_id=device_id,
+                buoy_id="buoy-1",
+                sensor_channel="A",
+                firmware_version=None,
+                status="active",
+                registered_at=seen_at,
+                last_seen_at=None,
+            )
 
         def mark_device_seen(self, device, seen_at):
-            return SimpleNamespace(device_id=device.device_id, last_seen_at=seen_at)
+            return SimpleNamespace(
+                device_id=device.device_id,
+                buoy_id=device.buoy_id,
+                sensor_channel=device.sensor_channel,
+                firmware_version=device.firmware_version,
+                status=device.status,
+                registered_at=device.registered_at,
+                last_seen_at=seen_at,
+            )
 
     seen_at = datetime(2026, 9, 8, tzinfo=timezone.utc)
     device, timestamp = record_device_heartbeat(Registry(), "buoy-1", "device-a", seen_at)
