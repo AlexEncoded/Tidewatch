@@ -37,6 +37,7 @@ from .domain.telemetry import (
     ChlorophyllATelemetrySnapshot,
     RainfallTelemetrySnapshot,
     HumidityTelemetrySnapshot,
+    AirTemperatureTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -52,7 +53,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    AirTemperatureReading,
     AtmosphericPressureReading,
     AcousticAltimeterReading,
     UnderwaterAcousticReading,
@@ -790,7 +790,7 @@ class BuoyRepository:
         readings = self.list_humidity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_air_temperature(self, reading: AirTemperatureReading) -> AirTemperatureReadingEntity:
+    def add_air_temperature(self, reading: AirTemperatureTelemetrySnapshot) -> AirTemperatureReadingEntity:
         entity = AirTemperatureReadingEntity(
             buoy_id=reading.buoy_id, air_temperature_celsius=reading.air_temperature_celsius,
             sensor_channel=reading.sensor_channel, device_id=reading.device_id,

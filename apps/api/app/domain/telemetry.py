@@ -192,6 +192,20 @@ class HumidityTelemetrySnapshot:
     quality: str = "good"
 
 
+@dataclass(frozen=True)
+class AirTemperatureTelemetrySnapshot:
+    """Domain representation of one air-temperature sample."""
+
+    buoy_id: str
+    air_temperature_celsius: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
+
+
 def latest_usable_reading(
     readings: list,
     max_age_seconds: float | None = None,
