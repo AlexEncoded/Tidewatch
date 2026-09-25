@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_humidity_snapshot,
     build_rainfall_snapshot,
     build_chlorophyll_a_snapshot,
     build_conductivity_snapshot,
@@ -52,7 +53,6 @@ from ..metrics import (
 from ..models import (
     AcousticAltimeterReading, AirTemperatureReading,
     AtmosphericPressureReading, BatteryReading,
-    HumidityReading,
     TelemetryBatchCreate,
     TelemetryIngestResponse,
     UnderwaterAcousticReading,
@@ -348,10 +348,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.humidity:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_humidity_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = HumidityReading(buoy_id=buoy_id, **reading_data)
         repository.add_humidity(reading)
         humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)

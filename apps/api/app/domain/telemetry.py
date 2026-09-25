@@ -178,6 +178,20 @@ class RainfallTelemetrySnapshot:
     quality: str = "good"
 
 
+@dataclass(frozen=True)
+class HumidityTelemetrySnapshot:
+    """Domain representation of one humidity sample."""
+
+    buoy_id: str
+    humidity_percent: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
+
+
 def latest_usable_reading(
     readings: list,
     max_age_seconds: float | None = None,

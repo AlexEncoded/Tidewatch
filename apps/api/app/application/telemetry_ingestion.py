@@ -5,6 +5,7 @@ from ..domain.telemetry import (
     ConductivityTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     RainfallTelemetrySnapshot,
+    HumidityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -190,6 +191,16 @@ def build_rainfall_snapshot(
     """Normalize a validated rainfall payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return RainfallTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_humidity_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> HumidityTelemetrySnapshot:
+    """Normalize a validated humidity payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return HumidityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:

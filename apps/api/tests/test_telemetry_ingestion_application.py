@@ -12,6 +12,7 @@ from app.application.telemetry_ingestion import (
     build_conductivity_snapshot,
     build_chlorophyll_a_snapshot,
     build_rainfall_snapshot,
+    build_humidity_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -352,6 +353,28 @@ def test_rainfall_payload_maps_to_domain_snapshot_with_batch_provenance() -> Non
     assert snapshot.measured_at == measured_at
 
 
+def test_humidity_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 25, tzinfo=timezone.utc)
+    snapshot = build_humidity_snapshot(
+        "buoy-1",
+        {
+            "humidity_percent": 72.5,
+            "sensor_channel": "B",
+            "device_id": None,
+            "sensor_id": "humidity-b",
+            "firmware_version": "2.0",
+            "quality": "good",
+            "measured_at": measured_at,
+        },
+        "unit-b",
+    )
+
+    assert snapshot.humidity_percent == 72.5
+    assert snapshot.sensor_channel == "B"
+    assert snapshot.device_id == "unit-b"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -366,7 +389,7 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 5
+    assert router_source.count("with_device_provenance(") == 4
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
@@ -381,3 +404,4 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
     assert "reading = ConductivityReading(" not in router_source
     assert "reading = ChlorophyllAReading(" not in router_source
     assert "reading = RainfallReading(" not in router_source
+    assert "reading = HumidityReading(" not in router_source
