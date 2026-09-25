@@ -9,6 +9,7 @@ from app.application.telemetry_ingestion import (
     build_turbidity_snapshot,
     build_dissolved_oxygen_snapshot,
     build_ph_snapshot,
+    build_conductivity_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -283,6 +284,28 @@ def test_ph_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
     assert snapshot.measured_at == measured_at
 
 
+def test_conductivity_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 25, tzinfo=timezone.utc)
+    snapshot = build_conductivity_snapshot(
+        "buoy-1",
+        {
+            "conductivity_us_cm": 52300.0,
+            "sensor_channel": "B",
+            "device_id": None,
+            "sensor_id": "conductivity-b",
+            "firmware_version": "3.2",
+            "quality": "good",
+            "measured_at": measured_at,
+        },
+        "unit-b",
+    )
+
+    assert snapshot.conductivity_us_cm == 52300.0
+    assert snapshot.sensor_channel == "B"
+    assert snapshot.device_id == "unit-b"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -297,7 +320,7 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 8
+    assert router_source.count("with_device_provenance(") == 7
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
@@ -309,3 +332,4 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
     assert "reading = TurbidityReading(" not in router_source
     assert "reading = DissolvedOxygenReading(" not in router_source
     assert "reading = PHReading(" not in router_source
+    assert "reading = ConductivityReading(" not in router_source

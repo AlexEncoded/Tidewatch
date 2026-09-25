@@ -2,6 +2,7 @@
 
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
+    ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -157,6 +158,16 @@ def build_ph_snapshot(
     """Normalize a validated pH payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return PHTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_conductivity_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> ConductivityTelemetrySnapshot:
+    """Normalize a validated conductivity payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return ConductivityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:

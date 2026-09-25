@@ -136,6 +136,20 @@ class PHTelemetrySnapshot:
     quality: str = "good"
 
 
+@dataclass(frozen=True)
+class ConductivityTelemetrySnapshot:
+    """Domain representation of one conductivity sample."""
+
+    buoy_id: str
+    conductivity_us_cm: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
+
+
 def latest_usable_reading(
     readings: list,
     max_age_seconds: float | None = None,
