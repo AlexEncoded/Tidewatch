@@ -37,6 +37,7 @@ from .domain.telemetry import (
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
+    PHTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     WindTelemetrySnapshot,
@@ -47,7 +48,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    PHReading,
     ConductivityReading,
     ChlorophyllAReading,
     RainfallReading,
@@ -594,7 +594,7 @@ class BuoyRepository:
         )
         return readings[0] if readings else None
 
-    def add_ph(self, reading: PHReading) -> PHReadingEntity:
+    def add_ph(self, reading: PHTelemetrySnapshot) -> PHReadingEntity:
         entity = PHReadingEntity(
             buoy_id=reading.buoy_id,
             ph=reading.ph,
