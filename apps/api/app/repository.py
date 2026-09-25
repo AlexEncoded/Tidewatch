@@ -37,6 +37,7 @@ from .domain.telemetry import (
     LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    TurbidityTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
 from .domain.temperature import TemperatureTelemetrySnapshot
@@ -45,7 +46,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    TurbidityReading,
     DissolvedOxygenReading,
     PHReading,
     ConductivityReading,
@@ -510,7 +510,9 @@ class BuoyRepository:
         )
         return readings[0] if readings else None
 
-    def add_turbidity(self, reading: TurbidityReading) -> TurbidityReadingEntity:
+    def add_turbidity(
+        self, reading: TurbidityTelemetrySnapshot
+    ) -> TurbidityReadingEntity:
         entity = TurbidityReadingEntity(
             buoy_id=reading.buoy_id,
             turbidity_ntu=reading.turbidity_ntu,

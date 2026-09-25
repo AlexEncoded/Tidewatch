@@ -6,6 +6,7 @@ from app.application.telemetry_ingestion import (
     build_location_snapshot,
     build_imu_snapshot,
     build_marine_current_snapshot,
+    build_turbidity_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -214,6 +215,28 @@ def test_marine_current_payload_maps_to_domain_snapshot_with_batch_provenance() 
     assert snapshot.measured_at == measured_at
 
 
+def test_turbidity_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 25, tzinfo=timezone.utc)
+    snapshot = build_turbidity_snapshot(
+        "buoy-1",
+        {
+            "turbidity_ntu": 12.6,
+            "sensor_channel": "B",
+            "device_id": None,
+            "sensor_id": "turbidity-b",
+            "firmware_version": "1.8",
+            "quality": "good",
+            "measured_at": measured_at,
+        },
+        "unit-b",
+    )
+
+    assert snapshot.turbidity_ntu == 12.6
+    assert snapshot.sensor_channel == "B"
+    assert snapshot.device_id == "unit-b"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -228,7 +251,7 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 11
+    assert router_source.count("with_device_provenance(") == 10
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
@@ -237,3 +260,4 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
     assert "reading = AmbientLightReading(" not in router_source
     assert "reading = WindReading(" not in router_source
     assert "reading = MarineCurrentReading(" not in router_source
+    assert "reading = TurbidityReading(" not in router_source

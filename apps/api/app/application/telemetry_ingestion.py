@@ -6,6 +6,7 @@ from ..domain.telemetry import (
     LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    TurbidityTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
@@ -124,6 +125,16 @@ def build_marine_current_snapshot(
     """Normalize a validated marine-current payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return MarineCurrentTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_turbidity_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> TurbidityTelemetrySnapshot:
+    """Normalize a validated turbidity payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return TurbidityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:

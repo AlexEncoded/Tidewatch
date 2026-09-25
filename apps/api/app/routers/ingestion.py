@@ -9,6 +9,7 @@ from ..application.telemetry_ingestion import (
     build_location_snapshot,
     build_imu_snapshot,
     build_marine_current_snapshot,
+    build_turbidity_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -49,7 +50,7 @@ from ..models import (
     ChlorophyllAReading, ConductivityReading, DissolvedOxygenReading,
     HumidityReading, PHReading,
     RainfallReading, TelemetryBatchCreate,
-    TelemetryIngestResponse, TurbidityReading,
+    TelemetryIngestResponse,
     UnderwaterAcousticReading,
 )
 from ..repository import BuoyRepository
@@ -245,10 +246,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.turbidity:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_turbidity_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = TurbidityReading(buoy_id=buoy_id, **reading_data)
         repository.add_turbidity(reading)
         turbidity_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
