@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_dissolved_oxygen_snapshot,
     build_imu_snapshot,
     build_marine_current_snapshot,
     build_turbidity_snapshot,
@@ -47,7 +48,7 @@ from ..metrics import (
 from ..models import (
     AcousticAltimeterReading, AirTemperatureReading,
     AtmosphericPressureReading, BatteryReading,
-    ChlorophyllAReading, ConductivityReading, DissolvedOxygenReading,
+    ChlorophyllAReading, ConductivityReading,
     HumidityReading, PHReading,
     RainfallReading, TelemetryBatchCreate,
     TelemetryIngestResponse,
@@ -263,10 +264,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.dissolved_oxygen:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_dissolved_oxygen_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = DissolvedOxygenReading(buoy_id=buoy_id, **reading_data)
         repository.add_dissolved_oxygen(reading)
         dissolved_oxygen_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel

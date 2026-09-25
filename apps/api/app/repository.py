@@ -33,6 +33,7 @@ from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
+    DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
@@ -46,7 +47,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    DissolvedOxygenReading,
     PHReading,
     ConductivityReading,
     ChlorophyllAReading,
@@ -552,7 +552,7 @@ class BuoyRepository:
         return readings[0] if readings else None
 
     def add_dissolved_oxygen(
-        self, reading: DissolvedOxygenReading
+        self, reading: DissolvedOxygenTelemetrySnapshot
     ) -> DissolvedOxygenReadingEntity:
         entity = DissolvedOxygenReadingEntity(
             buoy_id=reading.buoy_id,

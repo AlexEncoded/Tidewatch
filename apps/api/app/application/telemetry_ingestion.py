@@ -2,6 +2,7 @@
 
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
+    DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
@@ -135,6 +136,16 @@ def build_turbidity_snapshot(
     """Normalize a validated turbidity payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return TurbidityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_dissolved_oxygen_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> DissolvedOxygenTelemetrySnapshot:
+    """Normalize a validated dissolved-oxygen payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return DissolvedOxygenTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:
