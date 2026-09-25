@@ -34,6 +34,7 @@ from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
+    ChlorophyllATelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -49,7 +50,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    ChlorophyllAReading,
     RainfallReading,
     HumidityReading,
     AirTemperatureReading,
@@ -677,7 +677,7 @@ class BuoyRepository:
         return readings[0] if readings else None
 
     def add_chlorophyll_a(
-        self, reading: ChlorophyllAReading
+        self, reading: ChlorophyllATelemetrySnapshot
     ) -> ChlorophyllAReadingEntity:
         entity = ChlorophyllAReadingEntity(
             buoy_id=reading.buoy_id,

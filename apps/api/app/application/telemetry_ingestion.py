@@ -3,6 +3,7 @@
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
+    ChlorophyllATelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -168,6 +169,16 @@ def build_conductivity_snapshot(
     """Normalize a validated conductivity payload into a domain snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return ConductivityTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_chlorophyll_a_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> ChlorophyllATelemetrySnapshot:
+    """Normalize a validated chlorophyll-a payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return ChlorophyllATelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:
