@@ -35,6 +35,7 @@ from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
+    MarineCurrentTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
@@ -44,7 +45,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    MarineCurrentReading,
     TurbidityReading,
     DissolvedOxygenReading,
     PHReading,
@@ -467,7 +467,7 @@ class BuoyRepository:
         return readings[0] if readings else None
 
     def add_marine_current(
-        self, reading: MarineCurrentReading
+        self, reading: MarineCurrentTelemetrySnapshot
     ) -> MarineCurrentReadingEntity:
         entity = MarineCurrentReadingEntity(
             buoy_id=reading.buoy_id,
