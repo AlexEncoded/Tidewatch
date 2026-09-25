@@ -6,6 +6,7 @@ from app.application.telemetry_ingestion import (
     build_location_snapshot,
     build_imu_snapshot,
     build_ambient_light_snapshot,
+    build_wind_snapshot,
     build_pressure_snapshot,
     build_salinity_snapshot,
     build_temperature_snapshot,
@@ -165,6 +166,30 @@ def test_ambient_light_payload_maps_to_domain_snapshot_with_batch_provenance() -
     assert snapshot.measured_at == measured_at
 
 
+def test_wind_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 25, tzinfo=timezone.utc)
+    snapshot = build_wind_snapshot(
+        "buoy-1",
+        {
+            "wind_speed_mps": 8.2,
+            "wind_direction_degrees": 276.0,
+            "sensor_channel": "B",
+            "device_id": None,
+            "sensor_id": "wind-b",
+            "firmware_version": "4.0",
+            "quality": "good",
+            "measured_at": measured_at,
+        },
+        "unit-b",
+    )
+
+    assert snapshot.wind_speed_mps == 8.2
+    assert snapshot.wind_direction_degrees == 276.0
+    assert snapshot.sensor_channel == "B"
+    assert snapshot.device_id == "unit-b"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -179,10 +204,11 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 13
+    assert router_source.count("with_device_provenance(") == 12
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
     assert "reading = SalinityReading(" not in router_source
     assert "reading = ImuReading(" not in router_source
     assert "reading = AmbientLightReading(" not in router_source
+    assert "reading = WindReading(" not in router_source

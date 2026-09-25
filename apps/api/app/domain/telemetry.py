@@ -64,6 +64,21 @@ class AmbientLightTelemetrySnapshot:
     quality: str = "good"
 
 
+@dataclass(frozen=True)
+class WindTelemetrySnapshot:
+    """Domain representation of one wind speed and direction sample."""
+
+    buoy_id: str
+    wind_speed_mps: float
+    wind_direction_degrees: float
+    measured_at: datetime
+    sensor_channel: str = "A"
+    device_id: str | None = None
+    sensor_id: str | None = None
+    firmware_version: str | None = None
+    quality: str = "good"
+
+
 def latest_usable_reading(
     readings: list,
     max_age_seconds: float | None = None,

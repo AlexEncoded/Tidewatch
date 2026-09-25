@@ -36,6 +36,7 @@ from .domain.telemetry import (
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    WindTelemetrySnapshot,
 )
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
@@ -43,7 +44,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    WindReading,
     MarineCurrentReading,
     TurbidityReading,
     DissolvedOxygenReading,
@@ -426,7 +426,7 @@ class BuoyRepository:
         readings = self.list_ambient_light(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_wind(self, reading: WindReading) -> WindReadingEntity:
+    def add_wind(self, reading: WindTelemetrySnapshot) -> WindReadingEntity:
         entity = WindReadingEntity(
             buoy_id=reading.buoy_id,
             wind_speed_mps=reading.wind_speed_mps,
