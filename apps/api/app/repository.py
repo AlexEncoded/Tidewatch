@@ -312,7 +312,7 @@ class BuoyRepository:
 
     def list_pressures(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[PressureReadingEntity]:
+    ) -> list[PressureTelemetrySnapshot]:
         query = (
             select(PressureReadingEntity)
             .where(PressureReadingEntity.buoy_id == buoy_id)
@@ -321,7 +321,19 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(PressureReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            PressureTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                pressure_kpa=entity.pressure_kpa,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_pressure(
         self, buoy_id: str, sensor_channel: str = "A"

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .application.ports import (
     FleetLocationReader,
     MovementAnalysisReader,
+    PressureAnalysisReader,
     QualitySummaryReader,
 )
 from .database import get_db
@@ -30,4 +31,11 @@ def get_movement_analysis_reader(
     db: Session = Depends(get_db),
 ) -> MovementAnalysisReader:
     """Compose movement analysis with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_pressure_analysis_reader(
+    db: Session = Depends(get_db),
+) -> PressureAnalysisReader:
+    """Compose pressure analysis with the SQL repository adapter."""
     return BuoyRepository(db)

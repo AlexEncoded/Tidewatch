@@ -4,6 +4,7 @@ from typing import Protocol, runtime_checkable
 from datetime import datetime
 
 from ..domain.telemetry import LocationTelemetrySnapshot
+from ..domain.pressure import PressureTelemetrySnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -43,7 +44,12 @@ class PressureTelemetryReader(Protocol):
         buoy_id: str,
         limit: int,
         sensor_channel: str | None = "A",
-    ) -> list:
+    ) -> list[PressureTelemetrySnapshot]:
+        ...
+
+
+class PressureAnalysisReader(PressureTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
 

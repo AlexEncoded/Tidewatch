@@ -11,8 +11,11 @@ from ..application.temperature_analysis import (
     list_valid_temperature_readings,
 )
 from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_imu_factor
-from ..adapter_dependencies import get_movement_analysis_reader
-from ..application.ports import MovementAnalysisReader
+from ..adapter_dependencies import (
+    get_movement_analysis_reader,
+    get_pressure_analysis_reader,
+)
+from ..application.ports import MovementAnalysisReader, PressureAnalysisReader
 from ..database import get_db
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
 from ..models import MovementAnalysis, PressureAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
@@ -26,12 +29,11 @@ router = APIRouter()
 def pressure_analysis(
     buoy_id: str,
     window: int = Query(default=50, ge=1, le=500),
-    db: Session = Depends(get_db),
+    reader: PressureAnalysisReader = Depends(get_pressure_analysis_reader),
 ) -> PressureAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_pressure_for_buoy(repository, buoy_id, window)
+    result = analyze_pressure_for_buoy(reader, buoy_id, window)
     return PressureAnalysis.model_validate(result, from_attributes=True)
 
 
