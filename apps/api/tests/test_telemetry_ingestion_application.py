@@ -17,6 +17,7 @@ from app.application.telemetry_ingestion import (
     build_atmospheric_pressure_snapshot,
     build_acoustic_altimeter_snapshot,
     build_underwater_acoustic_snapshot,
+    build_battery_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -467,6 +468,22 @@ def test_underwater_acoustic_payload_maps_to_domain_snapshot_with_batch_provenan
     assert snapshot.measured_at == measured_at
 
 
+def test_battery_payload_maps_to_domain_snapshot() -> None:
+    measured_at = datetime(2026, 9, 26, tzinfo=timezone.utc)
+    snapshot = build_battery_snapshot(
+        "buoy-1",
+        {
+            "battery_percent": 87.5,
+            "device_id": "B",
+            "measured_at": measured_at,
+        },
+    )
+
+    assert snapshot.battery_percent == 87.5
+    assert snapshot.device_id == "B"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -501,3 +518,4 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
     assert "reading = AtmosphericPressureReading(" not in router_source
     assert "reading = AcousticAltimeterReading(" not in router_source
     assert "reading = UnderwaterAcousticReading(" not in router_source
+    assert "battery = BatteryReading(" not in router_source

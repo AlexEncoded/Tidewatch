@@ -41,6 +41,7 @@ from .domain.telemetry import (
     AtmosphericPressureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
+    BatteryTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -55,7 +56,6 @@ from .models import (
     Buoy,
     BuoyStatusUpdate,
     BuoyLocationUpdate,
-    BatteryReading,
     SensorHealth,
     TemperatureAlert,
 )
@@ -878,7 +878,7 @@ class BuoyRepository:
             query = query.where(UnderwaterAcousticReadingEntity.sensor_channel == sensor_channel)
         return list(self.db.scalars(query).all())
 
-    def add_battery(self, reading: BatteryReading) -> BatteryReadingEntity:
+    def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryReadingEntity:
         entity = BatteryReadingEntity(
             buoy_id=reading.buoy_id,
             device_id=reading.device_id,

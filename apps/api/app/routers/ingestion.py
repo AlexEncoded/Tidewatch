@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_battery_snapshot,
     build_underwater_acoustic_snapshot,
     build_acoustic_altimeter_snapshot,
     build_atmospheric_pressure_snapshot,
@@ -54,7 +55,6 @@ from ..metrics import (
     underwater_acoustic_readings_total, wind_readings_total,
 )
 from ..models import (
-    BatteryReading,
     TelemetryBatchCreate,
     TelemetryIngestResponse,
 )
@@ -404,7 +404,7 @@ def ingest_telemetry(
         accepted += 1
 
     for battery_payload in payload.battery:
-        battery = BatteryReading(buoy_id=buoy_id, **battery_payload.model_dump())
+        battery = build_battery_snapshot(buoy_id, battery_payload.model_dump())
         repository.add_battery(battery)
         battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
         battery_device_percent.labels(

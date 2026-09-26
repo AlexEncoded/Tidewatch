@@ -248,6 +248,16 @@ class UnderwaterAcousticTelemetrySnapshot:
     quality: str = "good"
 
 
+@dataclass(frozen=True)
+class BatteryTelemetrySnapshot:
+    """Domain representation of one device-battery sample."""
+
+    buoy_id: str
+    battery_percent: float
+    device_id: str
+    measured_at: datetime
+
+
 def latest_usable_reading(
     readings: list,
     max_age_seconds: float | None = None,
