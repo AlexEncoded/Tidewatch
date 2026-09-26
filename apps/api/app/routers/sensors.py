@@ -10,6 +10,26 @@ from ..application.sensor_health import (
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
+from ..application.telemetry_ingestion import (
+    build_acoustic_altimeter_snapshot,
+    build_air_temperature_snapshot,
+    build_ambient_light_snapshot,
+    build_atmospheric_pressure_snapshot,
+    build_chlorophyll_a_snapshot,
+    build_conductivity_snapshot,
+    build_dissolved_oxygen_snapshot,
+    build_humidity_snapshot,
+    build_imu_snapshot,
+    build_marine_current_snapshot,
+    build_ph_snapshot,
+    build_pressure_snapshot,
+    build_rainfall_snapshot,
+    build_salinity_snapshot,
+    build_temperature_snapshot,
+    build_turbidity_snapshot,
+    build_underwater_acoustic_snapshot,
+    build_wind_snapshot,
+)
 from ..metrics import (
     acoustic_altimeter_readings_total,
     atmospheric_pressure_readings_total,
@@ -114,7 +134,7 @@ def record_wind(buoy_id: str, payload: WindReadingCreate, db: Session = Depends(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = WindReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_wind_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_wind(reading)
     wind_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_wind_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.wind_speed_mps)
@@ -136,7 +156,7 @@ def record_ambient_light(buoy_id: str, payload: AmbientLightReadingCreate, db: S
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = AmbientLightReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_ambient_light_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_ambient_light(reading)
     ambient_light_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_ambient_light_lux.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.illuminance_lux)
@@ -157,7 +177,7 @@ def record_imu(buoy_id: str, payload: ImuReadingCreate, db: Session = Depends(ge
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = ImuReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_imu_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_imu(reading)
     imu_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     for axis, value in {"x": reading.acceleration_x_mps2, "y": reading.acceleration_y_mps2, "z": reading.acceleration_z_mps2}.items():
@@ -181,7 +201,7 @@ def record_temperature(buoy_id: str, payload: TemperatureReadingCreate, db: Sess
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = TemperatureReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_temperature_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_temperature(reading)
     temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.temperature_celsius)
@@ -203,7 +223,7 @@ def record_pressure(buoy_id: str, payload: PressureReadingCreate, db: Session = 
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = PressureReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_pressure_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_pressure(reading)
     pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.pressure_kpa)
@@ -224,7 +244,7 @@ def record_salinity(buoy_id: str, payload: SalinityReadingCreate, db: Session = 
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = SalinityReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_salinity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_salinity(reading)
     salinity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_salinity_psu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.salinity_psu)
@@ -245,7 +265,7 @@ def record_marine_current(buoy_id: str, payload: MarineCurrentReadingCreate, db:
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = MarineCurrentReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_marine_current_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_marine_current(reading)
     marine_current_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_marine_current_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_speed_mps)
@@ -267,7 +287,7 @@ def record_turbidity(buoy_id: str, payload: TurbidityReadingCreate, db: Session 
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = TurbidityReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_turbidity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_turbidity(reading)
     turbidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_turbidity_ntu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.turbidity_ntu)
@@ -288,7 +308,7 @@ def record_dissolved_oxygen(buoy_id: str, payload: DissolvedOxygenReadingCreate,
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = DissolvedOxygenReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_dissolved_oxygen_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_dissolved_oxygen(reading)
     dissolved_oxygen_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_dissolved_oxygen_mg_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.dissolved_oxygen_mg_l)
@@ -307,7 +327,7 @@ def record_ph(buoy_id: str, payload: PHReadingCreate, db: Session = Depends(get_
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = PHReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_ph_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_ph(reading)
     ph_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_ph.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.ph)
@@ -328,7 +348,7 @@ def record_conductivity(buoy_id: str, payload: ConductivityReadingCreate, db: Se
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = ConductivityReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_conductivity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_conductivity(reading)
     conductivity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_conductivity_us_cm.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.conductivity_us_cm)
@@ -349,7 +369,7 @@ def record_chlorophyll_a(buoy_id: str, payload: ChlorophyllAReadingCreate, db: S
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = ChlorophyllAReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_chlorophyll_a_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_chlorophyll_a(reading)
     chlorophyll_a_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_chlorophyll_a_ug_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.chlorophyll_a_ug_l)
@@ -370,7 +390,7 @@ def record_rainfall(buoy_id: str, payload: RainfallReadingCreate, db: Session = 
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = RainfallReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_rainfall_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_rainfall(reading)
     rainfall_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_rainfall_mm_h.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.rainfall_mm_h)
@@ -391,7 +411,7 @@ def record_humidity(buoy_id: str, payload: HumidityReadingCreate, db: Session = 
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = HumidityReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_humidity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_humidity(reading)
     humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
@@ -412,7 +432,7 @@ def record_air_temperature(buoy_id: str, payload: AirTemperatureReadingCreate, d
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = AirTemperatureReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_air_temperature_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_air_temperature(reading)
     air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
@@ -433,7 +453,7 @@ def record_atmospheric_pressure(buoy_id: str, payload: AtmosphericPressureReadin
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = AtmosphericPressureReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_atmospheric_pressure_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_atmospheric_pressure(reading)
     atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
@@ -454,7 +474,7 @@ def record_acoustic_altimeter(buoy_id: str, payload: AcousticAltimeterReadingCre
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = AcousticAltimeterReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_acoustic_altimeter_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_acoustic_altimeter(reading)
     acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
@@ -475,7 +495,7 @@ def record_underwater_acoustic(buoy_id: str, payload: UnderwaterAcousticReadingC
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    reading = UnderwaterAcousticReading(buoy_id=buoy_id, **payload.model_dump())
+    reading = build_underwater_acoustic_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = repository.add_underwater_acoustic(reading)
     underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)

@@ -81,3 +81,33 @@ def test_http_routers_do_not_import_other_http_adapters() -> None:
             isinstance(node, ast.ImportFrom) and node.level == 1
             for node in ast.walk(tree)
         ), f"{source_file.name} must depend on application ports, not sibling routers"
+
+
+def test_http_routers_do_not_construct_telemetry_response_models_for_writes() -> None:
+    for source_file in (API_APP / "routers").glob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        constructions = [
+            node.func.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id.endswith("Reading")
+        ]
+        assert not constructions, (
+            f"{source_file.name} must map telemetry through application services; "
+            f"found direct reading model construction: {constructions}"
+        )
+
+
+def test_repository_does_not_import_http_telemetry_reading_models() -> None:
+    tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
+    reading_models = [
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "models"
+        for alias in node.names
+        if alias.name.endswith("Reading")
+    ]
+
+    assert not reading_models

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..application.battery_analysis import analyze_battery_for_buoy
 from ..application.battery_health import analyze_battery_health_for_buoy
+from ..application.telemetry_ingestion import build_battery_snapshot
 from ..database import get_db
 from ..metrics import battery_delta_percent, battery_device_percent, battery_percent
 from ..models import BatteryAnalysis, BatteryHealth, BatteryReading, BatteryReadingCreate
@@ -23,7 +24,7 @@ def get_battery_repository(buoy_id: str, db: Session) -> BuoyRepository:
 @router.post("/api/v1/buoys/{buoy_id}/battery", response_model=BatteryReading, status_code=status.HTTP_201_CREATED, tags=["battery"])
 def record_battery(buoy_id: str, payload: BatteryReadingCreate, db: Session = Depends(get_db)) -> BatteryReading:
     repository = get_battery_repository(buoy_id, db)
-    battery = BatteryReading(buoy_id=buoy_id, **payload.model_dump())
+    battery = build_battery_snapshot(buoy_id, payload.model_dump())
     saved_battery = repository.add_battery(battery)
     battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
     return saved_battery
