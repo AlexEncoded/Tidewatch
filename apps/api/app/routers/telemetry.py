@@ -6,10 +6,10 @@ from io import StringIO
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
-from sqlalchemy.orm import Session
 
-from ..database import get_db
-from ..repository import BuoyRepository
+from ..adapter_dependencies import get_fleet_location_reader
+from ..application.fleet_locations import list_fleet_locations
+from ..application.ports import FleetLocationReader
 
 
 router = APIRouter()
@@ -24,7 +24,7 @@ def export_fleet_locations(
     limit: int = Query(default=5000, ge=1, le=50000),
     since: datetime | None = Query(default=None),
     until: datetime | None = Query(default=None),
-    db: Session = Depends(get_db),
+    reader: FleetLocationReader = Depends(get_fleet_location_reader),
 ) -> Response:
     if since is not None and until is not None and since > until:
         raise HTTPException(
@@ -34,7 +34,7 @@ def export_fleet_locations(
     output = StringIO()
     writer = DictWriter(output, fieldnames=["buoy_id", "latitude", "longitude", "measured_at"])
     writer.writeheader()
-    for location in BuoyRepository(db).list_all_locations(limit, since, until):
+    for location in list_fleet_locations(reader, limit, since, until):
         writer.writerow(
             {
                 "buoy_id": location.buoy_id,

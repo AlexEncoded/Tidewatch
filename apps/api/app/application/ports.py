@@ -1,6 +1,19 @@
 """Input ports shared by application services."""
 
 from typing import Protocol, runtime_checkable
+from datetime import datetime
+
+from ..domain.telemetry import LocationTelemetrySnapshot
+
+
+class FleetLocationReader(Protocol):
+    def list_all_locations(
+        self,
+        limit: int,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[LocationTelemetrySnapshot]:
+        ...
 
 
 class LocationTelemetryReader(Protocol):

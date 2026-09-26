@@ -123,3 +123,15 @@ def test_quality_router_depends_on_application_port_not_repository_adapter() -> 
 
     assert "repository" not in imported_modules
     assert "application.ports" in imported_modules
+
+
+def test_fleet_telemetry_router_depends_on_application_port_not_repository_adapter() -> None:
+    tree = ast.parse((API_APP / "routers" / "telemetry.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "repository" not in imported_modules
+    assert "application.ports" in imported_modules
