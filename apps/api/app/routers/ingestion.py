@@ -7,6 +7,7 @@ from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
+    build_underwater_acoustic_snapshot,
     build_acoustic_altimeter_snapshot,
     build_atmospheric_pressure_snapshot,
     build_air_temperature_snapshot,
@@ -25,7 +26,6 @@ from ..application.telemetry_ingestion import (
     build_salinity_snapshot,
     build_temperature_snapshot,
     empty_accepted_reading_counts,
-    with_device_provenance,
 )
 from ..database import get_db
 from ..domain.devices import DeviceOwnershipError
@@ -57,7 +57,6 @@ from ..models import (
     BatteryReading,
     TelemetryBatchCreate,
     TelemetryIngestResponse,
-    UnderwaterAcousticReading,
 )
 from ..repository import BuoyRepository
 
@@ -394,10 +393,9 @@ def ingest_telemetry(
         accepted += 1
 
     for reading_payload in payload.underwater_acoustic:
-        reading_data = with_device_provenance(
-            reading_payload.model_dump(), payload.device_id
+        reading = build_underwater_acoustic_snapshot(
+            buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        reading = UnderwaterAcousticReading(buoy_id=buoy_id, **reading_data)
         repository.add_underwater_acoustic(reading)
         underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
