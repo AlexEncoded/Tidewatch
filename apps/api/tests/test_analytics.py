@@ -90,6 +90,9 @@ def test_movement_domain_normalizes_mixed_datetime_awareness() -> None:
 
 def test_movement_application_service_uses_a_telemetry_port() -> None:
     class FakeReader:
+        def buoy_exists(self, buoy_id):
+            return buoy_id != "missing"
+
         def list_locations(self, buoy_id, limit):
             return [
                 SimpleNamespace(latitude=36.71, longitude=3.11, measured_at=datetime(2024, 1, 1, 0, 1)),
@@ -102,6 +105,7 @@ def test_movement_application_service_uses_a_telemetry_port() -> None:
     assert analysis.buoy_id == "TW-PORT"
     assert analysis.sample_count == 2
     assert analysis.confidence == "experimental"
+
 
 
 def test_pressure_analysis_requires_three_samples_for_wave_estimate() -> None:

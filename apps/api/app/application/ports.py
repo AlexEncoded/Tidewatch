@@ -17,7 +17,18 @@ class FleetLocationReader(Protocol):
 
 
 class LocationTelemetryReader(Protocol):
-    def list_locations(self, buoy_id: str, limit: int) -> list:
+    def list_locations(
+        self,
+        buoy_id: str,
+        limit: int,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[LocationTelemetrySnapshot]:
+        ...
+
+
+class MovementAnalysisReader(LocationTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
 

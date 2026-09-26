@@ -143,7 +143,7 @@ class BuoyRepository:
         limit: int,
         since: datetime | None = None,
         until: datetime | None = None,
-    ) -> list[BuoyLocationReadingEntity]:
+    ) -> list[LocationTelemetrySnapshot]:
         query = (
             select(BuoyLocationReadingEntity)
             .where(BuoyLocationReadingEntity.buoy_id == buoy_id)
@@ -154,7 +154,20 @@ class BuoyRepository:
             query = query.where(BuoyLocationReadingEntity.measured_at >= since)
         if until is not None:
             query = query.where(BuoyLocationReadingEntity.measured_at <= until)
-        return list(self.db.scalars(query).all())
+        return [
+            LocationTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                latitude=entity.latitude,
+                longitude=entity.longitude,
+                measured_at=entity.measured_at,
+                altitude_meters=entity.altitude_meters,
+                speed_mps=entity.speed_mps,
+                hdop=entity.hdop,
+                satellites=entity.satellites,
+                device_id=entity.device_id,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def list_all_locations(
         self,

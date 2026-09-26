@@ -4,11 +4,8 @@ from ..domain.movement import MovementAnalysisSnapshot, estimate_movement
 from .ports import LocationTelemetryReader
 
 
-MovementTelemetryReader = LocationTelemetryReader
-
-
 def analyze_movement_for_buoy(
-    reader: MovementTelemetryReader,
+    reader: LocationTelemetryReader,
     buoy_id: str,
     window: int,
 ) -> MovementAnalysisSnapshot:

@@ -135,3 +135,19 @@ def test_fleet_telemetry_router_depends_on_application_port_not_repository_adapt
 
     assert "repository" not in imported_modules
     assert "application.ports" in imported_modules
+
+
+def test_movement_route_uses_injected_reader_and_not_repository_constructor() -> None:
+    tree = ast.parse((API_APP / "routers" / "analytics.py").read_text(encoding="utf-8"))
+    route = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "buoy_movement_analysis"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "BuoyRepository" not in calls
+    assert "analyze_movement_for_buoy" in calls
