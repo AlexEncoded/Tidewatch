@@ -14,8 +14,13 @@ from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_i
 from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
+    get_wave_analysis_reader,
 )
-from ..application.ports import MovementAnalysisReader, PressureAnalysisReader
+from ..application.ports import (
+    MovementAnalysisReader,
+    PressureAnalysisReader,
+    WaveAnalysisReader,
+)
 from ..database import get_db
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
 from ..models import MovementAnalysis, PressureAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
@@ -53,12 +58,11 @@ def buoy_movement_analysis(
 def buoy_wave_analysis(
     buoy_id: str,
     window: int = Query(default=100, ge=2, le=500),
-    db: Session = Depends(get_db),
+    reader: WaveAnalysisReader = Depends(get_wave_analysis_reader),
 ) -> WaveAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_wave_for_buoy(repository, buoy_id, window, configured_wave_imu_factor())
+    result = analyze_wave_for_buoy(reader, buoy_id, window, configured_wave_imu_factor())
     if result.estimated_wave_height_m is not None:
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(result.estimated_wave_height_m)
     else:

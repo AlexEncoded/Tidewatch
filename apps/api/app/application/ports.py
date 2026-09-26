@@ -5,6 +5,7 @@ from datetime import datetime
 
 from ..domain.telemetry import LocationTelemetrySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
+from ..domain.telemetry import ImuTelemetrySnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -34,7 +35,17 @@ class MovementAnalysisReader(LocationTelemetryReader, Protocol):
 
 
 class ImuTelemetryReader(Protocol):
-    def list_imu(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list:
+    def list_imu(
+        self,
+        buoy_id: str,
+        limit: int,
+        sensor_channel: str | None = "A",
+    ) -> list[ImuTelemetrySnapshot]:
+        ...
+
+
+class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
 

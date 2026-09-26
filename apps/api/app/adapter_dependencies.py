@@ -7,6 +7,7 @@ from .application.ports import (
     FleetLocationReader,
     MovementAnalysisReader,
     PressureAnalysisReader,
+    WaveAnalysisReader,
     QualitySummaryReader,
 )
 from .database import get_db
@@ -38,4 +39,11 @@ def get_pressure_analysis_reader(
     db: Session = Depends(get_db),
 ) -> PressureAnalysisReader:
     """Compose pressure analysis with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_wave_analysis_reader(
+    db: Session = Depends(get_db),
+) -> WaveAnalysisReader:
+    """Compose wave analysis with its location/IMU SQL reader."""
     return BuoyRepository(db)

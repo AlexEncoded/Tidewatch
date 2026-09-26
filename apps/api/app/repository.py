@@ -409,7 +409,7 @@ class BuoyRepository:
 
     def list_imu(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[ImuReadingEntity]:
+    ) -> list[ImuTelemetrySnapshot]:
         query = (
             select(ImuReadingEntity)
             .where(ImuReadingEntity.buoy_id == buoy_id)
@@ -418,7 +418,24 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(ImuReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            ImuTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                acceleration_x_mps2=entity.acceleration_x_mps2,
+                acceleration_y_mps2=entity.acceleration_y_mps2,
+                acceleration_z_mps2=entity.acceleration_z_mps2,
+                angular_velocity_x_dps=entity.angular_velocity_x_dps,
+                angular_velocity_y_dps=entity.angular_velocity_y_dps,
+                angular_velocity_z_dps=entity.angular_velocity_z_dps,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_imu(
         self, buoy_id: str, sensor_channel: str = "A"

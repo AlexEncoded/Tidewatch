@@ -8,11 +8,7 @@ from ..domain.wave import (
     estimate_wave,
     estimate_wave_period,
 )
-from .ports import ImuTelemetryReader, LocationTelemetryReader
-
-
-class WaveTelemetryReader(ImuTelemetryReader, LocationTelemetryReader):
-    """Input port required by the wave-analysis use case."""
+from .ports import WaveAnalysisReader
 
 
 def configured_wave_imu_factor() -> float:
@@ -25,7 +21,7 @@ def configured_wave_imu_factor() -> float:
 
 
 def analyze_wave_for_buoy(
-    reader: WaveTelemetryReader,
+    reader: WaveAnalysisReader,
     buoy_id: str,
     window: int,
     imu_wave_height_factor: float,
