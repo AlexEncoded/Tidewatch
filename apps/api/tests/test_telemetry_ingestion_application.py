@@ -15,6 +15,7 @@ from app.application.telemetry_ingestion import (
     build_humidity_snapshot,
     build_air_temperature_snapshot,
     build_atmospheric_pressure_snapshot,
+    build_acoustic_altimeter_snapshot,
     build_ambient_light_snapshot,
     build_wind_snapshot,
     build_pressure_snapshot,
@@ -421,6 +422,28 @@ def test_atmospheric_pressure_payload_maps_to_domain_snapshot_with_batch_provena
     assert snapshot.measured_at == measured_at
 
 
+def test_acoustic_altimeter_payload_maps_to_domain_snapshot_with_batch_provenance() -> None:
+    measured_at = datetime(2026, 9, 26, tzinfo=timezone.utc)
+    snapshot = build_acoustic_altimeter_snapshot(
+        "buoy-1",
+        {
+            "depth_meters": 14.2,
+            "sensor_channel": "B",
+            "device_id": None,
+            "sensor_id": "altimeter-b",
+            "firmware_version": "1.6",
+            "quality": "good",
+            "measured_at": measured_at,
+        },
+        "unit-b",
+    )
+
+    assert snapshot.depth_meters == 14.2
+    assert snapshot.sensor_channel == "B"
+    assert snapshot.device_id == "unit-b"
+    assert snapshot.measured_at == measured_at
+
+
 def test_accepted_reading_counts_cover_all_supported_families() -> None:
     counts = empty_accepted_reading_counts()
 
@@ -435,7 +458,7 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
 
     assert 'reading_data["device_id"]' not in router_source
     assert 'location_data["device_id"]' not in router_source
-    assert router_source.count("with_device_provenance(") == 2
+    assert router_source.count("with_device_provenance(") == 1
     assert "BuoyLocationReading(" not in router_source
     assert "reading = TemperatureReading(" not in router_source
     assert "reading = PressureReading(" not in router_source
@@ -453,3 +476,4 @@ def test_ingestion_router_delegates_device_provenance_to_application() -> None:
     assert "reading = HumidityReading(" not in router_source
     assert "reading = AirTemperatureReading(" not in router_source
     assert "reading = AtmosphericPressureReading(" not in router_source
+    assert "reading = AcousticAltimeterReading(" not in router_source

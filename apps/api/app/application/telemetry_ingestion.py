@@ -8,6 +8,7 @@ from ..domain.telemetry import (
     HumidityTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
+    AcousticAltimeterTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -223,6 +224,16 @@ def build_atmospheric_pressure_snapshot(
     """Normalize a validated atmospheric-pressure payload into a snapshot."""
     normalized = with_device_provenance(reading_data, batch_device_id)
     return AtmosphericPressureTelemetrySnapshot(buoy_id=buoy_id, **normalized)
+
+
+def build_acoustic_altimeter_snapshot(
+    buoy_id: str,
+    reading_data: dict,
+    batch_device_id: str | None,
+) -> AcousticAltimeterTelemetrySnapshot:
+    """Normalize a validated altimeter payload into a domain snapshot."""
+    normalized = with_device_provenance(reading_data, batch_device_id)
+    return AcousticAltimeterTelemetrySnapshot(buoy_id=buoy_id, **normalized)
 
 
 def empty_accepted_reading_counts() -> dict[str, int]:

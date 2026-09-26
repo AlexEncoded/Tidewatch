@@ -39,6 +39,7 @@ from .domain.telemetry import (
     HumidityTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
+    AcousticAltimeterTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,
@@ -54,7 +55,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     BatteryReading,
-    AcousticAltimeterReading,
     UnderwaterAcousticReading,
     SensorHealth,
     TemperatureAlert,
@@ -838,7 +838,7 @@ class BuoyRepository:
         readings = self.list_atmospheric_pressure(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None
 
-    def add_acoustic_altimeter(self, reading: AcousticAltimeterReading) -> AcousticAltimeterReadingEntity:
+    def add_acoustic_altimeter(self, reading: AcousticAltimeterTelemetrySnapshot) -> AcousticAltimeterReadingEntity:
         entity = AcousticAltimeterReadingEntity(
             buoy_id=reading.buoy_id, depth_meters=reading.depth_meters,
             sensor_channel=reading.sensor_channel, device_id=reading.device_id,
