@@ -37,6 +37,9 @@ class BatteryTelemetryReader(Protocol):
 
 
 class QualitySummaryReader(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
         ...
 
