@@ -9,15 +9,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.buoy_location_update import update_buoy_location as record_buoy_location
 from ..application.buoy_locations import list_buoy_locations as query_buoy_locations
 from ..adapter_dependencies import get_buoy_location_history_reader
-from ..application.ports import BuoyLocationHistoryReader
-from ..application.ports import StaleBuoyReader
-from ..application.ports import BuoyStatusRegistry
+from ..application.ports import BuoyLocationHistoryReader, BuoyLocationUpdater
+from ..application.ports import StaleBuoyReader, BuoyStatusRegistry
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..adapter_dependencies import get_buoy_status_registry
-from ..domain.buoy import BuoyStatusCommand
+from ..adapter_dependencies import get_buoy_location_updater, get_movement_analysis_reader
+from ..application.ports import MovementAnalysisReader
+from ..domain.buoy import BuoyLocationCommand, BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
 from ..database import get_db
@@ -75,16 +76,29 @@ def update_buoy_status(
 def update_buoy_location(
     buoy_id: str,
     payload: BuoyLocationUpdate,
-    db: Session = Depends(get_db),
+    updater: BuoyLocationUpdater = Depends(get_buoy_location_updater),
+    movement_reader: MovementAnalysisReader = Depends(get_movement_analysis_reader),
 ) -> Buoy:
-    buoy = BuoyRepository(db).update_location(buoy_id, payload)
-    if buoy is None:
+    result = record_buoy_location(
+        updater,
+        movement_reader,
+        buoy_id,
+        BuoyLocationCommand(latitude=payload.latitude, longitude=payload.longitude),
+    )
+    if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    repository = BuoyRepository(db)
-    movement = analyze_movement_for_buoy(repository, buoy_id, 50)
-    if movement.average_speed_mps is not None:
-        buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(movement.average_speed_mps)
-    return buoy
+    if result.movement.average_speed_mps is not None:
+        buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(result.movement.average_speed_mps)
+    buoy = result.buoy
+    return Buoy(
+        id=buoy.buoy_id,
+        name=buoy.name,
+        latitude=buoy.latitude,
+        longitude=buoy.longitude,
+        status=buoy.status,
+        last_seen_at=buoy.last_seen_at,
+        created_at=buoy.created_at,
+    )
 
 
 @router.get("/api/v1/buoys/stale", response_model=list[BuoyHealth], tags=["buoys"])

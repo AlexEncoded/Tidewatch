@@ -12,6 +12,7 @@ from ..domain.buoy import (
     BuoyIdentitySnapshot,
     BuoySnapshot,
     BuoyStatusCommand,
+    BuoyLocationCommand,
 )
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 
@@ -34,6 +35,13 @@ class StaleBuoyReader(Protocol):
 class BuoyStatusRegistry(Protocol):
     def update_buoy_status(
         self, buoy_id: str, command: BuoyStatusCommand
+    ) -> BuoySnapshot | None:
+        ...
+
+
+class BuoyLocationUpdater(Protocol):
+    def update_buoy_location(
+        self, buoy_id: str, command: BuoyLocationCommand
     ) -> BuoySnapshot | None:
         ...
 

@@ -40,6 +40,7 @@ from .domain.buoy import (
     BuoyIdentitySnapshot,
     BuoySnapshot,
     BuoyStatusCommand,
+    BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
@@ -66,7 +67,6 @@ from .domain.telemetry import (
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
     Buoy,
-    BuoyLocationUpdate,
     SensorHealth,
 )
 
@@ -118,21 +118,32 @@ class BuoyRepository:
             created_at=buoy.created_at,
         )
 
-    def update_location(
-        self, buoy_id: str, update: BuoyLocationUpdate
-    ) -> BuoyEntity | None:
+    def update_buoy_location(
+        self, buoy_id: str, command: BuoyLocationCommand
+    ) -> BuoySnapshot | None:
         buoy = self.get_buoy(buoy_id)
         if buoy is None:
             return None
         self.add_location(
             LocationTelemetrySnapshot(
                 buoy_id=buoy_id,
-                latitude=update.latitude,
-                longitude=update.longitude,
+                latitude=command.latitude,
+                longitude=command.longitude,
                 measured_at=datetime.now(timezone.utc),
             )
         )
-        return self.get_buoy(buoy_id)
+        buoy = self.get_buoy(buoy_id)
+        if buoy is None:
+            return None
+        return BuoySnapshot(
+            buoy_id=buoy.id,
+            name=buoy.name,
+            latitude=buoy.latitude,
+            longitude=buoy.longitude,
+            status=buoy.status,
+            last_seen_at=buoy.last_seen_at,
+            created_at=buoy.created_at,
+        )
 
     def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
         entity = BuoyLocationReadingEntity(

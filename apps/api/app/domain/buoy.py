@@ -51,3 +51,11 @@ class BuoyStatusCommand:
     """Requested operational status for a buoy."""
 
     status: str
+
+
+@dataclass(frozen=True)
+class BuoyLocationCommand:
+    """Requested coordinates for a buoy's latest location."""
+
+    latitude: float
+    longitude: float
