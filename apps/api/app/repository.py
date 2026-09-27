@@ -271,7 +271,7 @@ class BuoyRepository:
 
     def list_temperatures(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[TemperatureReadingEntity]:
+    ) -> list[TemperatureTelemetrySnapshot]:
         query = (
             select(TemperatureReadingEntity)
             .where(TemperatureReadingEntity.buoy_id == buoy_id)
@@ -280,11 +280,23 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(TemperatureReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            TemperatureTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                temperature_celsius=entity.temperature_celsius,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_temperature(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> TemperatureReadingEntity | None:
+    ) -> TemperatureTelemetrySnapshot | None:
         readings = self.list_temperatures(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 

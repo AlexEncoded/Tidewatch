@@ -8,6 +8,7 @@ from .application.ports import (
     MovementAnalysisReader,
     PressureAnalysisReader,
     WaveAnalysisReader,
+    TemperatureAnalysisReader,
     QualitySummaryReader,
 )
 from .database import get_db
@@ -46,4 +47,11 @@ def get_wave_analysis_reader(
     db: Session = Depends(get_db),
 ) -> WaveAnalysisReader:
     """Compose wave analysis with its location/IMU SQL reader."""
+    return BuoyRepository(db)
+
+
+def get_temperature_analysis_reader(
+    db: Session = Depends(get_db),
+) -> TemperatureAnalysisReader:
+    """Compose temperature analysis with its SQL telemetry adapter."""
     return BuoyRepository(db)

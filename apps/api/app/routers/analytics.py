@@ -15,10 +15,12 @@ from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
     get_wave_analysis_reader,
+    get_temperature_analysis_reader,
 )
 from ..application.ports import (
     MovementAnalysisReader,
     PressureAnalysisReader,
+    TemperatureAnalysisReader,
     WaveAnalysisReader,
 )
 from ..database import get_db
@@ -89,12 +91,11 @@ def temperature_analysis(
     buoy_id: str,
     threshold: float = Query(default=2.0, gt=0, le=20),
     window: int = Query(default=50, ge=1, le=500),
-    db: Session = Depends(get_db),
+    reader: TemperatureAnalysisReader = Depends(get_temperature_analysis_reader),
 ) -> TemperatureAnalysis:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_temperature_for_buoy(repository, buoy_id, window, threshold)
+    result = analyze_temperature_for_buoy(reader, buoy_id, window, threshold)
     return TemperatureAnalysis.model_validate(result, from_attributes=True)
 
 
