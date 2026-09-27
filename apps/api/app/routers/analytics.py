@@ -7,20 +7,21 @@ from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.pressure_analysis import analyze_pressure_for_buoy
 from ..application.temperature_analysis import (
     analyze_temperature_for_buoy,
-    analyze_temperature_readings,
-    list_valid_temperature_readings,
 )
+from ..application.temperature_alerts import find_temperature_anomalies
 from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_imu_factor
 from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
     get_wave_analysis_reader,
     get_temperature_analysis_reader,
+    get_temperature_alerts_reader,
 )
 from ..application.ports import (
     MovementAnalysisReader,
     PressureAnalysisReader,
     TemperatureAnalysisReader,
+    TemperatureAlertsReader,
     WaveAnalysisReader,
 )
 from ..database import get_db
@@ -107,25 +108,9 @@ def temperature_analysis(
 def temperature_alerts(
     threshold: float = Query(default=2.0, gt=0, le=20),
     window: int = Query(default=50, ge=1, le=500),
-    db: Session = Depends(get_db),
+    reader: TemperatureAlertsReader = Depends(get_temperature_alerts_reader),
 ) -> list[TemperatureAlert]:
-    repository = BuoyRepository(db)
-    alerts: list[TemperatureAlert] = []
-
-    for buoy in repository.list_buoys():
-        readings = list_valid_temperature_readings(repository, buoy.id, window)
-        analysis = analyze_temperature_readings(buoy.id, readings, threshold)
-        if analysis.is_anomaly and analysis.latest_temperature is not None:
-            alerts.append(
-                TemperatureAlert(
-                    buoy_id=buoy.id,
-                    buoy_name=buoy.name,
-                    severity="warning",
-                    temperature_celsius=analysis.latest_temperature,
-                    average_temperature=analysis.average_temperature or 0,
-                    created_at=readings[0].measured_at,
-                    message=analysis.anomaly_reason or "Temperature anomaly detected",
-                )
-            )
-
-    return alerts
+    return [
+        TemperatureAlert.model_validate(alert, from_attributes=True)
+        for alert in find_temperature_anomalies(reader, threshold, window)
+    ]

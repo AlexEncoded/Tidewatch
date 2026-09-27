@@ -7,6 +7,7 @@ from ..domain.telemetry import LocationTelemetrySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
+from ..domain.buoy import BuoyIdentitySnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -106,6 +107,11 @@ class TemperatureTelemetryReader(Protocol):
 
 class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+
+class TemperatureAlertsReader(TemperatureTelemetryReader, Protocol):
+    def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
         ...
 
 

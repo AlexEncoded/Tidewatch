@@ -199,3 +199,19 @@ def test_temperature_analysis_route_uses_injected_reader_not_repository_construc
 
     assert "BuoyRepository" not in calls
     assert "analyze_temperature_for_buoy" in calls
+
+
+def test_temperature_alerts_route_delegates_to_application_service() -> None:
+    tree = ast.parse((API_APP / "routers" / "analytics.py").read_text(encoding="utf-8"))
+    route = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "temperature_alerts"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "BuoyRepository" not in calls
+    assert "find_temperature_anomalies" in calls

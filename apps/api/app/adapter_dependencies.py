@@ -9,6 +9,7 @@ from .application.ports import (
     PressureAnalysisReader,
     WaveAnalysisReader,
     TemperatureAnalysisReader,
+    TemperatureAlertsReader,
     QualitySummaryReader,
 )
 from .database import get_db
@@ -54,4 +55,11 @@ def get_temperature_analysis_reader(
     db: Session = Depends(get_db),
 ) -> TemperatureAnalysisReader:
     """Compose temperature analysis with its SQL telemetry adapter."""
+    return BuoyRepository(db)
+
+
+def get_temperature_alerts_reader(
+    db: Session = Depends(get_db),
+) -> TemperatureAlertsReader:
+    """Compose fleet temperature-alert queries with the SQL adapter."""
     return BuoyRepository(db)

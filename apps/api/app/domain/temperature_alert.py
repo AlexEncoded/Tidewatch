@@ -5,6 +5,19 @@ from datetime import datetime
 
 
 @dataclass(frozen=True)
+class TemperatureAnomalySnapshot:
+    """Computed temperature anomaly for API presentation."""
+
+    buoy_id: str
+    buoy_name: str
+    severity: str
+    temperature_celsius: float
+    average_temperature: float
+    created_at: datetime
+    message: str
+
+
+@dataclass(frozen=True)
 class TemperatureAlertSnapshot:
     """Persisted temperature alert data independent of the HTTP contract."""
 

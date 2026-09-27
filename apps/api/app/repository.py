@@ -30,6 +30,7 @@ from .entities import (
     TemperatureReadingEntity,
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
+from .domain.buoy import BuoyIdentitySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
@@ -205,6 +206,14 @@ class BuoyRepository:
 
     def list_buoys(self) -> list[BuoyEntity]:
         return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
+
+    def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
+        return [
+            BuoyIdentitySnapshot(buoy_id=entity.id, name=entity.name)
+            for entity in self.db.scalars(
+                select(BuoyEntity).order_by(BuoyEntity.created_at)
+            ).all()
+        ]
 
     def create_device(
         self, buoy_id: str, device: DeviceRegistrationCommand
