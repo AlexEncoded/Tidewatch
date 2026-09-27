@@ -12,6 +12,9 @@ from .device_snapshots import to_device_snapshot
 
 
 class DeviceRegistry(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
     def get_device(self, device_id: str):
         ...
 

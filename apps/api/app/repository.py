@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .entities import (
@@ -29,7 +30,11 @@ from .entities import (
     TemperatureAlertEntity,
     TemperatureReadingEntity,
 )
-from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
+from .domain.devices import (
+    DeviceRegistrationCommand,
+    DeviceRegistrationConflict,
+    DeviceStatusCommand,
+)
 from .domain.buoy import BuoyIdentitySnapshot
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
@@ -226,7 +231,18 @@ class BuoyRepository:
             registered_at=datetime.now(timezone.utc),
         )
         self.db.add(entity)
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            if self.get_device(device.device_id) is not None or any(
+                existing.sensor_channel == device.sensor_channel
+                for existing in self.list_devices(buoy_id)
+            ):
+                raise DeviceRegistrationConflict(
+                    "Device or sensor channel already registered"
+                ) from None
+            raise
         self.db.refresh(entity)
         return entity
 

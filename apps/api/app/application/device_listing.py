@@ -12,6 +12,9 @@ class DeviceListingReader(Protocol):
     def list_devices(self, buoy_id: str) -> list:
         ...
 
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
 
 def list_devices_for_buoy(
     reader: DeviceListingReader, buoy_id: str

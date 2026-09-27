@@ -3,23 +3,28 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
+from ..adapter_dependencies import (
+    get_device_health_reader,
+    get_device_listing_reader,
+    get_device_registry,
+    get_device_status_registry,
+)
 from ..application.device_registration import register_device as register_device_use_case
 from ..application.device_listing import list_devices_for_buoy
 from ..application.device_status import update_device_status as update_device_status_use_case
-from ..database import get_db
 from ..domain.devices import (
     DeviceOwnershipError,
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceStatusCommand,
 )
-from ..entities import DeviceEntity
 from ..application.device_health import summarize_device_health_for_buoy
 from ..models import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
-from ..repository import BuoyRepository
+from ..application.ports import DeviceHealthReader
+from ..application.device_listing import DeviceListingReader
+from ..application.device_registration import DeviceRegistry
+from ..application.device_status import DeviceStatusRegistry
 
 
 router = APIRouter()
@@ -32,10 +37,11 @@ router = APIRouter()
     tags=["devices"],
 )
 def register_device(
-    buoy_id: str, payload: DeviceCreate, db: Session = Depends(get_db)
+    buoy_id: str,
+    payload: DeviceCreate,
+    registry: DeviceRegistry = Depends(get_device_registry),
 ) -> Device:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not registry.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
         command = DeviceRegistrationCommand(
@@ -43,21 +49,10 @@ def register_device(
             sensor_channel=payload.sensor_channel,
             firmware_version=payload.firmware_version,
         )
-        result = register_device_use_case(repository, buoy_id, command)
+        result = register_device_use_case(registry, buoy_id, command)
         return Device.model_validate(result, from_attributes=True)
     except DeviceRegistrationConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    except IntegrityError:
-        db.rollback()
-        if db.get(DeviceEntity, payload.device_id) is not None or any(
-            device.sensor_channel == payload.sensor_channel
-            for device in repository.list_devices(buoy_id)
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Device or sensor channel already registered",
-            ) from None
-        raise
 
 
 @router.get(
@@ -65,11 +60,13 @@ def register_device(
     response_model=list[Device],
     tags=["devices"],
 )
-def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_devices(
+    buoy_id: str,
+    reader: DeviceListingReader = Depends(get_device_listing_reader),
+) -> list[Device]:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    snapshots = list_devices_for_buoy(repository, buoy_id)
+    snapshots = list_devices_for_buoy(reader, buoy_id)
     return [Device.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
 
@@ -81,13 +78,12 @@ def list_devices(buoy_id: str, db: Session = Depends(get_db)) -> list[Device]:
 def device_health(
     buoy_id: str,
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
-    db: Session = Depends(get_db),
+    reader: DeviceHealthReader = Depends(get_device_health_reader),
 ) -> list[DeviceHealth]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     snapshots = summarize_device_health_for_buoy(
-        repository, buoy_id, datetime.now(timezone.utc), max_age_minutes * 60
+        reader, buoy_id, datetime.now(timezone.utc), max_age_minutes * 60
     )
     return [DeviceHealth.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
@@ -101,14 +97,13 @@ def update_device_status(
     buoy_id: str,
     device_id: str,
     payload: DeviceStatusUpdate,
-    db: Session = Depends(get_db),
+    registry: DeviceStatusRegistry = Depends(get_device_status_registry),
 ) -> Device:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not registry.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
         result = update_device_status_use_case(
-            repository,
+            registry,
             buoy_id,
             device_id,
             DeviceStatusCommand(status=payload.status),

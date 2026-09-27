@@ -7,6 +7,9 @@ from .device_snapshots import to_device_snapshot
 
 
 class DeviceStatusRegistry(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
     def update_device_status(
         self,
         buoy_id: str,

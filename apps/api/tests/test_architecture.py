@@ -246,3 +246,17 @@ def test_analytics_router_has_no_database_or_repository_dependency() -> None:
     assert "repository" not in imported_modules
     assert "database" not in imported_modules
     assert "sqlalchemy.orm" not in imported_modules
+
+
+def test_device_router_has_no_database_or_repository_dependency() -> None:
+    tree = ast.parse((API_APP / "routers" / "devices.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "repository" not in imported_modules
+    assert "database" not in imported_modules
+    assert "sqlalchemy.orm" not in imported_modules
+    assert "entities" not in imported_modules

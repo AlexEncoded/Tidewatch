@@ -95,6 +95,9 @@ class DeviceHealthReader(Protocol):
     def list_devices(self, buoy_id: str) -> list:
         ...
 
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
 
 class TemperatureTelemetryReader(Protocol):
     def list_temperatures(
