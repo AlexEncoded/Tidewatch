@@ -233,3 +233,16 @@ def test_persisted_temperature_alert_routes_use_application_services() -> None:
     assert "list_stored_temperature_alerts" in calls_by_route["stored_temperature_alerts"]
     assert "resolve_stored_temperature_alert" in calls_by_route["resolve_temperature_alert"]
     assert all("BuoyRepository" not in calls for calls in calls_by_route.values())
+
+
+def test_analytics_router_has_no_database_or_repository_dependency() -> None:
+    tree = ast.parse((API_APP / "routers" / "analytics.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "repository" not in imported_modules
+    assert "database" not in imported_modules
+    assert "sqlalchemy.orm" not in imported_modules

@@ -1,7 +1,6 @@
 """HTTP routes for buoy analytics."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..application.pressure_analysis import analyze_pressure_for_buoy
@@ -24,12 +23,8 @@ from ..application.ports import (
     TemperatureAlertsReader,
     WaveAnalysisReader,
 )
-from ..database import get_db
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
 from ..models import MovementAnalysis, PressureAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
-from ..repository import BuoyRepository
-
-
 router = APIRouter()
 
 
