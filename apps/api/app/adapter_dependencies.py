@@ -10,6 +10,7 @@ from .application.ports import (
     WaveAnalysisReader,
     TemperatureAnalysisReader,
     TemperatureAlertsReader,
+    TemperatureAlertStore,
     QualitySummaryReader,
 )
 from .database import get_db
@@ -62,4 +63,11 @@ def get_temperature_alerts_reader(
     db: Session = Depends(get_db),
 ) -> TemperatureAlertsReader:
     """Compose fleet temperature-alert queries with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_temperature_alert_store(
+    db: Session = Depends(get_db),
+) -> TemperatureAlertStore:
+    """Compose temperature-alert use cases with the SQL repository adapter."""
     return BuoyRepository(db)

@@ -8,6 +8,7 @@ from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
 from ..domain.buoy import BuoyIdentitySnapshot
+from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -112,6 +113,24 @@ class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
 
 class TemperatureAlertsReader(TemperatureTelemetryReader, Protocol):
     def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
+        ...
+
+
+class TemperatureAlertStore(TemperatureAlertsReader, Protocol):
+    def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertSnapshot | None:
+        ...
+
+    def create_alert(
+        self,
+        alert: TemperatureAnomalySnapshot,
+        reading_measured_at: datetime,
+    ) -> TemperatureAlertSnapshot:
+        ...
+
+    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
+        ...
+
+    def resolve_alert(self, alert_id: int) -> TemperatureAlertSnapshot | None:
         ...
 
 

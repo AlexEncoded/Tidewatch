@@ -215,3 +215,21 @@ def test_temperature_alerts_route_delegates_to_application_service() -> None:
 
     assert "BuoyRepository" not in calls
     assert "find_temperature_anomalies" in calls
+
+
+def test_persisted_temperature_alert_routes_use_application_services() -> None:
+    tree = ast.parse((API_APP / "routers" / "alerts.py").read_text(encoding="utf-8"))
+    calls_by_route = {
+        node.name: {
+            child.func.id
+            for child in ast.walk(node)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    assert "evaluate_and_store_temperature_alerts" in calls_by_route["evaluate_temperature_alerts"]
+    assert "list_stored_temperature_alerts" in calls_by_route["stored_temperature_alerts"]
+    assert "resolve_stored_temperature_alert" in calls_by_route["resolve_temperature_alert"]
+    assert all("BuoyRepository" not in calls for calls in calls_by_route.values())

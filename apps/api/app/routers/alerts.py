@@ -1,62 +1,49 @@
 """Persisted temperature alert endpoints."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
-from ..application.temperature_analysis import analyze_temperature_readings, list_valid_temperature_readings
-from ..application.temperature_alerts import to_stored_temperature_alert
-from ..database import get_db
-from ..models import StoredTemperatureAlert, TemperatureAlert
-from ..repository import BuoyRepository
+from ..adapter_dependencies import get_temperature_alert_store
+from ..application.ports import TemperatureAlertStore
+from ..application.temperature_alerts import (
+    evaluate_and_store_temperature_alerts,
+    list_stored_temperature_alerts,
+    resolve_stored_temperature_alert,
+)
+from ..models import StoredTemperatureAlert
 
 router = APIRouter()
 
 
 @router.post("/api/v1/alerts/temperature/evaluate", response_model=list[StoredTemperatureAlert], tags=["alerts"])
-def evaluate_temperature_alerts(threshold: float = Query(default=2.0, gt=0, le=20), window: int = Query(default=50, ge=1, le=500), db: Session = Depends(get_db)) -> list[StoredTemperatureAlert]:
-    repository = BuoyRepository(db)
-    stored_alerts = []
-    for buoy in repository.list_buoys():
-        readings = list_valid_temperature_readings(repository, buoy.id, window)
-        analysis = analyze_temperature_readings(buoy.id, readings, threshold)
-        if not analysis.is_anomaly or not readings:
-            continue
-        current_reading = readings[0]
-        existing = repository.find_alert(buoy.id, current_reading.measured_at)
-        if existing is None:
-            existing = repository.create_alert(
-                TemperatureAlert(
-                    buoy_id=buoy.id, buoy_name=buoy.name, severity="warning",
-                    temperature_celsius=analysis.latest_temperature or 0,
-                    average_temperature=analysis.average_temperature or 0,
-                    created_at=current_reading.measured_at,
-                    message=analysis.anomaly_reason or "Temperature anomaly detected",
-                ),
-                current_reading.measured_at,
-            )
-        stored_alerts.append(
-            StoredTemperatureAlert.model_validate(
-                to_stored_temperature_alert(existing), from_attributes=True
-            )
-        )
-    return stored_alerts
+def evaluate_temperature_alerts(
+    threshold: float = Query(default=2.0, gt=0, le=20),
+    window: int = Query(default=50, ge=1, le=500),
+    store: TemperatureAlertStore = Depends(get_temperature_alert_store),
+) -> list[StoredTemperatureAlert]:
+    return [
+        StoredTemperatureAlert.model_validate(alert, from_attributes=True)
+        for alert in evaluate_and_store_temperature_alerts(store, threshold, window)
+    ]
 
 
 @router.get("/api/v1/alerts/temperature/stored", response_model=list[StoredTemperatureAlert], tags=["alerts"])
-def stored_temperature_alerts(status_filter: str = Query(default="open", alias="status", pattern="^(open|resolved)$"), db: Session = Depends(get_db)) -> list[StoredTemperatureAlert]:
+def stored_temperature_alerts(
+    status_filter: str = Query(default="open", alias="status", pattern="^(open|resolved)$"),
+    store: TemperatureAlertStore = Depends(get_temperature_alert_store),
+) -> list[StoredTemperatureAlert]:
     return [
-        StoredTemperatureAlert.model_validate(
-            to_stored_temperature_alert(alert), from_attributes=True
-        )
-        for alert in BuoyRepository(db).list_alerts(status_filter)
+        StoredTemperatureAlert.model_validate(alert, from_attributes=True)
+        for alert in list_stored_temperature_alerts(store, status_filter)
     ]
 
 
 @router.post("/api/v1/alerts/temperature/{alert_id}/resolve", response_model=StoredTemperatureAlert, tags=["alerts"])
-def resolve_temperature_alert(alert_id: int, db: Session = Depends(get_db)) -> StoredTemperatureAlert:
-    alert = BuoyRepository(db).resolve_alert(alert_id)
+def resolve_temperature_alert(
+    alert_id: int,
+    store: TemperatureAlertStore = Depends(get_temperature_alert_store),
+) -> StoredTemperatureAlert:
+    alert = resolve_stored_temperature_alert(store, alert_id)
     if alert is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alert not found")
     return StoredTemperatureAlert.model_validate(
-        to_stored_temperature_alert(alert), from_attributes=True
+        alert, from_attributes=True
     )

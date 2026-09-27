@@ -31,6 +31,7 @@ from .entities import (
 )
 from .domain.devices import DeviceRegistrationCommand, DeviceStatusCommand
 from .domain.buoy import BuoyIdentitySnapshot
+from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
@@ -58,7 +59,6 @@ from .models import (
     BuoyStatusUpdate,
     BuoyLocationUpdate,
     SensorHealth,
-    TemperatureAlert,
 )
 
 
@@ -1061,14 +1061,37 @@ class BuoyRepository:
                     counts[quality] += count
         return counts
 
-    def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertEntity | None:
+    def _temperature_alert_snapshot(
+        self, entity: TemperatureAlertEntity
+    ) -> TemperatureAlertSnapshot:
+        return TemperatureAlertSnapshot(
+            id=entity.id,
+            buoy_id=entity.buoy_id,
+            buoy_name=entity.buoy.name,
+            severity=entity.severity,
+            temperature_celsius=entity.temperature_celsius,
+            average_temperature=entity.average_temperature,
+            created_at=entity.created_at,
+            message=entity.message,
+            status=entity.status,
+            resolved_at=entity.resolved_at,
+        )
+
+    def find_alert(
+        self, buoy_id: str, measured_at: datetime
+    ) -> TemperatureAlertSnapshot | None:
         query = select(TemperatureAlertEntity).where(
             TemperatureAlertEntity.buoy_id == buoy_id,
             TemperatureAlertEntity.reading_measured_at == measured_at,
         )
-        return self.db.scalars(query).first()
+        entity = self.db.scalars(query).first()
+        return self._temperature_alert_snapshot(entity) if entity is not None else None
 
-    def create_alert(self, alert: TemperatureAlert, measured_at: datetime) -> TemperatureAlertEntity:
+    def create_alert(
+        self,
+        alert: TemperatureAnomalySnapshot,
+        measured_at: datetime,
+    ) -> TemperatureAlertSnapshot:
         entity = TemperatureAlertEntity(
             buoy_id=alert.buoy_id,
             reading_measured_at=measured_at,
@@ -1082,15 +1105,15 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        return entity
+        return self._temperature_alert_snapshot(entity)
 
-    def list_alerts(self, status: str = "open") -> list[TemperatureAlertEntity]:
+    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
         query = select(TemperatureAlertEntity).where(
             TemperatureAlertEntity.status == status
         ).order_by(TemperatureAlertEntity.created_at.desc())
-        return list(self.db.scalars(query).all())
+        return [self._temperature_alert_snapshot(entity) for entity in self.db.scalars(query).all()]
 
-    def resolve_alert(self, alert_id: int) -> TemperatureAlertEntity | None:
+    def resolve_alert(self, alert_id: int) -> TemperatureAlertSnapshot | None:
         alert = self.db.get(TemperatureAlertEntity, alert_id)
         if alert is None:
             return None
@@ -1098,4 +1121,4 @@ class BuoyRepository:
         alert.resolved_at = datetime.now(alert.created_at.tzinfo)
         self.db.commit()
         self.db.refresh(alert)
-        return alert
+        return self._temperature_alert_snapshot(alert)
