@@ -260,3 +260,23 @@ def test_device_router_has_no_database_or_repository_dependency() -> None:
     assert "database" not in imported_modules
     assert "sqlalchemy.orm" not in imported_modules
     assert "entities" not in imported_modules
+
+
+def test_buoy_location_routes_delegate_to_application_service():
+    tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
+    routes = {
+        node.name: {
+            child.func.id
+            for child in ast.walk(node)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    assert "query_buoy_locations" in routes["list_buoy_locations"]
+    assert "query_buoy_locations" in routes["export_buoy_locations"]
+    assert all("BuoyRepository" not in routes[name] for name in (
+        "list_buoy_locations",
+        "export_buoy_locations",
+    ))

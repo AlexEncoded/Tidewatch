@@ -37,6 +37,11 @@ class MovementAnalysisReader(LocationTelemetryReader, Protocol):
         ...
 
 
+class BuoyLocationHistoryReader(LocationTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+
 class ImuTelemetryReader(Protocol):
     def list_imu(
         self,

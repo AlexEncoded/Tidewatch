@@ -10,6 +10,9 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..application.buoy_locations import list_buoy_locations as query_buoy_locations
+from ..adapter_dependencies import get_buoy_location_history_reader
+from ..application.ports import BuoyLocationHistoryReader
 from ..database import get_db
 from ..domain.staleness import stale_age_seconds
 from ..metrics import buoy_movement_speed_mps
@@ -171,17 +174,17 @@ def list_buoy_locations(
     limit: int = Query(default=100, ge=1, le=500),
     since: datetime | None = Query(default=None),
     until: datetime | None = Query(default=None),
-    db: Session = Depends(get_db),
+    reader: BuoyLocationHistoryReader = Depends(get_buoy_location_history_reader),
 ) -> list[BuoyLocationReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if since is not None and until is not None and since > until:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="since must be earlier than or equal to until",
         )
-    return repository.list_locations(buoy_id, limit, since, until)
+    locations = query_buoy_locations(reader, buoy_id, limit, since, until)
+    if locations is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    return locations
 
 
 @router.get(
@@ -194,20 +197,20 @@ def export_buoy_locations(
     limit: int = Query(default=500, ge=1, le=5000),
     since: datetime | None = Query(default=None),
     until: datetime | None = Query(default=None),
-    db: Session = Depends(get_db),
+    reader: BuoyLocationHistoryReader = Depends(get_buoy_location_history_reader),
 ) -> Response:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if since is not None and until is not None and since > until:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="since must be earlier than or equal to until",
         )
+    locations = query_buoy_locations(reader, buoy_id, limit, since, until)
+    if locations is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     output = StringIO()
     writer = DictWriter(output, fieldnames=["buoy_id", "latitude", "longitude", "measured_at"])
     writer.writeheader()
-    for location in repository.list_locations(buoy_id, limit, since, until):
+    for location in locations:
         writer.writerow(
             {
                 "buoy_id": location.buoy_id,

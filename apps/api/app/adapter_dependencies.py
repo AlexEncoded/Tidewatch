@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from .application.ports import (
+    BuoyLocationHistoryReader,
     DeviceHealthReader,
     FleetLocationReader,
     MovementAnalysisReader,
@@ -39,6 +40,13 @@ def get_movement_analysis_reader(
     db: Session = Depends(get_db),
 ) -> MovementAnalysisReader:
     """Compose movement analysis with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_buoy_location_history_reader(
+    db: Session = Depends(get_db),
+) -> BuoyLocationHistoryReader:
+    """Compose buoy location-history queries with the SQL repository adapter."""
     return BuoyRepository(db)
 
 
