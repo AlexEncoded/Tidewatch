@@ -35,7 +35,7 @@ from .domain.devices import (
     DeviceRegistrationConflict,
     DeviceStatusCommand,
 )
-from .domain.buoy import BuoyIdentitySnapshot
+from .domain.buoy import BuoyActivitySnapshot, BuoyIdentitySnapshot
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
@@ -211,6 +211,17 @@ class BuoyRepository:
 
     def list_buoys(self) -> list[BuoyEntity]:
         return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
+
+    def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
+        return [
+            BuoyActivitySnapshot(
+                buoy_id=buoy.id,
+                name=buoy.name,
+                status=buoy.status,
+                last_seen_at=buoy.last_seen_at,
+            )
+            for buoy in self.list_buoys()
+        ]
 
     def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
         return [
