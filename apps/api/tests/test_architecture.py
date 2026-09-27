@@ -328,3 +328,19 @@ def test_buoy_location_update_route_delegates_to_application_service():
 
     assert "record_buoy_location" in calls
     assert "BuoyRepository" not in calls
+
+
+def test_buoy_creation_route_delegates_to_application_service():
+    tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
+    route = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "create_buoy"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "create_buoy_use_case" in calls
+    assert "BuoyRepository" not in calls

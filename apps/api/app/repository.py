@@ -66,7 +66,6 @@ from .domain.telemetry import (
 )
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
-    Buoy,
     SensorHealth,
 )
 
@@ -84,9 +83,9 @@ class BuoyRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def create_buoy(self, buoy: Buoy) -> BuoyEntity:
+    def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
         entity = BuoyEntity(
-            id=buoy.id,
+            id=buoy.buoy_id,
             name=buoy.name,
             latitude=buoy.latitude,
             longitude=buoy.longitude,
@@ -97,7 +96,15 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        return entity
+        return BuoySnapshot(
+            buoy_id=entity.id,
+            name=entity.name,
+            latitude=entity.latitude,
+            longitude=entity.longitude,
+            status=entity.status,
+            last_seen_at=entity.last_seen_at,
+            created_at=entity.created_at,
+        )
 
     def update_buoy_status(
         self, buoy_id: str, command: BuoyStatusCommand

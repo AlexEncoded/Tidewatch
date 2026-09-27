@@ -3,22 +3,26 @@
 from datetime import datetime, timezone
 from csv import DictWriter
 from io import StringIO
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from ..application.buoy_location_update import update_buoy_location as record_buoy_location
+from ..application.buoy_registration import register_buoy as create_buoy_use_case
 from ..application.buoy_locations import list_buoy_locations as query_buoy_locations
 from ..adapter_dependencies import get_buoy_location_history_reader
 from ..application.ports import BuoyLocationHistoryReader, BuoyLocationUpdater
 from ..application.ports import StaleBuoyReader, BuoyStatusRegistry
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..adapter_dependencies import get_buoy_status_registry
-from ..adapter_dependencies import get_buoy_location_updater, get_movement_analysis_reader
-from ..application.ports import MovementAnalysisReader
-from ..domain.buoy import BuoyLocationCommand, BuoyStatusCommand
+from ..adapter_dependencies import (
+    get_buoy_location_updater,
+    get_buoy_registrar,
+    get_movement_analysis_reader,
+)
+from ..application.ports import MovementAnalysisReader, BuoyRegistrar
+from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
 from ..database import get_db
@@ -39,15 +43,27 @@ router = APIRouter()
 
 
 @router.post("/api/v1/buoys", response_model=Buoy, status_code=status.HTTP_201_CREATED, tags=["buoys"])
-def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
-    buoy = Buoy(
-        id=f"TW-{uuid4().hex[:8].upper()}",
-        name=payload.name,
-        latitude=payload.latitude,
-        longitude=payload.longitude,
-        created_at=datetime.now(timezone.utc),
+def create_buoy(
+    payload: BuoyCreate,
+    registrar: BuoyRegistrar = Depends(get_buoy_registrar),
+) -> Buoy:
+    buoy = create_buoy_use_case(
+        registrar,
+        BuoyRegistrationCommand(
+            name=payload.name,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+        ),
     )
-    return BuoyRepository(db).create_buoy(buoy)
+    return Buoy(
+        id=buoy.buoy_id,
+        name=buoy.name,
+        latitude=buoy.latitude,
+        longitude=buoy.longitude,
+        status=buoy.status,
+        last_seen_at=buoy.last_seen_at,
+        created_at=buoy.created_at,
+    )
 
 
 @router.patch("/api/v1/buoys/{buoy_id}/status", response_model=Buoy, tags=["buoys"])

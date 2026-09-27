@@ -59,3 +59,12 @@ class BuoyLocationCommand:
 
     latitude: float
     longitude: float
+
+
+@dataclass(frozen=True)
+class BuoyRegistrationCommand:
+    """Validated input for registering a new buoy."""
+
+    name: str
+    latitude: float | None = None
+    longitude: float | None = None

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .application.ports import (
     BuoyLocationHistoryReader,
+    BuoyRegistrar,
     BuoyStatusRegistry,
     BuoyLocationUpdater,
     StaleBuoyReader,
@@ -71,6 +72,13 @@ def get_buoy_location_updater(
     db: Session = Depends(get_db),
 ) -> BuoyLocationUpdater:
     """Compose buoy location writes with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_buoy_registrar(
+    db: Session = Depends(get_db),
+) -> BuoyRegistrar:
+    """Compose buoy registration with the SQL repository adapter."""
     return BuoyRepository(db)
 
 

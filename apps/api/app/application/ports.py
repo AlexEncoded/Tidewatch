@@ -46,6 +46,11 @@ class BuoyLocationUpdater(Protocol):
         ...
 
 
+class BuoyRegistrar(Protocol):
+    def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
+        ...
+
+
 class LocationTelemetryReader(Protocol):
     def list_locations(
         self,

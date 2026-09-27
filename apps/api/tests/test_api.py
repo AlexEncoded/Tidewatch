@@ -262,6 +262,7 @@ def test_create_buoy_and_record_temperature() -> None:
     )
 
     assert buoy.status_code == 201
+    assert buoy.json()["id"].startswith("TW-")
     assert buoy.json()["latitude"] == 36.7
     assert buoy.json()["longitude"] == 3.1
     assert buoy.json()["status"] == "active"
