@@ -35,7 +35,12 @@ from .domain.devices import (
     DeviceRegistrationConflict,
     DeviceStatusCommand,
 )
-from .domain.buoy import BuoyActivitySnapshot, BuoyIdentitySnapshot
+from .domain.buoy import (
+    BuoyActivitySnapshot,
+    BuoyIdentitySnapshot,
+    BuoySnapshot,
+    BuoyStatusCommand,
+)
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
@@ -61,7 +66,6 @@ from .domain.telemetry import (
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .models import (
     Buoy,
-    BuoyStatusUpdate,
     BuoyLocationUpdate,
     SensorHealth,
 )
@@ -95,14 +99,24 @@ class BuoyRepository:
         self.db.refresh(entity)
         return entity
 
-    def update_status(self, buoy_id: str, update: BuoyStatusUpdate) -> BuoyEntity | None:
+    def update_buoy_status(
+        self, buoy_id: str, command: BuoyStatusCommand
+    ) -> BuoySnapshot | None:
         buoy = self.get_buoy(buoy_id)
         if buoy is None:
             return None
-        buoy.status = update.status
+        buoy.status = command.status
         self.db.commit()
         self.db.refresh(buoy)
-        return buoy
+        return BuoySnapshot(
+            buoy_id=buoy.id,
+            name=buoy.name,
+            latitude=buoy.latitude,
+            longitude=buoy.longitude,
+            status=buoy.status,
+            last_seen_at=buoy.last_seen_at,
+            created_at=buoy.created_at,
+        )
 
     def update_location(
         self, buoy_id: str, update: BuoyLocationUpdate

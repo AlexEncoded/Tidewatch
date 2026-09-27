@@ -31,3 +31,23 @@ class StaleBuoySnapshot:
     status: str
     last_seen_at: datetime
     age_seconds: float
+
+
+@dataclass(frozen=True)
+class BuoySnapshot:
+    """Domain representation of buoy identity and current operational state."""
+
+    buoy_id: str
+    name: str
+    latitude: float | None
+    longitude: float | None
+    status: str
+    last_seen_at: datetime | None
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class BuoyStatusCommand:
+    """Requested operational status for a buoy."""
+
+    status: str

@@ -14,6 +14,10 @@ from ..application.buoy_locations import list_buoy_locations as query_buoy_locat
 from ..adapter_dependencies import get_buoy_location_history_reader
 from ..application.ports import BuoyLocationHistoryReader
 from ..application.ports import StaleBuoyReader
+from ..application.ports import BuoyStatusRegistry
+from ..application.buoy_status import update_buoy_status as change_buoy_status
+from ..adapter_dependencies import get_buoy_status_registry
+from ..domain.buoy import BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
 from ..database import get_db
@@ -49,12 +53,22 @@ def create_buoy(payload: BuoyCreate, db: Session = Depends(get_db)) -> Buoy:
 def update_buoy_status(
     buoy_id: str,
     payload: BuoyStatusUpdate,
-    db: Session = Depends(get_db),
+    registry: BuoyStatusRegistry = Depends(get_buoy_status_registry),
 ) -> Buoy:
-    buoy = BuoyRepository(db).update_status(buoy_id, payload)
+    buoy = change_buoy_status(
+        registry, buoy_id, BuoyStatusCommand(status=payload.status)
+    )
     if buoy is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return buoy
+    return Buoy(
+        id=buoy.buoy_id,
+        name=buoy.name,
+        latitude=buoy.latitude,
+        longitude=buoy.longitude,
+        status=buoy.status,
+        last_seen_at=buoy.last_seen_at,
+        created_at=buoy.created_at,
+    )
 
 
 @router.patch("/api/v1/buoys/{buoy_id}/location", response_model=Buoy, tags=["buoys"])

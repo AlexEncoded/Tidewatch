@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .application.ports import (
     BuoyLocationHistoryReader,
+    BuoyStatusRegistry,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -55,6 +56,13 @@ def get_stale_buoy_reader(
     db: Session = Depends(get_db),
 ) -> StaleBuoyReader:
     """Compose stale-buoy evaluation with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_buoy_status_registry(
+    db: Session = Depends(get_db),
+) -> BuoyStatusRegistry:
+    """Compose buoy status updates with the SQL repository adapter."""
     return BuoyRepository(db)
 
 

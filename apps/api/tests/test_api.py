@@ -270,6 +270,24 @@ def test_create_buoy_and_record_temperature() -> None:
     assert reading.json()["temperature_celsius"] == 19.7
 
 
+def test_buoy_operational_status_can_be_updated_and_unknown_buoy_returns_404() -> None:
+    buoy = client.post("/api/v1/buoys", json={"name": "Status Buoy"}).json()
+
+    updated = client.patch(
+        f"/api/v1/buoys/{buoy['id']}/status",
+        json={"status": "maintenance"},
+    )
+    missing = client.patch(
+        "/api/v1/buoys/unknown/status",
+        json={"status": "inactive"},
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["id"] == buoy["id"]
+    assert updated.json()["status"] == "maintenance"
+    assert missing.status_code == 404
+
+
 def test_buoy_can_register_two_physical_devices() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Redundant Device Buoy"}).json()["id"]
 

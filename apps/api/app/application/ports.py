@@ -7,7 +7,12 @@ from ..domain.telemetry import LocationTelemetrySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.buoy import BuoyActivitySnapshot, BuoyIdentitySnapshot
+from ..domain.buoy import (
+    BuoyActivitySnapshot,
+    BuoyIdentitySnapshot,
+    BuoySnapshot,
+    BuoyStatusCommand,
+)
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 
 
@@ -23,6 +28,13 @@ class FleetLocationReader(Protocol):
 
 class StaleBuoyReader(Protocol):
     def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
+        ...
+
+
+class BuoyStatusRegistry(Protocol):
+    def update_buoy_status(
+        self, buoy_id: str, command: BuoyStatusCommand
+    ) -> BuoySnapshot | None:
         ...
 
 

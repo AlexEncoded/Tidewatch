@@ -296,3 +296,19 @@ def test_stale_buoy_route_delegates_to_application_service():
 
     assert "find_stale_buoys" in calls
     assert "BuoyRepository" not in calls
+
+
+def test_buoy_status_route_delegates_to_application_service():
+    tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
+    route = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "update_buoy_status"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "change_buoy_status" in calls
+    assert "BuoyRepository" not in calls
