@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..adapter_dependencies import get_temperature_telemetry_gateway
-from ..application.ports import TemperatureTelemetryGateway
+from ..adapter_dependencies import get_pressure_telemetry_gateway
+from ..application.ports import PressureTelemetryGateway, TemperatureTelemetryGateway
 from ..application.sensor_health import (
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
@@ -228,12 +229,15 @@ def list_temperatures(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/pressures", response_model=PressureReading, status_code=status.HTTP_201_CREATED, tags=["pressure"])
-def record_pressure(buoy_id: str, payload: PressureReadingCreate, db: Session = Depends(get_db)) -> PressureReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_pressure(
+    buoy_id: str,
+    payload: PressureReadingCreate,
+    gateway: PressureTelemetryGateway = Depends(get_pressure_telemetry_gateway),
+) -> PressureReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_pressure_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_pressure(reading)
+    saved_reading = gateway.add_pressure(reading)
     pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.pressure_kpa)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="pressure", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -241,11 +245,15 @@ def record_pressure(buoy_id: str, payload: PressureReadingCreate, db: Session = 
 
 
 @router.get("/api/v1/buoys/{buoy_id}/pressures", response_model=list[PressureReading], tags=["pressure"])
-def list_pressures(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[PressureReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_pressures(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: PressureTelemetryGateway = Depends(get_pressure_telemetry_gateway),
+) -> list[PressureReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_pressures(buoy_id, limit, sensor_channel)
+    return gateway.list_pressures(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/salinity", response_model=SalinityReading, status_code=status.HTTP_201_CREATED, tags=["salinity"])

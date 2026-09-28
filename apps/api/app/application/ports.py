@@ -97,6 +97,16 @@ class PressureTelemetryReader(Protocol):
         ...
 
 
+class PressureTelemetryGateway(PressureTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_pressure(
+        self, reading: PressureTelemetrySnapshot
+    ) -> PressureTelemetrySnapshot:
+        ...
+
+
 class PressureAnalysisReader(PressureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
         ...

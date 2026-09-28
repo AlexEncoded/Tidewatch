@@ -379,7 +379,7 @@ class BuoyRepository:
 
     def add_pressure(
         self, reading: PressureTelemetrySnapshot
-    ) -> PressureReadingEntity:
+    ) -> PressureTelemetrySnapshot:
         entity = PressureReadingEntity(
             buoy_id=reading.buoy_id,
             pressure_kpa=reading.pressure_kpa,
@@ -397,7 +397,16 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return PressureTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            pressure_kpa=entity.pressure_kpa,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_pressures(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
