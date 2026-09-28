@@ -1030,7 +1030,12 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return BatteryTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            battery_percent=entity.battery_percent,
+            device_id=entity.device_id,
+            measured_at=entity.measured_at,
+        )
 
     def add_sensor_health_check(self, health: SensorHealth) -> SensorHealthCheckEntity:
         entity = SensorHealthCheckEntity(
@@ -1088,11 +1093,19 @@ class BuoyRepository:
         )
         if device_id is not None:
             query = query.where(BatteryReadingEntity.device_id == device_id)
-        return self.db.scalars(query).first()
+        entity = self.db.scalars(query).first()
+        if entity is None:
+            return None
+        return BatteryTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            battery_percent=entity.battery_percent,
+            device_id=entity.device_id,
+            measured_at=entity.measured_at,
+        )
 
     def list_batteries(
         self, buoy_id: str, limit: int, device_id: str | None = None
-    ) -> list[BatteryReadingEntity]:
+    ) -> list[BatteryTelemetrySnapshot]:
         query = (
             select(BatteryReadingEntity)
             .where(BatteryReadingEntity.buoy_id == buoy_id)
@@ -1101,7 +1114,15 @@ class BuoyRepository:
         )
         if device_id is not None:
             query = query.where(BatteryReadingEntity.device_id == device_id)
-        return list(self.db.scalars(query).all())
+        return [
+            BatteryTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                battery_percent=entity.battery_percent,
+                device_id=entity.device_id,
+                measured_at=entity.measured_at,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
         counts = {"good": 0, "suspect": 0, "invalid": 0}

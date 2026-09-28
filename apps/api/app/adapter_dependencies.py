@@ -8,6 +8,7 @@ from .application.ports import (
     BuoyRegistrar,
     BuoyStatusRegistry,
     BuoyLocationUpdater,
+    BatteryTelemetryReader,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -79,6 +80,13 @@ def get_buoy_registrar(
     db: Session = Depends(get_db),
 ) -> BuoyRegistrar:
     """Compose buoy registration with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_battery_telemetry_reader(
+    db: Session = Depends(get_db),
+) -> BatteryTelemetryReader:
+    """Compose battery telemetry operations with the SQL repository adapter."""
     return BuoyRepository(db)
 
 

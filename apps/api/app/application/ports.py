@@ -3,7 +3,7 @@
 from typing import Protocol, runtime_checkable
 from datetime import datetime
 
-from ..domain.telemetry import LocationTelemetrySnapshot
+from ..domain.telemetry import BatteryTelemetrySnapshot, LocationTelemetrySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
@@ -103,15 +103,23 @@ class PressureAnalysisReader(PressureTelemetryReader, Protocol):
 
 
 class BatteryTelemetryReader(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryTelemetrySnapshot:
+        ...
+
     def list_batteries(
         self,
         buoy_id: str,
         limit: int,
         device_id: str | None = None,
-    ) -> list:
+    ) -> list[BatteryTelemetrySnapshot]:
         ...
 
-    def latest_battery(self, buoy_id: str, device_id: str | None = None):
+    def latest_battery(
+        self, buoy_id: str, device_id: str | None = None
+    ) -> BatteryTelemetrySnapshot | None:
         ...
 
 

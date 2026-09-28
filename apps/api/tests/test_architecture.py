@@ -344,3 +344,32 @@ def test_buoy_creation_route_delegates_to_application_service():
 
     assert "create_buoy_use_case" in calls
     assert "BuoyRepository" not in calls
+
+
+def test_battery_routes_use_injected_telemetry_port():
+    tree = ast.parse((API_APP / "routers" / "battery.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    routes = {
+        node.name: {
+            child.func.id
+            for child in ast.walk(node)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    assert "repository" not in imported_modules
+    assert "database" not in imported_modules
+    assert all("BuoyRepository" not in calls for calls in routes.values())
+    assert all("ensure_buoy_exists" in routes[name] for name in (
+        "record_battery",
+        "latest_battery",
+        "battery_history",
+        "battery_analysis",
+        "battery_health",
+    ))
