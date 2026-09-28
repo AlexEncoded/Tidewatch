@@ -11,6 +11,7 @@ from .application.ports import (
     BatteryTelemetryReader,
     TemperatureTelemetryGateway,
     PressureTelemetryGateway,
+    SalinityTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -103,6 +104,13 @@ def get_pressure_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> PressureTelemetryGateway:
     """Compose pressure telemetry reads and writes with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_salinity_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> SalinityTelemetryGateway:
+    """Compose salinity telemetry reads and writes with the SQL adapter."""
     return BuoyRepository(db)
 
 

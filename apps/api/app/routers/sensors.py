@@ -8,7 +8,12 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..adapter_dependencies import get_temperature_telemetry_gateway
 from ..adapter_dependencies import get_pressure_telemetry_gateway
-from ..application.ports import PressureTelemetryGateway, TemperatureTelemetryGateway
+from ..adapter_dependencies import get_salinity_telemetry_gateway
+from ..application.ports import (
+    PressureTelemetryGateway,
+    SalinityTelemetryGateway,
+    TemperatureTelemetryGateway,
+)
 from ..application.sensor_health import (
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
@@ -257,12 +262,15 @@ def list_pressures(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/salinity", response_model=SalinityReading, status_code=status.HTTP_201_CREATED, tags=["salinity"])
-def record_salinity(buoy_id: str, payload: SalinityReadingCreate, db: Session = Depends(get_db)) -> SalinityReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_salinity(
+    buoy_id: str,
+    payload: SalinityReadingCreate,
+    gateway: SalinityTelemetryGateway = Depends(get_salinity_telemetry_gateway),
+) -> SalinityReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_salinity_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_salinity(reading)
+    saved_reading = gateway.add_salinity(reading)
     salinity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_salinity_psu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.salinity_psu)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="salinity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -270,11 +278,15 @@ def record_salinity(buoy_id: str, payload: SalinityReadingCreate, db: Session = 
 
 
 @router.get("/api/v1/buoys/{buoy_id}/salinity", response_model=list[SalinityReading], tags=["salinity"])
-def list_salinity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[SalinityReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_salinity(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: SalinityTelemetryGateway = Depends(get_salinity_telemetry_gateway),
+) -> list[SalinityReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_salinity(buoy_id, limit, sensor_channel)
+    return gateway.list_salinity(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])

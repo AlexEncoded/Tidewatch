@@ -3,7 +3,11 @@
 from typing import Protocol, runtime_checkable
 from datetime import datetime
 
-from ..domain.telemetry import BatteryTelemetrySnapshot, LocationTelemetrySnapshot
+from ..domain.telemetry import (
+    BatteryTelemetrySnapshot,
+    LocationTelemetrySnapshot,
+    SalinityTelemetrySnapshot,
+)
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
@@ -104,6 +108,21 @@ class PressureTelemetryGateway(PressureTelemetryReader, Protocol):
     def add_pressure(
         self, reading: PressureTelemetrySnapshot
     ) -> PressureTelemetrySnapshot:
+        ...
+
+
+class SalinityTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_salinity(
+        self, reading: SalinityTelemetrySnapshot
+    ) -> SalinityTelemetrySnapshot:
+        ...
+
+    def list_salinity(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[SalinityTelemetrySnapshot]:
         ...
 
 
