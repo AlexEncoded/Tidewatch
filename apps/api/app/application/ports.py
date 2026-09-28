@@ -7,6 +7,7 @@ from ..domain.telemetry import (
     BatteryTelemetrySnapshot,
     LocationTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    AmbientLightTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -131,6 +132,21 @@ class SalinityTelemetryGateway(Protocol):
     def list_salinity(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[SalinityTelemetrySnapshot]:
+        ...
+
+
+class AmbientLightTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_ambient_light(
+        self, reading: AmbientLightTelemetrySnapshot
+    ) -> AmbientLightTelemetrySnapshot:
+        ...
+
+    def list_ambient_light(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[AmbientLightTelemetrySnapshot]:
         ...
 
 

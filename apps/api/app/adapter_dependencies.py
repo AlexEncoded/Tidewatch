@@ -13,6 +13,7 @@ from .application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     ImuTelemetryGateway,
+    AmbientLightTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -119,6 +120,13 @@ def get_imu_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> ImuTelemetryGateway:
     """Compose IMU telemetry reads and writes with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_ambient_light_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> AmbientLightTelemetryGateway:
+    """Compose ambient-light telemetry reads and writes with the SQL adapter."""
     return BuoyRepository(db)
 
 
