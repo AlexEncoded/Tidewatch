@@ -269,6 +269,7 @@ def test_create_buoy_and_record_temperature() -> None:
     assert reading.status_code == 201
     assert reading.json()["buoy_id"] == buoy_id
     assert reading.json()["temperature_celsius"] == 19.7
+    assert reading.json()["quality"] == "good"
 
 
 def test_buoy_operational_status_can_be_updated_and_unknown_buoy_returns_404() -> None:

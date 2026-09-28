@@ -316,7 +316,7 @@ class BuoyRepository:
 
     def add_temperature(
         self, reading: TemperatureTelemetrySnapshot
-    ) -> TemperatureReadingEntity:
+    ) -> TemperatureTelemetrySnapshot:
         entity = TemperatureReadingEntity(
             buoy_id=reading.buoy_id,
             temperature_celsius=reading.temperature_celsius,
@@ -335,7 +335,16 @@ class BuoyRepository:
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
             self.db.refresh(buoy)
-        return entity
+        return TemperatureTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            temperature_celsius=entity.temperature_celsius,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_temperatures(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"

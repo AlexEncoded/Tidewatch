@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..adapter_dependencies import get_temperature_telemetry_gateway
+from ..application.ports import TemperatureTelemetryGateway
 from ..application.sensor_health import (
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
@@ -197,12 +199,15 @@ def list_imu(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_
 
 
 @router.post("/api/v1/buoys/{buoy_id}/temperatures", response_model=TemperatureReading, status_code=status.HTTP_201_CREATED, tags=["temperature"])
-def record_temperature(buoy_id: str, payload: TemperatureReadingCreate, db: Session = Depends(get_db)) -> TemperatureReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_temperature(
+    buoy_id: str,
+    payload: TemperatureReadingCreate,
+    gateway: TemperatureTelemetryGateway = Depends(get_temperature_telemetry_gateway),
+) -> TemperatureReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_temperature_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_temperature(reading)
+    saved_reading = gateway.add_temperature(reading)
     temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.temperature_celsius)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="temperature", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -211,11 +216,15 @@ def record_temperature(buoy_id: str, payload: TemperatureReadingCreate, db: Sess
 
 
 @router.get("/api/v1/buoys/{buoy_id}/temperatures", response_model=list[TemperatureReading], tags=["temperature"])
-def list_temperatures(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[TemperatureReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_temperatures(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: TemperatureTelemetryGateway = Depends(get_temperature_telemetry_gateway),
+) -> list[TemperatureReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_temperatures(buoy_id, limit, sensor_channel)
+    return gateway.list_temperatures(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/pressures", response_model=PressureReading, status_code=status.HTTP_201_CREATED, tags=["pressure"])

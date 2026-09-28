@@ -152,6 +152,16 @@ class TemperatureTelemetryReader(Protocol):
         ...
 
 
+class TemperatureTelemetryGateway(TemperatureTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_temperature(
+        self, reading: TemperatureTelemetrySnapshot
+    ) -> TemperatureTelemetrySnapshot:
+        ...
+
+
 class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
         ...
