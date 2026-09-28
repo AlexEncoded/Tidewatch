@@ -9,9 +9,11 @@ from ..database import get_db
 from ..adapter_dependencies import get_temperature_telemetry_gateway
 from ..adapter_dependencies import get_pressure_telemetry_gateway
 from ..adapter_dependencies import get_salinity_telemetry_gateway
+from ..adapter_dependencies import get_imu_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
+    ImuTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -181,12 +183,15 @@ def list_ambient_light(buoy_id: str, limit: int = Query(default=50, ge=1, le=500
 
 
 @router.post("/api/v1/buoys/{buoy_id}/imu", response_model=ImuReading, status_code=status.HTTP_201_CREATED, tags=["imu"])
-def record_imu(buoy_id: str, payload: ImuReadingCreate, db: Session = Depends(get_db)) -> ImuReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_imu(
+    buoy_id: str,
+    payload: ImuReadingCreate,
+    gateway: ImuTelemetryGateway = Depends(get_imu_telemetry_gateway),
+) -> ImuReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_imu_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_imu(reading)
+    saved_reading = gateway.add_imu(reading)
     imu_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     for axis, value in {"x": reading.acceleration_x_mps2, "y": reading.acceleration_y_mps2, "z": reading.acceleration_z_mps2}.items():
         current_imu_acceleration_mps2.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis).set(value)
@@ -197,11 +202,15 @@ def record_imu(buoy_id: str, payload: ImuReadingCreate, db: Session = Depends(ge
 
 
 @router.get("/api/v1/buoys/{buoy_id}/imu", response_model=list[ImuReading], tags=["imu"])
-def list_imu(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[ImuReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_imu(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: ImuTelemetryGateway = Depends(get_imu_telemetry_gateway),
+) -> list[ImuReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_imu(buoy_id, limit, sensor_channel)
+    return gateway.list_imu(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/temperatures", response_model=TemperatureReading, status_code=status.HTTP_201_CREATED, tags=["temperature"])

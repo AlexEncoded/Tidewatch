@@ -12,6 +12,7 @@ from .application.ports import (
     TemperatureTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
+    ImuTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -111,6 +112,13 @@ def get_salinity_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> SalinityTelemetryGateway:
     """Compose salinity telemetry reads and writes with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_imu_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> ImuTelemetryGateway:
+    """Compose IMU telemetry reads and writes with the SQL adapter."""
     return BuoyRepository(db)
 
 

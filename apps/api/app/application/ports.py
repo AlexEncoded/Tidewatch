@@ -86,6 +86,14 @@ class ImuTelemetryReader(Protocol):
         ...
 
 
+class ImuTelemetryGateway(ImuTelemetryReader, Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_imu(self, reading: ImuTelemetrySnapshot) -> ImuTelemetrySnapshot:
+        ...
+
+
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
         ...

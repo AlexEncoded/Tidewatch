@@ -501,7 +501,7 @@ class BuoyRepository:
         readings = self.list_salinity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_imu(self, reading: ImuTelemetrySnapshot) -> ImuReadingEntity:
+    def add_imu(self, reading: ImuTelemetrySnapshot) -> ImuTelemetrySnapshot:
         entity = ImuReadingEntity(
             buoy_id=reading.buoy_id,
             acceleration_x_mps2=reading.acceleration_x_mps2,
@@ -524,7 +524,21 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return ImuTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            acceleration_x_mps2=entity.acceleration_x_mps2,
+            acceleration_y_mps2=entity.acceleration_y_mps2,
+            acceleration_z_mps2=entity.acceleration_z_mps2,
+            angular_velocity_x_dps=entity.angular_velocity_x_dps,
+            angular_velocity_y_dps=entity.angular_velocity_y_dps,
+            angular_velocity_z_dps=entity.angular_velocity_z_dps,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_imu(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
@@ -558,7 +572,7 @@ class BuoyRepository:
 
     def latest_imu(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> ImuReadingEntity | None:
+    ) -> ImuTelemetrySnapshot | None:
         readings = self.list_imu(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
