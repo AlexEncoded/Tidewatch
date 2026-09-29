@@ -954,7 +954,7 @@ class BuoyRepository:
 
     def add_conductivity(
         self, reading: ConductivityTelemetrySnapshot
-    ) -> ConductivityReadingEntity:
+    ) -> ConductivityTelemetrySnapshot:
         entity = ConductivityReadingEntity(
             buoy_id=reading.buoy_id,
             conductivity_us_cm=reading.conductivity_us_cm,
@@ -972,11 +972,20 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return ConductivityTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            conductivity_us_cm=entity.conductivity_us_cm,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_conductivity(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[ConductivityReadingEntity]:
+    ) -> list[ConductivityTelemetrySnapshot]:
         query = (
             select(ConductivityReadingEntity)
             .where(ConductivityReadingEntity.buoy_id == buoy_id)
@@ -987,11 +996,23 @@ class BuoyRepository:
             query = query.where(
                 ConductivityReadingEntity.sensor_channel == sensor_channel
             )
-        return list(self.db.scalars(query).all())
+        return [
+            ConductivityTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                conductivity_us_cm=entity.conductivity_us_cm,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_conductivity(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> ConductivityReadingEntity | None:
+    ) -> ConductivityTelemetrySnapshot | None:
         readings = self.list_conductivity(
             buoy_id, limit=1, sensor_channel=sensor_channel
         )

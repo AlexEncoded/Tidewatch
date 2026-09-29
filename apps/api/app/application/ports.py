@@ -13,6 +13,7 @@ from ..domain.telemetry import (
     TurbidityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     PHTelemetrySnapshot,
+    ConductivityTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -223,6 +224,21 @@ class PHTelemetryGateway(Protocol):
     def list_ph(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[PHTelemetrySnapshot]:
+        ...
+
+
+class ConductivityTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_conductivity(
+        self, reading: ConductivityTelemetrySnapshot
+    ) -> ConductivityTelemetrySnapshot:
+        ...
+
+    def list_conductivity(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[ConductivityTelemetrySnapshot]:
         ...
 
 

@@ -16,6 +16,7 @@ from ..adapter_dependencies import get_marine_current_telemetry_gateway
 from ..adapter_dependencies import get_turbidity_telemetry_gateway
 from ..adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
 from ..adapter_dependencies import get_ph_telemetry_gateway
+from ..adapter_dependencies import get_conductivity_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -26,6 +27,7 @@ from ..application.ports import (
     TurbidityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
+    ConductivityTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -436,12 +438,15 @@ def list_ph(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/conductivity", response_model=ConductivityReading, status_code=status.HTTP_201_CREATED, tags=["conductivity"])
-def record_conductivity(buoy_id: str, payload: ConductivityReadingCreate, db: Session = Depends(get_db)) -> ConductivityReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_conductivity(
+    buoy_id: str,
+    payload: ConductivityReadingCreate,
+    gateway: ConductivityTelemetryGateway = Depends(get_conductivity_telemetry_gateway),
+) -> ConductivityReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_conductivity_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_conductivity(reading)
+    saved_reading = gateway.add_conductivity(reading)
     conductivity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_conductivity_us_cm.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.conductivity_us_cm)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="conductivity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -449,11 +454,15 @@ def record_conductivity(buoy_id: str, payload: ConductivityReadingCreate, db: Se
 
 
 @router.get("/api/v1/buoys/{buoy_id}/conductivity", response_model=list[ConductivityReading], tags=["conductivity"])
-def list_conductivity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[ConductivityReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_conductivity(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: ConductivityTelemetryGateway = Depends(get_conductivity_telemetry_gateway),
+) -> list[ConductivityReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_conductivity(buoy_id, limit, sensor_channel)
+    return gateway.list_conductivity(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/chlorophyll-a", response_model=ChlorophyllAReading, status_code=status.HTTP_201_CREATED, tags=["chlorophyll-a"])
