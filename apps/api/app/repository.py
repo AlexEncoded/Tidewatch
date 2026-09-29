@@ -638,7 +638,7 @@ class BuoyRepository:
         readings = self.list_ambient_light(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_wind(self, reading: WindTelemetrySnapshot) -> WindReadingEntity:
+    def add_wind(self, reading: WindTelemetrySnapshot) -> WindTelemetrySnapshot:
         entity = WindReadingEntity(
             buoy_id=reading.buoy_id,
             wind_speed_mps=reading.wind_speed_mps,
@@ -657,11 +657,21 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return WindTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            wind_speed_mps=entity.wind_speed_mps,
+            wind_direction_degrees=entity.wind_direction_degrees,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_wind(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[WindReadingEntity]:
+    ) -> list[WindTelemetrySnapshot]:
         query = (
             select(WindReadingEntity)
             .where(WindReadingEntity.buoy_id == buoy_id)
@@ -670,11 +680,24 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(WindReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            WindTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                wind_speed_mps=entity.wind_speed_mps,
+                wind_direction_degrees=entity.wind_direction_degrees,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_wind(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> WindReadingEntity | None:
+    ) -> WindTelemetrySnapshot | None:
         readings = self.list_wind(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 

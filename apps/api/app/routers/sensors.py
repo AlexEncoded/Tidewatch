@@ -11,11 +11,13 @@ from ..adapter_dependencies import get_pressure_telemetry_gateway
 from ..adapter_dependencies import get_salinity_telemetry_gateway
 from ..adapter_dependencies import get_imu_telemetry_gateway
 from ..adapter_dependencies import get_ambient_light_telemetry_gateway
+from ..adapter_dependencies import get_wind_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     ImuTelemetryGateway,
     AmbientLightTelemetryGateway,
+    WindTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -142,12 +144,15 @@ def sensor_health_history(buoy_id: str, limit: int = Query(default=50, ge=1, le=
 
 
 @router.post("/api/v1/buoys/{buoy_id}/wind", response_model=WindReading, status_code=status.HTTP_201_CREATED, tags=["wind"])
-def record_wind(buoy_id: str, payload: WindReadingCreate, db: Session = Depends(get_db)) -> WindReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_wind(
+    buoy_id: str,
+    payload: WindReadingCreate,
+    gateway: WindTelemetryGateway = Depends(get_wind_telemetry_gateway),
+) -> WindReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_wind_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_wind(reading)
+    saved_reading = gateway.add_wind(reading)
     wind_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_wind_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.wind_speed_mps)
     current_wind_direction_degrees.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.wind_direction_degrees)
@@ -156,11 +161,15 @@ def record_wind(buoy_id: str, payload: WindReadingCreate, db: Session = Depends(
 
 
 @router.get("/api/v1/buoys/{buoy_id}/wind", response_model=list[WindReading], tags=["wind"])
-def list_wind(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[WindReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_wind(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: WindTelemetryGateway = Depends(get_wind_telemetry_gateway),
+) -> list[WindReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_wind(buoy_id, limit, sensor_channel)
+    return gateway.list_wind(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/ambient-light", response_model=AmbientLightReading, status_code=status.HTTP_201_CREATED, tags=["ambient-light"])
