@@ -15,6 +15,7 @@ from ..adapter_dependencies import get_wind_telemetry_gateway
 from ..adapter_dependencies import get_marine_current_telemetry_gateway
 from ..adapter_dependencies import get_turbidity_telemetry_gateway
 from ..adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
+from ..adapter_dependencies import get_ph_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -24,6 +25,7 @@ from ..application.ports import (
     MarineCurrentTelemetryGateway,
     TurbidityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
+    PHTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -406,12 +408,15 @@ def list_dissolved_oxygen(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return gateway.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 @router.post("/api/v1/buoys/{buoy_id}/ph", response_model=PHReading, status_code=status.HTTP_201_CREATED, tags=["ph"])
-def record_ph(buoy_id: str, payload: PHReadingCreate, db: Session = Depends(get_db)) -> PHReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_ph(
+    buoy_id: str,
+    payload: PHReadingCreate,
+    gateway: PHTelemetryGateway = Depends(get_ph_telemetry_gateway),
+) -> PHReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_ph_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_ph(reading)
+    saved_reading = gateway.add_ph(reading)
     ph_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_ph.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.ph)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="ph", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -419,11 +424,15 @@ def record_ph(buoy_id: str, payload: PHReadingCreate, db: Session = Depends(get_
 
 
 @router.get("/api/v1/buoys/{buoy_id}/ph", response_model=list[PHReading], tags=["ph"])
-def list_ph(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[PHReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_ph(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: PHTelemetryGateway = Depends(get_ph_telemetry_gateway),
+) -> list[PHReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_ph(buoy_id, limit, sensor_channel)
+    return gateway.list_ph(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/conductivity", response_model=ConductivityReading, status_code=status.HTTP_201_CREATED, tags=["conductivity"])

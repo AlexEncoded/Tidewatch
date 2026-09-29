@@ -18,6 +18,7 @@ from .application.ports import (
     MarineCurrentTelemetryGateway,
     TurbidityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
+    PHTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -159,6 +160,13 @@ def get_dissolved_oxygen_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> DissolvedOxygenTelemetryGateway:
     """Compose dissolved-oxygen telemetry operations with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_ph_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> PHTelemetryGateway:
+    """Compose pH telemetry operations with the SQL adapter."""
     return BuoyRepository(db)
 
 
