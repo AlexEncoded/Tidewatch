@@ -11,6 +11,7 @@ from ..domain.telemetry import (
     WindTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
+    DissolvedOxygenTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -193,6 +194,21 @@ class TurbidityTelemetryGateway(Protocol):
     def list_turbidity(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[TurbidityTelemetrySnapshot]:
+        ...
+
+
+class DissolvedOxygenTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_dissolved_oxygen(
+        self, reading: DissolvedOxygenTelemetrySnapshot
+    ) -> DissolvedOxygenTelemetrySnapshot:
+        ...
+
+    def list_dissolved_oxygen(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[DissolvedOxygenTelemetrySnapshot]:
         ...
 
 

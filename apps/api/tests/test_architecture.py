@@ -629,3 +629,35 @@ def test_turbidity_routes_use_injected_telemetry_gateway():
         for alias in node.names
     }
     assert "get_turbidity_telemetry_gateway" in imported_dependencies
+
+
+def test_dissolved_oxygen_routes_use_injected_telemetry_gateway():
+    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    routes = {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    for name in ("record_dissolved_oxygen", "list_dissolved_oxygen"):
+        route = routes[name]
+        calls = {
+            child.func.id
+            for child in ast.walk(route)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        gateway_parameter = next(
+            argument for argument in route.args.args if argument.arg == "gateway"
+        )
+        assert "BuoyRepository" not in calls
+        assert isinstance(gateway_parameter.annotation, ast.Name)
+        assert gateway_parameter.annotation.id == "DissolvedOxygenTelemetryGateway"
+
+    imported_dependencies = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "adapter_dependencies"
+        for alias in node.names
+    }
+    assert "get_dissolved_oxygen_telemetry_gateway" in imported_dependencies

@@ -14,6 +14,7 @@ from ..adapter_dependencies import get_ambient_light_telemetry_gateway
 from ..adapter_dependencies import get_wind_telemetry_gateway
 from ..adapter_dependencies import get_marine_current_telemetry_gateway
 from ..adapter_dependencies import get_turbidity_telemetry_gateway
+from ..adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -22,6 +23,7 @@ from ..application.ports import (
     WindTelemetryGateway,
     MarineCurrentTelemetryGateway,
     TurbidityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -378,12 +380,15 @@ def list_turbidity(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=DissolvedOxygenReading, status_code=status.HTTP_201_CREATED, tags=["dissolved-oxygen"])
-def record_dissolved_oxygen(buoy_id: str, payload: DissolvedOxygenReadingCreate, db: Session = Depends(get_db)) -> DissolvedOxygenReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_dissolved_oxygen(
+    buoy_id: str,
+    payload: DissolvedOxygenReadingCreate,
+    gateway: DissolvedOxygenTelemetryGateway = Depends(get_dissolved_oxygen_telemetry_gateway),
+) -> DissolvedOxygenReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_dissolved_oxygen_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_dissolved_oxygen(reading)
+    saved_reading = gateway.add_dissolved_oxygen(reading)
     dissolved_oxygen_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_dissolved_oxygen_mg_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.dissolved_oxygen_mg_l)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="dissolved_oxygen", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -391,11 +396,15 @@ def record_dissolved_oxygen(buoy_id: str, payload: DissolvedOxygenReadingCreate,
 
 
 @router.get("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=list[DissolvedOxygenReading], tags=["dissolved-oxygen"])
-def list_dissolved_oxygen(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[DissolvedOxygenReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_dissolved_oxygen(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: DissolvedOxygenTelemetryGateway = Depends(get_dissolved_oxygen_telemetry_gateway),
+) -> list[DissolvedOxygenReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
+    return gateway.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 @router.post("/api/v1/buoys/{buoy_id}/ph", response_model=PHReading, status_code=status.HTTP_201_CREATED, tags=["ph"])
 def record_ph(buoy_id: str, payload: PHReadingCreate, db: Session = Depends(get_db)) -> PHReading:
     repository = BuoyRepository(db)

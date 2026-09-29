@@ -832,7 +832,7 @@ class BuoyRepository:
 
     def add_dissolved_oxygen(
         self, reading: DissolvedOxygenTelemetrySnapshot
-    ) -> DissolvedOxygenReadingEntity:
+    ) -> DissolvedOxygenTelemetrySnapshot:
         entity = DissolvedOxygenReadingEntity(
             buoy_id=reading.buoy_id,
             dissolved_oxygen_mg_l=reading.dissolved_oxygen_mg_l,
@@ -850,11 +850,20 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return DissolvedOxygenTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            dissolved_oxygen_mg_l=entity.dissolved_oxygen_mg_l,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_dissolved_oxygen(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[DissolvedOxygenReadingEntity]:
+    ) -> list[DissolvedOxygenTelemetrySnapshot]:
         query = (
             select(DissolvedOxygenReadingEntity)
             .where(DissolvedOxygenReadingEntity.buoy_id == buoy_id)
@@ -863,11 +872,23 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(DissolvedOxygenReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            DissolvedOxygenTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                dissolved_oxygen_mg_l=entity.dissolved_oxygen_mg_l,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_dissolved_oxygen(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> DissolvedOxygenReadingEntity | None:
+    ) -> DissolvedOxygenTelemetrySnapshot | None:
         readings = self.list_dissolved_oxygen(
             buoy_id, limit=1, sensor_channel=sensor_channel
         )
