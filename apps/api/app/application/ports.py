@@ -9,6 +9,7 @@ from ..domain.telemetry import (
     SalinityTelemetrySnapshot,
     AmbientLightTelemetrySnapshot,
     WindTelemetrySnapshot,
+    MarineCurrentTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -161,6 +162,21 @@ class WindTelemetryGateway(Protocol):
     def list_wind(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[WindTelemetrySnapshot]:
+        ...
+
+
+class MarineCurrentTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_marine_current(
+        self, reading: MarineCurrentTelemetrySnapshot
+    ) -> MarineCurrentTelemetrySnapshot:
+        ...
+
+    def list_marine_current(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[MarineCurrentTelemetrySnapshot]:
         ...
 
 

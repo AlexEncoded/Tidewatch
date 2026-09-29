@@ -12,12 +12,14 @@ from ..adapter_dependencies import get_salinity_telemetry_gateway
 from ..adapter_dependencies import get_imu_telemetry_gateway
 from ..adapter_dependencies import get_ambient_light_telemetry_gateway
 from ..adapter_dependencies import get_wind_telemetry_gateway
+from ..adapter_dependencies import get_marine_current_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     ImuTelemetryGateway,
     AmbientLightTelemetryGateway,
     WindTelemetryGateway,
+    MarineCurrentTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -317,12 +319,15 @@ def list_salinity(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])
-def record_marine_current(buoy_id: str, payload: MarineCurrentReadingCreate, db: Session = Depends(get_db)) -> MarineCurrentReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_marine_current(
+    buoy_id: str,
+    payload: MarineCurrentReadingCreate,
+    gateway: MarineCurrentTelemetryGateway = Depends(get_marine_current_telemetry_gateway),
+) -> MarineCurrentReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_marine_current_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_marine_current(reading)
+    saved_reading = gateway.add_marine_current(reading)
     marine_current_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_marine_current_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_speed_mps)
     current_marine_current_direction_degrees.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_direction_degrees)
@@ -331,11 +336,15 @@ def record_marine_current(buoy_id: str, payload: MarineCurrentReadingCreate, db:
 
 
 @router.get("/api/v1/buoys/{buoy_id}/marine-current", response_model=list[MarineCurrentReading], tags=["marine-current"])
-def list_marine_current(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[MarineCurrentReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_marine_current(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: MarineCurrentTelemetryGateway = Depends(get_marine_current_telemetry_gateway),
+) -> list[MarineCurrentReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_marine_current(buoy_id, limit, sensor_channel)
+    return gateway.list_marine_current(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/turbidity", response_model=TurbidityReading, status_code=status.HTTP_201_CREATED, tags=["turbidity"])

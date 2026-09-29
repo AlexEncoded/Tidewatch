@@ -15,6 +15,7 @@ from .application.ports import (
     ImuTelemetryGateway,
     AmbientLightTelemetryGateway,
     WindTelemetryGateway,
+    MarineCurrentTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -135,6 +136,13 @@ def get_wind_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> WindTelemetryGateway:
     """Compose wind telemetry reads and writes with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_marine_current_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> MarineCurrentTelemetryGateway:
+    """Compose marine-current telemetry operations with the SQL adapter."""
     return BuoyRepository(db)
 
 
