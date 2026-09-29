@@ -14,6 +14,7 @@ from ..domain.telemetry import (
     DissolvedOxygenTelemetrySnapshot,
     PHTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
+    ChlorophyllATelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -239,6 +240,21 @@ class ConductivityTelemetryGateway(Protocol):
     def list_conductivity(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[ConductivityTelemetrySnapshot]:
+        ...
+
+
+class ChlorophyllATelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_chlorophyll_a(
+        self, reading: ChlorophyllATelemetrySnapshot
+    ) -> ChlorophyllATelemetrySnapshot:
+        ...
+
+    def list_chlorophyll_a(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[ChlorophyllATelemetrySnapshot]:
         ...
 
 

@@ -20,6 +20,7 @@ from .application.ports import (
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
     ConductivityTelemetryGateway,
+    ChlorophyllATelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -175,6 +176,13 @@ def get_conductivity_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> ConductivityTelemetryGateway:
     """Compose conductivity telemetry operations with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_chlorophyll_a_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> ChlorophyllATelemetryGateway:
+    """Compose chlorophyll-a telemetry operations with the SQL adapter."""
     return BuoyRepository(db)
 
 
