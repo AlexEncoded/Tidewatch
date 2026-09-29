@@ -1084,7 +1084,9 @@ class BuoyRepository:
         )
         return readings[0] if readings else None
 
-    def add_rainfall(self, reading: RainfallTelemetrySnapshot) -> RainfallReadingEntity:
+    def add_rainfall(
+        self, reading: RainfallTelemetrySnapshot
+    ) -> RainfallTelemetrySnapshot:
         entity = RainfallReadingEntity(
             buoy_id=reading.buoy_id,
             rainfall_mm_h=reading.rainfall_mm_h,
@@ -1102,11 +1104,20 @@ class BuoyRepository:
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
-        return entity
+        return RainfallTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            rainfall_mm_h=entity.rainfall_mm_h,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
     def list_rainfall(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[RainfallReadingEntity]:
+    ) -> list[RainfallTelemetrySnapshot]:
         query = (
             select(RainfallReadingEntity)
             .where(RainfallReadingEntity.buoy_id == buoy_id)
@@ -1115,11 +1126,23 @@ class BuoyRepository:
         )
         if sensor_channel is not None:
             query = query.where(RainfallReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            RainfallTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                rainfall_mm_h=entity.rainfall_mm_h,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def latest_rainfall(
         self, buoy_id: str, sensor_channel: str = "A"
-    ) -> RainfallReadingEntity | None:
+    ) -> RainfallTelemetrySnapshot | None:
         readings = self.list_rainfall(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 

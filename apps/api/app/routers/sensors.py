@@ -18,6 +18,7 @@ from ..adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
 from ..adapter_dependencies import get_ph_telemetry_gateway
 from ..adapter_dependencies import get_conductivity_telemetry_gateway
 from ..adapter_dependencies import get_chlorophyll_a_telemetry_gateway
+from ..adapter_dependencies import get_rainfall_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -30,6 +31,7 @@ from ..application.ports import (
     PHTelemetryGateway,
     ConductivityTelemetryGateway,
     ChlorophyllATelemetryGateway,
+    RainfallTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -496,12 +498,15 @@ def list_chlorophyll_a(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/rainfall", response_model=RainfallReading, status_code=status.HTTP_201_CREATED, tags=["rainfall"])
-def record_rainfall(buoy_id: str, payload: RainfallReadingCreate, db: Session = Depends(get_db)) -> RainfallReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_rainfall(
+    buoy_id: str,
+    payload: RainfallReadingCreate,
+    gateway: RainfallTelemetryGateway = Depends(get_rainfall_telemetry_gateway),
+) -> RainfallReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_rainfall_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_rainfall(reading)
+    saved_reading = gateway.add_rainfall(reading)
     rainfall_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_rainfall_mm_h.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.rainfall_mm_h)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="rainfall", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -509,11 +514,15 @@ def record_rainfall(buoy_id: str, payload: RainfallReadingCreate, db: Session = 
 
 
 @router.get("/api/v1/buoys/{buoy_id}/rainfall", response_model=list[RainfallReading], tags=["rainfall"])
-def list_rainfall(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[RainfallReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_rainfall(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: RainfallTelemetryGateway = Depends(get_rainfall_telemetry_gateway),
+) -> list[RainfallReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_rainfall(buoy_id, limit, sensor_channel)
+    return gateway.list_rainfall(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/humidity", response_model=HumidityReading, status_code=status.HTTP_201_CREATED, tags=["humidity"])
