@@ -1246,7 +1246,9 @@ class BuoyRepository:
         readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None
 
-    def add_atmospheric_pressure(self, reading: AtmosphericPressureTelemetrySnapshot) -> AtmosphericPressureReadingEntity:
+    def add_atmospheric_pressure(
+        self, reading: AtmosphericPressureTelemetrySnapshot
+    ) -> AtmosphericPressureTelemetrySnapshot:
         entity = AtmosphericPressureReadingEntity(
             buoy_id=reading.buoy_id, atmospheric_pressure_kpa=reading.atmospheric_pressure_kpa,
             sensor_channel=reading.sensor_channel, device_id=reading.device_id,
@@ -1258,15 +1260,36 @@ class BuoyRepository:
         buoy = self.get_buoy(reading.buoy_id)
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
-        return entity
+        return AtmosphericPressureTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
-    def list_atmospheric_pressure(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[AtmosphericPressureReadingEntity]:
+    def list_atmospheric_pressure(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[AtmosphericPressureTelemetrySnapshot]:
         query = select(AtmosphericPressureReadingEntity).where(AtmosphericPressureReadingEntity.buoy_id == buoy_id).order_by(AtmosphericPressureReadingEntity.measured_at.desc()).limit(limit)
         if sensor_channel is not None:
             query = query.where(AtmosphericPressureReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            AtmosphericPressureTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
-    def latest_atmospheric_pressure(self, buoy_id: str, sensor_channel: str = "A") -> AtmosphericPressureReadingEntity | None:
+    def latest_atmospheric_pressure(self, buoy_id: str, sensor_channel: str = "A") -> AtmosphericPressureTelemetrySnapshot | None:
         readings = self.list_atmospheric_pressure(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None
 

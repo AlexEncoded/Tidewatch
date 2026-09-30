@@ -18,6 +18,7 @@ from ..domain.telemetry import (
     RainfallTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
+    AtmosphericPressureTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -303,6 +304,21 @@ class AirTemperatureTelemetryGateway(Protocol):
     def list_air_temperature(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[AirTemperatureTelemetrySnapshot]:
+        ...
+
+
+class AtmosphericPressureTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_atmospheric_pressure(
+        self, reading: AtmosphericPressureTelemetrySnapshot
+    ) -> AtmosphericPressureTelemetrySnapshot:
+        ...
+
+    def list_atmospheric_pressure(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[AtmosphericPressureTelemetrySnapshot]:
         ...
 
 

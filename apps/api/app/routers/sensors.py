@@ -21,6 +21,7 @@ from ..adapter_dependencies import get_chlorophyll_a_telemetry_gateway
 from ..adapter_dependencies import get_rainfall_telemetry_gateway
 from ..adapter_dependencies import get_humidity_telemetry_gateway
 from ..adapter_dependencies import get_air_temperature_telemetry_gateway
+from ..adapter_dependencies import get_atmospheric_pressure_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -36,6 +37,7 @@ from ..application.ports import (
     RainfallTelemetryGateway,
     HumidityTelemetryGateway,
     AirTemperatureTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -586,12 +588,15 @@ def list_air_temperature(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=AtmosphericPressureReading, status_code=status.HTTP_201_CREATED, tags=["atmospheric-pressure"])
-def record_atmospheric_pressure(buoy_id: str, payload: AtmosphericPressureReadingCreate, db: Session = Depends(get_db)) -> AtmosphericPressureReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_atmospheric_pressure(
+    buoy_id: str,
+    payload: AtmosphericPressureReadingCreate,
+    gateway: AtmosphericPressureTelemetryGateway = Depends(get_atmospheric_pressure_telemetry_gateway),
+) -> AtmosphericPressureReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_atmospheric_pressure_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_atmospheric_pressure(reading)
+    saved_reading = gateway.add_atmospheric_pressure(reading)
     atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="atmospheric_pressure", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -599,11 +604,15 @@ def record_atmospheric_pressure(buoy_id: str, payload: AtmosphericPressureReadin
 
 
 @router.get("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=list[AtmosphericPressureReading], tags=["atmospheric-pressure"])
-def list_atmospheric_pressure(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[AtmosphericPressureReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_atmospheric_pressure(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: AtmosphericPressureTelemetryGateway = Depends(get_atmospheric_pressure_telemetry_gateway),
+) -> list[AtmosphericPressureReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
+    return gateway.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/acoustic-altimeter", response_model=AcousticAltimeterReading, status_code=status.HTTP_201_CREATED, tags=["acoustic-altimeter"])
