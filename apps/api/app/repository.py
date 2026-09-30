@@ -1199,7 +1199,9 @@ class BuoyRepository:
         readings = self.list_humidity(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None
 
-    def add_air_temperature(self, reading: AirTemperatureTelemetrySnapshot) -> AirTemperatureReadingEntity:
+    def add_air_temperature(
+        self, reading: AirTemperatureTelemetrySnapshot
+    ) -> AirTemperatureTelemetrySnapshot:
         entity = AirTemperatureReadingEntity(
             buoy_id=reading.buoy_id, air_temperature_celsius=reading.air_temperature_celsius,
             sensor_channel=reading.sensor_channel, device_id=reading.device_id,
@@ -1211,15 +1213,36 @@ class BuoyRepository:
         buoy = self.get_buoy(reading.buoy_id)
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
-        return entity
+        return AirTemperatureTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            air_temperature_celsius=entity.air_temperature_celsius,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
-    def list_air_temperature(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[AirTemperatureReadingEntity]:
+    def list_air_temperature(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[AirTemperatureTelemetrySnapshot]:
         query = select(AirTemperatureReadingEntity).where(AirTemperatureReadingEntity.buoy_id == buoy_id).order_by(AirTemperatureReadingEntity.measured_at.desc()).limit(limit)
         if sensor_channel is not None:
             query = query.where(AirTemperatureReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            AirTemperatureTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                air_temperature_celsius=entity.air_temperature_celsius,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
-    def latest_air_temperature(self, buoy_id: str, sensor_channel: str = "A") -> AirTemperatureReadingEntity | None:
+    def latest_air_temperature(self, buoy_id: str, sensor_channel: str = "A") -> AirTemperatureTelemetrySnapshot | None:
         readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None
 
