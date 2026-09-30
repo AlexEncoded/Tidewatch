@@ -33,6 +33,7 @@ from ..domain.buoy import (
     BuoyLocationCommand,
 )
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
+from ..domain.sensor_health import SensorHealthCheckSnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -452,6 +453,11 @@ class SensorHealthReader(Protocol):
     """Read-only port for the redundant sensor-health snapshot."""
 
     def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def list_sensor_health_checks(
+        self, buoy_id: str, limit: int
+    ) -> list[SensorHealthCheckSnapshot]:
         ...
 
     def list_temperatures(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list:

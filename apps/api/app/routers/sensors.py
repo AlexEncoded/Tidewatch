@@ -162,11 +162,17 @@ router = APIRouter()
 
 
 @router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
-def sensor_health_history(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), db: Session = Depends(get_db)) -> list[SensorHealthCheck]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def sensor_health_history(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    reader: SensorHealthReader = Depends(get_sensor_health_reader),
+) -> list[SensorHealthCheck]:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_sensor_health_checks(buoy_id, limit)
+    return [
+        SensorHealthCheck.model_validate(check, from_attributes=True)
+        for check in reader.list_sensor_health_checks(buoy_id, limit)
+    ]
 
 
 @router.post("/api/v1/buoys/{buoy_id}/wind", response_model=WindReading, status_code=status.HTTP_201_CREATED, tags=["wind"])

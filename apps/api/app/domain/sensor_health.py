@@ -51,6 +51,13 @@ class SensorHealthSnapshot:
     decisions: dict[str, str] | None = None
 
 
+@dataclass(frozen=True, kw_only=True)
+class SensorHealthCheckSnapshot(SensorHealthSnapshot):
+    """Persisted health evaluation exposed by history queries."""
+
+    id: int
+
+
 def decide_channel(
     has_a: bool,
     has_b: bool,
