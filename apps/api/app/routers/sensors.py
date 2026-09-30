@@ -19,6 +19,7 @@ from ..adapter_dependencies import get_ph_telemetry_gateway
 from ..adapter_dependencies import get_conductivity_telemetry_gateway
 from ..adapter_dependencies import get_chlorophyll_a_telemetry_gateway
 from ..adapter_dependencies import get_rainfall_telemetry_gateway
+from ..adapter_dependencies import get_humidity_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -32,6 +33,7 @@ from ..application.ports import (
     ConductivityTelemetryGateway,
     ChlorophyllATelemetryGateway,
     RainfallTelemetryGateway,
+    HumidityTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -526,12 +528,15 @@ def list_rainfall(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/humidity", response_model=HumidityReading, status_code=status.HTTP_201_CREATED, tags=["humidity"])
-def record_humidity(buoy_id: str, payload: HumidityReadingCreate, db: Session = Depends(get_db)) -> HumidityReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_humidity(
+    buoy_id: str,
+    payload: HumidityReadingCreate,
+    gateway: HumidityTelemetryGateway = Depends(get_humidity_telemetry_gateway),
+) -> HumidityReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_humidity_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_humidity(reading)
+    saved_reading = gateway.add_humidity(reading)
     humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="humidity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -539,11 +544,15 @@ def record_humidity(buoy_id: str, payload: HumidityReadingCreate, db: Session = 
 
 
 @router.get("/api/v1/buoys/{buoy_id}/humidity", response_model=list[HumidityReading], tags=["humidity"])
-def list_humidity(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[HumidityReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_humidity(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: HumidityTelemetryGateway = Depends(get_humidity_telemetry_gateway),
+) -> list[HumidityReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_humidity(buoy_id, limit, sensor_channel)
+    return gateway.list_humidity(buoy_id, limit, sensor_channel)
 
 
 @router.post("/api/v1/buoys/{buoy_id}/air-temperature", response_model=AirTemperatureReading, status_code=status.HTTP_201_CREATED, tags=["air-temperature"])

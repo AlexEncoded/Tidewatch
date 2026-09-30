@@ -22,6 +22,7 @@ from .application.ports import (
     ConductivityTelemetryGateway,
     ChlorophyllATelemetryGateway,
     RainfallTelemetryGateway,
+    HumidityTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -191,6 +192,13 @@ def get_rainfall_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> RainfallTelemetryGateway:
     """Compose rainfall telemetry operations with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_humidity_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> HumidityTelemetryGateway:
+    """Compose humidity telemetry operations with the SQL adapter."""
     return BuoyRepository(db)
 
 
