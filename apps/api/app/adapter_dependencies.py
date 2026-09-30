@@ -25,6 +25,7 @@ from .application.ports import (
     HumidityTelemetryGateway,
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
+    AcousticAltimeterTelemetryGateway,
     StaleBuoyReader,
     DeviceHealthReader,
     FleetLocationReader,
@@ -215,6 +216,13 @@ def get_atmospheric_pressure_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> AtmosphericPressureTelemetryGateway:
     """Compose atmospheric-pressure telemetry operations with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_acoustic_altimeter_telemetry_gateway(
+    db: Session = Depends(get_db),
+) -> AcousticAltimeterTelemetryGateway:
+    """Compose acoustic-altimeter telemetry operations with the SQL adapter."""
     return BuoyRepository(db)
 
 
