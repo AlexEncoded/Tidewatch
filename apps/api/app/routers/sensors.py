@@ -24,6 +24,7 @@ from ..adapter_dependencies import get_air_temperature_telemetry_gateway
 from ..adapter_dependencies import get_atmospheric_pressure_telemetry_gateway
 from ..adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
 from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
+from ..adapter_dependencies import get_sensor_health_reader
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -42,6 +43,7 @@ from ..application.ports import (
     AtmosphericPressureTelemetryGateway,
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
+    SensorHealthReader,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -681,16 +683,15 @@ def list_underwater_acoustic(
 def sensor_health(
     buoy_id: str,
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
-    db: Session = Depends(get_db),
+    reader: SensorHealthReader = Depends(get_sensor_health_reader),
 ) -> SensorHealth:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     now = datetime.now(timezone.utc)
     max_age_seconds = max_age_minutes * 60
     snapshot = evaluate_sensor_health_snapshot(
-        repository, buoy_id, max_age_seconds, now
+        reader, buoy_id, max_age_seconds, now
     )
     sensor_readings = snapshot.readings
     deltas = snapshot.deltas
@@ -733,6 +734,6 @@ def record_sensor_health_check(
     repository = BuoyRepository(db)
     if repository.get_buoy(buoy_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, db=db)
+    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, reader=repository)
     stored = persist_sensor_health_check(repository, health)
     return SensorHealthCheck.model_validate(stored, from_attributes=True)

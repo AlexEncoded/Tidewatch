@@ -37,6 +37,7 @@ from .application.ports import (
     TemperatureAlertsReader,
     TemperatureAlertStore,
     QualitySummaryReader,
+    SensorHealthReader,
 )
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry
@@ -49,6 +50,13 @@ def get_quality_summary_reader(
     db: Session = Depends(get_db),
 ) -> QualitySummaryReader:
     """Compose the quality-summary input port with its SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_sensor_health_reader(
+    db: Session = Depends(get_db),
+) -> SensorHealthReader:
+    """Compose redundant sensor-health queries with the SQL adapter."""
     return BuoyRepository(db)
 
 

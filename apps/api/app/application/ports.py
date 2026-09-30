@@ -451,6 +451,9 @@ class TemperatureAlertStore(TemperatureAlertsReader, Protocol):
 class SensorHealthReader(Protocol):
     """Read-only port for the redundant sensor-health snapshot."""
 
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
     def list_temperatures(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list:
         ...
 
