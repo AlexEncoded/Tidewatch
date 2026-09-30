@@ -20,6 +20,7 @@ from ..domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
+    UnderwaterAcousticTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
@@ -335,6 +336,21 @@ class AcousticAltimeterTelemetryGateway(Protocol):
     def list_acoustic_altimeter(
         self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
     ) -> list[AcousticAltimeterTelemetrySnapshot]:
+        ...
+
+
+class UnderwaterAcousticTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_underwater_acoustic(
+        self, reading: UnderwaterAcousticTelemetrySnapshot
+    ) -> UnderwaterAcousticTelemetrySnapshot:
+        ...
+
+    def list_underwater_acoustic(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[UnderwaterAcousticTelemetrySnapshot]:
         ...
 
 

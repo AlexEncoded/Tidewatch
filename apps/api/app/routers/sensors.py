@@ -23,6 +23,7 @@ from ..adapter_dependencies import get_humidity_telemetry_gateway
 from ..adapter_dependencies import get_air_temperature_telemetry_gateway
 from ..adapter_dependencies import get_atmospheric_pressure_telemetry_gateway
 from ..adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
+from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -40,6 +41,7 @@ from ..application.ports import (
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
     AcousticAltimeterTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -646,12 +648,15 @@ def list_acoustic_altimeter(
 
 
 @router.post("/api/v1/buoys/{buoy_id}/underwater-acoustic", response_model=UnderwaterAcousticReading, status_code=status.HTTP_201_CREATED, tags=["underwater-acoustic"])
-def record_underwater_acoustic(buoy_id: str, payload: UnderwaterAcousticReadingCreate, db: Session = Depends(get_db)) -> UnderwaterAcousticReading:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def record_underwater_acoustic(
+    buoy_id: str,
+    payload: UnderwaterAcousticReadingCreate,
+    gateway: UnderwaterAcousticTelemetryGateway = Depends(get_underwater_acoustic_telemetry_gateway),
+) -> UnderwaterAcousticReading:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_underwater_acoustic_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = repository.add_underwater_acoustic(reading)
+    saved_reading = gateway.add_underwater_acoustic(reading)
     underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="underwater_acoustic", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -659,11 +664,15 @@ def record_underwater_acoustic(buoy_id: str, payload: UnderwaterAcousticReadingC
 
 
 @router.get("/api/v1/buoys/{buoy_id}/underwater-acoustic", response_model=list[UnderwaterAcousticReading], tags=["underwater-acoustic"])
-def list_underwater_acoustic(buoy_id: str, limit: int = Query(default=50, ge=1, le=500), sensor_channel: str = Query(default="A", pattern="^(A|B)$"), db: Session = Depends(get_db)) -> list[UnderwaterAcousticReading]:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+def list_underwater_acoustic(
+    buoy_id: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
+    gateway: UnderwaterAcousticTelemetryGateway = Depends(get_underwater_acoustic_telemetry_gateway),
+) -> list[UnderwaterAcousticReading]:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return repository.list_underwater_acoustic(buoy_id, limit, sensor_channel)
+    return gateway.list_underwater_acoustic(buoy_id, limit, sensor_channel)
 @router.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,

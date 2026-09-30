@@ -1336,7 +1336,9 @@ class BuoyRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def add_underwater_acoustic(self, reading: UnderwaterAcousticTelemetrySnapshot) -> UnderwaterAcousticReadingEntity:
+    def add_underwater_acoustic(
+        self, reading: UnderwaterAcousticTelemetrySnapshot
+    ) -> UnderwaterAcousticTelemetrySnapshot:
         entity = UnderwaterAcousticReadingEntity(
             buoy_id=reading.buoy_id, echo_intensity_db=reading.echo_intensity_db,
             sensor_channel=reading.sensor_channel, device_id=reading.device_id,
@@ -1348,13 +1350,34 @@ class BuoyRepository:
         buoy = self.get_buoy(reading.buoy_id)
         if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
-        return entity
+        return UnderwaterAcousticTelemetrySnapshot(
+            buoy_id=entity.buoy_id,
+            echo_intensity_db=entity.echo_intensity_db,
+            measured_at=entity.measured_at,
+            sensor_channel=entity.sensor_channel,
+            device_id=entity.device_id,
+            sensor_id=entity.sensor_id,
+            firmware_version=entity.firmware_version,
+            quality=entity.quality,
+        )
 
-    def list_underwater_acoustic(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[UnderwaterAcousticReadingEntity]:
+    def list_underwater_acoustic(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list[UnderwaterAcousticTelemetrySnapshot]:
         query = select(UnderwaterAcousticReadingEntity).where(UnderwaterAcousticReadingEntity.buoy_id == buoy_id).order_by(UnderwaterAcousticReadingEntity.measured_at.desc()).limit(limit)
         if sensor_channel is not None:
             query = query.where(UnderwaterAcousticReadingEntity.sensor_channel == sensor_channel)
-        return list(self.db.scalars(query).all())
+        return [
+            UnderwaterAcousticTelemetrySnapshot(
+                buoy_id=entity.buoy_id,
+                echo_intensity_db=entity.echo_intensity_db,
+                measured_at=entity.measured_at,
+                sensor_channel=entity.sensor_channel,
+                device_id=entity.device_id,
+                sensor_id=entity.sensor_id,
+                firmware_version=entity.firmware_version,
+                quality=entity.quality,
+            )
+            for entity in self.db.scalars(query).all()
+        ]
 
     def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryReadingEntity:
         entity = BatteryReadingEntity(
