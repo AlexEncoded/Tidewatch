@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from math import pi, sin
 from types import SimpleNamespace
 
 import pytest
@@ -489,3 +490,43 @@ def test_temperature_application_helpers_share_filtered_readings() -> None:
 
     assert len(readings) == 1
     assert analysis.sample_count == 1
+
+
+def test_wave_fusion_recovers_known_period_from_synthetic_gnss_and_imu() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    period_seconds = 8.0
+    timestamps = [index * 0.25 for index in range(97)]
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=seconds),
+            altitude_meters=4.2 + 0.75 * sin(2 * pi * seconds / period_seconds),
+            quality="good",
+        )
+        for seconds in timestamps
+    ]
+    imu_readings = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=seconds),
+            acceleration_z_mps2=9.81 + 0.4 * sin(2 * pi * seconds / period_seconds),
+            quality="good",
+        )
+        for seconds in timestamps
+    ]
+
+    class SyntheticReader:
+        def list_locations(self, buoy_id, limit):
+            return locations
+
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return imu_readings
+
+    analysis = analyze_wave_for_buoy(
+        SyntheticReader(), "TW-SYNTHETIC-WAVE", len(timestamps), 0.1
+    )
+
+    assert analysis.sample_count == len(timestamps)
+    assert analysis.gnss_vertical_range_m == pytest.approx(1.5)
+    assert analysis.imu_vertical_acceleration_range_mps2 == pytest.approx(0.8)
+    assert analysis.estimated_wave_height_m == pytest.approx(0.79)
+    assert analysis.estimated_period_seconds == pytest.approx(period_seconds)
+    assert analysis.confidence == "experimental"
