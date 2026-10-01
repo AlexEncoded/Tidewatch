@@ -1007,3 +1007,33 @@ def test_sensor_health_history_route_uses_injected_reader():
         for alias in node.names
     }
     assert "get_sensor_health_reader" in imported_dependencies
+
+
+def test_sensor_health_check_route_uses_injected_gateway():
+    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "record_sensor_health_check"
+    )
+    calls = {
+        child.func.id
+        for child in ast.walk(route)
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    gateway_parameter = next(
+        argument for argument in route.args.args if argument.arg == "gateway"
+    )
+    assert "BuoyRepository" not in calls
+    assert isinstance(gateway_parameter.annotation, ast.Name)
+    assert gateway_parameter.annotation.id == "SensorHealthCheckGateway"
+
+    imported_dependencies = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "adapter_dependencies"
+        for alias in node.names
+    }
+    assert "get_sensor_health_check_gateway" in imported_dependencies

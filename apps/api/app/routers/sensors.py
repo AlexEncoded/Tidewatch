@@ -25,6 +25,7 @@ from ..adapter_dependencies import get_atmospheric_pressure_telemetry_gateway
 from ..adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
 from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
 from ..adapter_dependencies import get_sensor_health_reader
+from ..adapter_dependencies import get_sensor_health_check_gateway
 from ..application.ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
@@ -44,6 +45,7 @@ from ..application.ports import (
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     SensorHealthReader,
+    SensorHealthCheckGateway,
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
@@ -735,11 +737,10 @@ def sensor_health(
 def record_sensor_health_check(
     buoy_id: str,
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
-    db: Session = Depends(get_db),
+    gateway: SensorHealthCheckGateway = Depends(get_sensor_health_check_gateway),
 ) -> SensorHealthCheck:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, reader=repository)
-    stored = persist_sensor_health_check(repository, health)
+    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, reader=gateway)
+    stored = persist_sensor_health_check(gateway, health)
     return SensorHealthCheck.model_validate(stored, from_attributes=True)

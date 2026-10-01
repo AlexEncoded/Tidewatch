@@ -7,6 +7,7 @@ from typing import Protocol, runtime_checkable
 
 from ..domain.sensor_health import (
     SensorHealthEvaluation,
+    SensorHealthCheckSnapshot,
     SensorHealthSnapshot as DomainSensorHealthSnapshot,
     evaluate_sensor_health,
 )
@@ -21,7 +22,9 @@ from .ports import SensorHealthReader
 class SensorHealthCheckWriter(Protocol):
     """Persistence port required to store a sensor-health evaluation."""
 
-    def add_sensor_health_check(self, health: DomainSensorHealthSnapshot):
+    def add_sensor_health_check(
+        self, health: DomainSensorHealthSnapshot
+    ) -> SensorHealthCheckSnapshot:
         ...
 
 
@@ -84,7 +87,9 @@ def evaluate_sensor_health_snapshot(
     return SensorHealthSnapshot(readings, deltas, evaluation, health)
 
 
-def persist_sensor_health_check(writer: SensorHealthCheckWriter, health: DomainSensorHealthSnapshot):
+def persist_sensor_health_check(
+    writer: SensorHealthCheckWriter, health: DomainSensorHealthSnapshot
+) -> SensorHealthCheckSnapshot:
     """Persist a completed sensor-health evaluation through its input port."""
     return writer.add_sensor_health_check(health)
 

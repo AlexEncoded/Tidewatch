@@ -38,6 +38,7 @@ from .application.ports import (
     TemperatureAlertStore,
     QualitySummaryReader,
     SensorHealthReader,
+    SensorHealthCheckGateway,
 )
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry
@@ -57,6 +58,13 @@ def get_sensor_health_reader(
     db: Session = Depends(get_db),
 ) -> SensorHealthReader:
     """Compose redundant sensor-health queries with the SQL adapter."""
+    return BuoyRepository(db)
+
+
+def get_sensor_health_check_gateway(
+    db: Session = Depends(get_db),
+) -> SensorHealthCheckGateway:
+    """Compose sensor-health evaluation and persistence with the SQL adapter."""
     return BuoyRepository(db)
 
 

@@ -33,7 +33,7 @@ from ..domain.buoy import (
     BuoyLocationCommand,
 )
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
-from ..domain.sensor_health import SensorHealthCheckSnapshot
+from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -512,6 +512,15 @@ class SensorHealthReader(Protocol):
         ...
 
     def list_underwater_acoustic(self, buoy_id: str, limit: int, sensor_channel: str | None = "A") -> list:
+        ...
+
+
+class SensorHealthCheckGateway(SensorHealthReader, Protocol):
+    """Read sensor inputs and persist the resulting health evaluation."""
+
+    def add_sensor_health_check(
+        self, health: SensorHealthSnapshot
+    ) -> SensorHealthCheckSnapshot:
         ...
 
 

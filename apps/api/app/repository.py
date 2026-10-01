@@ -43,7 +43,10 @@ from .domain.buoy import (
     BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
-from .domain.sensor_health import SensorHealthCheckSnapshot
+from .domain.sensor_health import (
+    SensorHealthCheckSnapshot,
+    SensorHealthSnapshot as DomainSensorHealthSnapshot,
+)
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.telemetry import (
     AmbientLightTelemetrySnapshot,
@@ -66,11 +69,6 @@ from .domain.telemetry import (
     WindTelemetrySnapshot,
 )
 from .domain.temperature import TemperatureTelemetrySnapshot
-from .models import (
-    SensorHealth,
-)
-
-
 def _is_newer(candidate: datetime, previous: datetime | None) -> bool:
     """Compare timestamps consistently across PostgreSQL and SQLite."""
     if previous is None:
@@ -78,6 +76,40 @@ def _is_newer(candidate: datetime, previous: datetime | None) -> bool:
     candidate_utc = candidate.astimezone(timezone.utc) if candidate.tzinfo else candidate.replace(tzinfo=timezone.utc)
     previous_utc = previous.astimezone(timezone.utc) if previous.tzinfo else previous.replace(tzinfo=timezone.utc)
     return candidate_utc > previous_utc
+
+
+def _sensor_health_check_snapshot(
+    entity: SensorHealthCheckEntity,
+) -> SensorHealthCheckSnapshot:
+    return SensorHealthCheckSnapshot(
+        id=entity.id,
+        buoy_id=entity.buoy_id,
+        status=entity.status,
+        checked_at=entity.checked_at,
+        temperature_delta_celsius=entity.temperature_delta_celsius,
+        pressure_delta_kpa=entity.pressure_delta_kpa,
+        salinity_delta_psu=entity.salinity_delta_psu,
+        imu_acceleration_delta_mps2=entity.imu_acceleration_delta_mps2,
+        ambient_light_delta_lux=entity.ambient_light_delta_lux,
+        wind_speed_delta_mps=entity.wind_speed_delta_mps,
+        wind_direction_delta_degrees=entity.wind_direction_delta_degrees,
+        marine_current_speed_delta_mps=entity.marine_current_speed_delta_mps,
+        marine_current_direction_delta_degrees=entity.marine_current_direction_delta_degrees,
+        turbidity_delta_ntu=entity.turbidity_delta_ntu,
+        dissolved_oxygen_delta_mg_l=entity.dissolved_oxygen_delta_mg_l,
+        ph_delta=entity.ph_delta,
+        conductivity_delta_us_cm=entity.conductivity_delta_us_cm,
+        chlorophyll_a_delta_ug_l=entity.chlorophyll_a_delta_ug_l,
+        rainfall_delta_mm_h=entity.rainfall_delta_mm_h,
+        humidity_delta_percent=entity.humidity_delta_percent,
+        air_temperature_delta_celsius=entity.air_temperature_delta_celsius,
+        atmospheric_pressure_delta_kpa=entity.atmospheric_pressure_delta_kpa,
+        acoustic_altimeter_delta_meters=entity.acoustic_altimeter_delta_meters,
+        underwater_acoustic_delta_db=entity.underwater_acoustic_delta_db,
+        degraded_sensors=entity.degraded_sensors,
+        missing_sensors=entity.missing_sensors,
+        decisions=entity.decisions,
+    )
 
 
 class BuoyRepository:
@@ -1401,7 +1433,9 @@ class BuoyRepository:
             measured_at=entity.measured_at,
         )
 
-    def add_sensor_health_check(self, health: SensorHealth) -> SensorHealthCheckEntity:
+    def add_sensor_health_check(
+        self, health: DomainSensorHealthSnapshot
+    ) -> SensorHealthCheckSnapshot:
         entity = SensorHealthCheckEntity(
             buoy_id=health.buoy_id,
             status=health.status,
@@ -1433,7 +1467,7 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        return entity
+        return _sensor_health_check_snapshot(entity)
 
     def list_sensor_health_checks(
         self, buoy_id: str, limit: int
@@ -1445,35 +1479,7 @@ class BuoyRepository:
             .limit(limit)
         )
         return [
-            SensorHealthCheckSnapshot(
-                id=entity.id,
-                buoy_id=entity.buoy_id,
-                status=entity.status,
-                checked_at=entity.checked_at,
-                temperature_delta_celsius=entity.temperature_delta_celsius,
-                pressure_delta_kpa=entity.pressure_delta_kpa,
-                salinity_delta_psu=entity.salinity_delta_psu,
-                imu_acceleration_delta_mps2=entity.imu_acceleration_delta_mps2,
-                ambient_light_delta_lux=entity.ambient_light_delta_lux,
-                wind_speed_delta_mps=entity.wind_speed_delta_mps,
-                wind_direction_delta_degrees=entity.wind_direction_delta_degrees,
-                marine_current_speed_delta_mps=entity.marine_current_speed_delta_mps,
-                marine_current_direction_delta_degrees=entity.marine_current_direction_delta_degrees,
-                turbidity_delta_ntu=entity.turbidity_delta_ntu,
-                dissolved_oxygen_delta_mg_l=entity.dissolved_oxygen_delta_mg_l,
-                ph_delta=entity.ph_delta,
-                conductivity_delta_us_cm=entity.conductivity_delta_us_cm,
-                chlorophyll_a_delta_ug_l=entity.chlorophyll_a_delta_ug_l,
-                rainfall_delta_mm_h=entity.rainfall_delta_mm_h,
-                humidity_delta_percent=entity.humidity_delta_percent,
-                air_temperature_delta_celsius=entity.air_temperature_delta_celsius,
-                atmospheric_pressure_delta_kpa=entity.atmospheric_pressure_delta_kpa,
-                acoustic_altimeter_delta_meters=entity.acoustic_altimeter_delta_meters,
-                underwater_acoustic_delta_db=entity.underwater_acoustic_delta_db,
-                degraded_sensors=entity.degraded_sensors,
-                missing_sensors=entity.missing_sensors,
-                decisions=entity.decisions,
-            )
+            _sensor_health_check_snapshot(entity)
             for entity in self.db.scalars(query).all()
         ]
 
