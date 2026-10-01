@@ -3,18 +3,19 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from sqlalchemy import text
-from sqlalchemy.orm import Session
 
-from ..database import get_db
+from ..adapter_dependencies import get_database_health_reader
+from ..application.ports import DatabaseHealthReader
 
 
 router = APIRouter()
 
 
 @router.get("/health", tags=["system"])
-def health(db: Session = Depends(get_db)) -> dict[str, str]:
-    db.execute(text("SELECT 1"))
+def health(
+    reader: DatabaseHealthReader = Depends(get_database_health_reader),
+) -> dict[str, str]:
+    reader.check_database()
     return {"status": "ok"}
 
 

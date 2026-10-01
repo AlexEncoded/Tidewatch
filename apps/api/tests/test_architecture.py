@@ -3,6 +3,7 @@ from pathlib import Path
 
 from app.application.ports import (
     DeviceHealthReader,
+    DatabaseHealthReader,
     MaintenanceReader,
     TelemetryIngestionGateway,
 )
@@ -95,6 +96,35 @@ def test_batch_ingestion_route_uses_injected_gateway() -> None:
         for alias in node.names
     }
     assert "get_telemetry_ingestion_gateway" in imported_dependencies
+
+
+def test_database_health_route_uses_injected_reader() -> None:
+    tree = ast.parse((API_APP / "routers" / "system.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "health"
+    )
+    calls = {
+        child.func.id
+        for child in ast.walk(route)
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    reader_parameter = next(
+        argument for argument in route.args.args if argument.arg == "reader"
+    )
+    assert "text" not in calls
+    assert isinstance(reader_parameter.annotation, ast.Name)
+    assert reader_parameter.annotation.id == "DatabaseHealthReader"
+
+    imported_dependencies = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "adapter_dependencies"
+        for alias in node.names
+    }
+    assert "get_database_health_reader" in imported_dependencies
 
 
 def test_maintenance_routes_use_injected_reader() -> None:

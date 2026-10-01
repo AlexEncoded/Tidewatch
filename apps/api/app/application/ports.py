@@ -46,6 +46,14 @@ class FleetLocationReader(Protocol):
         ...
 
 
+@runtime_checkable
+class DatabaseHealthReader(Protocol):
+    """Port for checking whether the primary database can answer queries."""
+
+    def check_database(self) -> None:
+        ...
+
+
 class StaleBuoyReader(Protocol):
     def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
         ...
