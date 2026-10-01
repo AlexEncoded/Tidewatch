@@ -1026,6 +1026,7 @@ def test_sensor_health_check_route_uses_injected_gateway():
         argument for argument in route.args.args if argument.arg == "gateway"
     )
     assert "BuoyRepository" not in calls
+    assert "sensor_health" not in calls
     assert isinstance(gateway_parameter.annotation, ast.Name)
     assert gateway_parameter.annotation.id == "SensorHealthCheckGateway"
 

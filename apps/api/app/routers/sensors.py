@@ -49,6 +49,7 @@ from ..application.ports import (
     TemperatureTelemetryGateway,
 )
 from ..application.sensor_health import (
+    SensorHealthSnapshot as SensorHealthEvaluationSnapshot,
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
@@ -161,6 +162,40 @@ from ..models import (
 from ..repository import BuoyRepository
 
 router = APIRouter()
+
+
+def _evaluate_and_publish_sensor_health(
+    reader: SensorHealthReader, buoy_id: str, max_age_minutes: float
+) -> SensorHealthEvaluationSnapshot:
+    snapshot = evaluate_sensor_health_snapshot(
+        reader,
+        buoy_id,
+        max_age_minutes * 60,
+        datetime.now(timezone.utc),
+    )
+    degraded_sensors = snapshot.evaluation.degraded_sensors
+    missing_sensors = snapshot.evaluation.missing_sensors
+
+    for sensor, channels in snapshot.readings.items():
+        has_reading = any(channels.values())
+        for channel, reading in channels.items():
+            sensor_channel_missing.labels(
+                buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
+            ).set(1 if has_reading and not reading else 0)
+        sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
+            1 if sensor in degraded_sensors or any(
+                missing.startswith(f"{sensor}:") for missing in missing_sensors
+            ) else 0
+        )
+
+    for sensor in snapshot.readings:
+        for decision in ("average", "fallback_a", "fallback_b", "invalid"):
+            sensor_health_decision.labels(
+                buoy_id=buoy_id, sensor=sensor, decision=decision
+            ).set(
+                1 if snapshot.evaluation.decisions[sensor] == decision else 0
+            )
+    return snapshot
 
 
 @router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
@@ -696,35 +731,9 @@ def sensor_health(
     if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
-    now = datetime.now(timezone.utc)
-    max_age_seconds = max_age_minutes * 60
-    snapshot = evaluate_sensor_health_snapshot(
-        reader, buoy_id, max_age_seconds, now
+    snapshot = _evaluate_and_publish_sensor_health(
+        reader, buoy_id, max_age_minutes
     )
-    sensor_readings = snapshot.readings
-    deltas = snapshot.deltas
-    health_evaluation = snapshot.evaluation
-    degraded_sensors = health_evaluation.degraded_sensors
-    missing_sensors = health_evaluation.missing_sensors
-
-    for sensor, channels in sensor_readings.items():
-        has_reading = any(channels.values())
-        for channel, reading in channels.items():
-            sensor_channel_missing.labels(
-                buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
-            ).set(1 if has_reading and not reading else 0)
-        sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
-            1 if sensor in degraded_sensors or any(
-                missing.startswith(f"{sensor}:") for missing in missing_sensors
-            ) else 0
-        )
-
-    decisions = health_evaluation.decisions
-    for sensor in sensor_readings:
-        for decision in ("average", "fallback_a", "fallback_b", "invalid"):
-            sensor_health_decision.labels(
-                buoy_id=buoy_id, sensor=sensor, decision=decision
-            ).set(1 if decisions[sensor] == decision else 0)
     return SensorHealth.model_validate(snapshot.health, from_attributes=True)
 
 
@@ -741,6 +750,8 @@ def record_sensor_health_check(
 ) -> SensorHealthCheck:
     if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    health = sensor_health(buoy_id, max_age_minutes=max_age_minutes, reader=gateway)
-    stored = persist_sensor_health_check(gateway, health)
+    snapshot = _evaluate_and_publish_sensor_health(
+        gateway, buoy_id, max_age_minutes
+    )
+    stored = persist_sensor_health_check(gateway, snapshot.health)
     return SensorHealthCheck.model_validate(stored, from_attributes=True)
