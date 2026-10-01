@@ -40,6 +40,7 @@ from .application.ports import (
     SensorHealthReader,
     SensorHealthCheckGateway,
     TelemetryIngestionGateway,
+    MaintenanceReader,
 )
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry
@@ -73,6 +74,13 @@ def get_telemetry_ingestion_gateway(
     db: Session = Depends(get_db),
 ) -> TelemetryIngestionGateway:
     """Compose batch telemetry writes with the SQL repository adapter."""
+    return BuoyRepository(db)
+
+
+def get_maintenance_reader(
+    db: Session = Depends(get_db),
+) -> MaintenanceReader:
+    """Compose fleet maintenance queries with the SQL repository adapter."""
     return BuoyRepository(db)
 
 

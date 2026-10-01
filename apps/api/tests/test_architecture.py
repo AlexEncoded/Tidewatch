@@ -97,6 +97,38 @@ def test_batch_ingestion_route_uses_injected_gateway() -> None:
     assert "get_telemetry_ingestion_gateway" in imported_dependencies
 
 
+def test_maintenance_routes_use_injected_reader() -> None:
+    tree = ast.parse((API_APP / "routers" / "maintenance.py").read_text(encoding="utf-8"))
+    routes = {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+    for name in ("maintenance_issues", "notify_maintenance"):
+        route = routes[name]
+        calls = {
+            child.func.id
+            for child in ast.walk(route)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        reader_parameter = next(
+            argument for argument in route.args.args if argument.arg == "reader"
+        )
+        assert "BuoyRepository" not in calls
+        assert "maintenance_issues" not in calls
+        assert isinstance(reader_parameter.annotation, ast.Name)
+        assert reader_parameter.annotation.id == "MaintenanceReader"
+
+    imported_dependencies = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "adapter_dependencies"
+        for alias in node.names
+    }
+    assert "get_maintenance_reader" in imported_dependencies
+
+
 def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:
     tree = ast.parse((API_APP / "main.py").read_text(encoding="utf-8"))
     route_decorators = {"get", "post", "put", "patch", "delete"}

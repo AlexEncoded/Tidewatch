@@ -5,11 +5,11 @@ import os
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 from ..application.maintenance_evaluation import evaluate_maintenance_fleet
 from ..application.maintenance_notifications import deliver_maintenance_notification
-from ..database import get_db
+from ..adapter_dependencies import get_maintenance_reader
+from ..application.ports import MaintenanceReader
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,
@@ -17,28 +17,19 @@ from ..metrics import (
     redundant_device_missing,
 )
 from ..models import MaintenanceIssue, MaintenanceNotificationResult
-from ..repository import BuoyRepository
 
 
 router = APIRouter()
 
 
-@router.get(
-    "/api/v1/maintenance/issues",
-    response_model=list[MaintenanceIssue],
-    tags=["maintenance"],
-)
-def maintenance_issues(
-    max_age_minutes: float = Query(default=30, gt=0, le=10080),
-    drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
-    db: Session = Depends(get_db),
+def _evaluate_and_publish_maintenance_metrics(
+    reader: MaintenanceReader,
+    max_age_minutes: float,
+    drift_speed_mps: float,
 ) -> list[MaintenanceIssue]:
-    repository = BuoyRepository(db)
-    now = datetime.now(timezone.utc)
     issues: list[MaintenanceIssue] = []
-
     for buoy, evaluation in evaluate_maintenance_fleet(
-        repository, now, max_age_minutes, drift_speed_mps
+        reader, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
     ):
         for device_id, percentage in (
             ("A", evaluation.battery_health.device_a_percent),
@@ -73,8 +64,22 @@ def maintenance_issues(
             MaintenanceIssue.model_validate(issue, from_attributes=True)
             for issue in evaluation.issues
         )
-
     return issues
+
+
+@router.get(
+    "/api/v1/maintenance/issues",
+    response_model=list[MaintenanceIssue],
+    tags=["maintenance"],
+)
+def maintenance_issues(
+    max_age_minutes: float = Query(default=30, gt=0, le=10080),
+    drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
+    reader: MaintenanceReader = Depends(get_maintenance_reader),
+) -> list[MaintenanceIssue]:
+    return _evaluate_and_publish_maintenance_metrics(
+        reader, max_age_minutes, drift_speed_mps
+    )
 
 
 @router.post(
@@ -86,7 +91,7 @@ def maintenance_issues(
 def notify_maintenance(
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
-    db: Session = Depends(get_db),
+    reader: MaintenanceReader = Depends(get_maintenance_reader),
 ) -> MaintenanceNotificationResult:
     webhook_url = os.getenv("MAINTENANCE_WEBHOOK_URL")
     if not webhook_url:
@@ -95,8 +100,8 @@ def notify_maintenance(
             detail="MAINTENANCE_WEBHOOK_URL is not configured",
         )
 
-    issues = maintenance_issues(
-        max_age_minutes=max_age_minutes, drift_speed_mps=drift_speed_mps, db=db
+    issues = _evaluate_and_publish_maintenance_metrics(
+        reader, max_age_minutes, drift_speed_mps
     )
     try:
         issue_count = deliver_maintenance_notification(webhook_url, issues, httpx.post)
