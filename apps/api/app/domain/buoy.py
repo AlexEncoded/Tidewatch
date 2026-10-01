@@ -47,6 +47,14 @@ class BuoySnapshot:
 
 
 @dataclass(frozen=True)
+class BuoySummarySnapshot:
+    """Fleet overview with latest telemetry grouped by family and channel."""
+
+    buoy: BuoySnapshot
+    latest_readings: dict[str, dict[str, object | None]]
+
+
+@dataclass(frozen=True)
 class BuoyStatusCommand:
     """Requested operational status for a buoy."""
 

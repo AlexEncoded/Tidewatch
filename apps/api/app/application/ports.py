@@ -29,6 +29,7 @@ from ..domain.buoy import (
     BuoyActivitySnapshot,
     BuoyIdentitySnapshot,
     BuoySnapshot,
+    BuoySummarySnapshot,
     BuoyStatusCommand,
     BuoyLocationCommand,
 )
@@ -75,6 +76,12 @@ class BuoyLocationUpdater(Protocol):
 
 class BuoyRegistrar(Protocol):
     def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
+        ...
+
+
+@runtime_checkable
+class BuoySummaryReader(Protocol):
+    def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:
         ...
 
 

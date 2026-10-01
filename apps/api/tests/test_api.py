@@ -122,6 +122,25 @@ def test_empty_telemetry_batch_returns_stable_family_counters() -> None:
     assert all(value == 0 for value in counts.values())
 
 
+def test_buoy_summary_keeps_latest_sensor_channels() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Summary telemetry buoy"}
+    ).json()["id"]
+    for channel, temperature in (("A", 18.5), ("B", 19.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={"temperature_celsius": temperature, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    response = client.get("/api/v1/buoys")
+    assert response.status_code == 200
+    summary = next(item for item in response.json() if item["buoy"]["id"] == buoy_id)
+    assert summary["latest_temperature_a"]["temperature_celsius"] == 18.5
+    assert summary["latest_temperature_b"]["temperature_celsius"] == 19.0
+    assert summary["latest_temperature"]["temperature_celsius"] == 18.5
+
+
 def test_modularized_sensor_routes_remain_registered() -> None:
     openapi_paths = app.openapi()["paths"]
 

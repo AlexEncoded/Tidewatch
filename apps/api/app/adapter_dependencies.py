@@ -42,6 +42,7 @@ from .application.ports import (
     TelemetryIngestionGateway,
     MaintenanceReader,
     DatabaseHealthReader,
+    BuoySummaryReader,
 )
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry
@@ -91,6 +92,13 @@ def get_database_health_reader(
 ) -> DatabaseHealthReader:
     """Compose database-health checks with the SQL adapter."""
     return SQLDatabaseHealthReader(db)
+
+
+def get_buoy_summary_reader(
+    db: Session = Depends(get_db),
+) -> BuoySummaryReader:
+    """Compose fleet overview queries with the SQL repository adapter."""
+    return BuoyRepository(db)
 
 
 def get_fleet_location_reader(
