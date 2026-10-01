@@ -3,9 +3,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
-from ..database import get_db
 from ..adapter_dependencies import get_temperature_telemetry_gateway
 from ..adapter_dependencies import get_pressure_telemetry_gateway
 from ..adapter_dependencies import get_salinity_telemetry_gateway
@@ -159,8 +157,6 @@ from ..models import (
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
-from ..repository import BuoyRepository
-
 router = APIRouter()
 
 

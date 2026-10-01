@@ -236,6 +236,19 @@ def test_http_routers_do_not_construct_telemetry_response_models_for_writes() ->
         )
 
 
+def test_http_routers_do_not_import_persistence_adapters() -> None:
+    for source_file in (API_APP / "routers").glob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+        assert "sqlalchemy.orm" not in modules
+        assert "database" not in modules
+        assert "repository" not in modules
+
+
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
     reading_models = [
