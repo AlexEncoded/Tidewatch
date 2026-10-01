@@ -536,3 +536,39 @@ class MaintenanceReader(
 
     def list_buoys(self) -> list:
         ...
+
+
+@runtime_checkable
+class TelemetryIngestionGateway(
+    TemperatureTelemetryGateway,
+    PressureTelemetryGateway,
+    SalinityTelemetryGateway,
+    ImuTelemetryGateway,
+    AmbientLightTelemetryGateway,
+    WindTelemetryGateway,
+    MarineCurrentTelemetryGateway,
+    TurbidityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
+    PHTelemetryGateway,
+    ConductivityTelemetryGateway,
+    ChlorophyllATelemetryGateway,
+    RainfallTelemetryGateway,
+    HumidityTelemetryGateway,
+    AirTemperatureTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
+    AcousticAltimeterTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
+    BatteryTelemetryReader,
+    LocationTelemetryReader,
+    Protocol,
+):
+    """Write batch telemetry and support heartbeat/movement use cases."""
+
+    def add_location(self, reading: LocationTelemetrySnapshot):
+        ...
+
+    def get_device(self, device_id: str):
+        ...
+
+    def mark_device_seen(self, device, seen_at: datetime):
+        ...

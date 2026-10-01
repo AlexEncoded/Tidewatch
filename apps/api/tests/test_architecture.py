@@ -1,7 +1,11 @@
 import ast
 from pathlib import Path
 
-from app.application.ports import DeviceHealthReader, MaintenanceReader
+from app.application.ports import (
+    DeviceHealthReader,
+    MaintenanceReader,
+    TelemetryIngestionGateway,
+)
 from app.application.sensor_health import SensorHealthCheckWriter
 from app.repository import BuoyRepository
 
@@ -56,6 +60,41 @@ def test_repository_implements_the_sensor_health_writer_port() -> None:
     adapter = BuoyRepository.__new__(BuoyRepository)
 
     assert isinstance(adapter, SensorHealthCheckWriter)
+
+
+def test_repository_implements_the_batch_ingestion_gateway() -> None:
+    adapter = BuoyRepository.__new__(BuoyRepository)
+
+    assert isinstance(adapter, TelemetryIngestionGateway)
+
+
+def test_batch_ingestion_route_uses_injected_gateway() -> None:
+    tree = ast.parse((API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "ingest_telemetry"
+    )
+    calls = {
+        child.func.id
+        for child in ast.walk(route)
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    gateway_parameter = next(
+        argument for argument in route.args.args if argument.arg == "gateway"
+    )
+    assert "BuoyRepository" not in calls
+    assert isinstance(gateway_parameter.annotation, ast.Name)
+    assert gateway_parameter.annotation.id == "TelemetryIngestionGateway"
+
+    imported_dependencies = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "adapter_dependencies"
+        for alias in node.names
+    }
+    assert "get_telemetry_ingestion_gateway" in imported_dependencies
 
 
 def test_main_only_assembles_the_api_and_does_not_define_routes() -> None:

@@ -1,10 +1,11 @@
 """HTTP route for batch telemetry ingestion."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.movement_analysis import analyze_movement_for_buoy
+from ..adapter_dependencies import get_telemetry_ingestion_gateway
+from ..application.ports import TelemetryIngestionGateway
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
     build_battery_snapshot,
@@ -28,7 +29,6 @@ from ..application.telemetry_ingestion import (
     build_temperature_snapshot,
     empty_accepted_reading_counts,
 )
-from ..database import get_db
 from ..domain.devices import DeviceOwnershipError
 from ..metrics import (
     acoustic_altimeter_readings_total, air_temperature_readings_total,
@@ -58,7 +58,6 @@ from ..models import (
     TelemetryBatchCreate,
     TelemetryIngestResponse,
 )
-from ..repository import BuoyRepository
 
 
 router = APIRouter()
@@ -82,14 +81,13 @@ def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str,
 def ingest_telemetry(
     buoy_id: str,
     payload: TelemetryBatchCreate,
-    db: Session = Depends(get_db),
+    gateway: TelemetryIngestionGateway = Depends(get_telemetry_ingestion_gateway),
 ) -> TelemetryIngestResponse:
-    repository = BuoyRepository(db)
-    if repository.get_buoy(buoy_id) is None:
+    if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if payload.device_id is not None:
         try:
-            device, seen_at = record_device_heartbeat(repository, buoy_id, payload.device_id)
+            device, seen_at = record_device_heartbeat(gateway, buoy_id, payload.device_id)
         except DeviceOwnershipError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
         device_last_seen_timestamp_seconds.labels(
@@ -102,7 +100,7 @@ def ingest_telemetry(
         location = build_location_snapshot(
             buoy_id, payload.location.model_dump(), payload.device_id
         )
-        repository.add_location(location)
+        gateway.add_location(location)
         if location.altitude_meters is not None:
             current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)
         if location.speed_mps is not None:
@@ -111,7 +109,7 @@ def ingest_telemetry(
             current_gnss_hdop.labels(buoy_id=buoy_id).set(location.hdop)
         if location.satellites is not None:
             current_gnss_satellites.labels(buoy_id=buoy_id).set(location.satellites)
-        movement = analyze_movement_for_buoy(repository, buoy_id, 50)
+        movement = analyze_movement_for_buoy(gateway, buoy_id, 50)
         if movement.average_speed_mps is not None:
             buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(
                 movement.average_speed_mps
@@ -123,7 +121,7 @@ def ingest_telemetry(
         reading = build_temperature_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_temperature(reading)
+        gateway.add_temperature(reading)
         temperature_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -141,7 +139,7 @@ def ingest_telemetry(
         reading = build_pressure_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_pressure(reading)
+        gateway.add_pressure(reading)
         pressure_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -156,7 +154,7 @@ def ingest_telemetry(
         reading = build_salinity_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_salinity(reading)
+        gateway.add_salinity(reading)
         salinity_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -171,7 +169,7 @@ def ingest_telemetry(
         reading = build_imu_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_imu(reading)
+        gateway.add_imu(reading)
         imu_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -199,7 +197,7 @@ def ingest_telemetry(
         reading = build_ambient_light_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_ambient_light(reading)
+        gateway.add_ambient_light(reading)
         ambient_light_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -216,7 +214,7 @@ def ingest_telemetry(
         reading = build_wind_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_wind(reading)
+        gateway.add_wind(reading)
         wind_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -234,7 +232,7 @@ def ingest_telemetry(
         reading = build_marine_current_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_marine_current(reading)
+        gateway.add_marine_current(reading)
         marine_current_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -254,7 +252,7 @@ def ingest_telemetry(
         reading = build_turbidity_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_turbidity(reading)
+        gateway.add_turbidity(reading)
         turbidity_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -271,7 +269,7 @@ def ingest_telemetry(
         reading = build_dissolved_oxygen_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_dissolved_oxygen(reading)
+        gateway.add_dissolved_oxygen(reading)
         dissolved_oxygen_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -288,7 +286,7 @@ def ingest_telemetry(
         reading = build_ph_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_ph(reading)
+        gateway.add_ph(reading)
         ph_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -303,7 +301,7 @@ def ingest_telemetry(
         reading = build_conductivity_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_conductivity(reading)
+        gateway.add_conductivity(reading)
         conductivity_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -320,7 +318,7 @@ def ingest_telemetry(
         reading = build_chlorophyll_a_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_chlorophyll_a(reading)
+        gateway.add_chlorophyll_a(reading)
         chlorophyll_a_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -337,7 +335,7 @@ def ingest_telemetry(
         reading = build_rainfall_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_rainfall(reading)
+        gateway.add_rainfall(reading)
         rainfall_readings_total.labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
@@ -352,7 +350,7 @@ def ingest_telemetry(
         reading = build_humidity_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_humidity(reading)
+        gateway.add_humidity(reading)
         humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
         record_quality_metric(buoy_id, "humidity", reading.sensor_channel, reading.quality)
@@ -363,7 +361,7 @@ def ingest_telemetry(
         reading = build_air_temperature_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_air_temperature(reading)
+        gateway.add_air_temperature(reading)
         air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
         record_quality_metric(buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
@@ -374,7 +372,7 @@ def ingest_telemetry(
         reading = build_atmospheric_pressure_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_atmospheric_pressure(reading)
+        gateway.add_atmospheric_pressure(reading)
         atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
         record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
@@ -385,7 +383,7 @@ def ingest_telemetry(
         reading = build_acoustic_altimeter_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_acoustic_altimeter(reading)
+        gateway.add_acoustic_altimeter(reading)
         acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
         record_quality_metric(buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
@@ -396,7 +394,7 @@ def ingest_telemetry(
         reading = build_underwater_acoustic_snapshot(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
-        repository.add_underwater_acoustic(reading)
+        gateway.add_underwater_acoustic(reading)
         underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
         current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
         record_quality_metric(buoy_id, "underwater_acoustic", reading.sensor_channel, reading.quality)
@@ -405,7 +403,7 @@ def ingest_telemetry(
 
     for battery_payload in payload.battery:
         battery = build_battery_snapshot(buoy_id, battery_payload.model_dump())
-        repository.add_battery(battery)
+        gateway.add_battery(battery)
         battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
         battery_device_percent.labels(
             buoy_id=buoy_id, device_id=battery.device_id
