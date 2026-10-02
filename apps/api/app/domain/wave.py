@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from math import isfinite
 from statistics import fmean
 from typing import Sequence
 
@@ -35,7 +36,12 @@ def estimate_wave_period(
     samples: Sequence[tuple[datetime, float]],
 ) -> float | None:
     """Estimate wave period from consecutive upward mean crossings."""
-    if len(samples) < 3:
+    finite_samples = [
+        (timestamp, value)
+        for timestamp, value in samples
+        if isfinite(value)
+    ]
+    if len(finite_samples) < 3:
         return None
     normalized_samples = sorted(
         [
@@ -45,7 +51,7 @@ def estimate_wave_period(
                 else timestamp,
                 value,
             )
-            for timestamp, value in samples
+            for timestamp, value in finite_samples
         ],
         key=lambda sample: sample[0],
     )
@@ -83,18 +89,27 @@ def estimate_wave(
     is available. ``imu_wave_height_factor`` is injectable so calibration can
     be performed without changing the domain service contract.
     """
+    finite_altitudes = [value for value in gnss_altitudes if isfinite(value)]
+    finite_accelerations = [
+        value for value in imu_vertical_accelerations if isfinite(value)
+    ]
+    calibration_factor = (
+        imu_wave_height_factor
+        if isfinite(imu_wave_height_factor)
+        else DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+    )
     gnss_range = (
-        max(gnss_altitudes) - min(gnss_altitudes)
-        if len(gnss_altitudes) >= 2
+        max(finite_altitudes) - min(finite_altitudes)
+        if len(finite_altitudes) >= 2
         else None
     )
     imu_range = (
-        max(imu_vertical_accelerations) - min(imu_vertical_accelerations)
-        if len(imu_vertical_accelerations) >= 2
+        max(finite_accelerations) - min(finite_accelerations)
+        if len(finite_accelerations) >= 2
         else None
     )
     imu_wave_height = (
-        imu_range * imu_wave_height_factor if imu_range is not None else None
+        imu_range * calibration_factor if imu_range is not None else None
     )
     estimates = [value for value in (gnss_range, imu_wave_height) if value is not None]
     return WaveEstimate(

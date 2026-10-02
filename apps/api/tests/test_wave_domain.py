@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from math import inf, nan
 
 from app.domain.wave import estimate_wave, estimate_wave_period
 
@@ -18,6 +19,42 @@ def test_estimate_wave_uses_injected_imu_calibration_factor() -> None:
     assert estimate.imu_vertical_acceleration_range_mps2 == 0.5
     assert estimate.estimated_wave_height_m == 0.1
     assert estimate.confidence == "partial"
+
+
+def test_estimate_wave_ignores_non_finite_sensor_samples() -> None:
+    estimate = estimate_wave(
+        [2.0, nan, 2.4, inf],
+        [9.7, 10.2, nan],
+        imu_wave_height_factor=0.2,
+    )
+
+    assert estimate.gnss_vertical_range_m == 0.4
+    assert estimate.imu_vertical_acceleration_range_mps2 == 0.5
+    assert estimate.estimated_wave_height_m == 0.25
+    assert estimate.confidence == "experimental"
+
+
+def test_estimate_wave_uses_default_factor_if_calibration_is_non_finite() -> None:
+    estimate = estimate_wave([2.0, 2.4], [9.7, 10.2], imu_wave_height_factor=nan)
+
+    assert estimate.estimated_wave_height_m == 0.225
+
+
+def test_estimate_wave_period_ignores_non_finite_values() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    samples = [
+        (start + timedelta(seconds=seconds), value)
+        for seconds, value in (
+            (0, -1.0),
+            (10, nan),
+            (20, 1.0),
+            (30, -1.0),
+            (40, inf),
+            (50, 1.0),
+        )
+    ]
+
+    assert estimate_wave_period(samples) == 30.0
 
 
 def test_estimate_wave_period_interpolates_mean_crossings() -> None:
