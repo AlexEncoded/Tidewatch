@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from math import inf, nan
+from math import inf, nan, pi, sin
+
+import pytest
 
 from app.domain.wave import estimate_wave, estimate_wave_period
 
@@ -55,6 +57,19 @@ def test_estimate_wave_period_ignores_non_finite_values() -> None:
     ]
 
     assert estimate_wave_period(samples) == 30.0
+
+
+def test_estimate_wave_period_removes_linear_gnss_drift() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    samples = [
+        (
+            start + timedelta(seconds=seconds),
+            sin(2 * pi * seconds / 20) + 0.03 * seconds,
+        )
+        for seconds in range(0, 102, 2)
+    ]
+
+    assert estimate_wave_period(samples) == pytest.approx(20.0, abs=0.3)
 
 
 def test_estimate_wave_period_interpolates_mean_crossings() -> None:

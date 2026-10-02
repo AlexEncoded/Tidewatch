@@ -35,7 +35,11 @@ class WaveAnalysisSnapshot:
 def estimate_wave_period(
     samples: Sequence[tuple[datetime, float]],
 ) -> float | None:
-    """Estimate wave period from consecutive upward mean crossings."""
+    """Estimate period from upward crossings, discounting dominant linear drift.
+
+    The detrend threshold is intentionally conservative: short records or a
+    weak trend keep the mean-crossing behavior to avoid fitting away a wave.
+    """
     finite_samples = [
         (timestamp, value)
         for timestamp, value in samples
@@ -55,14 +59,44 @@ def estimate_wave_period(
         ],
         key=lambda sample: sample[0],
     )
-    mean = fmean(value for _, value in normalized_samples)
+    origin = normalized_samples[0][0]
+    elapsed_seconds = [
+        (timestamp - origin).total_seconds()
+        for timestamp, _ in normalized_samples
+    ]
+    mean_time = fmean(elapsed_seconds)
+    mean_value = fmean(value for _, value in normalized_samples)
+    time_variance = sum((time - mean_time) ** 2 for time in elapsed_seconds)
+    candidate_trend_slope = (
+        sum(
+            (time - mean_time) * (value - mean_value)
+            for time, (_, value) in zip(elapsed_seconds, normalized_samples)
+        )
+        / time_variance
+        if time_variance
+        else 0.0
+    )
+    elapsed_span = elapsed_seconds[-1] - elapsed_seconds[0]
+    value_range = max(value for _, value in normalized_samples) - min(
+        value for _, value in normalized_samples
+    )
+    trend_slope = (
+        candidate_trend_slope
+        if len(normalized_samples) >= 8
+        and abs(candidate_trend_slope) * elapsed_span > value_range * 0.5
+        else 0.0
+    )
+    detrended_samples = [
+        (timestamp, value - (mean_value + trend_slope * (time - mean_time)))
+        for time, (timestamp, value) in zip(elapsed_seconds, normalized_samples)
+    ]
     crossings = []
     for (previous_timestamp, previous_value), (timestamp, value) in zip(
-        normalized_samples, normalized_samples[1:]
+        detrended_samples, detrended_samples[1:]
     ):
-        if previous_value >= mean or value < mean or value == previous_value:
+        if previous_value >= 0 or value < 0 or value == previous_value:
             continue
-        crossing_fraction = (mean - previous_value) / (value - previous_value)
+        crossing_fraction = -previous_value / (value - previous_value)
         crossings.append(
             previous_timestamp
             + (timestamp - previous_timestamp) * crossing_fraction
