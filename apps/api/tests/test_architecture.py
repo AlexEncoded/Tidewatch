@@ -74,6 +74,32 @@ def test_device_http_contracts_are_outside_the_general_models_module() -> None:
     )
 
 
+def test_fleet_http_contracts_are_outside_the_general_models_module() -> None:
+    buoy_router = ast.parse(
+        (API_APP / "routers" / "buoys.py").read_text(encoding="utf-8")
+    )
+    imported_modules = {
+        node.module for node in ast.walk(buoy_router) if isinstance(node, ast.ImportFrom)
+    }
+    assert "schemas.fleet" in imported_modules
+
+    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
+    model_names = {
+        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
+    }
+    assert not model_names.intersection(
+        {
+            "BuoyCreate",
+            "BuoyStatusUpdate",
+            "BuoyLocationUpdate",
+            "BuoyLocationReadingCreate",
+            "BuoyLocationReading",
+            "Buoy",
+            "BuoyHealth",
+        }
+    )
+
+
 def test_repository_implements_the_maintenance_read_port() -> None:
     adapter = BuoyRepository.__new__(BuoyRepository)
 
