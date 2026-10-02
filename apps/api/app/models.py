@@ -13,6 +13,7 @@ from .schemas.fleet import (
     BuoyLocationUpdate,
     BuoyStatusUpdate,
 )
+from .schemas.quality import QualitySummary
 
 
 class TemperatureReadingCreate(BaseModel):
@@ -512,14 +513,6 @@ class MaintenanceIssue(BaseModel):
 class MaintenanceNotificationResult(BaseModel):
     status: str
     issue_count: int
-
-
-class QualitySummary(BaseModel):
-    buoy_id: str
-    total_readings: int
-    good_readings: int
-    suspect_readings: int
-    invalid_readings: int
 
 
 class BuoySummary(BaseModel):

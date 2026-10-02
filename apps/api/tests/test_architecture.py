@@ -100,6 +100,24 @@ def test_fleet_http_contracts_are_outside_the_general_models_module() -> None:
     )
 
 
+def test_quality_http_contract_is_outside_the_general_models_module() -> None:
+    quality_router = ast.parse(
+        (API_APP / "routers" / "quality.py").read_text(encoding="utf-8")
+    )
+    imported_modules = {
+        node.module
+        for node in ast.walk(quality_router)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "schemas.quality" in imported_modules
+
+    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
+    model_names = {
+        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
+    }
+    assert "QualitySummary" not in model_names
+
+
 def test_repository_implements_the_maintenance_read_port() -> None:
     adapter = BuoyRepository.__new__(BuoyRepository)
 
