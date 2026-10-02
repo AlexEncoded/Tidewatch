@@ -27,23 +27,32 @@ def imported_modules(directory: Path) -> set[str]:
     return modules
 
 
+def imports_package(modules: set[str], package: str) -> bool:
+    return any(module == package or module.startswith(f"{package}.") for module in modules)
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
-    assert not any(module.startswith("app.models") for module in modules)
-    assert "fastapi" not in modules
-    assert "sqlalchemy" not in modules
-    assert "pydantic" not in modules
+    assert not imports_package(modules, "app.models")
+    assert not imports_package(modules, "fastapi")
+    assert not imports_package(modules, "sqlalchemy")
+    assert not imports_package(modules, "pydantic")
 
 
 def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
-    assert not any(module.startswith("app.models") for module in modules)
-    assert "fastapi" not in modules
-    assert "sqlalchemy" not in modules
+    assert not imports_package(modules, "app.models")
+    assert not imports_package(modules, "fastapi")
+    assert not imports_package(modules, "sqlalchemy")
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
+
+
+def test_imports_package_recognizes_nested_framework_modules() -> None:
+    assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
+    assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
 
 
 def test_repository_implements_the_maintenance_read_port() -> None:
