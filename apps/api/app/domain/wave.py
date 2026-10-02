@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from math import isfinite
-from statistics import fmean
+from statistics import fmean, median
 from typing import Sequence
 
 
@@ -35,10 +35,12 @@ class WaveAnalysisSnapshot:
 def estimate_wave_period(
     samples: Sequence[tuple[datetime, float]],
 ) -> float | None:
-    """Estimate period from upward crossings, discounting dominant linear drift.
+    """Estimate period from upward crossings in contiguous telemetry segments.
 
-    The detrend threshold is intentionally conservative: short records or a
-    weak trend keep the mean-crossing behavior to avoid fitting away a wave.
+    Duplicate timestamps are consolidated. Gaps longer than three nominal
+    sample intervals split the record so crossings are never interpolated over
+    missing telemetry. Detrending remains conservative to avoid fitting away
+    a wave in short records or when the linear trend is weak.
     """
     finite_samples = [
         (timestamp, value)
@@ -47,67 +49,83 @@ def estimate_wave_period(
     ]
     if len(finite_samples) < 3:
         return None
-    normalized_samples = sorted(
-        [
-            (
-                timestamp.replace(tzinfo=timezone.utc)
-                if timestamp.tzinfo is None
-                else timestamp,
-                value,
-            )
-            for timestamp, value in finite_samples
-        ],
-        key=lambda sample: sample[0],
-    )
-    origin = normalized_samples[0][0]
-    elapsed_seconds = [
-        (timestamp - origin).total_seconds()
-        for timestamp, _ in normalized_samples
-    ]
-    mean_time = fmean(elapsed_seconds)
-    mean_value = fmean(value for _, value in normalized_samples)
-    time_variance = sum((time - mean_time) ** 2 for time in elapsed_seconds)
-    candidate_trend_slope = (
-        sum(
-            (time - mean_time) * (value - mean_value)
-            for time, (_, value) in zip(elapsed_seconds, normalized_samples)
+    timestamp_values: dict[datetime, list[float]] = {}
+    for timestamp, value in finite_samples:
+        normalized_timestamp = (
+            timestamp.replace(tzinfo=timezone.utc)
+            if timestamp.tzinfo is None
+            else timestamp
         )
-        / time_variance
-        if time_variance
-        else 0.0
-    )
-    elapsed_span = elapsed_seconds[-1] - elapsed_seconds[0]
-    value_range = max(value for _, value in normalized_samples) - min(
-        value for _, value in normalized_samples
-    )
-    trend_slope = (
-        candidate_trend_slope
-        if len(normalized_samples) >= 8
-        and abs(candidate_trend_slope) * elapsed_span > value_range * 0.5
-        else 0.0
-    )
-    detrended_samples = [
-        (timestamp, value - (mean_value + trend_slope * (time - mean_time)))
-        for time, (timestamp, value) in zip(elapsed_seconds, normalized_samples)
+        timestamp_values.setdefault(normalized_timestamp, []).append(value)
+    normalized_samples = [
+        (timestamp, fmean(values))
+        for timestamp, values in sorted(timestamp_values.items())
     ]
-    crossings = []
-    for (previous_timestamp, previous_value), (timestamp, value) in zip(
-        detrended_samples, detrended_samples[1:]
-    ):
-        if previous_value >= 0 or value < 0 or value == previous_value:
-            continue
-        crossing_fraction = -previous_value / (value - previous_value)
-        crossings.append(
-            previous_timestamp
-            + (timestamp - previous_timestamp) * crossing_fraction
-        )
-    if len(crossings) < 2:
+    if len(normalized_samples) < 3:
         return None
-    periods = [
-        (current - previous).total_seconds()
-        for previous, current in zip(crossings, crossings[1:])
-        if (current - previous).total_seconds() > 0
+
+    intervals = [
+        (current[0] - previous[0]).total_seconds()
+        for previous, current in zip(normalized_samples, normalized_samples[1:])
     ]
+    nominal_interval = median(intervals)
+    segments: list[list[tuple[datetime, float]]] = [[normalized_samples[0]]]
+    for sample, interval in zip(normalized_samples[1:], intervals):
+        if interval > nominal_interval * 3:
+            segments.append([sample])
+        else:
+            segments[-1].append(sample)
+
+    periods: list[float] = []
+    for segment in segments:
+        if len(segment) < 3:
+            continue
+        origin = segment[0][0]
+        elapsed_seconds = [
+            (timestamp - origin).total_seconds() for timestamp, _ in segment
+        ]
+        mean_time = fmean(elapsed_seconds)
+        mean_value = fmean(value for _, value in segment)
+        time_variance = sum((time - mean_time) ** 2 for time in elapsed_seconds)
+        candidate_trend_slope = (
+            sum(
+                (time - mean_time) * (value - mean_value)
+                for time, (_, value) in zip(elapsed_seconds, segment)
+            )
+            / time_variance
+            if time_variance
+            else 0.0
+        )
+        elapsed_span = elapsed_seconds[-1] - elapsed_seconds[0]
+        value_range = max(value for _, value in segment) - min(
+            value for _, value in segment
+        )
+        trend_slope = (
+            candidate_trend_slope
+            if len(segment) >= 8
+            and abs(candidate_trend_slope) * elapsed_span > value_range * 0.5
+            else 0.0
+        )
+        detrended_samples = [
+            (timestamp, value - (mean_value + trend_slope * (time - mean_time)))
+            for time, (timestamp, value) in zip(elapsed_seconds, segment)
+        ]
+        crossings = []
+        for (previous_timestamp, previous_value), (timestamp, value) in zip(
+            detrended_samples, detrended_samples[1:]
+        ):
+            if previous_value >= 0 or value < 0 or value == previous_value:
+                continue
+            crossing_fraction = -previous_value / (value - previous_value)
+            crossings.append(
+                previous_timestamp
+                + (timestamp - previous_timestamp) * crossing_fraction
+            )
+        periods.extend(
+            (current - previous).total_seconds()
+            for previous, current in zip(crossings, crossings[1:])
+            if (current - previous).total_seconds() > 0
+        )
     return round(fmean(periods), 3) if periods else None
 
 

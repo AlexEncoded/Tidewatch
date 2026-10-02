@@ -72,6 +72,21 @@ def test_estimate_wave_period_removes_linear_gnss_drift() -> None:
     assert estimate_wave_period(samples) == pytest.approx(20.0, abs=0.3)
 
 
+def test_estimate_wave_period_does_not_bridge_telemetry_gaps() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    sample_seconds = [*range(0, 41, 5), *range(3600, 3641, 5)]
+    samples = [
+        (
+            start + timedelta(seconds=seconds),
+            sin(2 * pi * seconds / 20),
+        )
+        for seconds in sample_seconds
+    ]
+    samples.insert(3, samples[3])  # Duplicate timestamps must not skew the period.
+
+    assert estimate_wave_period(samples) == 20.0
+
+
 def test_estimate_wave_period_interpolates_mean_crossings() -> None:
     start = datetime(2026, 1, 1, tzinfo=timezone.utc)
     samples = [
