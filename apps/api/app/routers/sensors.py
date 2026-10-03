@@ -122,15 +122,13 @@ from ..models import (
     AcousticAltimeterReadingCreate,
     AtmosphericPressureReading,
     AtmosphericPressureReadingCreate,
-    AirTemperatureReading,
-    AirTemperatureReadingCreate,
-    HumidityReading,
-    HumidityReadingCreate,
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
 from ..schemas.sensors import SensorHealth, SensorHealthCheck
 from ..schemas.telemetry import (
+    AirTemperatureReading,
+    AirTemperatureReadingCreate,
     AmbientLightReading,
     AmbientLightReadingCreate,
     ChlorophyllAReading,
@@ -141,6 +139,8 @@ from ..schemas.telemetry import (
     DissolvedOxygenReadingCreate,
     ImuReading,
     ImuReadingCreate,
+    HumidityReading,
+    HumidityReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
     PressureReading,

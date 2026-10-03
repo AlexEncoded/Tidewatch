@@ -31,6 +31,8 @@ from .schemas.quality import QualitySummary
 from .schemas.sensors import SensorHealth, SensorHealthCheck
 from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
 from .schemas.telemetry import (
+    AirTemperatureReading,
+    AirTemperatureReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     PressureReading,
@@ -45,6 +47,8 @@ from .schemas.telemetry import (
     DissolvedOxygenReadingCreate,
     ImuReading,
     ImuReadingCreate,
+    HumidityReading,
+    HumidityReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
     PHReading,
@@ -59,38 +63,6 @@ from .schemas.telemetry import (
     WindReading,
     WindReadingCreate,
 )
-
-
-class HumidityReadingCreate(BaseModel):
-    humidity_percent: float = Field(ge=0, le=100)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class HumidityReading(HumidityReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class AirTemperatureReadingCreate(BaseModel):
-    air_temperature_celsius: float = Field(ge=-60, le=60)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class AirTemperatureReading(AirTemperatureReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
 
 
 class AtmosphericPressureReadingCreate(BaseModel):

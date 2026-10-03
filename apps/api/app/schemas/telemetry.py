@@ -221,6 +221,38 @@ class RainfallReading(RainfallReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class HumidityReadingCreate(BaseModel):
+    humidity_percent: float = Field(ge=0, le=100)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class HumidityReading(HumidityReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
+class AirTemperatureReadingCreate(BaseModel):
+    air_temperature_celsius: float = Field(ge=-60, le=60)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AirTemperatureReading(AirTemperatureReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int
