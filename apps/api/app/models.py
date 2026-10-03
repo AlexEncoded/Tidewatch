@@ -29,6 +29,7 @@ from .schemas.analytics import (
 )
 from .schemas.quality import QualitySummary
 from .schemas.sensors import SensorHealth, SensorHealthCheck
+from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
 
 
 class TemperatureReadingCreate(BaseModel):
@@ -414,19 +415,6 @@ class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int
     accepted_by_family: dict[str, int]
-
-
-class MaintenanceIssue(BaseModel):
-    buoy_id: str
-    buoy_name: str
-    issue_type: str
-    severity: str
-    message: str
-
-
-class MaintenanceNotificationResult(BaseModel):
-    status: str
-    issue_count: int
 
 
 class BuoySummary(BaseModel):

@@ -16,7 +16,7 @@ from ..metrics import (
     buoy_movement_speed_mps,
     redundant_device_missing,
 )
-from ..models import MaintenanceIssue, MaintenanceNotificationResult
+from ..schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
 
 
 router = APIRouter()
