@@ -37,12 +37,16 @@ from .schemas.telemetry import (
     SalinityReadingCreate,
     AmbientLightReading,
     AmbientLightReadingCreate,
+    ConductivityReading,
+    ConductivityReadingCreate,
     DissolvedOxygenReading,
     DissolvedOxygenReadingCreate,
     ImuReading,
     ImuReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
+    PHReading,
+    PHReadingCreate,
     TelemetryIngestResponse,
     TemperatureReading,
     TemperatureReadingCreate,
@@ -51,38 +55,6 @@ from .schemas.telemetry import (
     WindReading,
     WindReadingCreate,
 )
-
-
-class PHReadingCreate(BaseModel):
-    ph: float = Field(ge=0, le=14)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class PHReading(PHReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class ConductivityReadingCreate(BaseModel):
-    conductivity_us_cm: float = Field(ge=0, le=200000)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class ConductivityReading(ConductivityReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
 
 
 class ChlorophyllAReadingCreate(BaseModel):
