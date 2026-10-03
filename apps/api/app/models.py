@@ -31,6 +31,8 @@ from .schemas.quality import QualitySummary
 from .schemas.sensors import SensorHealth, SensorHealthCheck
 from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
 from .schemas.telemetry import (
+    ChlorophyllAReading,
+    ChlorophyllAReadingCreate,
     PressureReading,
     PressureReadingCreate,
     SalinityReading,
@@ -47,6 +49,8 @@ from .schemas.telemetry import (
     MarineCurrentReadingCreate,
     PHReading,
     PHReadingCreate,
+    RainfallReading,
+    RainfallReadingCreate,
     TelemetryIngestResponse,
     TemperatureReading,
     TemperatureReadingCreate,
@@ -55,38 +59,6 @@ from .schemas.telemetry import (
     WindReading,
     WindReadingCreate,
 )
-
-
-class ChlorophyllAReadingCreate(BaseModel):
-    chlorophyll_a_ug_l: float = Field(ge=0, le=1000)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class ChlorophyllAReading(ChlorophyllAReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class RainfallReadingCreate(BaseModel):
-    rainfall_mm_h: float = Field(ge=0, le=500)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class RainfallReading(RainfallReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
 
 
 class HumidityReadingCreate(BaseModel):
