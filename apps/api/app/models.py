@@ -30,55 +30,15 @@ from .schemas.analytics import (
 from .schemas.quality import QualitySummary
 from .schemas.sensors import SensorHealth, SensorHealthCheck
 from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
-from .schemas.telemetry import TelemetryIngestResponse
-
-
-class TemperatureReadingCreate(BaseModel):
-    temperature_celsius: float = Field(ge=-5, le=45)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class TemperatureReading(TemperatureReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class PressureReadingCreate(BaseModel):
-    pressure_kpa: float = Field(ge=80, le=130)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class PressureReading(PressureReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class SalinityReadingCreate(BaseModel):
-    salinity_psu: float = Field(ge=0, le=45)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class SalinityReading(SalinityReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
+from .schemas.telemetry import (
+    PressureReading,
+    PressureReadingCreate,
+    SalinityReading,
+    SalinityReadingCreate,
+    TelemetryIngestResponse,
+    TemperatureReading,
+    TemperatureReadingCreate,
+)
 
 
 class ImuReadingCreate(BaseModel):

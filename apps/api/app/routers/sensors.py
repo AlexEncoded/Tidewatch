@@ -128,12 +128,6 @@ from ..models import (
     HumidityReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
-    TemperatureReading,
-    TemperatureReadingCreate,
-    PressureReading,
-    PressureReadingCreate,
-    SalinityReading,
-    SalinityReadingCreate,
     ImuReading,
     ImuReadingCreate,
     AmbientLightReading,
@@ -156,6 +150,14 @@ from ..models import (
     UnderwaterAcousticReadingCreate,
 )
 from ..schemas.sensors import SensorHealth, SensorHealthCheck
+from ..schemas.telemetry import (
+    PressureReading,
+    PressureReadingCreate,
+    SalinityReading,
+    SalinityReadingCreate,
+    TemperatureReading,
+    TemperatureReadingCreate,
+)
 router = APIRouter()
 
 
