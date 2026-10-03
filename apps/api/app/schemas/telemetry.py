@@ -125,6 +125,38 @@ class MarineCurrentReading(MarineCurrentReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class TurbidityReadingCreate(BaseModel):
+    turbidity_ntu: float = Field(ge=0, le=5000)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TurbidityReading(TurbidityReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
+class DissolvedOxygenReadingCreate(BaseModel):
+    dissolved_oxygen_mg_l: float = Field(ge=0, le=20)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DissolvedOxygenReading(DissolvedOxygenReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int

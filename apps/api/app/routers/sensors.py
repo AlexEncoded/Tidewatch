@@ -130,10 +130,6 @@ from ..models import (
     ChlorophyllAReadingCreate,
     ConductivityReading,
     ConductivityReadingCreate,
-    DissolvedOxygenReading,
-    DissolvedOxygenReadingCreate,
-    TurbidityReading,
-    TurbidityReadingCreate,
     PHReading,
     PHReadingCreate,
     RainfallReading,
@@ -145,6 +141,8 @@ from ..schemas.sensors import SensorHealth, SensorHealthCheck
 from ..schemas.telemetry import (
     AmbientLightReading,
     AmbientLightReadingCreate,
+    DissolvedOxygenReading,
+    DissolvedOxygenReadingCreate,
     ImuReading,
     ImuReadingCreate,
     MarineCurrentReading,
@@ -155,6 +153,8 @@ from ..schemas.telemetry import (
     SalinityReadingCreate,
     TemperatureReading,
     TemperatureReadingCreate,
+    TurbidityReading,
+    TurbidityReadingCreate,
     WindReading,
     WindReadingCreate,
 )
