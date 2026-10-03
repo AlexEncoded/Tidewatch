@@ -8,7 +8,7 @@ from ..application.temperature_alerts import (
     list_stored_temperature_alerts,
     resolve_stored_temperature_alert,
 )
-from ..models import StoredTemperatureAlert
+from ..schemas.analytics import StoredTemperatureAlert
 
 router = APIRouter()
 

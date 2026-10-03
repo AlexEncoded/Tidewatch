@@ -24,7 +24,13 @@ from ..application.ports import (
     WaveAnalysisReader,
 )
 from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
-from ..models import MovementAnalysis, PressureAnalysis, TemperatureAlert, TemperatureAnalysis, WaveAnalysis
+from ..schemas.analytics import (
+    MovementAnalysis,
+    PressureAnalysis,
+    TemperatureAlert,
+    TemperatureAnalysis,
+    WaveAnalysis,
+)
 router = APIRouter()
 
 
