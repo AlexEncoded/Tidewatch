@@ -128,10 +128,6 @@ from ..models import (
     HumidityReadingCreate,
     MarineCurrentReading,
     MarineCurrentReadingCreate,
-    ImuReading,
-    ImuReadingCreate,
-    AmbientLightReading,
-    AmbientLightReadingCreate,
     WindReading,
     WindReadingCreate,
     ChlorophyllAReading,
@@ -151,6 +147,10 @@ from ..models import (
 )
 from ..schemas.sensors import SensorHealth, SensorHealthCheck
 from ..schemas.telemetry import (
+    AmbientLightReading,
+    AmbientLightReadingCreate,
+    ImuReading,
+    ImuReadingCreate,
     PressureReading,
     PressureReadingCreate,
     SalinityReading,
