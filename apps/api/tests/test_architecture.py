@@ -174,6 +174,24 @@ def test_analytics_http_contracts_are_outside_the_general_models_module() -> Non
     )
 
 
+def test_sensor_health_http_contracts_are_outside_the_general_models_module() -> None:
+    sensor_router = ast.parse(
+        (API_APP / "routers" / "sensors.py").read_text(encoding="utf-8")
+    )
+    imported_modules = {
+        node.module
+        for node in ast.walk(sensor_router)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "schemas.sensors" in imported_modules
+
+    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
+    model_names = {
+        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
+    }
+    assert not model_names.intersection({"SensorHealth", "SensorHealthCheck"})
+
+
 def test_repository_implements_the_maintenance_read_port() -> None:
     adapter = BuoyRepository.__new__(BuoyRepository)
 

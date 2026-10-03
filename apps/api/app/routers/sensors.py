@@ -140,8 +140,6 @@ from ..models import (
     AmbientLightReadingCreate,
     WindReading,
     WindReadingCreate,
-    SensorHealthCheck,
-    SensorHealth,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -157,6 +155,7 @@ from ..models import (
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
+from ..schemas.sensors import SensorHealth, SensorHealthCheck
 router = APIRouter()
 
 
