@@ -39,44 +39,14 @@ from .schemas.telemetry import (
     AmbientLightReadingCreate,
     ImuReading,
     ImuReadingCreate,
+    MarineCurrentReading,
+    MarineCurrentReadingCreate,
     TelemetryIngestResponse,
     TemperatureReading,
     TemperatureReadingCreate,
+    WindReading,
+    WindReadingCreate,
 )
-
-
-class WindReadingCreate(BaseModel):
-    wind_speed_mps: float = Field(ge=0, le=100)
-    wind_direction_degrees: float = Field(ge=0, lt=360)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class WindReading(WindReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class MarineCurrentReadingCreate(BaseModel):
-    current_speed_mps: float = Field(ge=0, le=20)
-    current_direction_degrees: float = Field(ge=0, lt=360)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class MarineCurrentReading(MarineCurrentReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
 
 
 class TurbidityReadingCreate(BaseModel):

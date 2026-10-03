@@ -126,10 +126,6 @@ from ..models import (
     AirTemperatureReadingCreate,
     HumidityReading,
     HumidityReadingCreate,
-    MarineCurrentReading,
-    MarineCurrentReadingCreate,
-    WindReading,
-    WindReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,
@@ -151,12 +147,16 @@ from ..schemas.telemetry import (
     AmbientLightReadingCreate,
     ImuReading,
     ImuReadingCreate,
+    MarineCurrentReading,
+    MarineCurrentReadingCreate,
     PressureReading,
     PressureReadingCreate,
     SalinityReading,
     SalinityReadingCreate,
     TemperatureReading,
     TemperatureReadingCreate,
+    WindReading,
+    WindReadingCreate,
 )
 router = APIRouter()
 
