@@ -277,6 +277,8 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
             "HumidityReading",
             "AirTemperatureReadingCreate",
             "AirTemperatureReading",
+            "AtmosphericPressureReadingCreate",
+            "AtmosphericPressureReading",
         }
     )
 

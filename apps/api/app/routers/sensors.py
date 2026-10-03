@@ -120,8 +120,6 @@ from ..metrics import (
 from ..models import (
     AcousticAltimeterReading,
     AcousticAltimeterReadingCreate,
-    AtmosphericPressureReading,
-    AtmosphericPressureReadingCreate,
     UnderwaterAcousticReading,
     UnderwaterAcousticReadingCreate,
 )
@@ -131,6 +129,8 @@ from ..schemas.telemetry import (
     AirTemperatureReadingCreate,
     AmbientLightReading,
     AmbientLightReadingCreate,
+    AtmosphericPressureReading,
+    AtmosphericPressureReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     ConductivityReading,

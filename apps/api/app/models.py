@@ -33,6 +33,8 @@ from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
 from .schemas.telemetry import (
     AirTemperatureReading,
     AirTemperatureReadingCreate,
+    AtmosphericPressureReading,
+    AtmosphericPressureReadingCreate,
     ChlorophyllAReading,
     ChlorophyllAReadingCreate,
     PressureReading,
@@ -63,22 +65,6 @@ from .schemas.telemetry import (
     WindReading,
     WindReadingCreate,
 )
-
-
-class AtmosphericPressureReadingCreate(BaseModel):
-    atmospheric_pressure_kpa: float = Field(ge=80, le=120)
-    sensor_channel: Literal["A", "B"] = "A"
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
-    sensor_id: str | None = Field(default=None, max_length=100)
-    firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
-    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class AtmosphericPressureReading(AtmosphericPressureReadingCreate):
-    buoy_id: str
-
-    model_config = {"from_attributes": True}
 
 
 class AcousticAltimeterReadingCreate(BaseModel):
