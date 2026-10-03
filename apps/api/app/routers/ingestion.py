@@ -54,10 +54,8 @@ from ..metrics import (
     temperature_readings_total, turbidity_readings_total,
     underwater_acoustic_readings_total, wind_readings_total,
 )
-from ..models import (
-    TelemetryBatchCreate,
-    TelemetryIngestResponse,
-)
+from ..models import TelemetryBatchCreate
+from ..schemas.telemetry import TelemetryIngestResponse
 
 
 router = APIRouter()

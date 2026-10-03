@@ -30,6 +30,7 @@ from .schemas.analytics import (
 from .schemas.quality import QualitySummary
 from .schemas.sensors import SensorHealth, SensorHealthCheck
 from .schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
+from .schemas.telemetry import TelemetryIngestResponse
 
 
 class TemperatureReadingCreate(BaseModel):
@@ -409,12 +410,6 @@ class TelemetryBatchCreate(BaseModel):
             if len(channels) != len(set(channels)):
                 raise ValueError(f"Telemetry batch cannot contain duplicate {family} channels")
         return self
-
-
-class TelemetryIngestResponse(BaseModel):
-    buoy_id: str
-    accepted_readings: int
-    accepted_by_family: dict[str, int]
 
 
 class BuoySummary(BaseModel):
