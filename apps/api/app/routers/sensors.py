@@ -117,14 +117,10 @@ from ..metrics import (
     reading_quality_total,
     underwater_acoustic_readings_total,
 )
-from ..models import (
-    AcousticAltimeterReading,
-    AcousticAltimeterReadingCreate,
-    UnderwaterAcousticReading,
-    UnderwaterAcousticReadingCreate,
-)
 from ..schemas.sensors import SensorHealth, SensorHealthCheck
 from ..schemas.telemetry import (
+    AcousticAltimeterReading,
+    AcousticAltimeterReadingCreate,
     AirTemperatureReading,
     AirTemperatureReadingCreate,
     AmbientLightReading,
@@ -155,6 +151,8 @@ from ..schemas.telemetry import (
     TemperatureReadingCreate,
     TurbidityReading,
     TurbidityReadingCreate,
+    UnderwaterAcousticReading,
+    UnderwaterAcousticReadingCreate,
     WindReading,
     WindReadingCreate,
 )

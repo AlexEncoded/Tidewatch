@@ -269,6 +269,38 @@ class AtmosphericPressureReading(AtmosphericPressureReadingCreate):
     model_config = {"from_attributes": True}
 
 
+class AcousticAltimeterReadingCreate(BaseModel):
+    depth_meters: float = Field(ge=0, le=20000)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AcousticAltimeterReading(AcousticAltimeterReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
+class UnderwaterAcousticReadingCreate(BaseModel):
+    echo_intensity_db: float = Field(ge=-200, le=100)
+    sensor_channel: Literal["A", "B"] = "A"
+    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    sensor_id: str | None = Field(default=None, max_length=100)
+    firmware_version: str | None = Field(default=None, max_length=50)
+    quality: Literal["good", "suspect", "invalid"] = "good"
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class UnderwaterAcousticReading(UnderwaterAcousticReadingCreate):
+    buoy_id: str
+
+    model_config = {"from_attributes": True}
+
+
 class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int
