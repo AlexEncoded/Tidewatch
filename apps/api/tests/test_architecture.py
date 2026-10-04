@@ -53,6 +53,16 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert not imports_package(modules, "pydantic")
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
+    forbidden_adapters = {
+        "adapter_dependencies",
+        "entities",
+        "main",
+        "metrics",
+        "routers",
+    }
+    assert not any(
+        module.rsplit(".", 1)[-1] in forbidden_adapters for module in modules
+    )
 
 
 def test_analytics_adapter_does_not_use_the_legacy_models_facade() -> None:
