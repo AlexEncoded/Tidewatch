@@ -241,6 +241,16 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
     }
     assert "schemas.telemetry" in imported_modules
 
+    ingestion_router = ast.parse(
+        (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
+    )
+    ingestion_imports = {
+        node.module
+        for node in ast.walk(ingestion_router)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "schemas.ingestion" in ingestion_imports
+
     model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
     model_names = {
         node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
@@ -283,6 +293,7 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
             "AcousticAltimeterReading",
             "UnderwaterAcousticReadingCreate",
             "UnderwaterAcousticReading",
+            "TelemetryBatchCreate",
         }
     )
 
