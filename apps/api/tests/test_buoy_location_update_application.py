@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import pytest
+
 from app.application.buoy_location_update import update_buoy_location
 from app.domain.buoy import BuoyLocationCommand, BuoySnapshot
 from app.domain.telemetry import LocationTelemetrySnapshot
@@ -53,3 +55,14 @@ def test_location_update_does_not_analyze_unknown_buoy():
         updater, reader, "missing", BuoyLocationCommand(1.0, 2.0)
     ) is None
     assert reader.buoy_id is None
+
+
+@pytest.mark.parametrize(
+    "latitude, longitude",
+    [(90.01, 0), (-90.01, 0), (0, 180.01), (0, -180.01)],
+)
+def test_location_command_rejects_coordinates_outside_domain_bounds(
+    latitude, longitude
+):
+    with pytest.raises(ValueError):
+        BuoyLocationCommand(latitude, longitude)

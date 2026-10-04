@@ -75,6 +75,12 @@ class BuoyLocationCommand:
     latitude: float
     longitude: float
 
+    def __post_init__(self) -> None:
+        if not -90 <= self.latitude <= 90:
+            raise ValueError("Latitude must be between -90 and 90 degrees")
+        if not -180 <= self.longitude <= 180:
+            raise ValueError("Longitude must be between -180 and 180 degrees")
+
 
 @dataclass(frozen=True)
 class BuoyRegistrationCommand:
@@ -83,3 +89,11 @@ class BuoyRegistrationCommand:
     name: str
     latitude: float | None = None
     longitude: float | None = None
+
+    def __post_init__(self) -> None:
+        if not 1 <= len(self.name) <= 100:
+            raise ValueError("Buoy name must contain between 1 and 100 characters")
+        if self.latitude is not None and not -90 <= self.latitude <= 90:
+            raise ValueError("Latitude must be between -90 and 90 degrees")
+        if self.longitude is not None and not -180 <= self.longitude <= 180:
+            raise ValueError("Longitude must be between -180 and 180 degrees")
