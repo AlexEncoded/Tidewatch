@@ -35,6 +35,8 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
     assert not imports_package(modules, "app.models")
+    assert not imports_package(modules, "app.entities")
+    assert not imports_package(modules, "app.schemas")
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "sqlalchemy")
     assert not imports_package(modules, "pydantic")
@@ -44,8 +46,11 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
     assert not imports_package(modules, "app.models")
+    assert not imports_package(modules, "app.entities")
+    assert not imports_package(modules, "app.schemas")
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "sqlalchemy")
+    assert not imports_package(modules, "pydantic")
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
 
