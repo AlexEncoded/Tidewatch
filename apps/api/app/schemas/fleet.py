@@ -1,9 +1,10 @@
 """HTTP contracts for buoy fleet operations."""
 
 from datetime import datetime, timezone
-from typing import Literal
 
 from pydantic import BaseModel, Field
+
+from ..domain.buoy import BuoyOperationalStatus
 
 
 class BuoyCreate(BaseModel):
@@ -13,7 +14,7 @@ class BuoyCreate(BaseModel):
 
 
 class BuoyStatusUpdate(BaseModel):
-    status: Literal["active", "maintenance", "inactive"]
+    status: BuoyOperationalStatus
 
 
 class BuoyLocationUpdate(BaseModel):

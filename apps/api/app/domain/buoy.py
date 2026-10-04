@@ -2,8 +2,10 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal, get_args
 
-BUOY_STATUSES = frozenset({"active", "maintenance", "inactive"})
+BuoyOperationalStatus = Literal["active", "maintenance", "inactive"]
+BUOY_STATUSES = frozenset(get_args(BuoyOperationalStatus))
 
 
 @dataclass(frozen=True)
@@ -20,7 +22,7 @@ class BuoyActivitySnapshot:
 
     buoy_id: str
     name: str
-    status: str
+    status: BuoyOperationalStatus
     last_seen_at: datetime | None
 
 
