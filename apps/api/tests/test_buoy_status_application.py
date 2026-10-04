@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import pytest
+
 from app.application.buoy_status import update_buoy_status
 from app.domain.buoy import BuoySnapshot, BuoyStatusCommand
 
@@ -32,3 +34,8 @@ def test_buoy_status_use_case_preserves_missing_buoy_result():
     registry = FakeBuoyStatusRegistry(None)
 
     assert update_buoy_status(registry, "missing", BuoyStatusCommand("inactive")) is None
+
+
+def test_buoy_status_command_rejects_unknown_status():
+    with pytest.raises(ValueError, match="Unsupported buoy status"):
+        BuoyStatusCommand("decommissioned")

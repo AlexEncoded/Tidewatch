@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+BUOY_STATUSES = frozenset({"active", "maintenance", "inactive"})
+
 
 @dataclass(frozen=True)
 class BuoyIdentitySnapshot:
@@ -59,6 +61,11 @@ class BuoyStatusCommand:
     """Requested operational status for a buoy."""
 
     status: str
+
+    def __post_init__(self) -> None:
+        if self.status not in BUOY_STATUSES:
+            allowed = ", ".join(sorted(BUOY_STATUSES))
+            raise ValueError(f"Unsupported buoy status {self.status!r}; expected one of: {allowed}")
 
 
 @dataclass(frozen=True)
