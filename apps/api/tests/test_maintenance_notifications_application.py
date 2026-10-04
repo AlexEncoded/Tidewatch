@@ -4,7 +4,7 @@ from app.application.maintenance_notifications import (
     deliver_maintenance_notification,
 )
 from app.application.maintenance_issues import build_reading_quality_issues
-from app.models import MaintenanceIssue
+from app.schemas.maintenance import MaintenanceIssue
 
 
 def test_callable_satisfies_notification_transport_port() -> None:

@@ -9,7 +9,7 @@ from app.application.maintenance_issues import (
 )
 from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.device_health import DeviceHealthSnapshot
-from app.models import SensorHealth
+from app.schemas.sensors import SensorHealth
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:

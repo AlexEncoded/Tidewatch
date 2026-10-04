@@ -33,7 +33,7 @@ from app.entities import (
     TemperatureReadingEntity,
 )
 from app.main import app, configured_wave_imu_factor
-from app.models import TelemetryBatchCreate
+from app.schemas.ingestion import TelemetryBatchCreate
 from app.application.telemetry_ingestion import TELEMETRY_FAMILIES
 from app.routers.alerts import router as alerts_router
 from app.routers.analytics import router as analytics_router

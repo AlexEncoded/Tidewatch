@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
 
-from .models import (
+from .schemas.analytics import (
     PressureAnalysis,
-    PressureReading,
     TemperatureAnalysis,
-    TemperatureReading,
     MovementAnalysis,
     WaveAnalysis,
+)
+from .schemas.battery import (
     BatteryHealth,
     BatteryReading,
     BatteryAnalysis,
 )
+from .schemas.telemetry import PressureReading, TemperatureReading
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR, estimate_wave
 from .domain.movement import distance_between_points, estimate_movement
 from .domain.battery_health import estimate_battery_health

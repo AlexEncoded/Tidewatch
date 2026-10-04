@@ -38,7 +38,7 @@ from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference
 from app.domain.sensor_health_rules import degraded_sensor_names
 from app.domain.sensor_status import sensor_health_status
-from app.models import PressureReading
+from app.schemas.telemetry import PressureReading
 
 
 def test_distance_between_points_is_zero_for_same_coordinates() -> None:

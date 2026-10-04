@@ -50,6 +50,16 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert not any(module.endswith(".repository") for module in modules)
 
 
+def test_analytics_adapter_does_not_use_the_legacy_models_facade() -> None:
+    analytics_module = ast.parse((API_APP / "analytics.py").read_text(encoding="utf-8"))
+    imported = {
+        node.module
+        for node in ast.walk(analytics_module)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "models" not in imported
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

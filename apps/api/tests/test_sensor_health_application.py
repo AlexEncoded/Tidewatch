@@ -10,7 +10,7 @@ from app.application.sensor_health import (
     persist_sensor_health_check,
 )
 from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
-from app.models import SensorHealth, SensorHealthCheck
+from app.schemas.sensors import SensorHealth, SensorHealthCheck
 
 
 def test_sensor_health_application_service_delegates_snapshot_evaluation() -> None:
