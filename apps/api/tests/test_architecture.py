@@ -527,6 +527,11 @@ def test_http_routers_do_not_import_persistence_adapters() -> None:
 
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
+    imported = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
     reading_models = [
         alias.name
         for node in ast.walk(tree)
@@ -537,6 +542,9 @@ def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     ]
 
     assert not reading_models
+    assert not imports_package(imported, "schemas")
+    assert not imports_package(imported, "fastapi")
+    assert not imports_package(imported, "pydantic")
 
 
 def test_quality_router_depends_on_application_port_not_repository_adapter() -> None:
