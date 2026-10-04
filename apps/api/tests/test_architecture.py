@@ -251,6 +251,14 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
     }
     assert "schemas.ingestion" in ingestion_imports
 
+    fleet_router = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
+    fleet_imports = {
+        node.module
+        for node in ast.walk(fleet_router)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "schemas.fleet_summary" in fleet_imports
+
     model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
     model_names = {
         node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
@@ -294,6 +302,7 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
             "UnderwaterAcousticReadingCreate",
             "UnderwaterAcousticReading",
             "TelemetryBatchCreate",
+            "BuoySummary",
         }
     )
 

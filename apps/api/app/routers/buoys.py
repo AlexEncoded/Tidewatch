@@ -27,7 +27,7 @@ from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStat
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
 from ..metrics import buoy_movement_speed_mps
-from ..models import BuoySummary
+from ..schemas.fleet_summary import BuoySummary
 from ..schemas.fleet import (
     Buoy,
     BuoyCreate,
