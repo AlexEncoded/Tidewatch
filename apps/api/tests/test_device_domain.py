@@ -4,6 +4,8 @@ from types import SimpleNamespace
 import pytest
 
 from app.domain.devices import (
+    DeviceRegistrationCommand,
+    DeviceStatusCommand,
     DeviceOwnershipError,
     DeviceRegistrationConflict,
     validate_device_ownership,
@@ -14,6 +16,27 @@ from app.application.device_registration import register_device
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
+
+
+@pytest.mark.parametrize(
+    "device_id, channel, firmware",
+    [
+        ("", "A", None),
+        ("d" * 101, "A", None),
+        ("device-a", "C", None),
+        ("device-a", "A", "f" * 51),
+    ],
+)
+def test_device_registration_command_rejects_values_outside_domain_bounds(
+    device_id, channel, firmware
+):
+    with pytest.raises(ValueError):
+        DeviceRegistrationCommand(device_id, channel, firmware)
+
+
+def test_device_status_command_rejects_unknown_status() -> None:
+    with pytest.raises(ValueError, match="Unsupported device status"):
+        DeviceStatusCommand("retired")
 
 
 def test_device_listing_application_service_returns_domain_snapshots() -> None:

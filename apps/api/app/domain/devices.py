@@ -3,6 +3,13 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal
+
+DeviceSensorChannel = Literal["A", "B"]
+DeviceOperationalStatus = Literal["active", "maintenance", "inactive"]
+DEVICE_ID_MIN_LENGTH = 1
+DEVICE_ID_MAX_LENGTH = 100
+DEVICE_FIRMWARE_MAX_LENGTH = 50
 
 
 class DeviceRegistrationConflict(ValueError):
@@ -18,15 +25,35 @@ class DeviceRegistrationCommand:
     """Domain input for registering a physical device."""
 
     device_id: str
-    sensor_channel: str
+    sensor_channel: DeviceSensorChannel
     firmware_version: str | None = None
+
+    def __post_init__(self) -> None:
+        if not DEVICE_ID_MIN_LENGTH <= len(self.device_id) <= DEVICE_ID_MAX_LENGTH:
+            raise ValueError(
+                f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
+                f"and {DEVICE_ID_MAX_LENGTH} characters"
+            )
+        if self.sensor_channel not in ("A", "B"):
+            raise ValueError("Device sensor channel must be A or B")
+        if (
+            self.firmware_version is not None
+            and len(self.firmware_version) > DEVICE_FIRMWARE_MAX_LENGTH
+        ):
+            raise ValueError(
+                f"Firmware version must contain at most {DEVICE_FIRMWARE_MAX_LENGTH} characters"
+            )
 
 
 @dataclass(frozen=True)
 class DeviceStatusCommand:
     """Domain input for changing a device operational status."""
 
-    status: str
+    status: DeviceOperationalStatus
+
+    def __post_init__(self) -> None:
+        if self.status not in ("active", "maintenance", "inactive"):
+            raise ValueError(f"Unsupported device status {self.status!r}")
 
 
 @dataclass(frozen=True)
