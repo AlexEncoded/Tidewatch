@@ -1,7 +1,25 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .telemetry_types import ReadingQuality, SensorChannel
+from .telemetry_types import (
+    ReadingQuality,
+    SensorChannel,
+    VALID_READING_QUALITIES,
+    VALID_SENSOR_CHANNELS,
+)
+
+
+class SensorTelemetrySnapshot:
+    """Runtime invariants shared by snapshots for redundant sensors."""
+
+    sensor_channel: SensorChannel
+    quality: ReadingQuality
+
+    def __post_init__(self) -> None:
+        if self.sensor_channel not in VALID_SENSOR_CHANNELS:
+            raise ValueError(f"Unsupported sensor channel {self.sensor_channel!r}")
+        if self.quality not in VALID_READING_QUALITIES:
+            raise ValueError(f"Unsupported reading quality {self.quality!r}")
 
 
 @dataclass(frozen=True)
@@ -20,7 +38,7 @@ class LocationTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class SalinityTelemetrySnapshot:
+class SalinityTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one salinity sample."""
 
     buoy_id: str
@@ -34,7 +52,7 @@ class SalinityTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class ImuTelemetrySnapshot:
+class ImuTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one inertial measurement sample."""
 
     buoy_id: str
@@ -53,7 +71,7 @@ class ImuTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class AmbientLightTelemetrySnapshot:
+class AmbientLightTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one ambient-light sample."""
 
     buoy_id: str
@@ -67,7 +85,7 @@ class AmbientLightTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class WindTelemetrySnapshot:
+class WindTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one wind speed and direction sample."""
 
     buoy_id: str
@@ -82,7 +100,7 @@ class WindTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class MarineCurrentTelemetrySnapshot:
+class MarineCurrentTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one marine-current sample."""
 
     buoy_id: str
@@ -97,7 +115,7 @@ class MarineCurrentTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class TurbidityTelemetrySnapshot:
+class TurbidityTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one turbidity sample."""
 
     buoy_id: str
@@ -111,7 +129,7 @@ class TurbidityTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class DissolvedOxygenTelemetrySnapshot:
+class DissolvedOxygenTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one dissolved-oxygen sample."""
 
     buoy_id: str
@@ -125,7 +143,7 @@ class DissolvedOxygenTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class PHTelemetrySnapshot:
+class PHTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one pH sample."""
 
     buoy_id: str
@@ -139,7 +157,7 @@ class PHTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class ConductivityTelemetrySnapshot:
+class ConductivityTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one conductivity sample."""
 
     buoy_id: str
@@ -153,7 +171,7 @@ class ConductivityTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class ChlorophyllATelemetrySnapshot:
+class ChlorophyllATelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one chlorophyll-a sample."""
 
     buoy_id: str
@@ -167,7 +185,7 @@ class ChlorophyllATelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class RainfallTelemetrySnapshot:
+class RainfallTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one rainfall sample."""
 
     buoy_id: str
@@ -181,7 +199,7 @@ class RainfallTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class HumidityTelemetrySnapshot:
+class HumidityTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one humidity sample."""
 
     buoy_id: str
@@ -195,7 +213,7 @@ class HumidityTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class AirTemperatureTelemetrySnapshot:
+class AirTemperatureTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one air-temperature sample."""
 
     buoy_id: str
@@ -209,7 +227,7 @@ class AirTemperatureTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class AtmosphericPressureTelemetrySnapshot:
+class AtmosphericPressureTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one atmospheric-pressure sample."""
 
     buoy_id: str
@@ -223,7 +241,7 @@ class AtmosphericPressureTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class AcousticAltimeterTelemetrySnapshot:
+class AcousticAltimeterTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one acoustic-altimeter sample."""
 
     buoy_id: str
@@ -237,7 +255,7 @@ class AcousticAltimeterTelemetrySnapshot:
 
 
 @dataclass(frozen=True)
-class UnderwaterAcousticTelemetrySnapshot:
+class UnderwaterAcousticTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one underwater-acoustic sample."""
 
     buoy_id: str
