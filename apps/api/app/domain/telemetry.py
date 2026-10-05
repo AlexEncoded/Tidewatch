@@ -274,8 +274,14 @@ class BatteryTelemetrySnapshot:
 
     buoy_id: str
     battery_percent: float
-    device_id: str
+    device_id: SensorChannel
     measured_at: datetime
+
+    def __post_init__(self) -> None:
+        if self.device_id not in VALID_SENSOR_CHANNELS:
+            raise ValueError(f"Unsupported battery device channel {self.device_id!r}")
+        if not 0 <= self.battery_percent <= 100:
+            raise ValueError("Battery percentage must be between 0 and 100")
 
 
 def latest_usable_reading(
