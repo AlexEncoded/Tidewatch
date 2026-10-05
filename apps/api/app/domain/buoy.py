@@ -6,6 +6,12 @@ from typing import Literal, get_args
 
 BuoyOperationalStatus = Literal["active", "maintenance", "inactive"]
 BUOY_STATUSES = frozenset(get_args(BuoyOperationalStatus))
+BUOY_NAME_MIN_LENGTH = 1
+BUOY_NAME_MAX_LENGTH = 100
+LATITUDE_MIN = -90
+LATITUDE_MAX = 90
+LONGITUDE_MIN = -180
+LONGITUDE_MAX = 180
 
 
 @dataclass(frozen=True)
@@ -78,10 +84,12 @@ class BuoyLocationCommand:
     longitude: float
 
     def __post_init__(self) -> None:
-        if not -90 <= self.latitude <= 90:
-            raise ValueError("Latitude must be between -90 and 90 degrees")
-        if not -180 <= self.longitude <= 180:
-            raise ValueError("Longitude must be between -180 and 180 degrees")
+        if not LATITUDE_MIN <= self.latitude <= LATITUDE_MAX:
+            raise ValueError(f"Latitude must be between {LATITUDE_MIN} and {LATITUDE_MAX} degrees")
+        if not LONGITUDE_MIN <= self.longitude <= LONGITUDE_MAX:
+            raise ValueError(
+                f"Longitude must be between {LONGITUDE_MIN} and {LONGITUDE_MAX} degrees"
+            )
 
 
 @dataclass(frozen=True)
@@ -93,9 +101,14 @@ class BuoyRegistrationCommand:
     longitude: float | None = None
 
     def __post_init__(self) -> None:
-        if not 1 <= len(self.name) <= 100:
-            raise ValueError("Buoy name must contain between 1 and 100 characters")
-        if self.latitude is not None and not -90 <= self.latitude <= 90:
-            raise ValueError("Latitude must be between -90 and 90 degrees")
-        if self.longitude is not None and not -180 <= self.longitude <= 180:
-            raise ValueError("Longitude must be between -180 and 180 degrees")
+        if not BUOY_NAME_MIN_LENGTH <= len(self.name) <= BUOY_NAME_MAX_LENGTH:
+            raise ValueError(
+                f"Buoy name must contain between {BUOY_NAME_MIN_LENGTH} "
+                f"and {BUOY_NAME_MAX_LENGTH} characters"
+            )
+        if self.latitude is not None and not LATITUDE_MIN <= self.latitude <= LATITUDE_MAX:
+            raise ValueError(f"Latitude must be between {LATITUDE_MIN} and {LATITUDE_MAX} degrees")
+        if self.longitude is not None and not LONGITUDE_MIN <= self.longitude <= LONGITUDE_MAX:
+            raise ValueError(
+                f"Longitude must be between {LONGITUDE_MIN} and {LONGITUDE_MAX} degrees"
+            )

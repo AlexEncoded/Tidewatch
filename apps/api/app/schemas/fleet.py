@@ -4,13 +4,21 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
-from ..domain.buoy import BuoyOperationalStatus
+from ..domain.buoy import (
+    BUOY_NAME_MAX_LENGTH,
+    BUOY_NAME_MIN_LENGTH,
+    LATITUDE_MAX,
+    LATITUDE_MIN,
+    LONGITUDE_MAX,
+    LONGITUDE_MIN,
+    BuoyOperationalStatus,
+)
 
 
 class BuoyCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
-    latitude: float | None = Field(default=None, ge=-90, le=90)
-    longitude: float | None = Field(default=None, ge=-180, le=180)
+    name: str = Field(min_length=BUOY_NAME_MIN_LENGTH, max_length=BUOY_NAME_MAX_LENGTH)
+    latitude: float | None = Field(default=None, ge=LATITUDE_MIN, le=LATITUDE_MAX)
+    longitude: float | None = Field(default=None, ge=LONGITUDE_MIN, le=LONGITUDE_MAX)
 
 
 class BuoyStatusUpdate(BaseModel):
@@ -18,8 +26,8 @@ class BuoyStatusUpdate(BaseModel):
 
 
 class BuoyLocationUpdate(BaseModel):
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=LATITUDE_MIN, le=LATITUDE_MAX)
+    longitude: float = Field(ge=LONGITUDE_MIN, le=LONGITUDE_MAX)
 
 
 class BuoyLocationReadingCreate(BuoyLocationUpdate):
