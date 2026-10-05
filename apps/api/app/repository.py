@@ -113,6 +113,19 @@ def _sensor_health_check_snapshot(
     )
 
 
+def _buoy_snapshot(entity: BuoyEntity) -> BuoySnapshot:
+    """Map the persistence representation to the buoy domain snapshot."""
+    return BuoySnapshot(
+        buoy_id=entity.id,
+        name=entity.name,
+        latitude=entity.latitude,
+        longitude=entity.longitude,
+        status=entity.status,
+        last_seen_at=entity.last_seen_at,
+        created_at=entity.created_at,
+    )
+
+
 class BuoyRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -130,15 +143,7 @@ class BuoyRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        return BuoySnapshot(
-            buoy_id=entity.id,
-            name=entity.name,
-            latitude=entity.latitude,
-            longitude=entity.longitude,
-            status=entity.status,
-            last_seen_at=entity.last_seen_at,
-            created_at=entity.created_at,
-        )
+        return _buoy_snapshot(entity)
 
     def update_buoy_status(
         self, buoy_id: str, command: BuoyStatusCommand
@@ -149,15 +154,7 @@ class BuoyRepository:
         buoy.status = command.status
         self.db.commit()
         self.db.refresh(buoy)
-        return BuoySnapshot(
-            buoy_id=buoy.id,
-            name=buoy.name,
-            latitude=buoy.latitude,
-            longitude=buoy.longitude,
-            status=buoy.status,
-            last_seen_at=buoy.last_seen_at,
-            created_at=buoy.created_at,
-        )
+        return _buoy_snapshot(buoy)
 
     def update_buoy_location(
         self, buoy_id: str, command: BuoyLocationCommand
@@ -176,15 +173,7 @@ class BuoyRepository:
         buoy = self.get_buoy(buoy_id)
         if buoy is None:
             return None
-        return BuoySnapshot(
-            buoy_id=buoy.id,
-            name=buoy.name,
-            latitude=buoy.latitude,
-            longitude=buoy.longitude,
-            status=buoy.status,
-            last_seen_at=buoy.last_seen_at,
-            created_at=buoy.created_at,
-        )
+        return _buoy_snapshot(buoy)
 
     def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
         entity = BuoyLocationReadingEntity(
@@ -299,15 +288,7 @@ class BuoyRepository:
             "atmospheric_pressure": self.latest_atmospheric_pressure,
         }
         for entity in self.list_buoys():
-            buoy = BuoySnapshot(
-                buoy_id=entity.id,
-                name=entity.name,
-                latitude=entity.latitude,
-                longitude=entity.longitude,
-                status=entity.status,
-                last_seen_at=entity.last_seen_at,
-                created_at=entity.created_at,
-            )
+            buoy = _buoy_snapshot(entity)
             latest_readings = {
                 family: {
                     "latest": get_latest(entity.id),
