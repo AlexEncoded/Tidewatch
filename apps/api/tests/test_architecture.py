@@ -1,5 +1,12 @@
 import ast
+from dataclasses import is_dataclass
 from pathlib import Path
+from typing import get_type_hints
+
+from app.domain import telemetry as domain_telemetry
+from app.domain.telemetry_types import ReadingQuality, SensorChannel
+from app.schemas import telemetry as telemetry_schemas
+from app.schemas.battery import BatteryReadingCreate
 
 from app.application.ports import (
     DeviceHealthReader,
@@ -73,6 +80,37 @@ def test_analytics_adapter_does_not_use_the_legacy_models_facade() -> None:
         if isinstance(node, ast.ImportFrom)
     }
     assert "models" not in imported
+
+
+def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types() -> None:
+    reading_schemas = [
+        model
+        for model in vars(telemetry_schemas).values()
+        if isinstance(model, type)
+        and model.__module__ == telemetry_schemas.__name__
+        and model.__name__.endswith("ReadingCreate")
+        and "sensor_channel" in model.model_fields
+    ]
+    assert reading_schemas
+    for model in reading_schemas:
+        assert model.model_fields["sensor_channel"].annotation is SensorChannel
+        assert model.model_fields["quality"].annotation is ReadingQuality
+
+    assert BatteryReadingCreate.model_fields["device_id"].annotation is SensorChannel
+
+    domain_snapshots = [
+        model
+        for model in vars(domain_telemetry).values()
+        if isinstance(model, type)
+        and is_dataclass(model)
+        and model.__module__ == domain_telemetry.__name__
+        and model.__name__.endswith("TelemetrySnapshot")
+    ]
+    for model in domain_snapshots:
+        annotations = get_type_hints(model)
+        if "sensor_channel" in annotations:
+            assert annotations["sensor_channel"] is SensorChannel
+            assert annotations["quality"] is ReadingQuality
 
 
 def test_imports_package_recognizes_nested_framework_modules() -> None:

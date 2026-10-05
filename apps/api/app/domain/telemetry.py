@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from .telemetry_types import ReadingQuality, SensorChannel
+
 
 @dataclass(frozen=True)
 class LocationTelemetrySnapshot:
@@ -24,11 +26,11 @@ class SalinityTelemetrySnapshot:
     buoy_id: str
     salinity_psu: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -43,11 +45,11 @@ class ImuTelemetrySnapshot:
     angular_velocity_y_dps: float
     angular_velocity_z_dps: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -57,11 +59,11 @@ class AmbientLightTelemetrySnapshot:
     buoy_id: str
     illuminance_lux: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -72,11 +74,11 @@ class WindTelemetrySnapshot:
     wind_speed_mps: float
     wind_direction_degrees: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -87,11 +89,11 @@ class MarineCurrentTelemetrySnapshot:
     current_speed_mps: float
     current_direction_degrees: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -101,11 +103,11 @@ class TurbidityTelemetrySnapshot:
     buoy_id: str
     turbidity_ntu: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -115,11 +117,11 @@ class DissolvedOxygenTelemetrySnapshot:
     buoy_id: str
     dissolved_oxygen_mg_l: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -129,11 +131,11 @@ class PHTelemetrySnapshot:
     buoy_id: str
     ph: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -143,11 +145,11 @@ class ConductivityTelemetrySnapshot:
     buoy_id: str
     conductivity_us_cm: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -157,11 +159,11 @@ class ChlorophyllATelemetrySnapshot:
     buoy_id: str
     chlorophyll_a_ug_l: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -171,11 +173,11 @@ class RainfallTelemetrySnapshot:
     buoy_id: str
     rainfall_mm_h: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -185,11 +187,11 @@ class HumidityTelemetrySnapshot:
     buoy_id: str
     humidity_percent: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -199,11 +201,11 @@ class AirTemperatureTelemetrySnapshot:
     buoy_id: str
     air_temperature_celsius: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -213,11 +215,11 @@ class AtmosphericPressureTelemetrySnapshot:
     buoy_id: str
     atmospheric_pressure_kpa: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -227,11 +229,11 @@ class AcousticAltimeterTelemetrySnapshot:
     buoy_id: str
     depth_meters: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)
@@ -241,11 +243,11 @@ class UnderwaterAcousticTelemetrySnapshot:
     buoy_id: str
     echo_intensity_db: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
 
 
 @dataclass(frozen=True)

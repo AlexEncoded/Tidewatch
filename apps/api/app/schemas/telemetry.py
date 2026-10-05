@@ -1,18 +1,18 @@
 """HTTP contracts for core sensor telemetry and ingestion responses."""
 
 from datetime import datetime, timezone
-from typing import Literal
+from ..domain.telemetry_types import ReadingQuality, SensorChannel
 
 from pydantic import BaseModel, Field
 
 
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(ge=-5, le=45)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -24,11 +24,11 @@ class TemperatureReading(TemperatureReadingCreate):
 
 class PressureReadingCreate(BaseModel):
     pressure_kpa: float = Field(ge=80, le=130)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -40,11 +40,11 @@ class PressureReading(PressureReadingCreate):
 
 class SalinityReadingCreate(BaseModel):
     salinity_psu: float = Field(ge=0, le=45)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -61,11 +61,11 @@ class ImuReadingCreate(BaseModel):
     angular_velocity_x_dps: float = Field(ge=-2000, le=2000)
     angular_velocity_y_dps: float = Field(ge=-2000, le=2000)
     angular_velocity_z_dps: float = Field(ge=-2000, le=2000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -77,11 +77,11 @@ class ImuReading(ImuReadingCreate):
 
 class AmbientLightReadingCreate(BaseModel):
     illuminance_lux: float = Field(ge=0, le=150000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -94,11 +94,11 @@ class AmbientLightReading(AmbientLightReadingCreate):
 class WindReadingCreate(BaseModel):
     wind_speed_mps: float = Field(ge=0, le=100)
     wind_direction_degrees: float = Field(ge=0, lt=360)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -111,11 +111,11 @@ class WindReading(WindReadingCreate):
 class MarineCurrentReadingCreate(BaseModel):
     current_speed_mps: float = Field(ge=0, le=20)
     current_direction_degrees: float = Field(ge=0, lt=360)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -127,11 +127,11 @@ class MarineCurrentReading(MarineCurrentReadingCreate):
 
 class TurbidityReadingCreate(BaseModel):
     turbidity_ntu: float = Field(ge=0, le=5000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -143,11 +143,11 @@ class TurbidityReading(TurbidityReadingCreate):
 
 class DissolvedOxygenReadingCreate(BaseModel):
     dissolved_oxygen_mg_l: float = Field(ge=0, le=20)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -159,11 +159,11 @@ class DissolvedOxygenReading(DissolvedOxygenReadingCreate):
 
 class PHReadingCreate(BaseModel):
     ph: float = Field(ge=0, le=14)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -175,11 +175,11 @@ class PHReading(PHReadingCreate):
 
 class ConductivityReadingCreate(BaseModel):
     conductivity_us_cm: float = Field(ge=0, le=200000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -191,11 +191,11 @@ class ConductivityReading(ConductivityReadingCreate):
 
 class ChlorophyllAReadingCreate(BaseModel):
     chlorophyll_a_ug_l: float = Field(ge=0, le=1000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -207,11 +207,11 @@ class ChlorophyllAReading(ChlorophyllAReadingCreate):
 
 class RainfallReadingCreate(BaseModel):
     rainfall_mm_h: float = Field(ge=0, le=500)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -223,11 +223,11 @@ class RainfallReading(RainfallReadingCreate):
 
 class HumidityReadingCreate(BaseModel):
     humidity_percent: float = Field(ge=0, le=100)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -239,11 +239,11 @@ class HumidityReading(HumidityReadingCreate):
 
 class AirTemperatureReadingCreate(BaseModel):
     air_temperature_celsius: float = Field(ge=-60, le=60)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -255,11 +255,11 @@ class AirTemperatureReading(AirTemperatureReadingCreate):
 
 class AtmosphericPressureReadingCreate(BaseModel):
     atmospheric_pressure_kpa: float = Field(ge=80, le=120)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -271,11 +271,11 @@ class AtmosphericPressureReading(AtmosphericPressureReadingCreate):
 
 class AcousticAltimeterReadingCreate(BaseModel):
     depth_meters: float = Field(ge=0, le=20000)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -287,11 +287,11 @@ class AcousticAltimeterReading(AcousticAltimeterReadingCreate):
 
 class UnderwaterAcousticReadingCreate(BaseModel):
     echo_intensity_db: float = Field(ge=-200, le=100)
-    sensor_channel: Literal["A", "B"] = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
     firmware_version: str | None = Field(default=None, max_length=50)
-    quality: Literal["good", "suspect", "invalid"] = "good"
+    quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

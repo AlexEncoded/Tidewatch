@@ -5,7 +5,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-DeviceSensorChannel = Literal["A", "B"]
+from .telemetry_types import SensorChannel
+
+DeviceSensorChannel = SensorChannel
 DeviceOperationalStatus = Literal["active", "maintenance", "inactive"]
 DEVICE_ID_MIN_LENGTH = 1
 DEVICE_ID_MAX_LENGTH = 100
