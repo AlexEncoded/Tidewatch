@@ -12,6 +12,8 @@ from ..domain.telemetry_types import (
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
     SensorChannel,
+    TURBIDITY_MAX_NTU,
+    TURBIDITY_MIN_NTU,
 )
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
@@ -145,7 +147,7 @@ class MarineCurrentReading(MarineCurrentReadingCreate):
 
 
 class TurbidityReadingCreate(BaseModel):
-    turbidity_ntu: float = Field(ge=0, le=5000)
+    turbidity_ntu: float = Field(ge=TURBIDITY_MIN_NTU, le=TURBIDITY_MAX_NTU)
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

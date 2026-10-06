@@ -9,6 +9,7 @@ from app.domain.telemetry import (
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    TurbidityTelemetrySnapshot,
 )
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
@@ -96,6 +97,27 @@ def test_humidity_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.humidity_percent == 0
     assert upper.humidity_percent == 100
+
+
+@pytest.mark.parametrize("turbidity_ntu", [-0.01, 5000.01])
+def test_turbidity_snapshot_rejects_values_outside_domain_range(
+    turbidity_ntu: float,
+) -> None:
+    with pytest.raises(ValueError, match="Turbidity"):
+        TurbidityTelemetrySnapshot(
+            buoy_id="buoy-1",
+            turbidity_ntu=turbidity_ntu,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_turbidity_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = TurbidityTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = TurbidityTelemetrySnapshot("buoy-1", 5000, measured_at)
+
+    assert lower.turbidity_ntu == 0
+    assert upper.turbidity_ntu == 5000
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])
