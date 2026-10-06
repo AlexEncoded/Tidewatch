@@ -55,6 +55,27 @@ def test_sensor_snapshot_accepts_supported_metadata() -> None:
     assert snapshot.quality == "suspect"
 
 
+@pytest.mark.parametrize("salinity_psu", [-0.01, 45.01])
+def test_salinity_snapshot_rejects_values_outside_domain_range(
+    salinity_psu: float,
+) -> None:
+    with pytest.raises(ValueError, match="Salinity"):
+        SalinityTelemetrySnapshot(
+            buoy_id="buoy-1",
+            salinity_psu=salinity_psu,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_salinity_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = SalinityTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = SalinityTelemetrySnapshot("buoy-1", 45, measured_at)
+
+    assert lower.salinity_psu == 0
+    assert upper.salinity_psu == 45
+
+
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])
 def test_battery_snapshot_rejects_percentage_outside_domain_range(
     battery_percent: float,

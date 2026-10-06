@@ -7,6 +7,8 @@ from ..domain.telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     ReadingQuality,
+    SALINITY_MAX_PSU,
+    SALINITY_MIN_PSU,
     SensorChannel,
 )
 from ..domain.temperature import (
@@ -54,7 +56,7 @@ class PressureReading(PressureReadingCreate):
 
 
 class SalinityReadingCreate(BaseModel):
-    salinity_psu: float = Field(ge=0, le=45)
+    salinity_psu: float = Field(ge=SALINITY_MIN_PSU, le=SALINITY_MAX_PSU)
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

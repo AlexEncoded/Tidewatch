@@ -5,6 +5,8 @@ from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     ReadingQuality,
+    SALINITY_MAX_PSU,
+    SALINITY_MIN_PSU,
     SensorChannel,
     AIR_TEMPERATURE_MAX_CELSIUS,
     AIR_TEMPERATURE_MIN_CELSIUS,
@@ -53,6 +55,14 @@ class SalinityTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not SALINITY_MIN_PSU <= self.salinity_psu <= SALINITY_MAX_PSU:
+            raise ValueError(
+                f"Salinity must be between {SALINITY_MIN_PSU} and "
+                f"{SALINITY_MAX_PSU} PSU"
+            )
 
 
 @dataclass(frozen=True)
