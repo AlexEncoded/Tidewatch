@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    HUMIDITY_MAX_PERCENT,
+    HUMIDITY_MIN_PERCENT,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -224,6 +226,14 @@ class HumidityTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not HUMIDITY_MIN_PERCENT <= self.humidity_percent <= HUMIDITY_MAX_PERCENT:
+            raise ValueError(
+                f"Humidity must be between {HUMIDITY_MIN_PERCENT} and "
+                f"{HUMIDITY_MAX_PERCENT} percent"
+            )
 
 
 @dataclass(frozen=True)

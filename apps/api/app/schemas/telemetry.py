@@ -6,6 +6,8 @@ from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    HUMIDITY_MAX_PERCENT,
+    HUMIDITY_MIN_PERCENT,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -239,7 +241,10 @@ class RainfallReading(RainfallReadingCreate):
 
 
 class HumidityReadingCreate(BaseModel):
-    humidity_percent: float = Field(ge=0, le=100)
+    humidity_percent: float = Field(
+        ge=HUMIDITY_MIN_PERCENT,
+        le=HUMIDITY_MAX_PERCENT,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
