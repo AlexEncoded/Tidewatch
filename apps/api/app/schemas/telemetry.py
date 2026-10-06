@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MAX_CELSIUS,
     AIR_TEMPERATURE_MIN_CELSIUS,
+    ATMOSPHERIC_PRESSURE_MAX_KPA,
+    ATMOSPHERIC_PRESSURE_MIN_KPA,
     ReadingQuality,
     SensorChannel,
 )
@@ -270,7 +272,10 @@ class AirTemperatureReading(AirTemperatureReadingCreate):
 
 
 class AtmosphericPressureReadingCreate(BaseModel):
-    atmospheric_pressure_kpa: float = Field(ge=80, le=120)
+    atmospheric_pressure_kpa: float = Field(
+        ge=ATMOSPHERIC_PRESSURE_MIN_KPA,
+        le=ATMOSPHERIC_PRESSURE_MAX_KPA,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
