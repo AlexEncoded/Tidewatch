@@ -2,22 +2,34 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
+from .telemetry import SensorTelemetrySnapshot
+from .telemetry_types import ReadingQuality, SensorChannel
 
 KPA_TO_METRES_OF_WATER = 0.102
+WATER_PRESSURE_MIN_KPA = 80
+WATER_PRESSURE_MAX_KPA = 130
 
 
 @dataclass(frozen=True)
-class PressureTelemetrySnapshot:
+class PressureTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one water-pressure sample."""
 
     buoy_id: str
     pressure_kpa: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not WATER_PRESSURE_MIN_KPA <= self.pressure_kpa <= WATER_PRESSURE_MAX_KPA:
+            raise ValueError(
+                f"Water pressure must be between {WATER_PRESSURE_MIN_KPA} "
+                f"and {WATER_PRESSURE_MAX_KPA} kPa"
+            )
 
 
 @dataclass(frozen=True)

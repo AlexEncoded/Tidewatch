@@ -8,6 +8,7 @@ from app.domain.telemetry import (
     ImuTelemetrySnapshot,
     SalinityTelemetrySnapshot,
 )
+from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 
 
@@ -116,3 +117,24 @@ def test_air_temperature_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.air_temperature_celsius == -60
     assert upper.air_temperature_celsius == 60
+
+
+@pytest.mark.parametrize("pressure_kpa", [79.99, 130.01])
+def test_water_pressure_snapshot_rejects_values_outside_domain_range(
+    pressure_kpa: float,
+) -> None:
+    with pytest.raises(ValueError, match="Water pressure"):
+        PressureTelemetrySnapshot(
+            buoy_id="buoy-1",
+            pressure_kpa=pressure_kpa,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_water_pressure_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = PressureTelemetrySnapshot("buoy-1", 80, measured_at)
+    upper = PressureTelemetrySnapshot("buoy-1", 130, measured_at)
+
+    assert lower.pressure_kpa == 80
+    assert upper.pressure_kpa == 130

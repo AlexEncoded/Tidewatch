@@ -11,6 +11,7 @@ from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
 )
+from ..domain.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
 
 from pydantic import BaseModel, Field
 
@@ -35,7 +36,7 @@ class TemperatureReading(TemperatureReadingCreate):
 
 
 class PressureReadingCreate(BaseModel):
-    pressure_kpa: float = Field(ge=80, le=130)
+    pressure_kpa: float = Field(ge=WATER_PRESSURE_MIN_KPA, le=WATER_PRESSURE_MAX_KPA)
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
