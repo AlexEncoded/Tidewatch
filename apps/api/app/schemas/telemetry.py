@@ -2,12 +2,19 @@
 
 from datetime import datetime, timezone
 from ..domain.telemetry_types import ReadingQuality, SensorChannel
+from ..domain.temperature import (
+    SEA_TEMPERATURE_MAX_CELSIUS,
+    SEA_TEMPERATURE_MIN_CELSIUS,
+)
 
 from pydantic import BaseModel, Field
 
 
 class TemperatureReadingCreate(BaseModel):
-    temperature_celsius: float = Field(ge=-5, le=45)
+    temperature_celsius: float = Field(
+        ge=SEA_TEMPERATURE_MIN_CELSIUS,
+        le=SEA_TEMPERATURE_MAX_CELSIUS,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

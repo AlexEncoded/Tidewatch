@@ -7,6 +7,7 @@ from app.domain.telemetry import (
     ImuTelemetrySnapshot,
     SalinityTelemetrySnapshot,
 )
+from app.domain.temperature import TemperatureTelemetrySnapshot
 
 
 @pytest.mark.parametrize(
@@ -72,3 +73,24 @@ def test_battery_snapshot_rejects_unknown_device_channel() -> None:
             device_id="C",
             measured_at=datetime.now(timezone.utc),
         )
+
+
+@pytest.mark.parametrize("temperature_celsius", [-5.01, 45.01])
+def test_sea_temperature_snapshot_rejects_values_outside_physical_range(
+    temperature_celsius: float,
+) -> None:
+    with pytest.raises(ValueError, match="Sea temperature"):
+        TemperatureTelemetrySnapshot(
+            buoy_id="buoy-1",
+            temperature_celsius=temperature_celsius,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_sea_temperature_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = TemperatureTelemetrySnapshot("buoy-1", -5, measured_at)
+    upper = TemperatureTelemetrySnapshot("buoy-1", 45, measured_at)
+
+    assert lower.temperature_celsius == -5
+    assert upper.temperature_celsius == 45

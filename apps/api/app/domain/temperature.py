@@ -2,6 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
+from .telemetry import SensorTelemetrySnapshot
+from .telemetry_types import ReadingQuality, SensorChannel
+
+SEA_TEMPERATURE_MIN_CELSIUS = -5
+SEA_TEMPERATURE_MAX_CELSIUS = 45
+
 
 @dataclass(frozen=True)
 class TemperatureEstimate:
@@ -17,17 +23,25 @@ class TemperatureEstimate:
 
 
 @dataclass(frozen=True)
-class TemperatureTelemetrySnapshot:
+class TemperatureTelemetrySnapshot(SensorTelemetrySnapshot):
     """Domain representation of one measured water temperature."""
 
     buoy_id: str
     temperature_celsius: float
     measured_at: datetime
-    sensor_channel: str = "A"
+    sensor_channel: SensorChannel = "A"
     device_id: str | None = None
     sensor_id: str | None = None
     firmware_version: str | None = None
-    quality: str = "good"
+    quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not SEA_TEMPERATURE_MIN_CELSIUS <= self.temperature_celsius <= SEA_TEMPERATURE_MAX_CELSIUS:
+            raise ValueError(
+                "Sea temperature must be between "
+                f"{SEA_TEMPERATURE_MIN_CELSIUS} and {SEA_TEMPERATURE_MAX_CELSIUS} °C"
+            )
 
 
 @dataclass(frozen=True)
