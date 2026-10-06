@@ -6,6 +6,7 @@ from app.domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     BatteryTelemetrySnapshot,
+    DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     SalinityTelemetrySnapshot,
@@ -118,6 +119,27 @@ def test_turbidity_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.turbidity_ntu == 0
     assert upper.turbidity_ntu == 5000
+
+
+@pytest.mark.parametrize("dissolved_oxygen_mg_l", [-0.01, 20.01])
+def test_dissolved_oxygen_snapshot_rejects_values_outside_domain_range(
+    dissolved_oxygen_mg_l: float,
+) -> None:
+    with pytest.raises(ValueError, match="Dissolved oxygen"):
+        DissolvedOxygenTelemetrySnapshot(
+            buoy_id="buoy-1",
+            dissolved_oxygen_mg_l=dissolved_oxygen_mg_l,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_dissolved_oxygen_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = DissolvedOxygenTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = DissolvedOxygenTelemetrySnapshot("buoy-1", 20, measured_at)
+
+    assert lower.dissolved_oxygen_mg_l == 0
+    assert upper.dissolved_oxygen_mg_l == 20
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

@@ -6,6 +6,8 @@ from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    DISSOLVED_OXYGEN_MAX_MG_L,
+    DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     ReadingQuality,
@@ -163,7 +165,10 @@ class TurbidityReading(TurbidityReadingCreate):
 
 
 class DissolvedOxygenReadingCreate(BaseModel):
-    dissolved_oxygen_mg_l: float = Field(ge=0, le=20)
+    dissolved_oxygen_mg_l: float = Field(
+        ge=DISSOLVED_OXYGEN_MIN_MG_L,
+        le=DISSOLVED_OXYGEN_MAX_MG_L,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

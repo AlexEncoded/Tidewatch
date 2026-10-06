@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    DISSOLVED_OXYGEN_MAX_MG_L,
+    DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     ReadingQuality,
@@ -166,6 +168,15 @@ class DissolvedOxygenTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not DISSOLVED_OXYGEN_MIN_MG_L <= self.dissolved_oxygen_mg_l <= DISSOLVED_OXYGEN_MAX_MG_L:
+            raise ValueError(
+                "Dissolved oxygen must be between "
+                f"{DISSOLVED_OXYGEN_MIN_MG_L} and "
+                f"{DISSOLVED_OXYGEN_MAX_MG_L} mg/L"
+            )
 
 
 @dataclass(frozen=True)
