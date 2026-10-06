@@ -1,7 +1,12 @@
 """HTTP contracts for core sensor telemetry and ingestion responses."""
 
 from datetime import datetime, timezone
-from ..domain.telemetry_types import ReadingQuality, SensorChannel
+from ..domain.telemetry_types import (
+    AIR_TEMPERATURE_MAX_CELSIUS,
+    AIR_TEMPERATURE_MIN_CELSIUS,
+    ReadingQuality,
+    SensorChannel,
+)
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
@@ -245,7 +250,10 @@ class HumidityReading(HumidityReadingCreate):
 
 
 class AirTemperatureReadingCreate(BaseModel):
-    air_temperature_celsius: float = Field(ge=-60, le=60)
+    air_temperature_celsius: float = Field(
+        ge=AIR_TEMPERATURE_MIN_CELSIUS,
+        le=AIR_TEMPERATURE_MAX_CELSIUS,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

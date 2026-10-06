@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from app.domain.telemetry import (
+    AirTemperatureTelemetrySnapshot,
     BatteryTelemetrySnapshot,
     ImuTelemetrySnapshot,
     SalinityTelemetrySnapshot,
@@ -94,3 +95,24 @@ def test_sea_temperature_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.temperature_celsius == -5
     assert upper.temperature_celsius == 45
+
+
+@pytest.mark.parametrize("air_temperature_celsius", [-60.01, 60.01])
+def test_air_temperature_snapshot_rejects_values_outside_domain_range(
+    air_temperature_celsius: float,
+) -> None:
+    with pytest.raises(ValueError, match="Air temperature"):
+        AirTemperatureTelemetrySnapshot(
+            buoy_id="buoy-1",
+            air_temperature_celsius=air_temperature_celsius,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_air_temperature_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = AirTemperatureTelemetrySnapshot("buoy-1", -60, measured_at)
+    upper = AirTemperatureTelemetrySnapshot("buoy-1", 60, measured_at)
+
+    assert lower.air_temperature_celsius == -60
+    assert upper.air_temperature_celsius == 60

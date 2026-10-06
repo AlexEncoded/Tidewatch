@@ -6,3 +6,5 @@ SensorChannel = Literal["A", "B"]
 ReadingQuality = Literal["good", "suspect", "invalid"]
 VALID_SENSOR_CHANNELS = frozenset(get_args(SensorChannel))
 VALID_READING_QUALITIES = frozenset(get_args(ReadingQuality))
+AIR_TEMPERATURE_MIN_CELSIUS = -60
+AIR_TEMPERATURE_MAX_CELSIUS = 60
