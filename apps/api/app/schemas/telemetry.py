@@ -18,6 +18,8 @@ from ..domain.telemetry_types import (
     DIRECTION_MIN_DEGREES,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
+    MARINE_CURRENT_SPEED_MAX_MPS,
+    MARINE_CURRENT_SPEED_MIN_MPS,
     PH_MAX,
     PH_MIN,
     RAINFALL_MAX_MM_H,
@@ -155,8 +157,14 @@ class WindReading(WindReadingCreate):
 
 
 class MarineCurrentReadingCreate(BaseModel):
-    current_speed_mps: float = Field(ge=0, le=20)
-    current_direction_degrees: float = Field(ge=0, lt=360)
+    current_speed_mps: float = Field(
+        ge=MARINE_CURRENT_SPEED_MIN_MPS,
+        le=MARINE_CURRENT_SPEED_MAX_MPS,
+    )
+    current_direction_degrees: float = Field(
+        ge=DIRECTION_MIN_DEGREES,
+        lt=DIRECTION_MAX_DEGREES,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

@@ -12,6 +12,7 @@ from app.domain.telemetry import (
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
+    MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
@@ -286,6 +287,43 @@ def test_wind_snapshot_accepts_speed_and_direction_boundaries() -> None:
     assert calm.wind_direction_degrees == 0
     assert upper_speed.wind_speed_mps == 100
     assert upper_speed.wind_direction_degrees == 359.999
+
+
+@pytest.mark.parametrize("current_speed_mps", [-0.01, 20.01])
+def test_marine_current_snapshot_rejects_speed_outside_domain_range(
+    current_speed_mps: float,
+) -> None:
+    with pytest.raises(ValueError, match="Marine-current speed"):
+        MarineCurrentTelemetrySnapshot(
+            buoy_id="buoy-1",
+            current_speed_mps=current_speed_mps,
+            current_direction_degrees=0,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+@pytest.mark.parametrize("current_direction_degrees", [-0.01, 360])
+def test_marine_current_snapshot_rejects_direction_outside_domain_range(
+    current_direction_degrees: float,
+) -> None:
+    with pytest.raises(ValueError, match="Marine-current direction"):
+        MarineCurrentTelemetrySnapshot(
+            buoy_id="buoy-1",
+            current_speed_mps=0,
+            current_direction_degrees=current_direction_degrees,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_marine_current_snapshot_accepts_speed_and_direction_boundaries() -> None:
+    measured_at = datetime.now(timezone.utc)
+    calm = MarineCurrentTelemetrySnapshot("buoy-1", 0, 0, measured_at)
+    upper_speed = MarineCurrentTelemetrySnapshot("buoy-1", 20, 359.999, measured_at)
+
+    assert calm.current_speed_mps == 0
+    assert calm.current_direction_degrees == 0
+    assert upper_speed.current_speed_mps == 20
+    assert upper_speed.current_direction_degrees == 359.999
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

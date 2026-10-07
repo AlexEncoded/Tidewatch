@@ -16,6 +16,8 @@ from .telemetry_types import (
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
+    MARINE_CURRENT_SPEED_MAX_MPS,
+    MARINE_CURRENT_SPEED_MIN_MPS,
     PH_MAX,
     PH_MIN,
     RAINFALL_MAX_MM_H,
@@ -167,6 +169,20 @@ class MarineCurrentTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not MARINE_CURRENT_SPEED_MIN_MPS <= self.current_speed_mps <= MARINE_CURRENT_SPEED_MAX_MPS:
+            raise ValueError(
+                "Marine-current speed must be between "
+                f"{MARINE_CURRENT_SPEED_MIN_MPS} and "
+                f"{MARINE_CURRENT_SPEED_MAX_MPS} m/s"
+            )
+        if not DIRECTION_MIN_DEGREES <= self.current_direction_degrees < DIRECTION_MAX_DEGREES:
+            raise ValueError(
+                "Marine-current direction must be greater than or equal to "
+                f"{DIRECTION_MIN_DEGREES} and less than {DIRECTION_MAX_DEGREES} degrees"
+            )
 
 
 @dataclass(frozen=True)
