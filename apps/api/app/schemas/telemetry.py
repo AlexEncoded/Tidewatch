@@ -6,6 +6,8 @@ from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
+    ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
+    ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     CHLOROPHYLL_A_MAX_UG_L,
@@ -345,7 +347,10 @@ class AtmosphericPressureReading(AtmosphericPressureReadingCreate):
 
 
 class AcousticAltimeterReadingCreate(BaseModel):
-    depth_meters: float = Field(ge=0, le=20000)
+    depth_meters: float = Field(
+        ge=ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
+        le=ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

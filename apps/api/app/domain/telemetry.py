@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
+    ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
+    ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     DIRECTION_MAX_DEGREES,
     DIRECTION_MIN_DEGREES,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
@@ -394,6 +396,15 @@ class AcousticAltimeterTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS <= self.depth_meters <= ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS:
+            raise ValueError(
+                "Acoustic-altimeter depth must be between "
+                f"{ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS} and "
+                f"{ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS} meters"
+            )
 
 
 @dataclass(frozen=True)
