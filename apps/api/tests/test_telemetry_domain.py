@@ -12,6 +12,7 @@ from app.domain.telemetry import (
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
+    RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
 )
@@ -204,6 +205,27 @@ def test_chlorophyll_a_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.chlorophyll_a_ug_l == 0
     assert upper.chlorophyll_a_ug_l == 1000
+
+
+@pytest.mark.parametrize("rainfall_mm_h", [-0.01, 500.01])
+def test_rainfall_snapshot_rejects_values_outside_domain_range(
+    rainfall_mm_h: float,
+) -> None:
+    with pytest.raises(ValueError, match="Rainfall"):
+        RainfallTelemetrySnapshot(
+            buoy_id="buoy-1",
+            rainfall_mm_h=rainfall_mm_h,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_rainfall_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = RainfallTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = RainfallTelemetrySnapshot("buoy-1", 500, measured_at)
+
+    assert lower.rainfall_mm_h == 0
+    assert upper.rainfall_mm_h == 500
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

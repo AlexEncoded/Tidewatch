@@ -14,6 +14,8 @@ from .telemetry_types import (
     HUMIDITY_MIN_PERCENT,
     PH_MAX,
     PH_MIN,
+    RAINFALL_MAX_MM_H,
+    RAINFALL_MIN_MM_H,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -260,6 +262,14 @@ class RainfallTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not RAINFALL_MIN_MM_H <= self.rainfall_mm_h <= RAINFALL_MAX_MM_H:
+            raise ValueError(
+                f"Rainfall must be between {RAINFALL_MIN_MM_H} and "
+                f"{RAINFALL_MAX_MM_H} mm/h"
+            )
 
 
 @dataclass(frozen=True)
