@@ -16,6 +16,7 @@ from app.domain.telemetry import (
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
+    WindTelemetrySnapshot,
 )
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
@@ -248,6 +249,43 @@ def test_ambient_light_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.illuminance_lux == 0
     assert upper.illuminance_lux == 150000
+
+
+@pytest.mark.parametrize("wind_speed_mps", [-0.01, 100.01])
+def test_wind_snapshot_rejects_speed_outside_domain_range(
+    wind_speed_mps: float,
+) -> None:
+    with pytest.raises(ValueError, match="Wind speed"):
+        WindTelemetrySnapshot(
+            buoy_id="buoy-1",
+            wind_speed_mps=wind_speed_mps,
+            wind_direction_degrees=0,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+@pytest.mark.parametrize("wind_direction_degrees", [-0.01, 360])
+def test_wind_snapshot_rejects_direction_outside_domain_range(
+    wind_direction_degrees: float,
+) -> None:
+    with pytest.raises(ValueError, match="Wind direction"):
+        WindTelemetrySnapshot(
+            buoy_id="buoy-1",
+            wind_speed_mps=0,
+            wind_direction_degrees=wind_direction_degrees,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_wind_snapshot_accepts_speed_and_direction_boundaries() -> None:
+    measured_at = datetime.now(timezone.utc)
+    calm = WindTelemetrySnapshot("buoy-1", 0, 0, measured_at)
+    upper_speed = WindTelemetrySnapshot("buoy-1", 100, 359.999, measured_at)
+
+    assert calm.wind_speed_mps == 0
+    assert calm.wind_direction_degrees == 0
+    assert upper_speed.wind_speed_mps == 100
+    assert upper_speed.wind_direction_degrees == 359.999
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

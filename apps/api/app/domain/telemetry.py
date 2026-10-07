@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
+    DIRECTION_MAX_DEGREES,
+    DIRECTION_MIN_DEGREES,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     CHLOROPHYLL_A_MAX_UG_L,
@@ -28,6 +30,8 @@ from .telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     VALID_READING_QUALITIES,
     VALID_SENSOR_CHANNELS,
+    WIND_SPEED_MAX_MPS,
+    WIND_SPEED_MIN_MPS,
 )
 
 
@@ -135,6 +139,19 @@ class WindTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not WIND_SPEED_MIN_MPS <= self.wind_speed_mps <= WIND_SPEED_MAX_MPS:
+            raise ValueError(
+                f"Wind speed must be between {WIND_SPEED_MIN_MPS} and "
+                f"{WIND_SPEED_MAX_MPS} m/s"
+            )
+        if not DIRECTION_MIN_DEGREES <= self.wind_direction_degrees < DIRECTION_MAX_DEGREES:
+            raise ValueError(
+                "Wind direction must be greater than or equal to "
+                f"{DIRECTION_MIN_DEGREES} and less than {DIRECTION_MAX_DEGREES} degrees"
+            )
 
 
 @dataclass(frozen=True)

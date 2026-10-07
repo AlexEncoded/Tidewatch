@@ -14,6 +14,8 @@ from ..domain.telemetry_types import (
     CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,
+    DIRECTION_MAX_DEGREES,
+    DIRECTION_MIN_DEGREES,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     PH_MAX,
@@ -26,6 +28,8 @@ from ..domain.telemetry_types import (
     SensorChannel,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
+    WIND_SPEED_MAX_MPS,
+    WIND_SPEED_MIN_MPS,
 )
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
@@ -128,8 +132,14 @@ class AmbientLightReading(AmbientLightReadingCreate):
 
 
 class WindReadingCreate(BaseModel):
-    wind_speed_mps: float = Field(ge=0, le=100)
-    wind_direction_degrees: float = Field(ge=0, lt=360)
+    wind_speed_mps: float = Field(
+        ge=WIND_SPEED_MIN_MPS,
+        le=WIND_SPEED_MAX_MPS,
+    )
+    wind_direction_degrees: float = Field(
+        ge=DIRECTION_MIN_DEGREES,
+        lt=DIRECTION_MAX_DEGREES,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
