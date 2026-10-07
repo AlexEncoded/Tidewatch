@@ -18,6 +18,7 @@ from app.domain.telemetry import (
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
+    UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
 from app.domain.pressure import PressureTelemetrySnapshot
@@ -346,6 +347,27 @@ def test_acoustic_altimeter_snapshot_accepts_depth_range_endpoints() -> None:
 
     assert surface.depth_meters == 0
     assert maximum.depth_meters == 20000
+
+
+@pytest.mark.parametrize("echo_intensity_db", [-200.01, 100.01])
+def test_underwater_acoustic_snapshot_rejects_values_outside_domain_range(
+    echo_intensity_db: float,
+) -> None:
+    with pytest.raises(ValueError, match="Underwater acoustic echo intensity"):
+        UnderwaterAcousticTelemetrySnapshot(
+            buoy_id="buoy-1",
+            echo_intensity_db=echo_intensity_db,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_underwater_acoustic_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    minimum = UnderwaterAcousticTelemetrySnapshot("buoy-1", -200, measured_at)
+    maximum = UnderwaterAcousticTelemetrySnapshot("buoy-1", 100, measured_at)
+
+    assert minimum.echo_intensity_db == -200
+    assert maximum.echo_intensity_db == 100
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

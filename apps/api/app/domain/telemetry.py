@@ -29,6 +29,8 @@ from .telemetry_types import (
     SALINITY_MIN_PSU,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
+    UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
+    UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
     SensorChannel,
     AIR_TEMPERATURE_MAX_CELSIUS,
     AIR_TEMPERATURE_MIN_CELSIUS,
@@ -419,6 +421,15 @@ class UnderwaterAcousticTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB <= self.echo_intensity_db <= UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB:
+            raise ValueError(
+                "Underwater acoustic echo intensity must be between "
+                f"{UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB} and "
+                f"{UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB} dB"
+            )
 
 
 @dataclass(frozen=True)

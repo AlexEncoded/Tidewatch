@@ -32,6 +32,8 @@ from ..domain.telemetry_types import (
     SensorChannel,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
+    UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
+    UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
     WIND_SPEED_MAX_MPS,
     WIND_SPEED_MIN_MPS,
 )
@@ -366,7 +368,10 @@ class AcousticAltimeterReading(AcousticAltimeterReadingCreate):
 
 
 class UnderwaterAcousticReadingCreate(BaseModel):
-    echo_intensity_db: float = Field(ge=-200, le=100)
+    echo_intensity_db: float = Field(
+        ge=UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
+        le=UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
