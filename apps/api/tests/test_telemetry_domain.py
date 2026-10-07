@@ -4,6 +4,7 @@ import pytest
 
 from app.domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
+    AmbientLightTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     BatteryTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
@@ -226,6 +227,27 @@ def test_rainfall_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.rainfall_mm_h == 0
     assert upper.rainfall_mm_h == 500
+
+
+@pytest.mark.parametrize("illuminance_lux", [-0.01, 150000.01])
+def test_ambient_light_snapshot_rejects_values_outside_domain_range(
+    illuminance_lux: float,
+) -> None:
+    with pytest.raises(ValueError, match="Ambient light"):
+        AmbientLightTelemetrySnapshot(
+            buoy_id="buoy-1",
+            illuminance_lux=illuminance_lux,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_ambient_light_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = AmbientLightTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = AmbientLightTelemetrySnapshot("buoy-1", 150000, measured_at)
+
+    assert lower.illuminance_lux == 0
+    assert upper.illuminance_lux == 150000
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

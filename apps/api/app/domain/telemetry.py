@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from .telemetry_types import (
+    AMBIENT_LIGHT_MAX_LUX,
+    AMBIENT_LIGHT_MIN_LUX,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     CHLOROPHYLL_A_MAX_UG_L,
@@ -110,6 +112,14 @@ class AmbientLightTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not AMBIENT_LIGHT_MIN_LUX <= self.illuminance_lux <= AMBIENT_LIGHT_MAX_LUX:
+            raise ValueError(
+                f"Ambient light must be between {AMBIENT_LIGHT_MIN_LUX} and "
+                f"{AMBIENT_LIGHT_MAX_LUX} lux"
+            )
 
 
 @dataclass(frozen=True)
