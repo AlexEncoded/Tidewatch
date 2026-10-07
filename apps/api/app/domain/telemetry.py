@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    CONDUCTIVITY_MAX_US_CM,
+    CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
@@ -212,6 +214,14 @@ class ConductivityTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not CONDUCTIVITY_MIN_US_CM <= self.conductivity_us_cm <= CONDUCTIVITY_MAX_US_CM:
+            raise ValueError(
+                f"Conductivity must be between {CONDUCTIVITY_MIN_US_CM} and "
+                f"{CONDUCTIVITY_MAX_US_CM} µS/cm"
+            )
 
 
 @dataclass(frozen=True)

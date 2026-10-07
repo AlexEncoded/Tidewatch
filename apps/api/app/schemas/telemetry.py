@@ -6,6 +6,8 @@ from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    CONDUCTIVITY_MAX_US_CM,
+    CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
@@ -202,7 +204,10 @@ class PHReading(PHReadingCreate):
 
 
 class ConductivityReadingCreate(BaseModel):
-    conductivity_us_cm: float = Field(ge=0, le=200000)
+    conductivity_us_cm: float = Field(
+        ge=CONDUCTIVITY_MIN_US_CM,
+        le=CONDUCTIVITY_MAX_US_CM,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

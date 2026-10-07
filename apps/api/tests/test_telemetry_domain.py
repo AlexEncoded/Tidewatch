@@ -6,6 +6,7 @@ from app.domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     BatteryTelemetrySnapshot,
+    ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
@@ -160,6 +161,27 @@ def test_ph_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.ph == 0
     assert upper.ph == 14
+
+
+@pytest.mark.parametrize("conductivity_us_cm", [-0.01, 200000.01])
+def test_conductivity_snapshot_rejects_values_outside_domain_range(
+    conductivity_us_cm: float,
+) -> None:
+    with pytest.raises(ValueError, match="Conductivity"):
+        ConductivityTelemetrySnapshot(
+            buoy_id="buoy-1",
+            conductivity_us_cm=conductivity_us_cm,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_conductivity_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = ConductivityTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = ConductivityTelemetrySnapshot("buoy-1", 200000, measured_at)
+
+    assert lower.conductivity_us_cm == 0
+    assert upper.conductivity_us_cm == 200000
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])
