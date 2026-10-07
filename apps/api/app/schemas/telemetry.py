@@ -10,6 +10,8 @@ from ..domain.telemetry_types import (
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
+    PH_MAX,
+    PH_MIN,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -184,7 +186,7 @@ class DissolvedOxygenReading(DissolvedOxygenReadingCreate):
 
 
 class PHReadingCreate(BaseModel):
-    ph: float = Field(ge=0, le=14)
+    ph: float = Field(ge=PH_MIN, le=PH_MAX)
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

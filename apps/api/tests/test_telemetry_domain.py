@@ -9,6 +9,7 @@ from app.domain.telemetry import (
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
+    PHTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
 )
@@ -140,6 +141,25 @@ def test_dissolved_oxygen_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.dissolved_oxygen_mg_l == 0
     assert upper.dissolved_oxygen_mg_l == 20
+
+
+@pytest.mark.parametrize("ph", [-0.01, 14.01])
+def test_ph_snapshot_rejects_values_outside_domain_range(ph: float) -> None:
+    with pytest.raises(ValueError, match="pH"):
+        PHTelemetrySnapshot(
+            buoy_id="buoy-1",
+            ph=ph,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_ph_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = PHTelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = PHTelemetrySnapshot("buoy-1", 14, measured_at)
+
+    assert lower.ph == 0
+    assert upper.ph == 14
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

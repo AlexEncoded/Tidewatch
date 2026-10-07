@@ -8,6 +8,8 @@ from .telemetry_types import (
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
+    PH_MAX,
+    PH_MIN,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -191,6 +193,11 @@ class PHTelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not PH_MIN <= self.ph <= PH_MAX:
+            raise ValueError(f"pH must be between {PH_MIN} and {PH_MAX}")
 
 
 @dataclass(frozen=True)
