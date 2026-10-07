@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    CHLOROPHYLL_A_MAX_UG_L,
+    CHLOROPHYLL_A_MIN_UG_L,
     CONDUCTIVITY_MAX_US_CM,
     CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
@@ -236,6 +238,14 @@ class ChlorophyllATelemetrySnapshot(SensorTelemetrySnapshot):
     sensor_id: str | None = None
     firmware_version: str | None = None
     quality: ReadingQuality = "good"
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not CHLOROPHYLL_A_MIN_UG_L <= self.chlorophyll_a_ug_l <= CHLOROPHYLL_A_MAX_UG_L:
+            raise ValueError(
+                f"Chlorophyll-a must be between {CHLOROPHYLL_A_MIN_UG_L} and "
+                f"{CHLOROPHYLL_A_MAX_UG_L} µg/L"
+            )
 
 
 @dataclass(frozen=True)

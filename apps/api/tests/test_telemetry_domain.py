@@ -6,6 +6,7 @@ from app.domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     BatteryTelemetrySnapshot,
+    ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
@@ -182,6 +183,27 @@ def test_conductivity_snapshot_accepts_range_endpoints() -> None:
 
     assert lower.conductivity_us_cm == 0
     assert upper.conductivity_us_cm == 200000
+
+
+@pytest.mark.parametrize("chlorophyll_a_ug_l", [-0.01, 1000.01])
+def test_chlorophyll_a_snapshot_rejects_values_outside_domain_range(
+    chlorophyll_a_ug_l: float,
+) -> None:
+    with pytest.raises(ValueError, match="Chlorophyll-a"):
+        ChlorophyllATelemetrySnapshot(
+            buoy_id="buoy-1",
+            chlorophyll_a_ug_l=chlorophyll_a_ug_l,
+            measured_at=datetime.now(timezone.utc),
+        )
+
+
+def test_chlorophyll_a_snapshot_accepts_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    lower = ChlorophyllATelemetrySnapshot("buoy-1", 0, measured_at)
+    upper = ChlorophyllATelemetrySnapshot("buoy-1", 1000, measured_at)
+
+    assert lower.chlorophyll_a_ug_l == 0
+    assert upper.chlorophyll_a_ug_l == 1000
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

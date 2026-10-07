@@ -6,6 +6,8 @@ from ..domain.telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+    CHLOROPHYLL_A_MAX_UG_L,
+    CHLOROPHYLL_A_MIN_UG_L,
     CONDUCTIVITY_MAX_US_CM,
     CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
@@ -223,7 +225,10 @@ class ConductivityReading(ConductivityReadingCreate):
 
 
 class ChlorophyllAReadingCreate(BaseModel):
-    chlorophyll_a_ug_l: float = Field(ge=0, le=1000)
+    chlorophyll_a_ug_l: float = Field(
+        ge=CHLOROPHYLL_A_MIN_UG_L,
+        le=CHLOROPHYLL_A_MAX_UG_L,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)
