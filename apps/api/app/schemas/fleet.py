@@ -14,6 +14,8 @@ from ..domain.buoy import (
     BuoyOperationalStatus,
 )
 from ..domain.telemetry_types import (
+    DEVICE_ID_MAX_LENGTH,
+    DEVICE_ID_MIN_LENGTH,
     GNSS_ALTITUDE_MAX_METERS,
     GNSS_ALTITUDE_MIN_METERS,
     GNSS_HDOP_MAX,
@@ -57,7 +59,11 @@ class BuoyLocationReadingCreate(BuoyLocationUpdate):
         ge=GNSS_SATELLITES_MIN,
         le=GNSS_SATELLITES_MAX,
     )
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    device_id: str | None = Field(
+        default=None,
+        min_length=DEVICE_ID_MIN_LENGTH,
+        max_length=DEVICE_ID_MAX_LENGTH,
+    )
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

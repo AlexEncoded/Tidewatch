@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from ..domain.telemetry_types import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
 from .battery import BatteryReadingCreate
 from .fleet import BuoyLocationReadingCreate
 from .telemetry import (
@@ -27,7 +28,11 @@ from .telemetry import (
 
 
 class TelemetryBatchCreate(BaseModel):
-    device_id: str | None = Field(default=None, min_length=1, max_length=100)
+    device_id: str | None = Field(
+        default=None,
+        min_length=DEVICE_ID_MIN_LENGTH,
+        max_length=DEVICE_ID_MAX_LENGTH,
+    )
     temperatures: list[TemperatureReadingCreate] = Field(default_factory=list, max_length=100)
     pressures: list[PressureReadingCreate] = Field(default_factory=list, max_length=100)
     salinity: list[SalinityReadingCreate] = Field(default_factory=list, max_length=100)
