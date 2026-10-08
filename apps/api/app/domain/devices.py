@@ -5,13 +5,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from .telemetry_types import SensorChannel
+from .telemetry_types import (
+    DEVICE_ID_MAX_LENGTH,
+    DEVICE_ID_MIN_LENGTH,
+    FIRMWARE_VERSION_MAX_LENGTH,
+    SensorChannel,
+)
 
 DeviceSensorChannel = SensorChannel
 DeviceOperationalStatus = Literal["active", "maintenance", "inactive"]
-DEVICE_ID_MIN_LENGTH = 1
-DEVICE_ID_MAX_LENGTH = 100
-DEVICE_FIRMWARE_MAX_LENGTH = 50
+DEVICE_FIRMWARE_MAX_LENGTH = FIRMWARE_VERSION_MAX_LENGTH
 
 
 class DeviceRegistrationConflict(ValueError):
