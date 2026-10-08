@@ -9,6 +9,9 @@ from .telemetry_types import (
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     DIRECTION_MAX_DEGREES,
     DIRECTION_MIN_DEGREES,
+    DEVICE_ID_MAX_LENGTH,
+    DEVICE_ID_MIN_LENGTH,
+    FIRMWARE_VERSION_MAX_LENGTH,
     GNSS_ALTITUDE_MAX_METERS,
     GNSS_ALTITUDE_MIN_METERS,
     GNSS_HDOP_MAX,
@@ -40,6 +43,7 @@ from .telemetry_types import (
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
+    SENSOR_ID_MAX_LENGTH,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
@@ -65,6 +69,23 @@ class SensorTelemetrySnapshot:
             raise ValueError(f"Unsupported sensor channel {self.sensor_channel!r}")
         if self.quality not in VALID_READING_QUALITIES:
             raise ValueError(f"Unsupported reading quality {self.quality!r}")
+        _validate_device_id(getattr(self, "device_id", None))
+        sensor_id = getattr(self, "sensor_id", None)
+        if sensor_id is not None and len(sensor_id) > SENSOR_ID_MAX_LENGTH:
+            raise ValueError(f"Sensor ID must be at most {SENSOR_ID_MAX_LENGTH} characters")
+        firmware_version = getattr(self, "firmware_version", None)
+        if firmware_version is not None and len(firmware_version) > FIRMWARE_VERSION_MAX_LENGTH:
+            raise ValueError(
+                f"Firmware version must be at most {FIRMWARE_VERSION_MAX_LENGTH} characters"
+            )
+
+
+def _validate_device_id(device_id: str | None) -> None:
+    if device_id is not None and not DEVICE_ID_MIN_LENGTH <= len(device_id) <= DEVICE_ID_MAX_LENGTH:
+        raise ValueError(
+            f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
+            f"and {DEVICE_ID_MAX_LENGTH} characters"
+        )
 
 
 @dataclass(frozen=True)
@@ -82,6 +103,7 @@ class LocationTelemetrySnapshot:
     device_id: str | None = None
 
     def __post_init__(self) -> None:
+        _validate_device_id(self.device_id)
         if not LATITUDE_MIN <= self.latitude <= LATITUDE_MAX:
             raise ValueError(
                 f"Latitude must be between {LATITUDE_MIN} and {LATITUDE_MAX} degrees"

@@ -68,6 +68,44 @@ def test_sensor_snapshot_accepts_supported_metadata() -> None:
     assert snapshot.quality == "suspect"
 
 
+@pytest.mark.parametrize(
+    "field,value,error",
+    [
+        ("device_id", "", "Device ID"),
+        ("device_id", "d" * 101, "Device ID"),
+        ("sensor_id", "s" * 101, "Sensor ID"),
+        ("firmware_version", "v" * 51, "Firmware version"),
+    ],
+)
+def test_sensor_snapshot_rejects_provenance_outside_contract_limits(
+    field: str,
+    value: str,
+    error: str,
+) -> None:
+    with pytest.raises(ValueError, match=error):
+        SalinityTelemetrySnapshot(
+            buoy_id="buoy-1",
+            salinity_psu=35,
+            measured_at=datetime.now(timezone.utc),
+            **{field: value},
+        )
+
+
+def test_sensor_snapshot_accepts_provenance_at_contract_limits() -> None:
+    snapshot = SalinityTelemetrySnapshot(
+        buoy_id="buoy-1",
+        salinity_psu=35,
+        measured_at=datetime.now(timezone.utc),
+        device_id="d" * 100,
+        sensor_id="s" * 100,
+        firmware_version="v" * 50,
+    )
+
+    assert len(snapshot.device_id or "") == 100
+    assert len(snapshot.sensor_id or "") == 100
+    assert len(snapshot.firmware_version or "") == 50
+
+
 @pytest.mark.parametrize("salinity_psu", [-0.01, 45.01])
 def test_salinity_snapshot_rejects_values_outside_domain_range(
     salinity_psu: float,
