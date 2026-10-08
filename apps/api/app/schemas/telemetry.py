@@ -20,6 +20,10 @@ from ..domain.telemetry_types import (
     DIRECTION_MIN_DEGREES,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
+    IMU_ACCELERATION_MAX_MPS2,
+    IMU_ACCELERATION_MIN_MPS2,
+    IMU_ANGULAR_VELOCITY_MAX_DPS,
+    IMU_ANGULAR_VELOCITY_MIN_DPS,
     MARINE_CURRENT_SPEED_MAX_MPS,
     MARINE_CURRENT_SPEED_MIN_MPS,
     PH_MAX,
@@ -98,12 +102,21 @@ class SalinityReading(SalinityReadingCreate):
 
 
 class ImuReadingCreate(BaseModel):
-    acceleration_x_mps2: float = Field(ge=-200, le=200)
-    acceleration_y_mps2: float = Field(ge=-200, le=200)
-    acceleration_z_mps2: float = Field(ge=-200, le=200)
-    angular_velocity_x_dps: float = Field(ge=-2000, le=2000)
-    angular_velocity_y_dps: float = Field(ge=-2000, le=2000)
-    angular_velocity_z_dps: float = Field(ge=-2000, le=2000)
+    acceleration_x_mps2: float = Field(ge=IMU_ACCELERATION_MIN_MPS2, le=IMU_ACCELERATION_MAX_MPS2)
+    acceleration_y_mps2: float = Field(ge=IMU_ACCELERATION_MIN_MPS2, le=IMU_ACCELERATION_MAX_MPS2)
+    acceleration_z_mps2: float = Field(ge=IMU_ACCELERATION_MIN_MPS2, le=IMU_ACCELERATION_MAX_MPS2)
+    angular_velocity_x_dps: float = Field(
+        ge=IMU_ANGULAR_VELOCITY_MIN_DPS,
+        le=IMU_ANGULAR_VELOCITY_MAX_DPS,
+    )
+    angular_velocity_y_dps: float = Field(
+        ge=IMU_ANGULAR_VELOCITY_MIN_DPS,
+        le=IMU_ANGULAR_VELOCITY_MAX_DPS,
+    )
+    angular_velocity_z_dps: float = Field(
+        ge=IMU_ANGULAR_VELOCITY_MIN_DPS,
+        le=IMU_ANGULAR_VELOCITY_MAX_DPS,
+    )
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     sensor_id: str | None = Field(default=None, max_length=100)

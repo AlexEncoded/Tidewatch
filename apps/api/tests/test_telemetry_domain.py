@@ -370,6 +370,52 @@ def test_underwater_acoustic_snapshot_accepts_range_endpoints() -> None:
     assert maximum.echo_intensity_db == 100
 
 
+@pytest.mark.parametrize("field,value", [
+    ("acceleration_x_mps2", -200.01),
+    ("acceleration_y_mps2", 200.01),
+    ("angular_velocity_z_dps", -2000.01),
+    ("angular_velocity_x_dps", 2000.01),
+])
+def test_imu_snapshot_rejects_components_outside_domain_range(
+    field: str,
+    value: float,
+) -> None:
+    components = {
+        "acceleration_x_mps2": 0,
+        "acceleration_y_mps2": 0,
+        "acceleration_z_mps2": 0,
+        "angular_velocity_x_dps": 0,
+        "angular_velocity_y_dps": 0,
+        "angular_velocity_z_dps": 0,
+    }
+    components[field] = value
+
+    with pytest.raises(ValueError, match="IMU"):
+        ImuTelemetrySnapshot(
+            buoy_id="buoy-1",
+            measured_at=datetime.now(timezone.utc),
+            **components,
+        )
+
+
+def test_imu_snapshot_accepts_component_range_endpoints() -> None:
+    snapshot = ImuTelemetrySnapshot(
+        buoy_id="buoy-1",
+        acceleration_x_mps2=-200,
+        acceleration_y_mps2=200,
+        acceleration_z_mps2=0,
+        angular_velocity_x_dps=-2000,
+        angular_velocity_y_dps=2000,
+        angular_velocity_z_dps=0,
+        measured_at=datetime.now(timezone.utc),
+    )
+
+    assert snapshot.acceleration_x_mps2 == -200
+    assert snapshot.acceleration_y_mps2 == 200
+    assert snapshot.angular_velocity_x_dps == -2000
+    assert snapshot.angular_velocity_y_dps == 2000
+
+
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])
 def test_battery_snapshot_rejects_percentage_outside_domain_range(
     battery_percent: float,
