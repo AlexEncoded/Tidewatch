@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.domain.device_health import assess_device_liveness
 from app.domain.devices import (
     DeviceRegistrationCommand,
     DeviceStatusCommand,
@@ -16,6 +17,47 @@ from app.application.device_registration import register_device
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
+
+
+def test_device_liveness_marks_active_device_without_heartbeat_stale() -> None:
+    now = datetime(2026, 10, 8, tzinfo=timezone.utc)
+
+    assessment = assess_device_liveness("active", None, now, 60)
+
+    assert assessment.last_seen_at is None
+    assert assessment.age_seconds is None
+    assert assessment.is_stale
+
+
+def test_device_liveness_normalizes_naive_heartbeat_and_applies_threshold() -> None:
+    now = datetime(2026, 10, 8, 12, tzinfo=timezone.utc)
+    last_seen = datetime(2026, 10, 8, 11, 59, 30)
+
+    assessment = assess_device_liveness("active", last_seen, now, 60)
+
+    assert assessment.last_seen_at == last_seen.replace(tzinfo=timezone.utc)
+    assert assessment.age_seconds == 30
+    assert not assessment.is_stale
+
+
+@pytest.mark.parametrize("status", ["maintenance", "inactive"])
+def test_non_active_device_is_not_marked_stale(status: str) -> None:
+    now = datetime(2026, 10, 8, tzinfo=timezone.utc)
+    last_seen = now - timedelta(hours=2)
+
+    assessment = assess_device_liveness(status, last_seen, now, 60)
+
+    assert assessment.age_seconds == 7200
+    assert not assessment.is_stale
+
+
+def test_device_liveness_clamps_future_heartbeat_age_to_zero() -> None:
+    now = datetime(2026, 10, 8, tzinfo=timezone.utc)
+
+    assessment = assess_device_liveness("active", now + timedelta(seconds=30), now, 60)
+
+    assert assessment.age_seconds == 0
+    assert not assessment.is_stale
 
 
 @pytest.mark.parametrize(
