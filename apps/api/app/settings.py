@@ -1,6 +1,7 @@
 """Runtime configuration read by the API composition root and adapters."""
 
 import os
+from math import isfinite
 
 from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
 
@@ -15,5 +16,7 @@ def configured_wave_imu_factor() -> float:
             )
         )
     except ValueError:
+        return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+    if not isfinite(value):
         return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
     return max(0.0, min(10.0, value))

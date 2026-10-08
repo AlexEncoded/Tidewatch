@@ -903,6 +903,13 @@ def test_wave_calibration_factor_from_environment_is_bounded(monkeypatch) -> Non
     assert configured_wave_imu_factor() == 0.1
 
 
+def test_wave_calibration_factor_uses_default_for_non_finite_values(monkeypatch) -> None:
+    for value in ("nan", "inf", "-inf"):
+        monkeypatch.setenv("WAVE_IMU_WAVE_HEIGHT_FACTOR", value)
+
+        assert configured_wave_imu_factor() == 0.1
+
+
 def test_wave_analysis_reports_partial_gnss_data() -> None:
     locations = [
         type("Location", (), {"altitude_meters": value})()
