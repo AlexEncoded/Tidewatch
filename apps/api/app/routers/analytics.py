@@ -8,7 +8,7 @@ from ..application.temperature_analysis import (
     analyze_temperature_for_buoy,
 )
 from ..application.temperature_alerts import find_temperature_anomalies
-from ..application.wave_analysis import analyze_wave_for_buoy, configured_wave_imu_factor
+from ..application.wave_analysis import analyze_wave_for_buoy
 from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
@@ -31,6 +31,7 @@ from ..schemas.analytics import (
     TemperatureAnalysis,
     WaveAnalysis,
 )
+from ..settings import configured_wave_imu_factor
 router = APIRouter()
 
 

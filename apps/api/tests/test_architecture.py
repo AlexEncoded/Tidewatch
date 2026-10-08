@@ -58,6 +58,7 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "sqlalchemy")
     assert not imports_package(modules, "pydantic")
+    assert "os" not in modules
     assert not any(module.endswith(".database") for module in modules)
     assert not any(module.endswith(".repository") for module in modules)
     forbidden_adapters = {
