@@ -17,6 +17,7 @@ from app.domain.telemetry import (
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
+    LocationTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
@@ -414,6 +415,50 @@ def test_imu_snapshot_accepts_component_range_endpoints() -> None:
     assert snapshot.acceleration_y_mps2 == 200
     assert snapshot.angular_velocity_x_dps == -2000
     assert snapshot.angular_velocity_y_dps == 2000
+
+
+def test_location_snapshot_accepts_geographic_and_gnss_boundaries() -> None:
+    snapshot = LocationTelemetrySnapshot(
+        buoy_id="buoy-1",
+        latitude=90,
+        longitude=180,
+        measured_at=datetime.now(timezone.utc),
+        altitude_meters=20000,
+        speed_mps=100,
+        hdop=100,
+        satellites=100,
+    )
+
+    assert snapshot.latitude == 90
+    assert snapshot.longitude == 180
+    assert snapshot.altitude_meters == 20000
+    assert snapshot.speed_mps == 100
+
+
+@pytest.mark.parametrize(
+    "overrides,error", [
+        ({"latitude": 90.01}, "Latitude"),
+        ({"longitude": -180.01}, "Longitude"),
+        ({"altitude_meters": -1000.01}, "GNSS altitude"),
+        ({"speed_mps": 100.01}, "GNSS speed"),
+        ({"hdop": 0}, "GNSS HDOP"),
+        ({"satellites": 101}, "GNSS satellite count"),
+    ],
+)
+def test_location_snapshot_rejects_values_outside_domain_range(
+    overrides: dict[str, object],
+    error: str,
+) -> None:
+    values: dict[str, object] = {
+        "buoy_id": "buoy-1",
+        "latitude": 0,
+        "longitude": 0,
+        "measured_at": datetime.now(timezone.utc),
+    }
+    values.update(overrides)
+
+    with pytest.raises(ValueError, match=error):
+        LocationTelemetrySnapshot(**values)
 
 
 @pytest.mark.parametrize("battery_percent", [-0.1, 100.1])

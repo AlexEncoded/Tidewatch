@@ -13,6 +13,16 @@ from ..domain.buoy import (
     LONGITUDE_MIN,
     BuoyOperationalStatus,
 )
+from ..domain.telemetry_types import (
+    GNSS_ALTITUDE_MAX_METERS,
+    GNSS_ALTITUDE_MIN_METERS,
+    GNSS_HDOP_MAX,
+    GNSS_HDOP_MIN,
+    GNSS_SATELLITES_MAX,
+    GNSS_SATELLITES_MIN,
+    GNSS_SPEED_MAX_MPS,
+    GNSS_SPEED_MIN_MPS,
+)
 
 
 class BuoyCreate(BaseModel):
@@ -31,10 +41,22 @@ class BuoyLocationUpdate(BaseModel):
 
 
 class BuoyLocationReadingCreate(BuoyLocationUpdate):
-    altitude_meters: float | None = Field(default=None, ge=-1000, le=20000)
-    speed_mps: float | None = Field(default=None, ge=0, le=100)
-    hdop: float | None = Field(default=None, gt=0, le=100)
-    satellites: int | None = Field(default=None, ge=0, le=100)
+    altitude_meters: float | None = Field(
+        default=None,
+        ge=GNSS_ALTITUDE_MIN_METERS,
+        le=GNSS_ALTITUDE_MAX_METERS,
+    )
+    speed_mps: float | None = Field(
+        default=None,
+        ge=GNSS_SPEED_MIN_MPS,
+        le=GNSS_SPEED_MAX_MPS,
+    )
+    hdop: float | None = Field(default=None, gt=GNSS_HDOP_MIN, le=GNSS_HDOP_MAX)
+    satellites: int | None = Field(
+        default=None,
+        ge=GNSS_SATELLITES_MIN,
+        le=GNSS_SATELLITES_MAX,
+    )
     device_id: str | None = Field(default=None, min_length=1, max_length=100)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
