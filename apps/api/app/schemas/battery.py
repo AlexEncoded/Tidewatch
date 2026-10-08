@@ -1,13 +1,20 @@
 """HTTP contracts for buoy battery telemetry and health."""
 
 from datetime import datetime, timezone
-from ..domain.telemetry_types import SensorChannel
+from ..domain.telemetry_types import (
+    BATTERY_MAX_PERCENT,
+    BATTERY_MIN_PERCENT,
+    SensorChannel,
+)
 
 from pydantic import BaseModel, Field
 
 
 class BatteryReadingCreate(BaseModel):
-    battery_percent: float = Field(ge=0, le=100)
+    battery_percent: float = Field(
+        ge=BATTERY_MIN_PERCENT,
+        le=BATTERY_MAX_PERCENT,
+    )
     device_id: SensorChannel = "A"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

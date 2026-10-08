@@ -522,6 +522,15 @@ def test_battery_snapshot_rejects_unknown_device_channel() -> None:
         )
 
 
+def test_battery_snapshot_accepts_percentage_range_endpoints() -> None:
+    measured_at = datetime.now(timezone.utc)
+    empty = BatteryTelemetrySnapshot("buoy-1", 0, "A", measured_at)
+    full = BatteryTelemetrySnapshot("buoy-1", 100, "B", measured_at)
+
+    assert empty.battery_percent == 0
+    assert full.battery_percent == 100
+
+
 @pytest.mark.parametrize("temperature_celsius", [-5.01, 45.01])
 def test_sea_temperature_snapshot_rejects_values_outside_physical_range(
     temperature_celsius: float,

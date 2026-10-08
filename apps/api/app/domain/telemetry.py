@@ -5,6 +5,8 @@ from .buoy import LATITUDE_MAX, LATITUDE_MIN, LONGITUDE_MAX, LONGITUDE_MIN
 from .telemetry_types import (
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
+    BATTERY_MAX_PERCENT,
+    BATTERY_MIN_PERCENT,
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     DIRECTION_MAX_DEGREES,
@@ -539,8 +541,11 @@ class BatteryTelemetrySnapshot:
     def __post_init__(self) -> None:
         if self.device_id not in VALID_SENSOR_CHANNELS:
             raise ValueError(f"Unsupported battery device channel {self.device_id!r}")
-        if not 0 <= self.battery_percent <= 100:
-            raise ValueError("Battery percentage must be between 0 and 100")
+        if not BATTERY_MIN_PERCENT <= self.battery_percent <= BATTERY_MAX_PERCENT:
+            raise ValueError(
+                f"Battery percentage must be between {BATTERY_MIN_PERCENT} "
+                f"and {BATTERY_MAX_PERCENT}"
+            )
 
 
 def latest_usable_reading(
