@@ -138,6 +138,31 @@ def test_battery_reading_can_be_linked_to_registered_physical_device(client):
     assert devices[0]["last_seen_at"] is not None
     latest = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A")
     assert latest.json()["physical_device_id"] == "battery-unit-a"
+    physical_latest = client.get(
+        f"/api/v1/buoys/{buoy_id}/battery?physical_device_id=battery-unit-a"
+    )
+    assert physical_latest.json()["physical_device_id"] == "battery-unit-a"
+    physical_history = client.get(
+        f"/api/v1/buoys/{buoy_id}/battery/history?physical_device_id=battery-unit-a"
+    )
+    assert [item["physical_device_id"] for item in physical_history.json()] == [
+        "battery-unit-a"
+    ]
+
+
+def test_battery_query_rejects_physical_device_from_another_buoy(client):
+    owner = client.post("/api/v1/buoys", json={"name": "Battery owner"}).json()["id"]
+    other = client.post("/api/v1/buoys", json={"name": "Battery other"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{owner}/devices",
+        json={"device_id": "owned-battery-unit", "sensor_channel": "A"},
+    )
+
+    response = client.get(
+        f"/api/v1/buoys/{other}/battery?physical_device_id=owned-battery-unit"
+    )
+
+    assert response.status_code == 404
 
 
 def test_battery_reading_rejects_physical_device_channel_mismatch(client):

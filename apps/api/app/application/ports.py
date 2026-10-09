@@ -393,11 +393,15 @@ class BatteryTelemetryReader(Protocol):
         buoy_id: str,
         limit: int,
         device_id: str | None = None,
+        physical_device_id: str | None = None,
     ) -> list[BatteryTelemetrySnapshot]:
         ...
 
     def latest_battery(
-        self, buoy_id: str, device_id: str | None = None
+        self,
+        buoy_id: str,
+        device_id: str | None = None,
+        physical_device_id: str | None = None,
     ) -> BatteryTelemetrySnapshot | None:
         ...
 

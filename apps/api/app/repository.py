@@ -1516,7 +1516,10 @@ class BuoyRepository:
         ]
 
     def latest_battery(
-        self, buoy_id: str, device_id: str | None = None
+        self,
+        buoy_id: str,
+        device_id: str | None = None,
+        physical_device_id: str | None = None,
     ) -> BatteryReadingEntity | None:
         query = (
             select(BatteryReadingEntity)
@@ -1526,6 +1529,10 @@ class BuoyRepository:
         )
         if device_id is not None:
             query = query.where(BatteryReadingEntity.device_id == device_id)
+        if physical_device_id is not None:
+            query = query.where(
+                BatteryReadingEntity.physical_device_id == physical_device_id
+            )
         entity = self.db.scalars(query).first()
         if entity is None:
             return None
@@ -1538,7 +1545,11 @@ class BuoyRepository:
         )
 
     def list_batteries(
-        self, buoy_id: str, limit: int, device_id: str | None = None
+        self,
+        buoy_id: str,
+        limit: int,
+        device_id: str | None = None,
+        physical_device_id: str | None = None,
     ) -> list[BatteryTelemetrySnapshot]:
         query = (
             select(BatteryReadingEntity)
@@ -1548,6 +1559,10 @@ class BuoyRepository:
         )
         if device_id is not None:
             query = query.where(BatteryReadingEntity.device_id == device_id)
+        if physical_device_id is not None:
+            query = query.where(
+                BatteryReadingEntity.physical_device_id == physical_device_id
+            )
         return [
             BatteryTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
