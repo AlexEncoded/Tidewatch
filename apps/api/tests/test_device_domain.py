@@ -60,6 +60,14 @@ def test_device_liveness_clamps_future_heartbeat_age_to_zero() -> None:
     assert not assessment.is_stale
 
 
+@pytest.mark.parametrize("max_age_seconds", [0, -1, float("nan"), float("inf")])
+def test_device_liveness_rejects_invalid_maximum_age(max_age_seconds: float) -> None:
+    now = datetime(2026, 10, 8, tzinfo=timezone.utc)
+
+    with pytest.raises(ValueError, match="positive finite number"):
+        assess_device_liveness("active", now, now, max_age_seconds)
+
+
 @pytest.mark.parametrize(
     "device_id, channel, firmware",
     [
