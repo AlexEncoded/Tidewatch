@@ -84,6 +84,30 @@ def test_batch_telemetry_records_device_heartbeat(client):
     assert "tidewatch_device_last_seen_timestamp_seconds" in client.get("/metrics").text
 
 
+def test_batch_telemetry_rejects_channel_mismatch_before_writing(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Channel mismatch"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "channel-a-unit", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "channel-a-unit",
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "B"}
+            ],
+        },
+    )
+
+    assert response.status_code == 422
+    assert "must match physical device channel A" in response.json()["detail"]
+    assert client.get(f"/api/v1/buoys/{buoy_id}/temperatures").json() == []
+    device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
+    assert device["last_seen_at"] is None
+
+
 def test_device_health_endpoint_exposes_stale_registered_unit(client):
     buoy_id = client.post("/api/v1/buoys", json={"name": "Device health"}).json()["id"]
     client.post(

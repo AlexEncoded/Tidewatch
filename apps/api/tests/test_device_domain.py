@@ -277,6 +277,24 @@ def test_record_device_heartbeat_rejects_foreign_device() -> None:
         record_device_heartbeat(Registry(), "buoy-1", "device-a")
 
 
+def test_record_device_heartbeat_rejects_mismatched_sensor_channel() -> None:
+    class Registry:
+        def get_device(self, device_id):
+            return SimpleNamespace(
+                device_id=device_id,
+                buoy_id="buoy-1",
+                sensor_channel="A",
+            )
+
+        def mark_device_seen(self, device, seen_at):
+            raise AssertionError("mismatched channels must not update the heartbeat")
+
+    with pytest.raises(ValueError, match="must match physical device channel A"):
+        record_device_heartbeat(
+            Registry(), "buoy-1", "device-a", sensor_channels=("A", "B")
+        )
+
+
 def test_stale_age_seconds_returns_age_only_after_threshold() -> None:
     now = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
 

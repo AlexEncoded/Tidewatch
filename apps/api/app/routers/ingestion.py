@@ -86,9 +86,46 @@ def ingest_telemetry(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if payload.device_id is not None:
         try:
-            device, seen_at = record_device_heartbeat(gateway, buoy_id, payload.device_id)
+            sensor_channels = (
+                reading.sensor_channel
+                for family in (
+                    payload.temperatures,
+                    payload.pressures,
+                    payload.salinity,
+                    payload.imu,
+                    payload.ambient_light,
+                    payload.wind,
+                    payload.marine_current,
+                    payload.turbidity,
+                    payload.dissolved_oxygen,
+                    payload.ph,
+                    payload.conductivity,
+                    payload.chlorophyll_a,
+                    payload.rainfall,
+                    payload.humidity,
+                    payload.air_temperature,
+                    payload.atmospheric_pressure,
+                    payload.acoustic_altimeter,
+                    payload.underwater_acoustic,
+                )
+                for reading in family
+            )
+            sensor_channels = (
+                *sensor_channels,
+                *(reading.device_id for reading in payload.battery),
+            )
+            device, seen_at = record_device_heartbeat(
+                gateway,
+                buoy_id,
+                payload.device_id,
+                sensor_channels=sensor_channels,
+            )
         except DeviceOwnershipError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
+            ) from None
         device_last_seen_timestamp_seconds.labels(
             buoy_id=buoy_id,
             device_id=device.device_id,
