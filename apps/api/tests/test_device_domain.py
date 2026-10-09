@@ -17,6 +17,7 @@ from app.application.device_registration import register_device
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
+from app.domain.devices import DeviceSnapshot
 
 
 def test_device_liveness_marks_active_device_without_heartbeat_stale() -> None:
@@ -236,25 +237,21 @@ def test_update_device_status_application_service_rejects_missing_device() -> No
 
 def test_record_device_heartbeat_updates_registry_with_supplied_time() -> None:
     class Registry:
-        def get_device(self, device_id):
-            return SimpleNamespace(
+        def get_device_snapshot(self, device_id):
+            return DeviceSnapshot(
                 device_id=device_id,
                 buoy_id="buoy-1",
                 sensor_channel="A",
-                firmware_version=None,
-                status="active",
                 registered_at=seen_at,
                 last_seen_at=None,
             )
 
-        def mark_device_seen(self, device, seen_at):
-            return SimpleNamespace(
-                device_id=device.device_id,
-                buoy_id=device.buoy_id,
-                sensor_channel=device.sensor_channel,
-                firmware_version=device.firmware_version,
-                status=device.status,
-                registered_at=device.registered_at,
+        def mark_device_seen_by_id(self, device_id, seen_at):
+            return DeviceSnapshot(
+                device_id=device_id,
+                buoy_id="buoy-1",
+                sensor_channel="A",
+                registered_at=seen_at,
                 last_seen_at=seen_at,
             )
 
@@ -267,10 +264,15 @@ def test_record_device_heartbeat_updates_registry_with_supplied_time() -> None:
 
 def test_record_device_heartbeat_rejects_foreign_device() -> None:
     class Registry:
-        def get_device(self, device_id):
-            return SimpleNamespace(device_id=device_id, buoy_id="other-buoy")
+        def get_device_snapshot(self, device_id):
+            return DeviceSnapshot(
+                device_id=device_id,
+                buoy_id="other-buoy",
+                sensor_channel="A",
+                registered_at=datetime(2026, 9, 8, tzinfo=timezone.utc),
+            )
 
-        def mark_device_seen(self, device, seen_at):
+        def mark_device_seen_by_id(self, device_id, seen_at):
             raise AssertionError("foreign devices must not update their heartbeat")
 
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
@@ -279,14 +281,15 @@ def test_record_device_heartbeat_rejects_foreign_device() -> None:
 
 def test_record_device_heartbeat_rejects_mismatched_sensor_channel() -> None:
     class Registry:
-        def get_device(self, device_id):
-            return SimpleNamespace(
+        def get_device_snapshot(self, device_id):
+            return DeviceSnapshot(
                 device_id=device_id,
                 buoy_id="buoy-1",
                 sensor_channel="A",
+                registered_at=datetime(2026, 9, 8, tzinfo=timezone.utc),
             )
 
-        def mark_device_seen(self, device, seen_at):
+        def mark_device_seen_by_id(self, device_id, seen_at):
             raise AssertionError("mismatched channels must not update the heartbeat")
 
     with pytest.raises(ValueError, match="must match physical device channel A"):

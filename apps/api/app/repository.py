@@ -374,10 +374,14 @@ class BuoyRepository:
             last_seen_at=device.last_seen_at,
         )
 
-    def mark_device_seen_by_id(self, device_id: str, seen_at: datetime) -> None:
+    def mark_device_seen_by_id(
+        self, device_id: str, seen_at: datetime
+    ) -> DeviceSnapshot | None:
         device = self.get_device(device_id)
-        if device is not None:
-            self.mark_device_seen(device, seen_at)
+        if device is None:
+            return None
+        self.mark_device_seen(device, seen_at)
+        return self.get_device_snapshot(device_id)
 
     def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
         if _is_newer(seen_at, device.last_seen_at):

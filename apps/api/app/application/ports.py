@@ -383,7 +383,9 @@ class BatteryTelemetryReader(Protocol):
     def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         ...
 
-    def mark_device_seen_by_id(self, device_id: str, seen_at: datetime):
+    def mark_device_seen_by_id(
+        self, device_id: str, seen_at: datetime
+    ) -> DeviceSnapshot | None:
         ...
 
     def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryTelemetrySnapshot:
@@ -593,8 +595,10 @@ class TelemetryIngestionGateway(
     def add_location(self, reading: LocationTelemetrySnapshot):
         ...
 
-    def get_device(self, device_id: str):
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         ...
 
-    def mark_device_seen(self, device, seen_at: datetime):
+    def mark_device_seen_by_id(
+        self, device_id: str, seen_at: datetime
+    ) -> DeviceSnapshot | None:
         ...
