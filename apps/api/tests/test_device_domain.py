@@ -208,11 +208,10 @@ def test_register_device_application_service_rejects_conflicts(existing, message
 def test_update_device_status_application_service_returns_updated_device() -> None:
     class Registry:
         def update_device_status(self, buoy_id, device_id, update):
-            return SimpleNamespace(
+            return DeviceSnapshot(
                 buoy_id=buoy_id,
                 device_id=device_id,
                 sensor_channel="A",
-                firmware_version=None,
                 status=update.status,
                 registered_at=datetime.now(timezone.utc),
                 last_seen_at=None,

@@ -114,6 +114,18 @@ def _sensor_health_check_snapshot(
     )
 
 
+def _device_snapshot(entity: DeviceEntity) -> DeviceSnapshot:
+    return DeviceSnapshot(
+        buoy_id=entity.buoy_id,
+        device_id=entity.device_id,
+        sensor_channel=entity.sensor_channel,
+        registered_at=entity.registered_at,
+        firmware_version=entity.firmware_version,
+        status=entity.status,
+        last_seen_at=entity.last_seen_at,
+    )
+
+
 def _buoy_snapshot(entity: BuoyEntity) -> BuoySnapshot:
     """Map the persistence representation to the buoy domain snapshot."""
     return BuoySnapshot(
@@ -362,17 +374,7 @@ class BuoyRepository:
 
     def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         device = self.get_device(device_id)
-        if device is None:
-            return None
-        return DeviceSnapshot(
-            buoy_id=device.buoy_id,
-            device_id=device.device_id,
-            sensor_channel=device.sensor_channel,
-            registered_at=device.registered_at,
-            firmware_version=device.firmware_version,
-            status=device.status,
-            last_seen_at=device.last_seen_at,
-        )
+        return _device_snapshot(device) if device is not None else None
 
     def mark_device_seen_by_id(
         self, device_id: str, seen_at: datetime
@@ -392,14 +394,14 @@ class BuoyRepository:
 
     def update_device_status(
         self, buoy_id: str, device_id: str, update: DeviceStatusCommand
-    ) -> DeviceEntity | None:
+    ) -> DeviceSnapshot | None:
         device = self.db.get(DeviceEntity, device_id)
         if device is None or device.buoy_id != buoy_id:
             return None
         device.status = update.status
         self.db.commit()
         self.db.refresh(device)
-        return device
+        return _device_snapshot(device)
 
     def add_temperature(
         self, reading: TemperatureTelemetrySnapshot
