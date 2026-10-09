@@ -92,25 +92,26 @@ def test_device_status_command_rejects_unknown_status() -> None:
 
 def test_device_listing_application_service_returns_domain_snapshots() -> None:
     registered_at = datetime(2026, 9, 24, tzinfo=timezone.utc)
+    expected = DeviceSnapshot(
+        buoy_id="buoy-1",
+        device_id="unit-a",
+        sensor_channel="A",
+        firmware_version="1.2.3",
+        status="active",
+        registered_at=registered_at,
+    )
 
     class Reader:
-        def list_devices(self, buoy_id):
+        def list_device_snapshots(self, buoy_id):
             assert buoy_id == "buoy-1"
-            return [SimpleNamespace(
-                buoy_id=buoy_id,
-                device_id="unit-a",
-                sensor_channel="A",
-                firmware_version="1.2.3",
-                status="active",
-                registered_at=registered_at,
-                last_seen_at=None,
-            )]
+            return [expected]
 
     snapshots = list_devices_for_buoy(Reader(), "buoy-1")
 
     assert len(snapshots) == 1
     assert snapshots[0].device_id == "unit-a"
     assert snapshots[0].registered_at == registered_at
+    assert snapshots[0] is expected
 
 
 def test_device_registration_accepts_the_other_redundant_channel() -> None:
