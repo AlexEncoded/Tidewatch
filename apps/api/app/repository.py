@@ -31,6 +31,7 @@ from .entities import (
     TemperatureReadingEntity,
 )
 from .domain.devices import (
+    DeviceSnapshot,
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceStatusCommand,
@@ -358,6 +359,25 @@ class BuoyRepository:
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         return self.db.get(DeviceEntity, device_id)
+
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
+        device = self.get_device(device_id)
+        if device is None:
+            return None
+        return DeviceSnapshot(
+            buoy_id=device.buoy_id,
+            device_id=device.device_id,
+            sensor_channel=device.sensor_channel,
+            registered_at=device.registered_at,
+            firmware_version=device.firmware_version,
+            status=device.status,
+            last_seen_at=device.last_seen_at,
+        )
+
+    def mark_device_seen_by_id(self, device_id: str, seen_at: datetime) -> None:
+        device = self.get_device(device_id)
+        if device is not None:
+            self.mark_device_seen(device, seen_at)
 
     def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
         if _is_newer(seen_at, device.last_seen_at):

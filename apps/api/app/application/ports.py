@@ -35,6 +35,7 @@ from ..domain.buoy import (
 )
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
+from ..domain.devices import DeviceSnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -379,10 +380,10 @@ class BatteryTelemetryReader(Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
-    def get_device(self, device_id: str):
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         ...
 
-    def mark_device_seen(self, device, seen_at: datetime):
+    def mark_device_seen_by_id(self, device_id: str, seen_at: datetime):
         ...
 
     def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryTelemetrySnapshot:
