@@ -3,11 +3,18 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.battery_analysis import analyze_battery_for_buoy
+from ..application.battery_ingestion import record_battery_reading
 from ..application.battery_health import analyze_battery_health_for_buoy
 from ..application.telemetry_ingestion import build_battery_snapshot
+from ..domain.devices import DeviceOwnershipError
 from ..adapter_dependencies import get_battery_telemetry_reader
 from ..application.ports import BatteryTelemetryReader
-from ..metrics import battery_delta_percent, battery_device_percent, battery_percent
+from ..metrics import (
+    battery_delta_percent,
+    battery_device_percent,
+    battery_percent,
+    device_last_seen_timestamp_seconds,
+)
 from ..schemas.battery import (
     BatteryAnalysis,
     BatteryHealth,
@@ -31,8 +38,19 @@ def record_battery(
 ) -> BatteryReading:
     ensure_buoy_exists(reader, buoy_id)
     battery = build_battery_snapshot(buoy_id, payload.model_dump())
-    saved_battery = reader.add_battery(battery)
+    try:
+        saved_battery = record_battery_reading(reader, battery)
+    except DeviceOwnershipError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
     battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
+    if saved_battery.physical_device_id is not None:
+        device_last_seen_timestamp_seconds.labels(
+            buoy_id=buoy_id,
+            device_id=saved_battery.physical_device_id,
+            sensor_channel=saved_battery.device_id,
+        ).set(saved_battery.measured_at.timestamp())
     return saved_battery
 
 

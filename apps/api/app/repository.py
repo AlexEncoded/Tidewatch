@@ -360,7 +360,7 @@ class BuoyRepository:
         return self.db.get(DeviceEntity, device_id)
 
     def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
-        if device.last_seen_at is None or seen_at > device.last_seen_at:
+        if _is_newer(seen_at, device.last_seen_at):
             device.last_seen_at = seen_at
             self.db.commit()
             self.db.refresh(device)
@@ -1446,6 +1446,7 @@ class BuoyRepository:
         entity = BatteryReadingEntity(
             buoy_id=reading.buoy_id,
             device_id=reading.device_id,
+            physical_device_id=reading.physical_device_id,
             battery_percent=reading.battery_percent,
             measured_at=reading.measured_at,
         )
@@ -1461,6 +1462,7 @@ class BuoyRepository:
             battery_percent=entity.battery_percent,
             device_id=entity.device_id,
             measured_at=entity.measured_at,
+            physical_device_id=entity.physical_device_id,
         )
 
     def add_sensor_health_check(
@@ -1532,6 +1534,7 @@ class BuoyRepository:
             battery_percent=entity.battery_percent,
             device_id=entity.device_id,
             measured_at=entity.measured_at,
+            physical_device_id=entity.physical_device_id,
         )
 
     def list_batteries(
@@ -1551,6 +1554,7 @@ class BuoyRepository:
                 battery_percent=entity.battery_percent,
                 device_id=entity.device_id,
                 measured_at=entity.measured_at,
+                physical_device_id=entity.physical_device_id,
             )
             for entity in self.db.scalars(query).all()
         ]

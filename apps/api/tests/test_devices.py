@@ -115,6 +115,84 @@ def test_stale_device_is_included_in_maintenance_queue(client):
     )
 
 
+def test_battery_reading_can_be_linked_to_registered_physical_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Battery unit link"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "battery-unit-a", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={
+            "battery_percent": 87.5,
+            "device_id": "A",
+            "physical_device_id": "battery-unit-a",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["device_id"] == "A"
+    assert response.json()["physical_device_id"] == "battery-unit-a"
+    devices = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()
+    assert devices[0]["last_seen_at"] is not None
+    latest = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A")
+    assert latest.json()["physical_device_id"] == "battery-unit-a"
+
+
+def test_battery_reading_rejects_physical_device_channel_mismatch(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Battery channel mismatch"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "battery-unit-b", "sensor_channel": "B"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={
+            "battery_percent": 87.5,
+            "device_id": "A",
+            "physical_device_id": "battery-unit-b",
+        },
+    )
+
+    assert response.status_code == 422
+    assert "channel must match" in response.json()["detail"]
+
+
+def test_battery_reading_rejects_unknown_physical_device(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Battery unknown unit"}).json()["id"]
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={"battery_percent": 87.5, "physical_device_id": "unknown-unit"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_batch_battery_uses_envelope_physical_device_and_records_heartbeat(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Batch battery unit"}).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "batch-battery-a", "sensor_channel": "A"},
+    )
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "batch-battery-a",
+            "battery": [{"battery_percent": 75, "device_id": "A"}],
+        },
+    )
+
+    assert response.status_code == 202
+    reading = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A").json()
+    assert reading["physical_device_id"] == "batch-battery-a"
+    device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
+    assert device["last_seen_at"] is not None
+
+
 def test_batch_location_keeps_originating_device(client):
     buoy_id = client.post("/api/v1/buoys", json={"name": "GNSS Device"}).json()["id"]
     client.post(

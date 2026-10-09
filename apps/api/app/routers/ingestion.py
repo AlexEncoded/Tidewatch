@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..application.device_heartbeat import record_device_heartbeat
+from ..application.battery_ingestion import record_battery_reading
 from ..application.movement_analysis import analyze_movement_for_buoy
 from ..adapter_dependencies import get_telemetry_ingestion_gateway
 from ..application.ports import TelemetryIngestionGateway
@@ -400,12 +401,26 @@ def ingest_telemetry(
         accepted += 1
 
     for battery_payload in payload.battery:
-        battery = build_battery_snapshot(buoy_id, battery_payload.model_dump())
-        gateway.add_battery(battery)
+        battery_data = battery_payload.model_dump()
+        if battery_data["physical_device_id"] is None:
+            battery_data["physical_device_id"] = payload.device_id
+        battery = build_battery_snapshot(buoy_id, battery_data)
+        try:
+            saved_battery = record_battery_reading(gateway, battery)
+        except DeviceOwnershipError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
         battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
         battery_device_percent.labels(
             buoy_id=buoy_id, device_id=battery.device_id
         ).set(battery.battery_percent)
+        if saved_battery.physical_device_id is not None:
+            device_last_seen_timestamp_seconds.labels(
+                buoy_id=buoy_id,
+                device_id=saved_battery.physical_device_id,
+                sensor_channel=saved_battery.device_id,
+            ).set(saved_battery.measured_at.timestamp())
         accepted_by_family["battery"] += 1
         accepted += 1
 

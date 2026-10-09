@@ -537,8 +537,10 @@ class BatteryTelemetrySnapshot:
     battery_percent: float
     device_id: SensorChannel
     measured_at: datetime
+    physical_device_id: str | None = None
 
     def __post_init__(self) -> None:
+        _validate_device_id(self.physical_device_id)
         if self.device_id not in VALID_SENSOR_CHANNELS:
             raise ValueError(f"Unsupported battery device channel {self.device_id!r}")
         if not BATTERY_MIN_PERCENT <= self.battery_percent <= BATTERY_MAX_PERCENT:

@@ -429,6 +429,9 @@ class BatteryReadingEntity(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
     device_id: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
+    physical_device_id: Mapped[str | None] = mapped_column(
+        ForeignKey("devices.device_id", ondelete="SET NULL"), nullable=True, index=True
+    )
     battery_percent: Mapped[float] = mapped_column(Float, nullable=False)
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     buoy: Mapped[BuoyEntity] = relationship(back_populates="battery_readings")

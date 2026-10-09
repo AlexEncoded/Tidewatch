@@ -531,6 +531,19 @@ def test_battery_snapshot_accepts_percentage_range_endpoints() -> None:
     assert full.battery_percent == 100
 
 
+def test_battery_snapshot_preserves_optional_physical_device_identity() -> None:
+    snapshot = BatteryTelemetrySnapshot(
+        "buoy-1",
+        87.5,
+        "A",
+        datetime.now(timezone.utc),
+        physical_device_id="battery-unit-a",
+    )
+
+    assert snapshot.device_id == "A"
+    assert snapshot.physical_device_id == "battery-unit-a"
+
+
 @pytest.mark.parametrize("temperature_celsius", [-5.01, 45.01])
 def test_sea_temperature_snapshot_rejects_values_outside_physical_range(
     temperature_celsius: float,

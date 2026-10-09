@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from ..domain.telemetry_types import (
     BATTERY_MAX_PERCENT,
     BATTERY_MIN_PERCENT,
+    DEVICE_ID_MAX_LENGTH,
+    DEVICE_ID_MIN_LENGTH,
     SensorChannel,
 )
 
@@ -16,6 +18,11 @@ class BatteryReadingCreate(BaseModel):
         le=BATTERY_MAX_PERCENT,
     )
     device_id: SensorChannel = "A"
+    physical_device_id: str | None = Field(
+        default=None,
+        min_length=DEVICE_ID_MIN_LENGTH,
+        max_length=DEVICE_ID_MAX_LENGTH,
+    )
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
