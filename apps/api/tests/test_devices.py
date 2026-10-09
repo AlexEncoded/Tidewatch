@@ -121,6 +121,10 @@ def test_battery_reading_can_be_linked_to_registered_physical_device(client):
         f"/api/v1/buoys/{buoy_id}/devices",
         json={"device_id": "battery-unit-a", "sensor_channel": "A"},
     )
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "battery-unit-b", "sensor_channel": "B"},
+    )
 
     response = client.post(
         f"/api/v1/buoys/{buoy_id}/battery",
@@ -134,6 +138,15 @@ def test_battery_reading_can_be_linked_to_registered_physical_device(client):
     assert response.status_code == 201
     assert response.json()["device_id"] == "A"
     assert response.json()["physical_device_id"] == "battery-unit-a"
+    backup_response = client.post(
+        f"/api/v1/buoys/{buoy_id}/battery",
+        json={
+            "battery_percent": 65,
+            "device_id": "B",
+            "physical_device_id": "battery-unit-b",
+        },
+    )
+    assert backup_response.status_code == 201
     devices = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()
     assert devices[0]["last_seen_at"] is not None
     latest = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A")
@@ -148,6 +161,12 @@ def test_battery_reading_can_be_linked_to_registered_physical_device(client):
     assert [item["physical_device_id"] for item in physical_history.json()] == [
         "battery-unit-a"
     ]
+    combined_filter = client.get(
+        f"/api/v1/buoys/{buoy_id}/battery/history"
+        "?device_id=A&physical_device_id=battery-unit-a"
+    )
+    assert len(combined_filter.json()) == 1
+    assert combined_filter.json()[0]["battery_percent"] == 87.5
 
 
 def test_battery_query_rejects_physical_device_from_another_buoy(client):
