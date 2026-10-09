@@ -2,8 +2,9 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from math import isfinite
 from typing import Literal
+
+from .time_rules import require_positive_finite_seconds
 
 
 @dataclass(frozen=True)
@@ -33,8 +34,7 @@ def assess_device_liveness(
     max_age_seconds: float,
 ) -> DeviceLivenessAssessment:
     """Evaluate heartbeat freshness; only active devices can be stale."""
-    if not isfinite(max_age_seconds) or max_age_seconds <= 0:
-        raise ValueError("Maximum heartbeat age must be a positive finite number")
+    require_positive_finite_seconds(max_age_seconds, "Maximum heartbeat age")
     reference = now.replace(tzinfo=timezone.utc) if now.tzinfo is None else now
     normalized_last_seen = None
     age_seconds = None

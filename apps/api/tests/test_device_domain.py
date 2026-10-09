@@ -289,3 +289,11 @@ def test_stale_age_seconds_ignores_inactive_or_never_seen_buoys() -> None:
 
     assert stale_age_seconds("maintenance", now - timedelta(hours=1), 60, now) is None
     assert stale_age_seconds("active", None, 60, now) is None
+
+
+@pytest.mark.parametrize("max_age_seconds", [0, -1, float("nan"), float("inf")])
+def test_stale_age_seconds_rejects_invalid_maximum_age(max_age_seconds: float) -> None:
+    now = datetime(2026, 10, 8, tzinfo=timezone.utc)
+
+    with pytest.raises(ValueError, match="Maximum buoy age.*positive finite number"):
+        stale_age_seconds("active", now, max_age_seconds, now)
