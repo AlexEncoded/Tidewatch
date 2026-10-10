@@ -55,9 +55,11 @@ La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
 de validación completa en un entorno desplegado. La recording rule
 `tidewatch:buoy_availability_ratio5m` ya mide, por `buoy_id`, la proporción de
 los últimos cinco minutos en la que el heartbeat de lecturas estuvo disponible;
+se considera disponible si el último heartbeat tiene menos de 30 segundos
+(tres intervalos esperados de telemetría de 10 segundos);
 `TidewatchBuoyAvailabilityBelowTarget` avisa por debajo del 99,99%. La
 `tidewatch:device_availability_ratio5m` y `TidewatchDeviceAvailabilityBelowTarget`
-ofrecen la misma medición por unidad física, conservando las etiquetas
+aplican el mismo límite de frescura por unidad física, conservando las etiquetas
 `buoy_id`, `device_id` y `sensor_channel`. La correlación con RPO/RTO sigue
 pendiente de pruebas de despliegue.
 

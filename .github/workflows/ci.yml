@@ -130,3 +130,10 @@ jobs:
           -v "${{ github.workspace }}:/work:ro"
           prom/prometheus:v2.55.1
           check rules /work/observability/alerts/tidewatch.rules.yml
+
+      - name: Test availability recording rules
+        run: >-
+          docker run --rm --entrypoint promtool
+          -v "${{ github.workspace }}:/work:ro"
+          prom/prometheus:v2.55.1
+          test rules /work/observability/alerts/tidewatch.rules.test.yml

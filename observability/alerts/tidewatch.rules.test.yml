@@ -1,0 +1,31 @@
+rule_files:
+  - /work/observability/alerts/tidewatch.rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 10s
+    input_series:
+      - series: tidewatch_buoy_last_seen_timestamp_seconds{buoy_id="active"}
+        values: "0+10x30"
+      - series: tidewatch_buoy_last_seen_timestamp_seconds{buoy_id="stopped"}
+        values: "0+0x30"
+      - series: tidewatch_device_last_seen_timestamp_seconds{buoy_id="active",device_id="device-a",sensor_channel="A"}
+        values: "0+10x30"
+      - series: tidewatch_device_last_seen_timestamp_seconds{buoy_id="stopped",device_id="device-b",sensor_channel="B"}
+        values: "0+0x30"
+    promql_expr_test:
+      - expr: tidewatch:buoy_availability_ratio5m
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch:buoy_availability_ratio5m",buoy_id="active"}'
+            value: 1
+          - labels: '{__name__="tidewatch:buoy_availability_ratio5m",buoy_id="stopped"}'
+            value: 0.16666666666666666
+      - expr: tidewatch:device_availability_ratio5m
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch:device_availability_ratio5m",buoy_id="active",device_id="device-a",sensor_channel="A"}'
+            value: 1
+          - labels: '{__name__="tidewatch:device_availability_ratio5m",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
+            value: 0.16666666666666666

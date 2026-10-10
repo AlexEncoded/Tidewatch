@@ -20,7 +20,7 @@ groups:
       - record: tidewatch:buoy_availability_ratio5m
         expr: |
           avg_over_time(
-            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 1800)[5m:]
+            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30)[5m:]
           )
       - alert: TidewatchBuoyAvailabilityBelowTarget
         expr: tidewatch:buoy_availability_ratio5m < 0.9999
@@ -33,7 +33,7 @@ groups:
       - record: tidewatch:device_availability_ratio5m
         expr: |
           avg_over_time(
-            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 1800)[5m:]
+            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 30)[5m:]
           )
       - alert: TidewatchDeviceAvailabilityBelowTarget
         expr: tidewatch:device_availability_ratio5m < 0.9999
