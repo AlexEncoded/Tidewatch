@@ -598,7 +598,7 @@ class MaintenanceReader(
 ):
     """Read-only queries required by the maintenance application service."""
 
-    def list_buoys(self) -> list:
+    def list_buoy_snapshots(self) -> list[BuoySnapshot]:
         ...
 
 

@@ -5,6 +5,7 @@ from app.application.maintenance_evaluation import (
     evaluate_maintenance_buoy,
     evaluate_maintenance_fleet,
 )
+from app.domain.buoy import BuoySnapshot
 
 
 def test_maintenance_evaluation_coordinates_application_services() -> None:
@@ -24,11 +25,14 @@ def test_maintenance_evaluation_coordinates_application_services() -> None:
             raise AttributeError(name)
 
     now = datetime.now(timezone.utc)
-    buoy = SimpleNamespace(
-        id="buoy-1",
+    buoy = BuoySnapshot(
+        buoy_id="buoy-1",
         name="North buoy",
+        latitude=None,
+        longitude=None,
         status="active",
         last_seen_at=now,
+        created_at=now,
     )
 
     result = evaluate_maintenance_buoy(Reader(), buoy, now, 30, 1)
@@ -40,7 +44,7 @@ def test_maintenance_evaluation_coordinates_application_services() -> None:
 
 def test_maintenance_fleet_evaluation_reads_buoys_through_the_port() -> None:
     class Reader:
-        def list_buoys(self):
+        def list_buoy_snapshots(self):
             return []
 
     evaluations = evaluate_maintenance_fleet(

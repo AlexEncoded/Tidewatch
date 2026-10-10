@@ -37,10 +37,10 @@ def _evaluate_and_publish_maintenance_metrics(
         ):
             if percentage is not None:
                 battery_device_percent.labels(
-                    buoy_id=buoy.id, device_id=device_id
+                    buoy_id=buoy.buoy_id, device_id=device_id
                 ).set(percentage)
         if evaluation.battery_health.delta_percent is not None:
-            battery_delta_percent.labels(buoy_id=buoy.id).set(
+            battery_delta_percent.labels(buoy_id=buoy.buoy_id).set(
                 evaluation.battery_health.delta_percent
             )
         available_battery_devices = [
@@ -53,11 +53,11 @@ def _evaluate_and_publish_maintenance_metrics(
         ]
         for device_id in ("A", "B"):
             redundant_device_missing.labels(
-                buoy_id=buoy.id, device_id=device_id
+                buoy_id=buoy.buoy_id, device_id=device_id
             ).set(0 if device_id in available_battery_devices else 1)
 
         if evaluation.average_speed_mps is not None:
-            buoy_movement_speed_mps.labels(buoy_id=buoy.id).set(
+            buoy_movement_speed_mps.labels(buoy_id=buoy.buoy_id).set(
                 evaluation.average_speed_mps
             )
         issues.extend(

@@ -280,6 +280,9 @@ class BuoyRepository:
     def list_buoys(self) -> list[BuoyEntity]:
         return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
 
+    def list_buoy_snapshots(self) -> list[BuoySnapshot]:
+        return [_buoy_snapshot(buoy) for buoy in self.list_buoys()]
+
     def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:
         summaries = []
         telemetry_readers = {

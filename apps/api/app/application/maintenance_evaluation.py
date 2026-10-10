@@ -10,6 +10,7 @@ from .movement_analysis import analyze_movement_for_buoy
 from .ports import MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
 from ..domain.battery_health import BatteryHealthSnapshot
+from ..domain.buoy import BuoySnapshot
 from ..domain.maintenance import MaintenanceIssueSnapshot
 
 
@@ -27,7 +28,7 @@ def evaluate_maintenance_fleet(
     now: datetime,
     max_age_minutes: float,
     drift_speed_mps: float,
-) -> list[tuple[object, MaintenanceBuoyEvaluation]]:
+) -> list[tuple[BuoySnapshot, MaintenanceBuoyEvaluation]]:
     """Evaluate every buoy through the maintenance input port."""
     return [
         (
@@ -36,19 +37,19 @@ def evaluate_maintenance_fleet(
                 reader, buoy, now, max_age_minutes, drift_speed_mps
             ),
         )
-        for buoy in reader.list_buoys()
+        for buoy in reader.list_buoy_snapshots()
     ]
 
 
 def evaluate_maintenance_buoy(
     reader: MaintenanceReader,
-    buoy: object,
+    buoy: BuoySnapshot,
     now: datetime,
     max_age_minutes: float,
     drift_speed_mps: float,
 ) -> MaintenanceBuoyEvaluation:
     """Evaluate all maintenance rules for one buoy through application ports."""
-    buoy_id = buoy.id
+    buoy_id = buoy.buoy_id
     sensor_health = evaluate_sensor_health_snapshot(
         reader, buoy_id, max_age_minutes * 60, now
     ).health
