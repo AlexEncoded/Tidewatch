@@ -81,7 +81,31 @@ def test_batch_telemetry_records_device_heartbeat(client):
     assert response.status_code == 202
     device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
     assert device["last_seen_at"] is not None
-    assert "tidewatch_device_last_seen_timestamp_seconds" in client.get("/metrics").text
+    metrics = client.get("/metrics").text
+    assert "tidewatch_device_last_seen_timestamp_seconds" in metrics
+    assert (
+        f'tidewatch_buoy_last_seen_timestamp_seconds{{buoy_id="{buoy_id}"}} '
+        in metrics
+    )
+
+
+def test_newly_registered_buoy_and_device_start_as_unseen_in_metrics(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Unseen metrics"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "unseen-unit", "sensor_channel": "A"},
+    )
+
+    assert response.status_code == 201
+    metrics = client.get("/metrics").text
+    assert (
+        f'tidewatch_buoy_last_seen_timestamp_seconds{{buoy_id="{buoy_id}"}} 0.0'
+        in metrics
+    )
+    assert (
+        f'tidewatch_device_last_seen_timestamp_seconds{{buoy_id="{buoy_id}",'
+        'device_id="unseen-unit",sensor_channel="A"} 0.0'
+    ) in metrics
 
 
 def test_batch_telemetry_rejects_channel_mismatch_before_writing(client):

@@ -25,6 +25,7 @@ from ..application.ports import DeviceHealthReader
 from ..application.device_listing import DeviceListingReader
 from ..application.device_registration import DeviceRegistry
 from ..application.device_status import DeviceStatusRegistry
+from ..metrics import device_last_seen_timestamp_seconds
 
 
 router = APIRouter()
@@ -50,6 +51,11 @@ def register_device(
             firmware_version=payload.firmware_version,
         )
         result = register_device_use_case(registry, buoy_id, command)
+        device_last_seen_timestamp_seconds.labels(
+            buoy_id=buoy_id,
+            device_id=result.device_id,
+            sensor_channel=result.sensor_channel,
+        ).set(result.last_seen_at.timestamp() if result.last_seen_at is not None else 0)
         return Device.model_validate(result, from_attributes=True)
     except DeviceRegistrationConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None

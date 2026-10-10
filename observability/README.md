@@ -57,6 +57,9 @@ de validación completa en un entorno desplegado. La recording rule
 los últimos cinco minutos en la que el heartbeat de lecturas estuvo disponible;
 se considera disponible si el último heartbeat tiene menos de 30 segundos
 (tres intervalos esperados de telemetría de 10 segundos);
+las series se restauran desde las unidades registradas al arrancar la API y las
+unidades nuevas se publican desde su registro; una unidad sin ningún heartbeat
+parte de timestamp cero y cuenta como no disponible.
 `TidewatchBuoyAvailabilityBelowTarget` avisa por debajo del 99,99%. La
 `tidewatch:device_availability_ratio5m` y `TidewatchDeviceAvailabilityBelowTarget`
 aplican el mismo límite de frescura por unidad física, conservando las etiquetas

@@ -1,5 +1,7 @@
 """HTTP route for batch telemetry ingestion."""
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..application.device_heartbeat import record_device_heartbeat
@@ -131,6 +133,9 @@ def ingest_telemetry(
             device_id=device.device_id,
             sensor_channel=device.sensor_channel,
         ).set(seen_at.timestamp())
+        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            seen_at.timestamp()
+        )
 
     if payload.location is not None:
         location = build_location_snapshot(
@@ -165,9 +170,6 @@ def ingest_telemetry(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.temperature_celsius)
         record_quality_metric(buoy_id, "temperature", reading.sensor_channel, reading.quality)
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            reading.measured_at.timestamp()
-        )
         accepted_by_family["temperature"] += 1
         accepted += 1
 
@@ -460,6 +462,11 @@ def ingest_telemetry(
             ).set(saved_battery.measured_at.timestamp())
         accepted_by_family["battery"] += 1
         accepted += 1
+
+    if payload.device_id is None and accepted:
+        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            datetime.now(timezone.utc).timestamp()
+        )
 
     return TelemetryIngestResponse(
         buoy_id=buoy_id,

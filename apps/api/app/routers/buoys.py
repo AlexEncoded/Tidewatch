@@ -26,7 +26,7 @@ from ..application.ports import MovementAnalysisReader, BuoyRegistrar
 from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
-from ..metrics import buoy_movement_speed_mps
+from ..metrics import buoy_last_seen_timestamp_seconds, buoy_movement_speed_mps
 from ..schemas.fleet_summary import BuoySummary
 from ..schemas.fleet import (
     Buoy,
@@ -53,6 +53,9 @@ def create_buoy(
             latitude=payload.latitude,
             longitude=payload.longitude,
         ),
+    )
+    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy.buoy_id).set(
+        buoy.last_seen_at.timestamp() if buoy.last_seen_at is not None else 0
     )
     return Buoy(
         id=buoy.buoy_id,

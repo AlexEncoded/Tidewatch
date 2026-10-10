@@ -4,7 +4,10 @@ import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
 
+from .availability_metrics import initialize_availability_metrics
+from .database import SessionLocal
 from .telemetry import configure_telemetry
 from .metrics import http_request_duration_seconds, http_requests_total
 from .settings import configured_wave_imu_factor
@@ -26,6 +29,11 @@ logger = logging.getLogger("tidewatch.api")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    try:
+        with SessionLocal() as session:
+            initialize_availability_metrics(session)
+    except SQLAlchemyError:
+        logger.exception("availability_metrics_initialization_failed")
     yield
 
 
