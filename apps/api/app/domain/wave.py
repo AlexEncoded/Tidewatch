@@ -8,6 +8,8 @@ from typing import Sequence
 
 
 DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
+MIN_IMU_WAVE_HEIGHT_FACTOR = 0.0
+MAX_IMU_WAVE_HEIGHT_FACTOR = 10.0
 
 
 @dataclass(frozen=True)
@@ -146,7 +148,10 @@ def estimate_wave(
         value for value in imu_vertical_accelerations if isfinite(value)
     ]
     calibration_factor = (
-        imu_wave_height_factor
+        max(
+            MIN_IMU_WAVE_HEIGHT_FACTOR,
+            min(MAX_IMU_WAVE_HEIGHT_FACTOR, imu_wave_height_factor),
+        )
         if isfinite(imu_wave_height_factor)
         else DEFAULT_IMU_WAVE_HEIGHT_FACTOR
     )

@@ -42,6 +42,18 @@ def test_estimate_wave_uses_default_factor_if_calibration_is_non_finite() -> Non
     assert estimate.estimated_wave_height_m == 0.225
 
 
+@pytest.mark.parametrize(
+    ("factor", "expected_height"),
+    ((-0.2, 0.0), (10.1, 5.0)),
+)
+def test_estimate_wave_bounds_injected_calibration_factor(
+    factor: float, expected_height: float
+) -> None:
+    estimate = estimate_wave([], [9.8, 10.3], imu_wave_height_factor=factor)
+
+    assert estimate.estimated_wave_height_m == expected_height
+
+
 def test_estimate_wave_period_ignores_non_finite_values() -> None:
     start = datetime(2026, 1, 1, tzinfo=timezone.utc)
     samples = [

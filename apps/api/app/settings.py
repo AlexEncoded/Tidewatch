@@ -3,7 +3,11 @@
 import os
 from math import isfinite
 
-from .domain.wave import DEFAULT_IMU_WAVE_HEIGHT_FACTOR
+from .domain.wave import (
+    DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
+    MAX_IMU_WAVE_HEIGHT_FACTOR,
+    MIN_IMU_WAVE_HEIGHT_FACTOR,
+)
 
 
 def configured_wave_imu_factor() -> float:
@@ -19,4 +23,4 @@ def configured_wave_imu_factor() -> float:
         return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
     if not isfinite(value):
         return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
-    return max(0.0, min(10.0, value))
+    return max(MIN_IMU_WAVE_HEIGHT_FACTOR, min(MAX_IMU_WAVE_HEIGHT_FACTOR, value))
