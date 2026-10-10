@@ -5,6 +5,7 @@ from app.application.device_health import (
     summarize_device_health,
     summarize_device_health_for_buoy,
 )
+from app.domain.devices import DeviceSnapshot
 
 
 def test_device_health_marks_missing_and_old_active_heartbeats_stale() -> None:
@@ -50,16 +51,17 @@ def test_device_health_does_not_mark_maintenance_device_stale() -> None:
 
 def test_device_health_reads_devices_through_application_port() -> None:
     now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-    device = SimpleNamespace(
+    device = DeviceSnapshot(
         buoy_id="buoy-1",
         device_id="unit-a",
         sensor_channel="A",
         status="active",
+        registered_at=now,
         last_seen_at=now,
     )
 
     class Reader:
-        def list_devices(self, buoy_id: str) -> list[object]:
+        def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
             assert buoy_id == "buoy-1"
             return [device]
 

@@ -14,7 +14,9 @@ def summarize_device_health_for_buoy(
     max_age_seconds: float,
 ) -> list[DeviceHealthSnapshot]:
     """Load one buoy's devices through the application input port."""
-    return summarize_device_health(reader.list_devices(buoy_id), now, max_age_seconds)
+    return summarize_device_health(
+        reader.list_device_snapshots(buoy_id), now, max_age_seconds
+    )
 
 
 def summarize_device_health(

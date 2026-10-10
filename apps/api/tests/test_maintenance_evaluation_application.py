@@ -15,7 +15,7 @@ def test_maintenance_evaluation_coordinates_application_services() -> None:
         def list_locations(self, buoy_id: str, limit: int):
             return []
 
-        def list_devices(self, buoy_id: str):
+        def list_device_snapshots(self, buoy_id: str):
             return []
 
         def __getattr__(self, name):

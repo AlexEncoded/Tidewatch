@@ -421,7 +421,7 @@ class QualitySummaryReader(Protocol):
 class DeviceHealthReader(Protocol):
     """Read-only port for registered physical devices."""
 
-    def list_devices(self, buoy_id: str) -> list:
+    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
         ...
 
     def buoy_exists(self, buoy_id: str) -> bool:
