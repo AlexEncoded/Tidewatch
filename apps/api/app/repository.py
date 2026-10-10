@@ -365,6 +365,11 @@ class BuoyRepository:
         self.db.refresh(entity)
         return entity
 
+    def create_device_snapshot(
+        self, buoy_id: str, device: DeviceRegistrationCommand
+    ) -> DeviceSnapshot:
+        return _device_snapshot(self.create_device(buoy_id, device))
+
     def list_devices(self, buoy_id: str) -> list[DeviceEntity]:
         query = select(DeviceEntity).where(DeviceEntity.buoy_id == buoy_id).order_by(DeviceEntity.sensor_channel)
         return list(self.db.scalars(query).all())

@@ -153,22 +153,20 @@ def test_register_device_application_service_uses_registry() -> None:
         def __init__(self):
             self.created = None
 
-        def get_device(self, device_id):
+        def get_device_snapshot(self, device_id):
             return None
 
-        def list_devices(self, buoy_id):
+        def list_device_snapshots(self, buoy_id):
             return []
 
-        def create_device(self, buoy_id, device):
+        def create_device_snapshot(self, buoy_id, device):
             self.created = (buoy_id, device)
-            return SimpleNamespace(
+            return DeviceSnapshot(
                 buoy_id=buoy_id,
                 device_id=device.device_id,
                 sensor_channel=device.sensor_channel,
                 firmware_version=getattr(device, "firmware_version", None),
-                status="active",
                 registered_at=datetime.now(timezone.utc),
-                last_seen_at=None,
             )
 
     device = SimpleNamespace(device_id="device-a", sensor_channel="A")
@@ -190,13 +188,13 @@ def test_register_device_application_service_uses_registry() -> None:
 )
 def test_register_device_application_service_rejects_conflicts(existing, message: str) -> None:
     class Registry:
-        def get_device(self, device_id):
+        def get_device_snapshot(self, device_id):
             return existing[0] if existing[0].device_id == device_id else None
 
-        def list_devices(self, buoy_id):
+        def list_device_snapshots(self, buoy_id):
             return existing
 
-        def create_device(self, buoy_id, device):
+        def create_device_snapshot(self, buoy_id, device):
             raise AssertionError("conflicting registrations must not be persisted")
 
     device_id = existing[0].device_id if message == "Device already registered" else "device-c"

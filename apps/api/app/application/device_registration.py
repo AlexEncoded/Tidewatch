@@ -8,20 +8,21 @@ from ..domain.devices import (
     DeviceSnapshot,
     validate_device_registration,
 )
-from .device_snapshots import to_device_snapshot
 
 
 class DeviceRegistry(Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
-    def get_device(self, device_id: str):
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         ...
 
-    def list_devices(self, buoy_id: str) -> list:
+    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
         ...
 
-    def create_device(self, buoy_id: str, device: DeviceRegistrationCommand):
+    def create_device_snapshot(
+        self, buoy_id: str, device: DeviceRegistrationCommand
+    ) -> DeviceSnapshot:
         ...
 
 
@@ -29,11 +30,11 @@ def register_device(
     registry: DeviceRegistry, buoy_id: str, device: DeviceRegistrationCommand
 ) -> DeviceSnapshot:
     """Register a device after enforcing domain uniqueness rules."""
-    if registry.get_device(device.device_id) is not None:
+    if registry.get_device_snapshot(device.device_id) is not None:
         raise DeviceRegistrationConflict("Device already registered")
     validate_device_registration(
         device.device_id,
         device.sensor_channel,
-        registry.list_devices(buoy_id),
+        registry.list_device_snapshots(buoy_id),
     )
-    return to_device_snapshot(registry.create_device(buoy_id, device))
+    return registry.create_device_snapshot(buoy_id, device)
