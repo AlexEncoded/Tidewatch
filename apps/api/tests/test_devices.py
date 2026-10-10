@@ -108,6 +108,28 @@ def test_newly_registered_buoy_and_device_start_as_unseen_in_metrics(client):
     ) in metrics
 
 
+def test_individual_sensor_ingestion_uses_receipt_time_for_buoy_heartbeat(client):
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Sensor clock"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/pressures",
+        json={
+            "pressure_kpa": 101.3,
+            "measured_at": "2020-01-01T00:00:00Z",
+        },
+    )
+
+    assert response.status_code == 201
+    metrics = client.get("/metrics").text
+    metric_sample = next(
+        line
+        for line in metrics.splitlines()
+        if line.startswith(
+            f'tidewatch_buoy_last_seen_timestamp_seconds{{buoy_id="{buoy_id}"}} '
+        )
+    )
+    assert float(metric_sample.rsplit(" ", 1)[1]) > 1_700_000_000
+
+
 def test_batch_telemetry_rejects_channel_mismatch_before_writing(client):
     buoy_id = client.post("/api/v1/buoys", json={"name": "Channel mismatch"}).json()["id"]
     client.post(

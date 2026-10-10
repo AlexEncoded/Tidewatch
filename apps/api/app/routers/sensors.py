@@ -159,6 +159,13 @@ from ..schemas.telemetry import (
 router = APIRouter()
 
 
+def record_buoy_heartbeat(buoy_id: str) -> None:
+    """Record receipt time so sensor clock drift cannot fake buoy downtime."""
+    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+        datetime.now(timezone.utc).timestamp()
+    )
+
+
 def _evaluate_and_publish_sensor_health(
     reader: SensorHealthReader, buoy_id: str, max_age_minutes: float
 ) -> SensorHealthEvaluationSnapshot:
@@ -217,6 +224,7 @@ def record_wind(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_wind_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_wind(reading)
+    record_buoy_heartbeat(buoy_id)
     wind_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_wind_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.wind_speed_mps)
     current_wind_direction_degrees.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.wind_direction_degrees)
@@ -246,6 +254,7 @@ def record_ambient_light(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_ambient_light_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_ambient_light(reading)
+    record_buoy_heartbeat(buoy_id)
     ambient_light_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_ambient_light_lux.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.illuminance_lux)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="ambient_light", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -274,6 +283,7 @@ def record_imu(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_imu_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_imu(reading)
+    record_buoy_heartbeat(buoy_id)
     imu_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     for axis, value in {"x": reading.acceleration_x_mps2, "y": reading.acceleration_y_mps2, "z": reading.acceleration_z_mps2}.items():
         current_imu_acceleration_mps2.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis).set(value)
@@ -305,10 +315,10 @@ def record_temperature(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_temperature_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_temperature(reading)
+    record_buoy_heartbeat(buoy_id)
     temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.temperature_celsius)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="temperature", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
-    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(reading.measured_at.timestamp())
     return saved_reading
 
 
@@ -334,6 +344,7 @@ def record_pressure(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_pressure_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_pressure(reading)
+    record_buoy_heartbeat(buoy_id)
     pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.pressure_kpa)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="pressure", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -362,6 +373,7 @@ def record_salinity(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_salinity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_salinity(reading)
+    record_buoy_heartbeat(buoy_id)
     salinity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_salinity_psu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.salinity_psu)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="salinity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -390,6 +402,7 @@ def record_marine_current(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_marine_current_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_marine_current(reading)
+    record_buoy_heartbeat(buoy_id)
     marine_current_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_marine_current_speed_mps.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_speed_mps)
     current_marine_current_direction_degrees.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.current_direction_degrees)
@@ -419,6 +432,7 @@ def record_turbidity(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_turbidity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_turbidity(reading)
+    record_buoy_heartbeat(buoy_id)
     turbidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_turbidity_ntu.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.turbidity_ntu)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="turbidity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -447,6 +461,7 @@ def record_dissolved_oxygen(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_dissolved_oxygen_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_dissolved_oxygen(reading)
+    record_buoy_heartbeat(buoy_id)
     dissolved_oxygen_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_dissolved_oxygen_mg_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.dissolved_oxygen_mg_l)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="dissolved_oxygen", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -473,6 +488,7 @@ def record_ph(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_ph_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_ph(reading)
+    record_buoy_heartbeat(buoy_id)
     ph_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_ph.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.ph)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="ph", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -501,6 +517,7 @@ def record_conductivity(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_conductivity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_conductivity(reading)
+    record_buoy_heartbeat(buoy_id)
     conductivity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_conductivity_us_cm.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.conductivity_us_cm)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="conductivity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -529,6 +546,7 @@ def record_chlorophyll_a(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_chlorophyll_a_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_chlorophyll_a(reading)
+    record_buoy_heartbeat(buoy_id)
     chlorophyll_a_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_chlorophyll_a_ug_l.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.chlorophyll_a_ug_l)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="chlorophyll_a", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -557,6 +575,7 @@ def record_rainfall(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_rainfall_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_rainfall(reading)
+    record_buoy_heartbeat(buoy_id)
     rainfall_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_rainfall_mm_h.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.rainfall_mm_h)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="rainfall", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -585,6 +604,7 @@ def record_humidity(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_humidity_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_humidity(reading)
+    record_buoy_heartbeat(buoy_id)
     humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="humidity", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -613,6 +633,7 @@ def record_air_temperature(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_air_temperature_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_air_temperature(reading)
+    record_buoy_heartbeat(buoy_id)
     air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="air_temperature", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -641,6 +662,7 @@ def record_atmospheric_pressure(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_atmospheric_pressure_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_atmospheric_pressure(reading)
+    record_buoy_heartbeat(buoy_id)
     atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="atmospheric_pressure", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -669,6 +691,7 @@ def record_acoustic_altimeter(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_acoustic_altimeter_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_acoustic_altimeter(reading)
+    record_buoy_heartbeat(buoy_id)
     acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="acoustic_altimeter", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
@@ -697,6 +720,7 @@ def record_underwater_acoustic(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_underwater_acoustic_snapshot(buoy_id, payload.model_dump(), None)
     saved_reading = gateway.add_underwater_acoustic(reading)
+    record_buoy_heartbeat(buoy_id)
     underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
     current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
     reading_quality_total.labels(buoy_id=buoy_id, sensor_family="underwater_acoustic", sensor_channel=reading.sensor_channel, quality=reading.quality).inc()
