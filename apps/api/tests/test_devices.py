@@ -274,7 +274,11 @@ def test_batch_battery_uses_envelope_physical_device_and_records_heartbeat(clien
         f"/api/v1/buoys/{buoy_id}/telemetry",
         json={
             "device_id": "batch-battery-a",
-            "battery": [{"battery_percent": 75, "device_id": "A"}],
+            "battery": [{
+                "battery_percent": 75,
+                "device_id": "A",
+                "measured_at": "2020-01-01T00:00:00Z",
+            }],
         },
     )
 
@@ -283,6 +287,17 @@ def test_batch_battery_uses_envelope_physical_device_and_records_heartbeat(clien
     assert reading["physical_device_id"] == "batch-battery-a"
     device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
     assert device["last_seen_at"] is not None
+    assert device["last_seen_at"] > "2020-01-01T00:00:00"
+    metrics = client.get("/metrics").text
+    metric_sample = next(
+        line
+        for line in metrics.splitlines()
+        if line.startswith(
+            f'tidewatch_device_last_seen_timestamp_seconds{{buoy_id="{buoy_id}",'
+            'device_id="batch-battery-a",sensor_channel="A"} '
+        )
+    )
+    assert float(metric_sample.rsplit(" ", 1)[1]) > 1_700_000_000
 
 
 def test_batch_location_keeps_originating_device(client):

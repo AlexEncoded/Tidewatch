@@ -14,6 +14,10 @@ def test_initialize_availability_metrics_includes_unseen_registered_entities() -
     Base.metadata.create_all(engine)
     buoy_id = "availability-seed-test"
     device_id = "availability-seed-device"
+    seen_buoy_id = "availability-recent-device-test"
+    seen_device_id = "availability-recent-device"
+    buoy_seen_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    device_seen_at = datetime(2026, 1, 2, tzinfo=timezone.utc)
     with Session(engine) as session:
         session.add(
             BuoyEntity(
@@ -35,6 +39,26 @@ def test_initialize_availability_metrics_includes_unseen_registered_entities() -
                 last_seen_at=None,
             )
         )
+        session.add(
+            BuoyEntity(
+                id=seen_buoy_id,
+                name="Recent device test",
+                status="active",
+                last_seen_at=buoy_seen_at,
+                created_at=buoy_seen_at,
+            )
+        )
+        session.flush()
+        session.add(
+            DeviceEntity(
+                device_id=seen_device_id,
+                buoy_id=seen_buoy_id,
+                sensor_channel="B",
+                status="active",
+                registered_at=buoy_seen_at,
+                last_seen_at=device_seen_at,
+            )
+        )
         session.commit()
 
         initialize_availability_metrics(session)
@@ -48,4 +72,12 @@ def test_initialize_availability_metrics_includes_unseen_registered_entities() -
         'tidewatch_device_last_seen_timestamp_seconds'
         f'{{buoy_id="{buoy_id}",device_id="{device_id}",sensor_channel="A"}} 0.0'
     ) in metrics
+    assert any(
+        line.startswith(
+            "tidewatch_buoy_last_seen_timestamp_seconds"
+            f'{{buoy_id="{seen_buoy_id}"}} '
+        )
+        and float(line.rsplit(" ", 1)[1]) == device_seen_at.timestamp()
+        for line in metrics.splitlines()
+    )
     engine.dispose()

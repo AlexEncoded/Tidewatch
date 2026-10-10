@@ -9,6 +9,7 @@ from app.domain.telemetry import BatteryTelemetrySnapshot
 
 
 MEASURED_AT = datetime(2026, 10, 9, 12, tzinfo=timezone.utc)
+RECEIVED_AT = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
 
 
 def _device(buoy_id: str = "buoy-1") -> DeviceSnapshot:
@@ -45,7 +46,7 @@ def test_battery_ingestion_uses_domain_snapshot_and_persists_before_heartbeat() 
         def mark_device_seen_by_id(self, device_id, seen_at):
             calls.append(("mark_device_seen_by_id", device_id, seen_at))
 
-    saved = record_battery_reading(Reader(), _reading())
+    saved = record_battery_reading(Reader(), _reading(), RECEIVED_AT)
 
     assert saved == _reading()
     assert [call[0] for call in calls] == [
@@ -53,6 +54,7 @@ def test_battery_ingestion_uses_domain_snapshot_and_persists_before_heartbeat() 
         "add_battery",
         "mark_device_seen_by_id",
     ]
+    assert calls[-1] == ("mark_device_seen_by_id", "physical-unit-a", RECEIVED_AT)
 
 
 @pytest.mark.parametrize(

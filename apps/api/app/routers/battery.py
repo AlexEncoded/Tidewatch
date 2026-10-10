@@ -1,5 +1,7 @@
 """Battery telemetry and health endpoints."""
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.battery_analysis import analyze_battery_for_buoy
@@ -14,6 +16,7 @@ from ..metrics import (
     battery_delta_percent,
     battery_device_percent,
     battery_percent,
+    buoy_last_seen_timestamp_seconds,
     device_last_seen_timestamp_seconds,
 )
 from ..schemas.battery import (
@@ -39,8 +42,9 @@ def record_battery(
 ) -> BatteryReading:
     ensure_buoy_exists(reader, buoy_id)
     battery = build_battery_snapshot(buoy_id, payload.model_dump())
+    received_at = datetime.now(timezone.utc)
     try:
-        saved_battery = record_battery_reading(reader, battery)
+        saved_battery = record_battery_reading(reader, battery, received_at)
     except DeviceOwnershipError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
     except ValueError as exc:
@@ -51,7 +55,10 @@ def record_battery(
             buoy_id=buoy_id,
             device_id=saved_battery.physical_device_id,
             sensor_channel=saved_battery.device_id,
-        ).set(saved_battery.measured_at.timestamp())
+        ).set(received_at.timestamp())
+    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+        received_at.timestamp()
+    )
     return saved_battery
 
 

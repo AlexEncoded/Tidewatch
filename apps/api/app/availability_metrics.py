@@ -29,15 +29,22 @@ def initialize_availability_metrics(session: Session) -> None:
         )
     ).all()
 
+    buoy_timestamps = {
+        buoy_id: _timestamp(last_seen_at) for buoy_id, last_seen_at in buoys
+    }
     buoy_last_seen_timestamp_seconds.clear()
     device_last_seen_timestamp_seconds.clear()
-    for buoy_id, last_seen_at in buoys:
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            _timestamp(last_seen_at)
-        )
     for buoy_id, device_id, sensor_channel, last_seen_at in devices:
+        device_timestamp = _timestamp(last_seen_at)
         device_last_seen_timestamp_seconds.labels(
             buoy_id=buoy_id,
             device_id=device_id,
             sensor_channel=sensor_channel,
-        ).set(_timestamp(last_seen_at))
+        ).set(device_timestamp)
+        buoy_timestamps[buoy_id] = max(
+            buoy_timestamps.get(buoy_id, 0.0), device_timestamp
+        )
+    for buoy_id, last_seen_timestamp in buoy_timestamps.items():
+        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            last_seen_timestamp
+        )

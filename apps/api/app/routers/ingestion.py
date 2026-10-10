@@ -136,6 +136,8 @@ def ingest_telemetry(
         buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
             seen_at.timestamp()
         )
+    else:
+        seen_at = None
 
     if payload.location is not None:
         location = build_location_snapshot(
@@ -444,8 +446,11 @@ def ingest_telemetry(
         if battery_data["physical_device_id"] is None:
             battery_data["physical_device_id"] = payload.device_id
         battery = build_battery_snapshot(buoy_id, battery_data)
+        battery_received_at = seen_at or datetime.now(timezone.utc)
         try:
-            saved_battery = record_battery_reading(gateway, battery)
+            saved_battery = record_battery_reading(
+                gateway, battery, battery_received_at
+            )
         except DeviceOwnershipError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
         except ValueError as exc:
@@ -454,12 +459,15 @@ def ingest_telemetry(
         battery_device_percent.labels(
             buoy_id=buoy_id, device_id=battery.device_id
         ).set(battery.battery_percent)
-        if saved_battery.physical_device_id is not None:
+        if saved_battery.physical_device_id is not None and payload.device_id is None:
             device_last_seen_timestamp_seconds.labels(
                 buoy_id=buoy_id,
                 device_id=saved_battery.physical_device_id,
                 sensor_channel=saved_battery.device_id,
-            ).set(saved_battery.measured_at.timestamp())
+            ).set(battery_received_at.timestamp())
+        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            battery_received_at.timestamp()
+        )
         accepted_by_family["battery"] += 1
         accepted += 1
 
