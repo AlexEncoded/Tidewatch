@@ -67,3 +67,27 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["validation_windows"] == 1
     assert report["validation_selected_metrics"]["rmse_m"] == 0
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
+
+
+def test_wave_calibration_cli_reports_truncated_csv_without_traceback(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "truncated.csv"
+    input_path.write_text(
+        "window_id,split,gnss_altitude_m,imu_vertical_acceleration_mps2,"
+        "reference_wave_height_m\n"
+        "window-a,calibration,0.0\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "Line 2: invalid numeric value" in result.stderr
+    assert "Traceback" not in result.stderr

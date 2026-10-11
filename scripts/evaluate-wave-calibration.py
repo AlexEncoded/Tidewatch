@@ -47,7 +47,7 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                 acceleration = _optional_number(
                     row["imu_vertical_acceleration_mps2"]
                 )
-            except ValueError as exc:
+            except (TypeError, ValueError) as exc:
                 raise ValueError(f"Line {line_number}: invalid numeric value") from exc
             if not math.isfinite(reference) or reference < 0:
                 raise ValueError(
