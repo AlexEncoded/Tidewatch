@@ -75,6 +75,11 @@ The physical-device health summary follows the same pattern through the
 `DeviceHealthReader` port, keeping heartbeat and status mapping outside the
 HTTP adapter.
 
+The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
+to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping
+functions stay separate from query and transaction orchestration in
+`BuoyRepository`, making persistence-to-domain translation directly testable.
+
 ## Bounded contexts
 
 The current modular-monolith boundaries are:
