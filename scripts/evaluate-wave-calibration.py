@@ -28,7 +28,9 @@ REQUIRED_COLUMNS = {
 }
 
 
-def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
+def load_windows(
+    path: Path,
+) -> tuple[dict[str, list[WaveCalibrationWindow]], dict[str, list[dict]]]:
     grouped: dict[str, dict] = {}
     seen_timestamps: dict[datetime, str] = {}
     with path.open(newline="", encoding="utf-8-sig") as source:
@@ -69,6 +71,7 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                     "reference": reference,
                     "altitudes": [],
                     "accelerations": [],
+                    "timestamps": set(),
                 },
             )
             if entry["split"] != split:
@@ -88,27 +91,40 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                     f"{window_id!r} after {previous_window!r}"
                 )
             seen_timestamps[measured_at] = window_id
+            entry["timestamps"].add(measured_at)
             if altitude is not None:
                 entry["altitudes"].append(altitude)
             if acceleration is not None:
                 entry["accelerations"].append(acceleration)
 
     result = {"calibration": [], "validation": []}
+    coverage = {"calibration": [], "validation": []}
     for window_id, values in grouped.items():
         if len(values["altitudes"]) < 2 or len(values["accelerations"]) < 2:
             raise ValueError(
                 f"Window {window_id!r} needs at least two GNSS and two IMU samples"
             )
-        result[values["split"]].append(
+        split = values["split"]
+        result[split].append(
             WaveCalibrationWindow(
                 gnss_altitudes_m=tuple(values["altitudes"]),
                 imu_vertical_accelerations_mps2=tuple(values["accelerations"]),
                 reference_wave_height_m=values["reference"],
             )
         )
+        coverage[split].append(
+            {
+                "window_id": window_id,
+                "duration_seconds": (
+                    max(values["timestamps"]) - min(values["timestamps"])
+                ).total_seconds(),
+                "gnss_samples": len(values["altitudes"]),
+                "imu_samples": len(values["accelerations"]),
+            }
+        )
     if not result["calibration"] or not result["validation"]:
         raise ValueError("CSV must contain at least one calibration and validation window")
-    return result
+    return result, coverage
 
 
 def _optional_number(value: str | None) -> float | None:
@@ -153,7 +169,7 @@ def main() -> int:
         parser.error("--step would produce more than 100,001 factor candidates")
 
     try:
-        splits = load_windows(args.csv_path)
+        splits, window_coverage = load_windows(args.csv_path)
         candidates = [
             round(index * args.step, 10)
             for index in range(step_count + 1)
@@ -169,6 +185,7 @@ def main() -> int:
             "validation_windows": len(splits["validation"]),
             "baseline_factor": args.baseline_factor,
             "selected_factor": selected_factor,
+            "window_coverage": window_coverage,
             "calibration_metrics": calibration_metrics,
             "validation_baseline_metrics": evaluate_factor(
                 splits["validation"], args.baseline_factor

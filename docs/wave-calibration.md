@@ -34,8 +34,12 @@ python scripts/evaluate-wave-calibration.py data/labeled-waves.csv
 
 It selects the factor with the lowest RMSE on `calibration` windows, then
 reports MAE, RMSE and signed bias for both the baseline and selected factor on
-the untouched `validation` windows. The default search spans 0–10 in increments
-of 0.01. To change the search resolution or baseline:
+the untouched `validation` windows. The JSON report also lists each window's
+sample counts by sensor and elapsed duration. Since the estimator uses a range
+over each window, compare results only across windows with durations appropriate
+to the same measurement protocol; investigate large duration differences
+before interpreting the error metrics. The default search spans 0–10 in
+increments of 0.01. To change the search resolution or baseline:
 
 ```bash
 python scripts/evaluate-wave-calibration.py data/labeled-waves.csv \

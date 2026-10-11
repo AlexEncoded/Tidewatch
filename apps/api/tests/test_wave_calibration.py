@@ -58,14 +58,23 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
     result = subprocess.run(
         [sys.executable, str(script), str(input_path), "--step", "0.1"],
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
+    assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
 
     assert report["selected_factor"] == 0.4
     assert report["validation_windows"] == 1
+    assert report["window_coverage"]["validation"] == [
+        {
+            "window_id": "holdout",
+            "duration_seconds": 1.0,
+            "gnss_samples": 2,
+            "imu_samples": 2,
+        }
+    ]
     assert report["validation_selected_metrics"]["rmse_m"] == 0
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
 
