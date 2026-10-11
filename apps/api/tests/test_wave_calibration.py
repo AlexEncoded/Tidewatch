@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import json
 import subprocess
 import sys
@@ -57,7 +58,15 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
 
     script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
     result = subprocess.run(
-        [sys.executable, str(script), str(input_path), "--step", "0.1"],
+        [
+            sys.executable,
+            str(script),
+            str(input_path),
+            "--max-factor",
+            "1.0",
+            "--step",
+            "0.1",
+        ],
         check=False,
         capture_output=True,
         text=True,
@@ -66,6 +75,14 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     report = json.loads(result.stdout)
 
     assert report["selected_factor"] == 0.4
+    assert report["dataset"]["file_name"] == input_path.name
+    assert report["dataset"]["sha256"] == hashlib.sha256(input_path.read_bytes()).hexdigest()
+    assert report["search"] == {
+        "candidate_count": 11,
+        "max_factor": 1.0,
+        "min_factor": 0.0,
+        "step": 0.1,
+    }
     assert report["validation_windows"] == 1
     assert report["window_coverage"]["validation"] == [
         {

@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import sys
@@ -148,6 +149,14 @@ def _parse_timestamp(value: str | None) -> datetime:
     return timestamp.astimezone(timezone.utc)
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv_path", type=Path, help="CSV containing labeled windows")
@@ -181,6 +190,16 @@ def main() -> int:
         )
         report = {
             "warning": "Offline experiment only; do not apply without domain review.",
+            "dataset": {
+                "file_name": args.csv_path.name,
+                "sha256": _sha256_file(args.csv_path),
+            },
+            "search": {
+                "min_factor": candidates[0],
+                "max_factor": candidates[-1],
+                "step": args.step,
+                "candidate_count": len(candidates),
+            },
             "calibration_windows": len(splits["calibration"]),
             "validation_windows": len(splits["validation"]),
             "baseline_factor": args.baseline_factor,
