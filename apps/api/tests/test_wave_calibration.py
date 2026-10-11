@@ -139,3 +139,28 @@ def test_wave_calibration_cli_rejects_duplicate_instants_in_window(
     assert result.returncode == 2
     assert "duplicate timestamp in window" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_wave_calibration_cli_rejects_timestamp_reuse_across_splits(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "overlapping-splits.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15\n"
+        "holdout,validation,2026-01-01T00:00:00+00:00,0.1,0.5,0.15\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "timestamp is reused by window 'holdout' after 'train'" in result.stderr
+    assert "Traceback" not in result.stderr

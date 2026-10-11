@@ -30,6 +30,7 @@ REQUIRED_COLUMNS = {
 
 def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
     grouped: dict[str, dict] = {}
+    seen_timestamps: dict[datetime, str] = {}
     with path.open(newline="", encoding="utf-8-sig") as source:
         reader = csv.DictReader(source)
         missing = REQUIRED_COLUMNS - set(reader.fieldnames or ())
@@ -68,7 +69,6 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                     "reference": reference,
                     "altitudes": [],
                     "accelerations": [],
-                    "timestamps": set(),
                 },
             )
             if entry["split"] != split:
@@ -77,11 +77,17 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                 raise ValueError(
                     f"Line {line_number}: reference height changes within window {window_id!r}"
                 )
-            if measured_at in entry["timestamps"]:
+            previous_window = seen_timestamps.get(measured_at)
+            if previous_window is not None:
+                if previous_window == window_id:
+                    raise ValueError(
+                        f"Line {line_number}: duplicate timestamp in window {window_id!r}"
+                    )
                 raise ValueError(
-                    f"Line {line_number}: duplicate timestamp in window {window_id!r}"
+                    f"Line {line_number}: timestamp is reused by window "
+                    f"{window_id!r} after {previous_window!r}"
                 )
-            entry["timestamps"].add(measured_at)
+            seen_timestamps[measured_at] = window_id
             if altitude is not None:
                 entry["altitudes"].append(altitude)
             if acceleration is not None:
