@@ -34,12 +34,12 @@ def test_select_factor_rejects_empty_windows_and_invalid_candidates() -> None:
 def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     input_path = tmp_path / "labeled-waves.csv"
     rows = [
-        ("train-a", "calibration", 0.0, 0.0, 0.15),
-        ("train-a", "calibration", 0.1, 0.5, 0.15),
-        ("train-b", "calibration", 0.0, 0.0, 0.35),
-        ("train-b", "calibration", 0.3, 1.0, 0.35),
-        ("holdout", "validation", 0.0, 0.0, 0.26),
-        ("holdout", "validation", 0.2, 0.8, 0.26),
+        ("train-a", "calibration", "2026-01-01T00:00:00Z", 0.0, 0.0, 0.15),
+        ("train-a", "calibration", "2026-01-01T00:00:01Z", 0.1, 0.5, 0.15),
+        ("train-b", "calibration", "2026-01-01T00:01:00Z", 0.0, 0.0, 0.35),
+        ("train-b", "calibration", "2026-01-01T00:01:01Z", 0.3, 1.0, 0.35),
+        ("holdout", "validation", "2026-01-01T00:02:00Z", 0.0, 0.0, 0.26),
+        ("holdout", "validation", "2026-01-01T00:02:01Z", 0.2, 0.8, 0.26),
     ]
     with input_path.open("w", newline="", encoding="utf-8") as target:
         writer = csv.writer(target)
@@ -47,6 +47,7 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
             (
                 "window_id",
                 "split",
+                "measured_at",
                 "gnss_altitude_m",
                 "imu_vertical_acceleration_mps2",
                 "reference_wave_height_m",
@@ -74,9 +75,9 @@ def test_wave_calibration_cli_reports_truncated_csv_without_traceback(
 ) -> None:
     input_path = tmp_path / "truncated.csv"
     input_path.write_text(
-        "window_id,split,gnss_altitude_m,imu_vertical_acceleration_mps2,"
-        "reference_wave_height_m\n"
-        "window-a,calibration,0.0\n",
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "window-a,calibration,2026-01-01T00:00:00Z,0.0\n",
         encoding="utf-8",
     )
     script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
@@ -89,5 +90,52 @@ def test_wave_calibration_cli_reports_truncated_csv_without_traceback(
     )
 
     assert result.returncode == 2
-    assert "Line 2: invalid numeric value" in result.stderr
+    assert "Line 2: incomplete CSV row" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_wave_calibration_cli_rejects_naive_timestamps(tmp_path: Path) -> None:
+    input_path = tmp_path / "naive-timestamp.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "window-a,calibration,2026-01-01T00:00:00,0.0,0.0,0.15\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "timestamp must include a timezone" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_wave_calibration_cli_rejects_duplicate_instants_in_window(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "duplicate-instants.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "window-a,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15\n"
+        "window-a,calibration,2026-01-01T01:00:00+01:00,0.1,0.5,0.15\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "duplicate timestamp in window" in result.stderr
     assert "Traceback" not in result.stderr

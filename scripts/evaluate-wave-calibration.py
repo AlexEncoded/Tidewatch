@@ -5,6 +5,7 @@ import csv
 import json
 import math
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 API_ROOT = Path(__file__).resolve().parents[1] / "apps" / "api"
@@ -20,6 +21,7 @@ from app.domain.wave_calibration import (  # noqa: E402
 REQUIRED_COLUMNS = {
     "window_id",
     "split",
+    "measured_at",
     "gnss_altitude_m",
     "imu_vertical_acceleration_mps2",
     "reference_wave_height_m",
@@ -42,12 +44,18 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                     "'calibration' or 'validation'"
                 )
             try:
+                measured_at = _parse_timestamp(row["measured_at"])
+            except ValueError as exc:
+                raise ValueError(f"Line {line_number}: {exc}") from exc
+            try:
                 reference = float(row["reference_wave_height_m"])
                 altitude = _optional_number(row["gnss_altitude_m"])
                 acceleration = _optional_number(
                     row["imu_vertical_acceleration_mps2"]
                 )
-            except (TypeError, ValueError) as exc:
+            except TypeError as exc:
+                raise ValueError(f"Line {line_number}: incomplete CSV row") from exc
+            except ValueError as exc:
                 raise ValueError(f"Line {line_number}: invalid numeric value") from exc
             if not math.isfinite(reference) or reference < 0:
                 raise ValueError(
@@ -60,6 +68,7 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                     "reference": reference,
                     "altitudes": [],
                     "accelerations": [],
+                    "timestamps": set(),
                 },
             )
             if entry["split"] != split:
@@ -68,6 +77,11 @@ def load_windows(path: Path) -> dict[str, list[WaveCalibrationWindow]]:
                 raise ValueError(
                     f"Line {line_number}: reference height changes within window {window_id!r}"
                 )
+            if measured_at in entry["timestamps"]:
+                raise ValueError(
+                    f"Line {line_number}: duplicate timestamp in window {window_id!r}"
+                )
+            entry["timestamps"].add(measured_at)
             if altitude is not None:
                 entry["altitudes"].append(altitude)
             if acceleration is not None:
@@ -98,6 +112,18 @@ def _optional_number(value: str | None) -> float | None:
     if not math.isfinite(number):
         raise ValueError("sensor values must be finite")
     return number
+
+
+def _parse_timestamp(value: str | None) -> datetime:
+    if not value:
+        raise ValueError("Line timestamp is required")
+    try:
+        timestamp = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("Line timestamp must be ISO 8601") from exc
+    if timestamp.tzinfo is None or timestamp.utcoffset() is None:
+        raise ValueError("Line timestamp must include a timezone")
+    return timestamp.astimezone(timezone.utc)
 
 
 def main() -> int:

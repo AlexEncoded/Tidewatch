@@ -11,6 +11,7 @@ Prepare a CSV with one row per synchronized sensor sample and these columns:
 |---|---|
 | `window_id` | Identifier shared by samples from one evaluation window |
 | `split` | `calibration` or `validation`; keep validation windows out of tuning |
+| `measured_at` | ISO 8601 sample time with an explicit UTC offset or `Z` |
 | `gnss_altitude_m` | GNSS altitude in meters |
 | `imu_vertical_acceleration_mps2` | Vertical acceleration in m/s² |
 | `reference_wave_height_m` | Independently measured wave height in meters for the window |
@@ -18,8 +19,10 @@ Prepare a CSV with one row per synchronized sensor sample and these columns:
 The reference value must remain constant within each window. Each window needs
 at least two GNSS and two IMU samples. Empty sensor cells are allowed when the
 other samples in that window satisfy this minimum. Use synchronized timestamps
-and a documented, independently measured reference source; do not use simulator
-output as calibration evidence.
+on every row; timestamps must include a timezone and cannot repeat within a
+window. Keep the GNSS and IMU values from the same instant on the same row (an
+unavailable modality may be blank). Use a documented, independently measured
+reference source; do not use simulator output as calibration evidence.
 
 Run the evaluator from the repository root:
 
