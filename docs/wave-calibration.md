@@ -1,0 +1,43 @@
+# Offline wave-estimator evaluation
+
+The GNSS/IMU wave-height estimate is experimental and its default IMU factor is
+not a field calibration. This tool evaluates candidate factors against an
+independent wave-height reference; it does not update API configuration or
+change production behavior.
+
+Prepare a CSV with one row per synchronized sensor sample and these columns:
+
+| Column | Meaning |
+|---|---|
+| `window_id` | Identifier shared by samples from one evaluation window |
+| `split` | `calibration` or `validation`; keep validation windows out of tuning |
+| `gnss_altitude_m` | GNSS altitude in meters |
+| `imu_vertical_acceleration_mps2` | Vertical acceleration in m/s² |
+| `reference_wave_height_m` | Independently measured wave height in meters for the window |
+
+The reference value must remain constant within each window. Each window needs
+at least two GNSS and two IMU samples. Empty sensor cells are allowed when the
+other samples in that window satisfy this minimum. Use synchronized timestamps
+and a documented, independently measured reference source; do not use simulator
+output as calibration evidence.
+
+Run the evaluator from the repository root:
+
+```bash
+python scripts/evaluate-wave-calibration.py data/labeled-waves.csv
+```
+
+It selects the factor with the lowest RMSE on `calibration` windows, then
+reports MAE, RMSE and signed bias for both the baseline and selected factor on
+the untouched `validation` windows. The default search spans 0–10 in increments
+of 0.01. To change the search resolution or baseline:
+
+```bash
+python scripts/evaluate-wave-calibration.py data/labeled-waves.csv \
+  --baseline-factor 0.1 --max-factor 5 --step 0.005
+```
+
+Keep the source data, sensor synchronization method, window definition and
+reference instrument uncertainty with any evaluation report. A lower validation
+error is evidence only for that dataset and setup; domain review is still
+required before considering a buoy-specific factor.

@@ -27,3 +27,16 @@ Para enviar un único lote o reutilizar una boya existente:
 python scripts/telemetry_simulator.py --once
 python scripts/telemetry_simulator.py --buoy-id TW-XXXXXXXX --interval 5
 ```
+
+## Evaluación experimental del oleaje
+
+Para comparar el estimador GNSS/IMU con alturas de ola de referencia medidas
+independientemente, usa el evaluador offline. Requiere ventanas separadas de
+calibración y validación; no modifica la configuración de la API:
+
+```bash
+python scripts/evaluate-wave-calibration.py data/labeled-waves.csv
+```
+
+El formato CSV y las precauciones para interpretar los resultados están en
+[`docs/wave-calibration.md`](../docs/wave-calibration.md).
