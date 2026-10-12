@@ -32,7 +32,6 @@ from .entities import (
 from .domain.buoy import (
     BuoyIdentitySnapshot,
     BuoySnapshot,
-    BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from .domain.devices import DeviceSnapshot
@@ -67,6 +66,7 @@ from .persistence_mappers import (
     sensor_health_check_snapshot as _sensor_health_check_snapshot,
 )
 from .device_repository import DeviceRepository
+from .buoy_location_repository import BuoyLocationRepository
 from .persistence_utils import is_newer_timestamp
 
 
@@ -76,6 +76,7 @@ class BuoyRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.devices = DeviceRepository(db)
+        self.locations = BuoyLocationRepository(db)
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         """Delegate battery ownership lookups to the device persistence adapter."""
@@ -95,47 +96,8 @@ class BuoyRepository:
         """Delegate battery-ingestion heartbeats to the device adapter."""
         return self.devices.mark_device_seen_by_id(device_id, seen_at)
 
-    def update_buoy_location(
-        self, buoy_id: str, command: BuoyLocationCommand
-    ) -> BuoySnapshot | None:
-        buoy = self.get_buoy(buoy_id)
-        if buoy is None:
-            return None
-        self.add_location(
-            LocationTelemetrySnapshot(
-                buoy_id=buoy_id,
-                latitude=command.latitude,
-                longitude=command.longitude,
-                measured_at=datetime.now(timezone.utc),
-            )
-        )
-        buoy = self.get_buoy(buoy_id)
-        if buoy is None:
-            return None
-        return _buoy_snapshot(buoy)
-
     def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
-        entity = BuoyLocationReadingEntity(
-            buoy_id=reading.buoy_id,
-            latitude=reading.latitude,
-            longitude=reading.longitude,
-            altitude_meters=reading.altitude_meters,
-            speed_mps=reading.speed_mps,
-            hdop=reading.hdop,
-            satellites=reading.satellites,
-            device_id=reading.device_id,
-            measured_at=reading.measured_at,
-        )
-        self.db.add(entity)
-        self.db.commit()
-        self.db.refresh(entity)
-        buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None:
-            buoy.latitude = reading.latitude
-            buoy.longitude = reading.longitude
-            self.db.commit()
-            self.db.refresh(buoy)
-        return entity
+        return self.locations.add_location(reading)
 
     def list_locations(
         self,

@@ -17,6 +17,7 @@ from app.application.ports import (
 )
 from app.application.sensor_health import SensorHealthCheckWriter
 from app.buoy_activity_repository import BuoyActivityRepository
+from app.buoy_location_repository import BuoyLocationRepository
 from app.buoy_registry_repository import BuoyRegistryRepository
 from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
@@ -44,6 +45,13 @@ def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
 
     assert not hasattr(BuoyRepository, "list_buoy_activity")
     assert isinstance(get_stale_buoy_reader(object()), BuoyActivityRepository)
+
+
+def test_buoy_location_updates_use_the_location_adapter() -> None:
+    from app.adapter_dependencies import get_buoy_location_updater
+
+    assert not hasattr(BuoyRepository, "update_buoy_location")
+    assert isinstance(get_buoy_location_updater(object()), BuoyLocationRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

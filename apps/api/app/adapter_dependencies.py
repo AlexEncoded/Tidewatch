@@ -51,6 +51,7 @@ from .database import get_db
 from .database_health import SQLDatabaseHealthReader
 from .device_repository import DeviceRepository
 from .buoy_activity_repository import BuoyActivityRepository
+from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .buoy_summary_repository import BuoySummaryRepository
 from .repository import BuoyRepository
@@ -143,8 +144,8 @@ def get_buoy_status_registry(
 def get_buoy_location_updater(
     db: Session = Depends(get_db),
 ) -> BuoyLocationUpdater:
-    """Compose buoy location writes with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose buoy location writes with the location persistence adapter."""
+    return BuoyLocationRepository(db)
 
 
 def get_buoy_registrar(

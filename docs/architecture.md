@@ -92,6 +92,9 @@ application layer.
 The fleet overview uses `BuoySummaryRepository`, which composes buoy records
 with the telemetry adapter's latest-reading queries instead of placing that
 cross-context projection in `BuoyRepository`.
+Location history writes and current-coordinate synchronization use a dedicated
+`BuoyLocationRepository`; batch ingestion delegates to the same adapter, so
+both entry points preserve one persistence path.
 
 ## Bounded contexts
 
