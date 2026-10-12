@@ -1,5 +1,6 @@
 """SQLAlchemy adapter for buoy registration and operational status."""
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoySnapshot, BuoyStatusCommand
@@ -12,6 +13,16 @@ class BuoyRegistryRepository:
 
     def __init__(self, db: Session) -> None:
         self.db = db
+
+    def list_buoys(self) -> list[BuoyEntity]:
+        return list(
+            self.db.scalars(
+                select(BuoyEntity).order_by(BuoyEntity.created_at)
+            ).all()
+        )
+
+    def list_buoy_snapshots(self) -> list[BuoySnapshot]:
+        return [buoy_snapshot(buoy) for buoy in self.list_buoys()]
 
     def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
         entity = BuoyEntity(

@@ -34,11 +34,20 @@ def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
         get_buoy_status_registry,
     )
 
-    session = object()
+    class EmptySession:
+        def scalars(self, query):
+            return self
+
+        def all(self):
+            return []
+
+    session = EmptySession()
     assert not hasattr(BuoyRepository, "register_buoy")
     assert not hasattr(BuoyRepository, "update_buoy_status")
+    assert not hasattr(BuoyRepository, "list_buoys")
     assert isinstance(get_buoy_registrar(session), BuoyRegistryRepository)
     assert isinstance(get_buoy_status_registry(session), BuoyRegistryRepository)
+    assert get_buoy_registrar(session).list_buoy_snapshots() == []
 
 
 def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:

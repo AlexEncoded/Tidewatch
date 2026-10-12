@@ -86,6 +86,8 @@ repository over the same SQLAlchemy session and delegates device lookups and
 heartbeats explicitly.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
+The same adapter owns buoy enumeration and snapshot mapping; the aggregate
+temporarily delegates snapshot enumeration for maintenance composition.
 Stale-buoy evaluation reads heartbeat fields through a dedicated
 `BuoyActivityRepository`; the age and eligibility rules remain in the
 application layer.

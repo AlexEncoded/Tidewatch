@@ -64,6 +64,7 @@ from .persistence_mappers import (
 )
 from .device_repository import DeviceRepository
 from .buoy_location_repository import BuoyLocationRepository
+from .buoy_registry_repository import BuoyRegistryRepository
 from .persistence_utils import is_newer_timestamp
 
 
@@ -74,6 +75,7 @@ class BuoyRepository:
         self.db = db
         self.devices = DeviceRepository(db)
         self.locations = BuoyLocationRepository(db)
+        self.registry = BuoyRegistryRepository(db)
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         """Delegate battery ownership lookups to the device persistence adapter."""
@@ -119,11 +121,8 @@ class BuoyRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.get_buoy(buoy_id) is not None
 
-    def list_buoys(self) -> list[BuoyEntity]:
-        return list(self.db.scalars(select(BuoyEntity).order_by(BuoyEntity.created_at)).all())
-
     def list_buoy_snapshots(self) -> list[BuoySnapshot]:
-        return [_buoy_snapshot(buoy) for buoy in self.list_buoys()]
+        return self.registry.list_buoy_snapshots()
 
     def add_temperature(
         self, reading: TemperatureTelemetrySnapshot
