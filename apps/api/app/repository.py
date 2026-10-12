@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .entities import (
     BuoyEntity,
+    DeviceEntity,
     SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
@@ -37,6 +38,7 @@ from .domain.buoy import (
     BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
+from .domain.devices import DeviceSnapshot
 from .domain.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot as DomainSensorHealthSnapshot,
@@ -71,8 +73,30 @@ from .device_repository import DeviceRepository
 from .persistence_utils import is_newer_timestamp
 
 
-class BuoyRepository(DeviceRepository):
+class BuoyRepository:
     """Legacy aggregate adapter retained while use cases migrate by context."""
+
+    def __init__(self, db: Session) -> None:
+        self.db = db
+        self.devices = DeviceRepository(db)
+
+    def get_device(self, device_id: str) -> DeviceEntity | None:
+        """Delegate battery ownership lookups to the device persistence adapter."""
+        return self.devices.get_device(device_id)
+
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
+        """Delegate device snapshot reads required by battery ingestion."""
+        return self.devices.get_device_snapshot(device_id)
+
+    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
+        """Delegate device snapshots required by legacy maintenance queries."""
+        return self.devices.list_device_snapshots(buoy_id)
+
+    def mark_device_seen_by_id(
+        self, device_id: str, seen_at: datetime
+    ) -> DeviceSnapshot | None:
+        """Delegate battery-ingestion heartbeats to the device adapter."""
+        return self.devices.mark_device_seen_by_id(device_id, seen_at)
 
     def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
         entity = BuoyEntity(

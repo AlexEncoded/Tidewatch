@@ -16,10 +16,39 @@ from app.application.ports import (
     TelemetryIngestionGateway,
 )
 from app.application.sensor_health import SensorHealthCheckWriter
+from app.device_repository import DeviceRepository
 from app.repository import BuoyRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
+
+
+def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
+    class DeviceAdapter:
+        def get_device(self, device_id):
+            return ("device", device_id)
+
+        def get_device_snapshot(self, device_id):
+            return ("snapshot", device_id)
+
+        def list_device_snapshots(self, buoy_id):
+            return [("snapshots", buoy_id)]
+
+        def mark_device_seen_by_id(self, device_id, seen_at):
+            return ("seen", device_id, seen_at)
+
+    repository = BuoyRepository.__new__(BuoyRepository)
+    repository.devices = DeviceAdapter()
+
+    assert not issubclass(BuoyRepository, DeviceRepository)
+    assert repository.get_device("unit-a") == ("device", "unit-a")
+    assert repository.get_device_snapshot("unit-a") == ("snapshot", "unit-a")
+    assert repository.list_device_snapshots("buoy-a") == [("snapshots", "buoy-a")]
+    assert repository.mark_device_seen_by_id("unit-a", "now") == (
+        "seen",
+        "unit-a",
+        "now",
+    )
 
 
 def imported_modules(directory: Path) -> set[str]:
