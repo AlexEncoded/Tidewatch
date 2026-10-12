@@ -55,6 +55,7 @@ from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .buoy_summary_repository import BuoySummaryRepository
 from .repository import BuoyRepository
+from .temperature_alert_repository import TemperatureAlertRepository
 
 
 def get_quality_summary_reader(
@@ -312,15 +313,15 @@ def get_temperature_analysis_reader(
 def get_temperature_alerts_reader(
     db: Session = Depends(get_db),
 ) -> TemperatureAlertsReader:
-    """Compose fleet temperature-alert queries with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose fleet temperature-alert queries with the alert adapter."""
+    return TemperatureAlertRepository(db)
 
 
 def get_temperature_alert_store(
     db: Session = Depends(get_db),
 ) -> TemperatureAlertStore:
-    """Compose temperature-alert use cases with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose temperature-alert use cases with the alert persistence adapter."""
+    return TemperatureAlertRepository(db)
 
 
 def get_device_registry(

@@ -22,6 +22,7 @@ from app.buoy_registry_repository import BuoyRegistryRepository
 from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
 from app.repository import BuoyRepository
+from app.temperature_alert_repository import TemperatureAlertRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -52,6 +53,19 @@ def test_buoy_location_updates_use_the_location_adapter() -> None:
 
     assert not hasattr(BuoyRepository, "update_buoy_location")
     assert isinstance(get_buoy_location_updater(object()), BuoyLocationRepository)
+
+
+def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:
+    from app.adapter_dependencies import (
+        get_temperature_alert_store,
+        get_temperature_alerts_reader,
+    )
+
+    session = object()
+    assert not hasattr(BuoyRepository, "find_alert")
+    assert not hasattr(BuoyRepository, "list_buoy_identities")
+    assert isinstance(get_temperature_alerts_reader(session), TemperatureAlertRepository)
+    assert isinstance(get_temperature_alert_store(session), TemperatureAlertRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
