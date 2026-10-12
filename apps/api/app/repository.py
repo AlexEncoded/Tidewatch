@@ -116,10 +116,10 @@ class BuoyRepository:
         return self.locations.list_all_locations(limit, since, until)
 
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
-        return self.db.get(BuoyEntity, buoy_id)
+        return self.registry.get_buoy(buoy_id)
 
     def buoy_exists(self, buoy_id: str) -> bool:
-        return self.get_buoy(buoy_id) is not None
+        return self.registry.buoy_exists(buoy_id)
 
     def list_buoy_snapshots(self) -> list[BuoySnapshot]:
         return self.registry.list_buoy_snapshots()

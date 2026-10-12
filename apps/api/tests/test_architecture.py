@@ -50,6 +50,22 @@ def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     assert get_buoy_registrar(session).list_buoy_snapshots() == []
 
 
+def test_buoy_repository_delegates_identity_lookups_to_registry() -> None:
+    class RegistryAdapter:
+        def get_buoy(self, buoy_id):
+            return ("buoy", buoy_id)
+
+        def buoy_exists(self, buoy_id):
+            return buoy_id == "known"
+
+    repository = BuoyRepository.__new__(BuoyRepository)
+    repository.registry = RegistryAdapter()
+
+    assert repository.get_buoy("known") == ("buoy", "known")
+    assert repository.buoy_exists("known")
+    assert not repository.buoy_exists("unknown")
+
+
 def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
     from app.adapter_dependencies import get_stale_buoy_reader
 

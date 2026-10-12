@@ -14,6 +14,12 @@ class BuoyRegistryRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
+        return self.db.get(BuoyEntity, buoy_id)
+
+    def buoy_exists(self, buoy_id: str) -> bool:
+        return self.get_buoy(buoy_id) is not None
+
     def list_buoys(self) -> list[BuoyEntity]:
         return list(
             self.db.scalars(
