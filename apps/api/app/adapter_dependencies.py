@@ -49,6 +49,7 @@ from .application.device_registration import DeviceRegistry
 from .application.device_status import DeviceStatusRegistry
 from .database import get_db
 from .database_health import SQLDatabaseHealthReader
+from .device_repository import DeviceRepository
 from .repository import BuoyRepository
 
 
@@ -322,25 +323,25 @@ def get_device_registry(
     db: Session = Depends(get_db),
 ) -> DeviceRegistry:
     """Compose device registration with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return DeviceRepository(db)
 
 
 def get_device_listing_reader(
     db: Session = Depends(get_db),
 ) -> DeviceListingReader:
     """Compose device listing with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return DeviceRepository(db)
 
 
 def get_device_health_reader(
     db: Session = Depends(get_db),
 ) -> DeviceHealthReader:
     """Compose device health queries with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return DeviceRepository(db)
 
 
 def get_device_status_registry(
     db: Session = Depends(get_db),
 ) -> DeviceStatusRegistry:
     """Compose device status changes with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return DeviceRepository(db)

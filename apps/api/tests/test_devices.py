@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
+from app.device_repository import DeviceRepository
 from app.main import app
-from app.repository import BuoyRepository
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def client():
 def test_registration_handles_conflict_after_precheck(client, monkeypatch, same_id):
     buoy_id = client.post("/api/v1/buoys", json={"name": "Race"}).json()["id"]
     path = f"/api/v1/buoys/{buoy_id}/devices"
-    original_create = BuoyRepository.create_device
+    original_create = DeviceRepository.create_device
 
     def conflicting_create(repository, buoy_id, payload):
         # The precheck succeeded, but a competing insert has claimed the key.
@@ -48,7 +48,7 @@ def test_registration_handles_conflict_after_precheck(client, monkeypatch, same_
         original_create(repository, buoy_id, winner)
         return original_create(repository, buoy_id, payload)
 
-    monkeypatch.setattr(BuoyRepository, "create_device", conflicting_create)
+    monkeypatch.setattr(DeviceRepository, "create_device", conflicting_create)
     response = client.post(path, json={"device_id": "other", "sensor_channel": "A"})
     assert response.status_code == 409
     assert len(client.get(path).json()) == 1

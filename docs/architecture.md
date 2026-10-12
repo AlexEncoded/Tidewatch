@@ -79,6 +79,10 @@ The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
 to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping
 functions stay separate from query and transaction orchestration in
 `BuoyRepository`, making persistence-to-domain translation directly testable.
+Physical-device registration, heartbeat and status operations now use a
+dedicated `DeviceRepository`; the aggregate repository temporarily inherits
+that adapter for telemetry-ingestion compatibility while remaining contexts
+are migrated.
 
 ## Bounded contexts
 

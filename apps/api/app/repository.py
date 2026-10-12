@@ -1,12 +1,10 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .entities import (
     BuoyEntity,
-    DeviceEntity,
     SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
@@ -29,12 +27,6 @@ from .entities import (
     SalinityReadingEntity,
     TemperatureAlertEntity,
     TemperatureReadingEntity,
-)
-from .domain.devices import (
-    DeviceSnapshot,
-    DeviceRegistrationCommand,
-    DeviceRegistrationConflict,
-    DeviceStatusCommand,
 )
 from .domain.buoy import (
     BuoyActivitySnapshot,
@@ -73,23 +65,14 @@ from .domain.telemetry import (
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .persistence_mappers import (
     buoy_snapshot as _buoy_snapshot,
-    device_snapshot as _device_snapshot,
     sensor_health_check_snapshot as _sensor_health_check_snapshot,
 )
+from .device_repository import DeviceRepository
+from .persistence_utils import is_newer_timestamp
 
 
-def _is_newer(candidate: datetime, previous: datetime | None) -> bool:
-    """Compare timestamps consistently across PostgreSQL and SQLite."""
-    if previous is None:
-        return True
-    candidate_utc = candidate.astimezone(timezone.utc) if candidate.tzinfo else candidate.replace(tzinfo=timezone.utc)
-    previous_utc = previous.astimezone(timezone.utc) if previous.tzinfo else previous.replace(tzinfo=timezone.utc)
-    return candidate_utc > previous_utc
-
-
-class BuoyRepository:
-    def __init__(self, db: Session) -> None:
-        self.db = db
+class BuoyRepository(DeviceRepository):
+    """Legacy aggregate adapter retained while use cases migrate by context."""
 
     def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
         entity = BuoyEntity(
@@ -290,78 +273,6 @@ class BuoyRepository:
             ).all()
         ]
 
-    def create_device(
-        self, buoy_id: str, device: DeviceRegistrationCommand
-    ) -> DeviceEntity:
-        entity = DeviceEntity(
-            device_id=device.device_id,
-            buoy_id=buoy_id,
-            sensor_channel=device.sensor_channel,
-            firmware_version=device.firmware_version,
-            registered_at=datetime.now(timezone.utc),
-        )
-        self.db.add(entity)
-        try:
-            self.db.commit()
-        except IntegrityError:
-            self.db.rollback()
-            if self.get_device(device.device_id) is not None or any(
-                existing.sensor_channel == device.sensor_channel
-                for existing in self.list_devices(buoy_id)
-            ):
-                raise DeviceRegistrationConflict(
-                    "Device or sensor channel already registered"
-                ) from None
-            raise
-        self.db.refresh(entity)
-        return entity
-
-    def create_device_snapshot(
-        self, buoy_id: str, device: DeviceRegistrationCommand
-    ) -> DeviceSnapshot:
-        return _device_snapshot(self.create_device(buoy_id, device))
-
-    def list_devices(self, buoy_id: str) -> list[DeviceEntity]:
-        query = select(DeviceEntity).where(DeviceEntity.buoy_id == buoy_id).order_by(DeviceEntity.sensor_channel)
-        return list(self.db.scalars(query).all())
-
-    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        return [_device_snapshot(device) for device in self.list_devices(buoy_id)]
-
-    def get_device(self, device_id: str) -> DeviceEntity | None:
-        return self.db.get(DeviceEntity, device_id)
-
-    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
-        device = self.get_device(device_id)
-        return _device_snapshot(device) if device is not None else None
-
-    def mark_device_seen_by_id(
-        self, device_id: str, seen_at: datetime
-    ) -> DeviceSnapshot | None:
-        device = self.get_device(device_id)
-        if device is None:
-            return None
-        self.mark_device_seen(device, seen_at)
-        return self.get_device_snapshot(device_id)
-
-    def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
-        if _is_newer(seen_at, device.last_seen_at):
-            device.last_seen_at = seen_at
-            self.db.commit()
-            self.db.refresh(device)
-        return device
-
-    def update_device_status(
-        self, buoy_id: str, device_id: str, update: DeviceStatusCommand
-    ) -> DeviceSnapshot | None:
-        device = self.db.get(DeviceEntity, device_id)
-        if device is None or device.buoy_id != buoy_id:
-            return None
-        device.status = update.status
-        self.db.commit()
-        self.db.refresh(device)
-        return _device_snapshot(device)
-
     def add_temperature(
         self, reading: TemperatureTelemetrySnapshot
     ) -> TemperatureTelemetrySnapshot:
@@ -379,7 +290,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
             self.db.refresh(buoy)
@@ -442,7 +353,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return PressureTelemetrySnapshot(
@@ -504,7 +415,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return SalinityTelemetrySnapshot(
@@ -569,7 +480,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return ImuTelemetrySnapshot(
@@ -641,7 +552,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return AmbientLightTelemetrySnapshot(
@@ -702,7 +613,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return WindTelemetrySnapshot(
@@ -767,7 +678,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return MarineCurrentTelemetrySnapshot(
@@ -833,7 +744,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return TurbidityTelemetrySnapshot(
@@ -895,7 +806,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return DissolvedOxygenTelemetrySnapshot(
@@ -957,7 +868,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return PHTelemetrySnapshot(
@@ -1017,7 +928,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return ConductivityTelemetrySnapshot(
@@ -1083,7 +994,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return ChlorophyllATelemetrySnapshot(
@@ -1149,7 +1060,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return RainfallTelemetrySnapshot(
@@ -1211,7 +1122,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return HumidityTelemetrySnapshot(
@@ -1259,7 +1170,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return AirTemperatureTelemetrySnapshot(
             buoy_id=entity.buoy_id,
@@ -1306,7 +1217,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return AtmosphericPressureTelemetrySnapshot(
             buoy_id=entity.buoy_id,
@@ -1353,7 +1264,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return AcousticAltimeterTelemetrySnapshot(
             buoy_id=entity.buoy_id,
@@ -1396,7 +1307,7 @@ class BuoyRepository:
         )
         self.db.add(entity); self.db.commit(); self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at; self.db.commit()
         return UnderwaterAcousticTelemetrySnapshot(
             buoy_id=entity.buoy_id,
@@ -1439,7 +1350,7 @@ class BuoyRepository:
         self.db.commit()
         self.db.refresh(entity)
         buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and _is_newer(reading.measured_at, buoy.last_seen_at):
+        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
             buoy.last_seen_at = reading.measured_at
             self.db.commit()
         return BatteryTelemetrySnapshot(
