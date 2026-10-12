@@ -30,7 +30,6 @@ from .entities import (
     TemperatureReadingEntity,
 )
 from .domain.buoy import (
-    BuoyActivitySnapshot,
     BuoyIdentitySnapshot,
     BuoySnapshot,
     BuoySummarySnapshot,
@@ -250,17 +249,6 @@ class BuoyRepository:
                 BuoySummarySnapshot(buoy=buoy, latest_readings=latest_readings)
             )
         return summaries
-
-    def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
-        return [
-            BuoyActivitySnapshot(
-                buoy_id=buoy.id,
-                name=buoy.name,
-                status=buoy.status,
-                last_seen_at=buoy.last_seen_at,
-            )
-            for buoy in self.list_buoys()
-        ]
 
     def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
         return [

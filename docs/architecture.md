@@ -86,6 +86,9 @@ repository over the same SQLAlchemy session and delegates device lookups and
 heartbeats explicitly.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
+Stale-buoy evaluation reads heartbeat fields through a dedicated
+`BuoyActivityRepository`; the age and eligibility rules remain in the
+application layer.
 
 ## Bounded contexts
 

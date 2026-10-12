@@ -16,6 +16,7 @@ from app.application.ports import (
     TelemetryIngestionGateway,
 )
 from app.application.sensor_health import SensorHealthCheckWriter
+from app.buoy_activity_repository import BuoyActivityRepository
 from app.buoy_registry_repository import BuoyRegistryRepository
 from app.device_repository import DeviceRepository
 from app.repository import BuoyRepository
@@ -35,6 +36,13 @@ def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     assert not hasattr(BuoyRepository, "update_buoy_status")
     assert isinstance(get_buoy_registrar(session), BuoyRegistryRepository)
     assert isinstance(get_buoy_status_registry(session), BuoyRegistryRepository)
+
+
+def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
+    from app.adapter_dependencies import get_stale_buoy_reader
+
+    assert not hasattr(BuoyRepository, "list_buoy_activity")
+    assert isinstance(get_stale_buoy_reader(object()), BuoyActivityRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

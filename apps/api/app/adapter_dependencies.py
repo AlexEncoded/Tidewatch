@@ -50,6 +50,7 @@ from .application.device_status import DeviceStatusRegistry
 from .database import get_db
 from .database_health import SQLDatabaseHealthReader
 from .device_repository import DeviceRepository
+from .buoy_activity_repository import BuoyActivityRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .repository import BuoyRepository
 
@@ -127,8 +128,8 @@ def get_buoy_location_history_reader(
 def get_stale_buoy_reader(
     db: Session = Depends(get_db),
 ) -> StaleBuoyReader:
-    """Compose stale-buoy evaluation with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose stale-buoy evaluation with the fleet activity adapter."""
+    return BuoyActivityRepository(db)
 
 
 def get_buoy_status_registry(
