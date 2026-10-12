@@ -32,7 +32,6 @@ from .entities import (
 from .domain.buoy import (
     BuoyIdentitySnapshot,
     BuoySnapshot,
-    BuoySummarySnapshot,
     BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
@@ -209,46 +208,6 @@ class BuoyRepository:
 
     def list_buoy_snapshots(self) -> list[BuoySnapshot]:
         return [_buoy_snapshot(buoy) for buoy in self.list_buoys()]
-
-    def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:
-        summaries = []
-        telemetry_readers = {
-            "temperature": self.latest_temperature,
-            "pressure": self.latest_pressure,
-            "salinity": self.latest_salinity,
-            "imu": self.latest_imu,
-            "ambient_light": self.latest_ambient_light,
-            "wind": self.latest_wind,
-            "marine_current": self.latest_marine_current,
-            "turbidity": self.latest_turbidity,
-            "dissolved_oxygen": self.latest_dissolved_oxygen,
-            "ph": self.latest_ph,
-            "conductivity": self.latest_conductivity,
-            "chlorophyll_a": self.latest_chlorophyll_a,
-            "rainfall": self.latest_rainfall,
-            "humidity": self.latest_humidity,
-            "air_temperature": self.latest_air_temperature,
-            "atmospheric_pressure": self.latest_atmospheric_pressure,
-        }
-        for entity in self.list_buoys():
-            buoy = _buoy_snapshot(entity)
-            latest_readings = {
-                family: {
-                    "latest": get_latest(entity.id),
-                    "A": get_latest(entity.id, "A"),
-                    "B": get_latest(entity.id, "B"),
-                }
-                for family, get_latest in telemetry_readers.items()
-            }
-            latest_readings["battery"] = {
-                "latest": self.latest_battery(entity.id),
-                "A": self.latest_battery(entity.id, "A"),
-                "B": self.latest_battery(entity.id, "B"),
-            }
-            summaries.append(
-                BuoySummarySnapshot(buoy=buoy, latest_readings=latest_readings)
-            )
-        return summaries
 
     def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
         return [

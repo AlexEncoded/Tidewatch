@@ -18,6 +18,7 @@ from app.application.ports import (
 from app.application.sensor_health import SensorHealthCheckWriter
 from app.buoy_activity_repository import BuoyActivityRepository
 from app.buoy_registry_repository import BuoyRegistryRepository
+from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
 from app.repository import BuoyRepository
 
@@ -504,9 +505,13 @@ def test_database_health_route_uses_injected_reader() -> None:
     assert "get_database_health_reader" in imported_dependencies
 
 
-def test_repository_implements_the_buoy_summary_read_port() -> None:
-    adapter = BuoyRepository.__new__(BuoyRepository)
+def test_buoy_summary_port_uses_composed_fleet_adapter() -> None:
+    from app.adapter_dependencies import get_buoy_summary_reader
 
+    adapter = get_buoy_summary_reader(object())
+
+    assert not hasattr(BuoyRepository, "list_buoy_summaries")
+    assert isinstance(adapter, BuoySummaryRepository)
     assert isinstance(adapter, BuoySummaryReader)
 
 

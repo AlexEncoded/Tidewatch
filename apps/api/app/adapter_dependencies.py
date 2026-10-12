@@ -52,6 +52,7 @@ from .database_health import SQLDatabaseHealthReader
 from .device_repository import DeviceRepository
 from .buoy_activity_repository import BuoyActivityRepository
 from .buoy_registry_repository import BuoyRegistryRepository
+from .buoy_summary_repository import BuoySummaryRepository
 from .repository import BuoyRepository
 
 
@@ -100,8 +101,8 @@ def get_database_health_reader(
 def get_buoy_summary_reader(
     db: Session = Depends(get_db),
 ) -> BuoySummaryReader:
-    """Compose fleet overview queries with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose fleet overview queries from buoy and telemetry adapters."""
+    return BuoySummaryRepository(db)
 
 
 def get_fleet_location_reader(

@@ -89,6 +89,9 @@ Buoy registration and operational status persistence now use a separate
 Stale-buoy evaluation reads heartbeat fields through a dedicated
 `BuoyActivityRepository`; the age and eligibility rules remain in the
 application layer.
+The fleet overview uses `BuoySummaryRepository`, which composes buoy records
+with the telemetry adapter's latest-reading queries instead of placing that
+cross-context projection in `BuoyRepository`.
 
 ## Bounded contexts
 
