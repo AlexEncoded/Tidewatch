@@ -49,10 +49,23 @@ def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
 
 
 def test_buoy_location_updates_use_the_location_adapter() -> None:
-    from app.adapter_dependencies import get_buoy_location_updater
+    from app.adapter_dependencies import (
+        get_buoy_location_updater,
+        get_buoy_location_history_reader,
+        get_fleet_location_reader,
+        get_movement_analysis_reader,
+        get_wave_analysis_reader,
+    )
 
     assert not hasattr(BuoyRepository, "update_buoy_location")
-    assert isinstance(get_buoy_location_updater(object()), BuoyLocationRepository)
+    session = object()
+    assert isinstance(get_buoy_location_updater(session), BuoyLocationRepository)
+    assert isinstance(get_buoy_location_history_reader(session), BuoyLocationRepository)
+    assert isinstance(get_fleet_location_reader(session), BuoyLocationRepository)
+    assert isinstance(get_movement_analysis_reader(session), BuoyLocationRepository)
+    wave_reader = get_wave_analysis_reader(session)
+    assert isinstance(wave_reader, BuoyRepository)
+    assert wave_reader.locations.db is session
 
 
 def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:

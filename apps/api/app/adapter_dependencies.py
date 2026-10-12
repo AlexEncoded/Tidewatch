@@ -110,22 +110,22 @@ def get_buoy_summary_reader(
 def get_fleet_location_reader(
     db: Session = Depends(get_db),
 ) -> FleetLocationReader:
-    """Compose fleet-location queries with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose fleet-location queries with the location persistence adapter."""
+    return BuoyLocationRepository(db)
 
 
 def get_movement_analysis_reader(
     db: Session = Depends(get_db),
 ) -> MovementAnalysisReader:
-    """Compose movement analysis with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose movement analysis with the location persistence adapter."""
+    return BuoyLocationRepository(db)
 
 
 def get_buoy_location_history_reader(
     db: Session = Depends(get_db),
 ) -> BuoyLocationHistoryReader:
-    """Compose buoy location-history queries with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose buoy location-history queries with the location adapter."""
+    return BuoyLocationRepository(db)
 
 
 def get_stale_buoy_reader(
@@ -299,7 +299,7 @@ def get_pressure_analysis_reader(
 def get_wave_analysis_reader(
     db: Session = Depends(get_db),
 ) -> WaveAnalysisReader:
-    """Compose wave analysis with its location/IMU SQL reader."""
+    """Compose wave analysis through the compatibility telemetry facade."""
     return BuoyRepository(db)
 
 

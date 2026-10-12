@@ -95,6 +95,9 @@ cross-context projection in `BuoyRepository`.
 Location history writes and current-coordinate synchronization use a dedicated
 `BuoyLocationRepository`; batch ingestion delegates to the same adapter, so
 both entry points preserve one persistence path.
+Location-history and fleet-wide position queries use that adapter as well;
+`BuoyRepository` retains only temporary delegation for compound telemetry and
+maintenance gateways.
 Temperature anomaly persistence and the buoy identity query used for fleet-wide
 analysis now live in `TemperatureAlertRepository`, which composes the existing
 temperature-reading adapter.

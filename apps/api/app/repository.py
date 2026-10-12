@@ -103,30 +103,7 @@ class BuoyRepository:
         since: datetime | None = None,
         until: datetime | None = None,
     ) -> list[LocationTelemetrySnapshot]:
-        query = (
-            select(BuoyLocationReadingEntity)
-            .where(BuoyLocationReadingEntity.buoy_id == buoy_id)
-            .order_by(BuoyLocationReadingEntity.measured_at.desc())
-            .limit(limit)
-        )
-        if since is not None:
-            query = query.where(BuoyLocationReadingEntity.measured_at >= since)
-        if until is not None:
-            query = query.where(BuoyLocationReadingEntity.measured_at <= until)
-        return [
-            LocationTelemetrySnapshot(
-                buoy_id=entity.buoy_id,
-                latitude=entity.latitude,
-                longitude=entity.longitude,
-                measured_at=entity.measured_at,
-                altitude_meters=entity.altitude_meters,
-                speed_mps=entity.speed_mps,
-                hdop=entity.hdop,
-                satellites=entity.satellites,
-                device_id=entity.device_id,
-            )
-            for entity in self.db.scalars(query).all()
-        ]
+        return self.locations.list_locations(buoy_id, limit, since, until)
 
     def list_all_locations(
         self,
@@ -134,27 +111,7 @@ class BuoyRepository:
         since: datetime | None = None,
         until: datetime | None = None,
     ) -> list[LocationTelemetrySnapshot]:
-        query = select(BuoyLocationReadingEntity).order_by(
-            BuoyLocationReadingEntity.measured_at.desc()
-        ).limit(limit)
-        if since is not None:
-            query = query.where(BuoyLocationReadingEntity.measured_at >= since)
-        if until is not None:
-            query = query.where(BuoyLocationReadingEntity.measured_at <= until)
-        return [
-            LocationTelemetrySnapshot(
-                buoy_id=entity.buoy_id,
-                latitude=entity.latitude,
-                longitude=entity.longitude,
-                measured_at=entity.measured_at,
-                altitude_meters=entity.altitude_meters,
-                speed_mps=entity.speed_mps,
-                hdop=entity.hdop,
-                satellites=entity.satellites,
-                device_id=entity.device_id,
-            )
-            for entity in self.db.scalars(query).all()
-        ]
+        return self.locations.list_all_locations(limit, since, until)
 
     def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
         return self.db.get(BuoyEntity, buoy_id)
