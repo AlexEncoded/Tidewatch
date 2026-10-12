@@ -34,7 +34,6 @@ from .domain.buoy import (
     BuoyIdentitySnapshot,
     BuoySnapshot,
     BuoySummarySnapshot,
-    BuoyStatusCommand,
     BuoyLocationCommand,
 )
 from .domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
@@ -97,32 +96,6 @@ class BuoyRepository:
     ) -> DeviceSnapshot | None:
         """Delegate battery-ingestion heartbeats to the device adapter."""
         return self.devices.mark_device_seen_by_id(device_id, seen_at)
-
-    def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
-        entity = BuoyEntity(
-            id=buoy.buoy_id,
-            name=buoy.name,
-            latitude=buoy.latitude,
-            longitude=buoy.longitude,
-            status=buoy.status,
-            last_seen_at=buoy.last_seen_at,
-            created_at=buoy.created_at,
-        )
-        self.db.add(entity)
-        self.db.commit()
-        self.db.refresh(entity)
-        return _buoy_snapshot(entity)
-
-    def update_buoy_status(
-        self, buoy_id: str, command: BuoyStatusCommand
-    ) -> BuoySnapshot | None:
-        buoy = self.get_buoy(buoy_id)
-        if buoy is None:
-            return None
-        buoy.status = command.status
-        self.db.commit()
-        self.db.refresh(buoy)
-        return _buoy_snapshot(buoy)
 
     def update_buoy_location(
         self, buoy_id: str, command: BuoyLocationCommand

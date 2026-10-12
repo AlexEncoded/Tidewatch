@@ -50,6 +50,7 @@ from .application.device_status import DeviceStatusRegistry
 from .database import get_db
 from .database_health import SQLDatabaseHealthReader
 from .device_repository import DeviceRepository
+from .buoy_registry_repository import BuoyRegistryRepository
 from .repository import BuoyRepository
 
 
@@ -133,8 +134,8 @@ def get_stale_buoy_reader(
 def get_buoy_status_registry(
     db: Session = Depends(get_db),
 ) -> BuoyStatusRegistry:
-    """Compose buoy status updates with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose buoy status updates with the fleet registry adapter."""
+    return BuoyRegistryRepository(db)
 
 
 def get_buoy_location_updater(
@@ -147,8 +148,8 @@ def get_buoy_location_updater(
 def get_buoy_registrar(
     db: Session = Depends(get_db),
 ) -> BuoyRegistrar:
-    """Compose buoy registration with the SQL repository adapter."""
-    return BuoyRepository(db)
+    """Compose buoy registration with the fleet registry adapter."""
+    return BuoyRegistryRepository(db)
 
 
 def get_battery_telemetry_reader(

@@ -1,0 +1,40 @@
+"""SQLAlchemy adapter for buoy registration and operational status."""
+
+from sqlalchemy.orm import Session
+
+from .domain.buoy import BuoySnapshot, BuoyStatusCommand
+from .entities import BuoyEntity
+from .persistence_mappers import buoy_snapshot
+
+
+class BuoyRegistryRepository:
+    """Persist fleet identity and status independently from telemetry."""
+
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
+        entity = BuoyEntity(
+            id=buoy.buoy_id,
+            name=buoy.name,
+            latitude=buoy.latitude,
+            longitude=buoy.longitude,
+            status=buoy.status,
+            last_seen_at=buoy.last_seen_at,
+            created_at=buoy.created_at,
+        )
+        self.db.add(entity)
+        self.db.commit()
+        self.db.refresh(entity)
+        return buoy_snapshot(entity)
+
+    def update_buoy_status(
+        self, buoy_id: str, command: BuoyStatusCommand
+    ) -> BuoySnapshot | None:
+        buoy = self.db.get(BuoyEntity, buoy_id)
+        if buoy is None:
+            return None
+        buoy.status = command.status
+        self.db.commit()
+        self.db.refresh(buoy)
+        return buoy_snapshot(buoy)

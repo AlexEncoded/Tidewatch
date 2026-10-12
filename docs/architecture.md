@@ -84,6 +84,8 @@ Physical-device registration, heartbeat and status operations use a dedicated
 remaining battery-ingestion compatibility methods it composes a device
 repository over the same SQLAlchemy session and delegates device lookups and
 heartbeats explicitly.
+Buoy registration and operational status persistence now use a separate
+`BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 
 ## Bounded contexts
 

@@ -16,11 +16,25 @@ from app.application.ports import (
     TelemetryIngestionGateway,
 )
 from app.application.sensor_health import SensorHealthCheckWriter
+from app.buoy_registry_repository import BuoyRegistryRepository
 from app.device_repository import DeviceRepository
 from app.repository import BuoyRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
+
+
+def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
+    from app.adapter_dependencies import (
+        get_buoy_registrar,
+        get_buoy_status_registry,
+    )
+
+    session = object()
+    assert not hasattr(BuoyRepository, "register_buoy")
+    assert not hasattr(BuoyRepository, "update_buoy_status")
+    assert isinstance(get_buoy_registrar(session), BuoyRegistryRepository)
+    assert isinstance(get_buoy_status_registry(session), BuoyRegistryRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
