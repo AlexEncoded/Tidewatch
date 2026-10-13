@@ -31,6 +31,7 @@ from app.ambient_light_repository import AmbientLightRepository
 from app.wind_repository import WindRepository
 from app.marine_current_repository import MarineCurrentRepository
 from app.turbidity_repository import TurbidityRepository
+from app.dissolved_oxygen_repository import DissolvedOxygenRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -188,6 +189,18 @@ def test_turbidity_telemetry_uses_the_dedicated_adapter() -> None:
     session = object()
     assert isinstance(get_turbidity_telemetry_gateway(session), TurbidityRepository)
     assert isinstance(BuoyRepository(session).turbidity, TurbidityRepository)
+
+
+def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
+
+    session = object()
+    assert isinstance(
+        get_dissolved_oxygen_telemetry_gateway(session), DissolvedOxygenRepository
+    )
+    assert isinstance(
+        BuoyRepository(session).dissolved_oxygen, DissolvedOxygenRepository
+    )
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

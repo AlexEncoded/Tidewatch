@@ -119,6 +119,7 @@ Wind speed and direction persistence and history queries use `WindRepository`.
 Marine-current speed and direction persistence and queries use
 `MarineCurrentRepository`.
 Turbidity persistence and history queries use `TurbidityRepository`.
+Dissolved-oxygen persistence and history queries use `DissolvedOxygenRepository`.
 
 ## Bounded contexts
 
