@@ -118,6 +118,7 @@ Ambient-light persistence and history queries now use `AmbientLightRepository`.
 Wind speed and direction persistence and history queries use `WindRepository`.
 Marine-current speed and direction persistence and queries use
 `MarineCurrentRepository`.
+Turbidity persistence and history queries use `TurbidityRepository`.
 
 ## Bounded contexts
 

@@ -63,6 +63,7 @@ from .imu_repository import ImuRepository
 from .ambient_light_repository import AmbientLightRepository
 from .wind_repository import WindRepository
 from .marine_current_repository import MarineCurrentRepository
+from .turbidity_repository import TurbidityRepository
 
 
 def get_quality_summary_reader(
@@ -222,8 +223,8 @@ def get_marine_current_telemetry_gateway(
 def get_turbidity_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> TurbidityTelemetryGateway:
-    """Compose turbidity telemetry operations with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose turbidity telemetry operations with its SQL adapter."""
+    return TurbidityRepository(db)
 
 
 def get_dissolved_oxygen_telemetry_gateway(
