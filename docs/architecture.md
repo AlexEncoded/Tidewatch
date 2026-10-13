@@ -123,6 +123,7 @@ Dissolved-oxygen persistence and history queries use `DissolvedOxygenRepository`
 pH persistence and history queries use `PHRepository`.
 Conductivity persistence and history queries use `ConductivityRepository`.
 Chlorophyll-a persistence and history queries use `ChlorophyllARepository`.
+Rainfall persistence and history queries use `RainfallRepository`.
 
 ## Bounded contexts
 

@@ -35,6 +35,7 @@ from app.dissolved_oxygen_repository import DissolvedOxygenRepository
 from app.ph_repository import PHRepository
 from app.conductivity_repository import ConductivityRepository
 from app.chlorophyll_a_repository import ChlorophyllARepository
+from app.rainfall_repository import RainfallRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -232,6 +233,14 @@ def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
         get_chlorophyll_a_telemetry_gateway(session), ChlorophyllARepository
     )
     assert isinstance(BuoyRepository(session).chlorophyll_a, ChlorophyllARepository)
+
+
+def test_rainfall_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_rainfall_telemetry_gateway
+
+    session = object()
+    assert isinstance(get_rainfall_telemetry_gateway(session), RainfallRepository)
+    assert isinstance(BuoyRepository(session).rainfall, RainfallRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
