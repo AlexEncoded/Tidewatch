@@ -69,6 +69,7 @@ from .ph_repository import PHRepository
 from .conductivity_repository import ConductivityRepository
 from .chlorophyll_a_repository import ChlorophyllARepository
 from .rainfall_repository import RainfallRepository
+from .humidity_repository import HumidityRepository
 
 
 def get_quality_summary_reader(
@@ -271,7 +272,7 @@ def get_humidity_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> HumidityTelemetryGateway:
     """Compose humidity telemetry operations with the SQL adapter."""
-    return BuoyRepository(db)
+    return HumidityRepository(db)
 
 
 def get_air_temperature_telemetry_gateway(
