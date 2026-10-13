@@ -61,6 +61,7 @@ from .pressure_repository import PressureRepository
 from .salinity_repository import SalinityRepository
 from .imu_repository import ImuRepository
 from .ambient_light_repository import AmbientLightRepository
+from .wind_repository import WindRepository
 
 
 def get_quality_summary_reader(
@@ -206,8 +207,8 @@ def get_ambient_light_telemetry_gateway(
 def get_wind_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> WindTelemetryGateway:
-    """Compose wind telemetry reads and writes with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose wind telemetry reads and writes with its SQL adapter."""
+    return WindRepository(db)
 
 
 def get_marine_current_telemetry_gateway(

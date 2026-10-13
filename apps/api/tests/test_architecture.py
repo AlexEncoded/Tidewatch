@@ -28,6 +28,7 @@ from app.pressure_repository import PressureRepository
 from app.salinity_repository import SalinityRepository
 from app.imu_repository import ImuRepository
 from app.ambient_light_repository import AmbientLightRepository
+from app.wind_repository import WindRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -159,6 +160,14 @@ def test_ambient_light_telemetry_uses_the_dedicated_adapter() -> None:
         get_ambient_light_telemetry_gateway(session), AmbientLightRepository
     )
     assert isinstance(BuoyRepository(session).ambient_light, AmbientLightRepository)
+
+
+def test_wind_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_wind_telemetry_gateway
+
+    session = object()
+    assert isinstance(get_wind_telemetry_gateway(session), WindRepository)
+    assert isinstance(BuoyRepository(session).wind, WindRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

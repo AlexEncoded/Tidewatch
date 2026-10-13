@@ -115,6 +115,7 @@ through `SalinityRepository`.
 IMU persistence and history queries use `ImuRepository`; the wave-analysis
 compatibility facade composes it with the location adapter.
 Ambient-light persistence and history queries now use `AmbientLightRepository`.
+Wind speed and direction persistence and history queries use `WindRepository`.
 
 ## Bounded contexts
 
