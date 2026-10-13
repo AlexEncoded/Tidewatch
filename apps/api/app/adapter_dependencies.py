@@ -59,6 +59,7 @@ from .temperature_alert_repository import TemperatureAlertRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository
 from .salinity_repository import SalinityRepository
+from .imu_repository import ImuRepository
 
 
 def get_quality_summary_reader(
@@ -190,8 +191,8 @@ def get_salinity_telemetry_gateway(
 def get_imu_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> ImuTelemetryGateway:
-    """Compose IMU telemetry reads and writes with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose IMU telemetry reads and writes with its SQL adapter."""
+    return ImuRepository(db)
 
 
 def get_ambient_light_telemetry_gateway(

@@ -112,6 +112,8 @@ Water-pressure persistence and analysis queries now use `PressureRepository`,
 which refreshes buoy activity through the fleet registry adapter.
 Salinity persistence and history queries follow the same port/adaptor boundary
 through `SalinityRepository`.
+IMU persistence and history queries use `ImuRepository`; the wave-analysis
+compatibility facade composes it with the location adapter.
 
 ## Bounded contexts
 
