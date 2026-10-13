@@ -108,6 +108,8 @@ temperature-reading adapter.
 Temperature persistence and reading queries use `TemperatureRepository`; batch
 ingestion, maintenance and alert analysis retain narrow delegation while their
 composite ports are migrated.
+Water-pressure persistence and analysis queries now use `PressureRepository`,
+which refreshes buoy activity through the fleet registry adapter.
 
 ## Bounded contexts
 
