@@ -56,6 +56,7 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .buoy_summary_repository import BuoySummaryRepository
 from .repository import BuoyRepository
 from .temperature_alert_repository import TemperatureAlertRepository
+from .temperature_repository import TemperatureRepository
 
 
 def get_quality_summary_reader(
@@ -166,8 +167,8 @@ def get_battery_telemetry_reader(
 def get_temperature_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> TemperatureTelemetryGateway:
-    """Compose temperature telemetry reads and writes with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose temperature telemetry reads and writes with its SQL adapter."""
+    return TemperatureRepository(db)
 
 
 def get_pressure_telemetry_gateway(
@@ -307,7 +308,7 @@ def get_temperature_analysis_reader(
     db: Session = Depends(get_db),
 ) -> TemperatureAnalysisReader:
     """Compose temperature analysis with its SQL telemetry adapter."""
-    return BuoyRepository(db)
+    return TemperatureRepository(db)
 
 
 def get_temperature_alerts_reader(

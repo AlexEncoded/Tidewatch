@@ -105,6 +105,9 @@ maintenance gateways.
 Temperature anomaly persistence and the buoy identity query used for fleet-wide
 analysis now live in `TemperatureAlertRepository`, which composes the existing
 temperature-reading adapter.
+Temperature persistence and reading queries use `TemperatureRepository`; batch
+ingestion, maintenance and alert analysis retain narrow delegation while their
+composite ports are migrated.
 
 ## Bounded contexts
 
