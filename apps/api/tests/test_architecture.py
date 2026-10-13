@@ -29,6 +29,7 @@ from app.salinity_repository import SalinityRepository
 from app.imu_repository import ImuRepository
 from app.ambient_light_repository import AmbientLightRepository
 from app.wind_repository import WindRepository
+from app.marine_current_repository import MarineCurrentRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -168,6 +169,16 @@ def test_wind_telemetry_uses_the_dedicated_adapter() -> None:
     session = object()
     assert isinstance(get_wind_telemetry_gateway(session), WindRepository)
     assert isinstance(BuoyRepository(session).wind, WindRepository)
+
+
+def test_marine_current_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_marine_current_telemetry_gateway
+
+    session = object()
+    assert isinstance(
+        get_marine_current_telemetry_gateway(session), MarineCurrentRepository
+    )
+    assert isinstance(BuoyRepository(session).marine_current, MarineCurrentRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
