@@ -125,6 +125,7 @@ Conductivity persistence and history queries use `ConductivityRepository`.
 Chlorophyll-a persistence and history queries use `ChlorophyllARepository`.
 Rainfall persistence and history queries use `RainfallRepository`.
 Humidity persistence and history queries use `HumidityRepository`.
+Air-temperature persistence and history queries use `AirTemperatureRepository`.
 
 ## Bounded contexts
 
