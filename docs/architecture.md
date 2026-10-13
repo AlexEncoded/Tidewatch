@@ -114,6 +114,7 @@ Salinity persistence and history queries follow the same port/adaptor boundary
 through `SalinityRepository`.
 IMU persistence and history queries use `ImuRepository`; the wave-analysis
 compatibility facade composes it with the location adapter.
+Ambient-light persistence and history queries now use `AmbientLightRepository`.
 
 ## Bounded contexts
 
