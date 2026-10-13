@@ -110,6 +110,8 @@ ingestion, maintenance and alert analysis retain narrow delegation while their
 composite ports are migrated.
 Water-pressure persistence and analysis queries now use `PressureRepository`,
 which refreshes buoy activity through the fleet registry adapter.
+Salinity persistence and history queries follow the same port/adaptor boundary
+through `SalinityRepository`.
 
 ## Bounded contexts
 

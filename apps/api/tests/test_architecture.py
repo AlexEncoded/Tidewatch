@@ -25,6 +25,7 @@ from app.repository import BuoyRepository
 from app.temperature_alert_repository import TemperatureAlertRepository
 from app.temperature_repository import TemperatureRepository
 from app.pressure_repository import PressureRepository
+from app.salinity_repository import SalinityRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -130,6 +131,14 @@ def test_pressure_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(get_pressure_telemetry_gateway(session), PressureRepository)
     assert isinstance(get_pressure_analysis_reader(session), PressureRepository)
     assert isinstance(BuoyRepository(session).pressure, PressureRepository)
+
+
+def test_salinity_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_salinity_telemetry_gateway
+
+    session = object()
+    assert isinstance(get_salinity_telemetry_gateway(session), SalinityRepository)
+    assert isinstance(BuoyRepository(session).salinity, SalinityRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
