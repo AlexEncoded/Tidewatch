@@ -120,6 +120,7 @@ Marine-current speed and direction persistence and queries use
 `MarineCurrentRepository`.
 Turbidity persistence and history queries use `TurbidityRepository`.
 Dissolved-oxygen persistence and history queries use `DissolvedOxygenRepository`.
+pH persistence and history queries use `PHRepository`.
 
 ## Bounded contexts
 

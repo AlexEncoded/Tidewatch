@@ -32,6 +32,7 @@ from app.wind_repository import WindRepository
 from app.marine_current_repository import MarineCurrentRepository
 from app.turbidity_repository import TurbidityRepository
 from app.dissolved_oxygen_repository import DissolvedOxygenRepository
+from app.ph_repository import PHRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -201,6 +202,14 @@ def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         BuoyRepository(session).dissolved_oxygen, DissolvedOxygenRepository
     )
+
+
+def test_ph_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_ph_telemetry_gateway
+
+    session = object()
+    assert isinstance(get_ph_telemetry_gateway(session), PHRepository)
+    assert isinstance(BuoyRepository(session).ph, PHRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

@@ -65,6 +65,7 @@ from .wind_repository import WindRepository
 from .marine_current_repository import MarineCurrentRepository
 from .turbidity_repository import TurbidityRepository
 from .dissolved_oxygen_repository import DissolvedOxygenRepository
+from .ph_repository import PHRepository
 
 
 def get_quality_summary_reader(
@@ -238,8 +239,8 @@ def get_dissolved_oxygen_telemetry_gateway(
 def get_ph_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> PHTelemetryGateway:
-    """Compose pH telemetry operations with the SQL adapter."""
-    return BuoyRepository(db)
+    """Compose pH telemetry operations with their SQL adapter."""
+    return PHRepository(db)
 
 
 def get_conductivity_telemetry_gateway(
