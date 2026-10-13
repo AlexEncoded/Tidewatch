@@ -67,6 +67,7 @@ from .turbidity_repository import TurbidityRepository
 from .dissolved_oxygen_repository import DissolvedOxygenRepository
 from .ph_repository import PHRepository
 from .conductivity_repository import ConductivityRepository
+from .chlorophyll_a_repository import ChlorophyllARepository
 
 
 def get_quality_summary_reader(
@@ -255,7 +256,7 @@ def get_chlorophyll_a_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> ChlorophyllATelemetryGateway:
     """Compose chlorophyll-a telemetry operations with the SQL adapter."""
-    return BuoyRepository(db)
+    return ChlorophyllARepository(db)
 
 
 def get_rainfall_telemetry_gateway(

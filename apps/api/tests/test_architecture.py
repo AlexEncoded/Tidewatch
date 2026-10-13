@@ -34,6 +34,7 @@ from app.turbidity_repository import TurbidityRepository
 from app.dissolved_oxygen_repository import DissolvedOxygenRepository
 from app.ph_repository import PHRepository
 from app.conductivity_repository import ConductivityRepository
+from app.chlorophyll_a_repository import ChlorophyllARepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -221,6 +222,16 @@ def test_conductivity_telemetry_uses_the_dedicated_adapter() -> None:
         get_conductivity_telemetry_gateway(session), ConductivityRepository
     )
     assert isinstance(BuoyRepository(session).conductivity, ConductivityRepository)
+
+
+def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_chlorophyll_a_telemetry_gateway
+
+    session = object()
+    assert isinstance(
+        get_chlorophyll_a_telemetry_gateway(session), ChlorophyllARepository
+    )
+    assert isinstance(BuoyRepository(session).chlorophyll_a, ChlorophyllARepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
