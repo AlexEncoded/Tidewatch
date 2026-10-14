@@ -75,6 +75,7 @@ from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
+from .sensor_health_repository import SensorHealthRepository
 
 
 def get_quality_summary_reader(
@@ -88,14 +89,14 @@ def get_sensor_health_reader(
     db: Session = Depends(get_db),
 ) -> SensorHealthReader:
     """Compose redundant sensor-health queries with the SQL adapter."""
-    return BuoyRepository(db)
+    return SensorHealthRepository(db)
 
 
 def get_sensor_health_check_gateway(
     db: Session = Depends(get_db),
 ) -> SensorHealthCheckGateway:
     """Compose sensor-health evaluation and persistence with the SQL adapter."""
-    return BuoyRepository(db)
+    return SensorHealthRepository(db)
 
 
 def get_telemetry_ingestion_gateway(

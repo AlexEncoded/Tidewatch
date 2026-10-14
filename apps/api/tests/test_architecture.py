@@ -42,6 +42,7 @@ from app.atmospheric_pressure_repository import AtmosphericPressureRepository
 from app.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
+from app.sensor_health_repository import SensorHealthRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -318,6 +319,20 @@ def test_battery_telemetry_uses_its_adapter_and_device_composition() -> None:
     assert adapter.db is session
     assert isinstance(adapter.devices, DeviceRepository)
     assert isinstance(BuoyRepository(session).battery, BatteryRepository)
+
+
+def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
+    from app.adapter_dependencies import (
+        get_sensor_health_check_gateway,
+        get_sensor_health_reader,
+    )
+
+    session = object()
+    assert isinstance(get_sensor_health_reader(session), SensorHealthRepository)
+    assert isinstance(
+        get_sensor_health_check_gateway(session), SensorHealthRepository
+    )
+    assert isinstance(BuoyRepository(session).sensor_health, SensorHealthRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

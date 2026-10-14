@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from .entities import (
     BuoyEntity,
     DeviceEntity,
-    SensorHealthCheckEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
     AmbientLightReadingEntity,
@@ -54,7 +53,6 @@ from .domain.telemetry import (
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .persistence_mappers import (
     buoy_snapshot as _buoy_snapshot,
-    sensor_health_check_snapshot as _sensor_health_check_snapshot,
 )
 from .device_repository import DeviceRepository
 from .buoy_location_repository import BuoyLocationRepository
@@ -78,6 +76,7 @@ from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
+from .sensor_health_repository import SensorHealthRepository
 from .persistence_utils import is_newer_timestamp
 
 
@@ -108,6 +107,7 @@ class BuoyRepository:
         self.acoustic_altimeter = AcousticAltimeterRepository(db)
         self.underwater_acoustic = UnderwaterAcousticRepository(db)
         self.battery = BatteryRepository(db)
+        self.sensor_health = SensorHealthRepository(db)
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         """Delegate battery ownership lookups to the device persistence adapter."""
@@ -420,52 +420,12 @@ class BuoyRepository:
     def add_sensor_health_check(
         self, health: DomainSensorHealthSnapshot
     ) -> SensorHealthCheckSnapshot:
-        entity = SensorHealthCheckEntity(
-            buoy_id=health.buoy_id,
-            status=health.status,
-            temperature_delta_celsius=health.temperature_delta_celsius,
-            pressure_delta_kpa=health.pressure_delta_kpa,
-            salinity_delta_psu=health.salinity_delta_psu,
-            imu_acceleration_delta_mps2=health.imu_acceleration_delta_mps2,
-            ambient_light_delta_lux=health.ambient_light_delta_lux,
-            wind_speed_delta_mps=health.wind_speed_delta_mps,
-            wind_direction_delta_degrees=health.wind_direction_delta_degrees,
-            marine_current_speed_delta_mps=health.marine_current_speed_delta_mps,
-            marine_current_direction_delta_degrees=health.marine_current_direction_delta_degrees,
-            turbidity_delta_ntu=health.turbidity_delta_ntu,
-            dissolved_oxygen_delta_mg_l=health.dissolved_oxygen_delta_mg_l,
-            ph_delta=health.ph_delta,
-            conductivity_delta_us_cm=health.conductivity_delta_us_cm,
-            chlorophyll_a_delta_ug_l=health.chlorophyll_a_delta_ug_l,
-            rainfall_delta_mm_h=health.rainfall_delta_mm_h,
-            humidity_delta_percent=health.humidity_delta_percent,
-            air_temperature_delta_celsius=health.air_temperature_delta_celsius,
-            atmospheric_pressure_delta_kpa=health.atmospheric_pressure_delta_kpa,
-            acoustic_altimeter_delta_meters=health.acoustic_altimeter_delta_meters,
-            underwater_acoustic_delta_db=health.underwater_acoustic_delta_db,
-            degraded_sensors=health.degraded_sensors,
-            missing_sensors=health.missing_sensors,
-            decisions=health.decisions,
-            checked_at=health.checked_at,
-        )
-        self.db.add(entity)
-        self.db.commit()
-        self.db.refresh(entity)
-        return _sensor_health_check_snapshot(entity)
+        return self.sensor_health.add_sensor_health_check(health)
 
     def list_sensor_health_checks(
         self, buoy_id: str, limit: int
     ) -> list[SensorHealthCheckSnapshot]:
-        query = (
-            select(SensorHealthCheckEntity)
-            .where(SensorHealthCheckEntity.buoy_id == buoy_id)
-            .order_by(SensorHealthCheckEntity.checked_at.desc())
-            .limit(limit)
-        )
-        return [
-            _sensor_health_check_snapshot(entity)
-            for entity in self.db.scalars(query).all()
-        ]
+        return self.sensor_health.list_sensor_health_checks(buoy_id, limit)
 
     def latest_battery(
         self,

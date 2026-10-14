@@ -87,6 +87,8 @@ heartbeats explicitly.
 Battery persistence and history queries use `BatteryRepository`, which composes
 the device adapter for the battery-ingestion port; `BuoyRepository` keeps
 temporary delegation for the larger maintenance and ingestion gateways.
+Sensor-health history and check persistence use `SensorHealthRepository`,
+which composes the dedicated sensor adapters behind the health ports.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 The same adapter owns buoy enumeration and snapshot mapping; the aggregate
