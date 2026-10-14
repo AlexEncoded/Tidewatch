@@ -828,16 +828,41 @@ def test_quality_summary_counts_all_sensor_readings() -> None:
         f"/api/v1/buoys/{buoy_id}/pressures",
         json={"pressure_kpa": 101.3},
     )
+    readings = [
+        ("salinity", {"salinity_psu": 35}),
+        ("imu", {
+            "acceleration_x_mps2": 0, "acceleration_y_mps2": 0,
+            "acceleration_z_mps2": 0, "angular_velocity_x_dps": 0,
+            "angular_velocity_y_dps": 0, "angular_velocity_z_dps": 0,
+        }),
+        ("ambient-light", {"illuminance_lux": 100}),
+        ("wind", {"wind_speed_mps": 3, "wind_direction_degrees": 90}),
+        ("marine-current", {"current_speed_mps": 0.5, "current_direction_degrees": 90}),
+        ("turbidity", {"turbidity_ntu": 1}),
+        ("dissolved-oxygen", {"dissolved_oxygen_mg_l": 7}),
+        ("ph", {"ph": 8.1, "quality": "suspect"}),
+        ("conductivity", {"conductivity_us_cm": 500}),
+        ("chlorophyll-a", {"chlorophyll_a_ug_l": 0.5}),
+        ("rainfall", {"rainfall_mm_h": 0}),
+        ("humidity", {"humidity_percent": 50}),
+        ("air-temperature", {"air_temperature_celsius": 20}),
+        ("atmospheric-pressure", {"atmospheric_pressure_kpa": 101.3}),
+        ("acoustic-altimeter", {"depth_meters": 5}),
+        ("underwater-acoustic", {"echo_intensity_db": 20, "quality": "invalid"}),
+    ]
+    for sensor, payload in readings:
+        response = client.post(f"/api/v1/buoys/{buoy_id}/{sensor}", json=payload)
+        assert response.status_code == 201, response.text
 
     summary = client.get(f"/api/v1/buoys/{buoy_id}/quality-summary")
 
     assert summary.status_code == 200
     assert summary.json() == {
         "buoy_id": buoy_id,
-        "total_readings": 4,
-        "good_readings": 2,
-        "suspect_readings": 1,
-        "invalid_readings": 1,
+        "total_readings": 20,
+        "good_readings": 16,
+        "suspect_readings": 2,
+        "invalid_readings": 2,
     }
 
 
