@@ -840,6 +840,10 @@ def test_buoy_summary_port_uses_composed_fleet_adapter() -> None:
     assert not hasattr(BuoyRepository, "list_buoy_summaries")
     assert isinstance(adapter, BuoySummaryRepository)
     assert isinstance(adapter, BuoySummaryReader)
+    assert not hasattr(adapter, "telemetry")
+    assert isinstance(adapter.registry, BuoyRegistryRepository)
+    assert isinstance(adapter.temperature, TemperatureRepository)
+    assert isinstance(adapter.battery, BatteryRepository)
 
 
 def test_buoy_summary_route_uses_injected_reader() -> None:
