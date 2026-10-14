@@ -91,6 +91,8 @@ Sensor-health history and check persistence use `SensorHealthRepository`,
 which composes the dedicated sensor adapters behind the health ports.
 Quality summaries use `QualitySummaryRepository` to aggregate quality labels
 across every sensor family that records a quality value.
+Batch telemetry ingestion now composes fleet, battery, location and per-sensor
+adapters through `TelemetryIngestionRepository` rather than the legacy aggregate.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 The same adapter owns buoy enumeration and snapshot mapping; the aggregate

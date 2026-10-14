@@ -44,6 +44,7 @@ from app.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
 from app.sensor_health_repository import SensorHealthRepository
 from app.quality_summary_repository import QualitySummaryRepository
+from app.telemetry_ingestion_repository import TelemetryIngestionRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -344,6 +345,18 @@ def test_quality_summary_uses_its_dedicated_repository() -> None:
     assert isinstance(
         BuoyRepository(session).quality_summary, QualitySummaryRepository
     )
+
+
+def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
+    from app.adapter_dependencies import get_telemetry_ingestion_gateway
+
+    session = object()
+    gateway = get_telemetry_ingestion_gateway(session)
+    assert isinstance(gateway, TelemetryIngestionRepository)
+    assert isinstance(gateway, TelemetryIngestionGateway)
+    assert gateway.locations.db is session
+    assert gateway.battery.db is session
+    assert gateway.sensors.registry.db is session
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

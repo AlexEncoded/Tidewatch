@@ -77,6 +77,7 @@ from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository
+from .telemetry_ingestion_repository import TelemetryIngestionRepository
 
 
 def get_quality_summary_reader(
@@ -104,7 +105,7 @@ def get_telemetry_ingestion_gateway(
     db: Session = Depends(get_db),
 ) -> TelemetryIngestionGateway:
     """Compose batch telemetry writes with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return TelemetryIngestionRepository(db)
 
 
 def get_maintenance_reader(
