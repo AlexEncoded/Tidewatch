@@ -84,6 +84,9 @@ Physical-device registration, heartbeat and status operations use a dedicated
 remaining battery-ingestion compatibility methods it composes a device
 repository over the same SQLAlchemy session and delegates device lookups and
 heartbeats explicitly.
+Battery persistence and history queries use `BatteryRepository`, which composes
+the device adapter for the battery-ingestion port; `BuoyRepository` keeps
+temporary delegation for the larger maintenance and ingestion gateways.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 The same adapter owns buoy enumeration and snapshot mapping; the aggregate

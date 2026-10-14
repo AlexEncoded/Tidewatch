@@ -41,6 +41,7 @@ from app.air_temperature_repository import AirTemperatureRepository
 from app.atmospheric_pressure_repository import AtmosphericPressureRepository
 from app.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.underwater_acoustic_repository import UnderwaterAcousticRepository
+from app.battery_repository import BatteryRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -306,6 +307,17 @@ def test_underwater_acoustic_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         BuoyRepository(session).underwater_acoustic, UnderwaterAcousticRepository
     )
+
+
+def test_battery_telemetry_uses_its_adapter_and_device_composition() -> None:
+    from app.adapter_dependencies import get_battery_telemetry_reader
+
+    session = object()
+    adapter = get_battery_telemetry_reader(session)
+    assert isinstance(adapter, BatteryRepository)
+    assert adapter.db is session
+    assert isinstance(adapter.devices, DeviceRepository)
+    assert isinstance(BuoyRepository(session).battery, BatteryRepository)
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

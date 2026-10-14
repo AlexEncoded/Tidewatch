@@ -74,6 +74,7 @@ from .air_temperature_repository import AirTemperatureRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
+from .battery_repository import BatteryRepository
 
 
 def get_quality_summary_reader(
@@ -178,7 +179,7 @@ def get_battery_telemetry_reader(
     db: Session = Depends(get_db),
 ) -> BatteryTelemetryReader:
     """Compose battery telemetry operations with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return BatteryRepository(db)
 
 
 def get_temperature_telemetry_gateway(

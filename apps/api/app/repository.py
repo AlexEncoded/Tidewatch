@@ -77,6 +77,7 @@ from .air_temperature_repository import AirTemperatureRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
+from .battery_repository import BatteryRepository
 from .persistence_utils import is_newer_timestamp
 
 
@@ -106,6 +107,7 @@ class BuoyRepository:
         self.atmospheric_pressure = AtmosphericPressureRepository(db)
         self.acoustic_altimeter = AcousticAltimeterRepository(db)
         self.underwater_acoustic = UnderwaterAcousticRepository(db)
+        self.battery = BatteryRepository(db)
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         """Delegate battery ownership lookups to the device persistence adapter."""
@@ -410,28 +412,10 @@ class BuoyRepository:
             buoy_id, limit, sensor_channel
         )
 
-    def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryReadingEntity:
-        entity = BatteryReadingEntity(
-            buoy_id=reading.buoy_id,
-            device_id=reading.device_id,
-            physical_device_id=reading.physical_device_id,
-            battery_percent=reading.battery_percent,
-            measured_at=reading.measured_at,
-        )
-        self.db.add(entity)
-        self.db.commit()
-        self.db.refresh(entity)
-        buoy = self.get_buoy(reading.buoy_id)
-        if buoy is not None and is_newer_timestamp(reading.measured_at, buoy.last_seen_at):
-            buoy.last_seen_at = reading.measured_at
-            self.db.commit()
-        return BatteryTelemetrySnapshot(
-            buoy_id=entity.buoy_id,
-            battery_percent=entity.battery_percent,
-            device_id=entity.device_id,
-            measured_at=entity.measured_at,
-            physical_device_id=entity.physical_device_id,
-        )
+    def add_battery(
+        self, reading: BatteryTelemetrySnapshot
+    ) -> BatteryTelemetrySnapshot:
+        return self.battery.add_battery(reading)
 
     def add_sensor_health_check(
         self, health: DomainSensorHealthSnapshot
@@ -489,27 +473,8 @@ class BuoyRepository:
         device_id: str | None = None,
         physical_device_id: str | None = None,
     ) -> BatteryReadingEntity | None:
-        query = (
-            select(BatteryReadingEntity)
-            .where(BatteryReadingEntity.buoy_id == buoy_id)
-            .order_by(BatteryReadingEntity.measured_at.desc())
-            .limit(1)
-        )
-        if device_id is not None:
-            query = query.where(BatteryReadingEntity.device_id == device_id)
-        if physical_device_id is not None:
-            query = query.where(
-                BatteryReadingEntity.physical_device_id == physical_device_id
-            )
-        entity = self.db.scalars(query).first()
-        if entity is None:
-            return None
-        return BatteryTelemetrySnapshot(
-            buoy_id=entity.buoy_id,
-            battery_percent=entity.battery_percent,
-            device_id=entity.device_id,
-            measured_at=entity.measured_at,
-            physical_device_id=entity.physical_device_id,
+        return self.battery.latest_battery(
+            buoy_id, device_id, physical_device_id
         )
 
     def list_batteries(
@@ -519,28 +484,9 @@ class BuoyRepository:
         device_id: str | None = None,
         physical_device_id: str | None = None,
     ) -> list[BatteryTelemetrySnapshot]:
-        query = (
-            select(BatteryReadingEntity)
-            .where(BatteryReadingEntity.buoy_id == buoy_id)
-            .order_by(BatteryReadingEntity.measured_at.desc())
-            .limit(limit)
+        return self.battery.list_batteries(
+            buoy_id, limit, device_id, physical_device_id
         )
-        if device_id is not None:
-            query = query.where(BatteryReadingEntity.device_id == device_id)
-        if physical_device_id is not None:
-            query = query.where(
-                BatteryReadingEntity.physical_device_id == physical_device_id
-            )
-        return [
-            BatteryTelemetrySnapshot(
-                buoy_id=entity.buoy_id,
-                battery_percent=entity.battery_percent,
-                device_id=entity.device_id,
-                measured_at=entity.measured_at,
-                physical_device_id=entity.physical_device_id,
-            )
-            for entity in self.db.scalars(query).all()
-        ]
 
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
         counts = {"good": 0, "suspect": 0, "invalid": 0}
