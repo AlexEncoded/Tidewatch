@@ -130,6 +130,8 @@ Atmospheric-pressure persistence and history queries use
 `AtmosphericPressureRepository`.
 Acoustic-altimeter persistence and history queries use
 `AcousticAltimeterRepository`.
+Underwater-acoustic persistence and history queries use
+`UnderwaterAcousticRepository`.
 
 ## Bounded contexts
 
