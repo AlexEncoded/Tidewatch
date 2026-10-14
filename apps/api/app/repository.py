@@ -83,6 +83,7 @@ from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
+from .quality_summary_repository import QualitySummaryRepository
 from .persistence_utils import is_newer_timestamp
 
 
@@ -114,6 +115,7 @@ class BuoyRepository:
         self.underwater_acoustic = UnderwaterAcousticRepository(db)
         self.battery = BatteryRepository(db)
         self.sensor_health = SensorHealthRepository(db)
+        self.quality_summary = QualitySummaryRepository(db)
 
     def get_device(self, device_id: str) -> DeviceEntity | None:
         """Delegate battery ownership lookups to the device persistence adapter."""
@@ -455,33 +457,4 @@ class BuoyRepository:
         )
 
     def quality_counts(self, buoy_id: str) -> dict[str, int]:
-        counts = {"good": 0, "suspect": 0, "invalid": 0}
-        for entity in (
-            TemperatureReadingEntity,
-            PressureReadingEntity,
-            SalinityReadingEntity,
-            ImuReadingEntity,
-            AmbientLightReadingEntity,
-            WindReadingEntity,
-            MarineCurrentReadingEntity,
-            TurbidityReadingEntity,
-            DissolvedOxygenReadingEntity,
-            PHReadingEntity,
-            ConductivityReadingEntity,
-            ChlorophyllAReadingEntity,
-            RainfallReadingEntity,
-            HumidityReadingEntity,
-            AirTemperatureReadingEntity,
-            AtmosphericPressureReadingEntity,
-            AcousticAltimeterReadingEntity,
-            UnderwaterAcousticReadingEntity,
-        ):
-            query = (
-                select(entity.quality, func.count())
-                .where(entity.buoy_id == buoy_id)
-                .group_by(entity.quality)
-            )
-            for quality, count in self.db.execute(query):
-                if quality in counts:
-                    counts[quality] += count
-        return counts
+        return self.quality_summary.quality_counts(buoy_id)

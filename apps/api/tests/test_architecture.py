@@ -43,6 +43,7 @@ from app.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
 from app.sensor_health_repository import SensorHealthRepository
+from app.quality_summary_repository import QualitySummaryRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -333,6 +334,16 @@ def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
         get_sensor_health_check_gateway(session), SensorHealthRepository
     )
     assert isinstance(BuoyRepository(session).sensor_health, SensorHealthRepository)
+
+
+def test_quality_summary_uses_its_dedicated_repository() -> None:
+    from app.adapter_dependencies import get_quality_summary_reader
+
+    session = object()
+    assert isinstance(get_quality_summary_reader(session), QualitySummaryRepository)
+    assert isinstance(
+        BuoyRepository(session).quality_summary, QualitySummaryRepository
+    )
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

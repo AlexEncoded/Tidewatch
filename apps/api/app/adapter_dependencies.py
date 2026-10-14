@@ -76,13 +76,14 @@ from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
+from .quality_summary_repository import QualitySummaryRepository
 
 
 def get_quality_summary_reader(
     db: Session = Depends(get_db),
 ) -> QualitySummaryReader:
     """Compose the quality-summary input port with its SQL adapter."""
-    return BuoyRepository(db)
+    return QualitySummaryRepository(db)
 
 
 def get_sensor_health_reader(
