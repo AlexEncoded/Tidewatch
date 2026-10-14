@@ -72,6 +72,7 @@ from .rainfall_repository import RainfallRepository
 from .humidity_repository import HumidityRepository
 from .air_temperature_repository import AirTemperatureRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
+from .acoustic_altimeter_repository import AcousticAltimeterRepository
 
 
 def get_quality_summary_reader(
@@ -295,7 +296,7 @@ def get_acoustic_altimeter_telemetry_gateway(
     db: Session = Depends(get_db),
 ) -> AcousticAltimeterTelemetryGateway:
     """Compose acoustic-altimeter telemetry operations with the SQL adapter."""
-    return BuoyRepository(db)
+    return AcousticAltimeterRepository(db)
 
 
 def get_underwater_acoustic_telemetry_gateway(

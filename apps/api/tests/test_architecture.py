@@ -39,6 +39,7 @@ from app.rainfall_repository import RainfallRepository
 from app.humidity_repository import HumidityRepository
 from app.air_temperature_repository import AirTemperatureRepository
 from app.atmospheric_pressure_repository import AtmosphericPressureRepository
+from app.acoustic_altimeter_repository import AcousticAltimeterRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -277,6 +278,19 @@ def test_atmospheric_pressure_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         BuoyRepository(session).atmospheric_pressure,
         AtmosphericPressureRepository,
+    )
+
+
+def test_acoustic_altimeter_telemetry_uses_the_dedicated_adapter() -> None:
+    from app.adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
+
+    session = object()
+    assert isinstance(
+        get_acoustic_altimeter_telemetry_gateway(session),
+        AcousticAltimeterRepository,
+    )
+    assert isinstance(
+        BuoyRepository(session).acoustic_altimeter, AcousticAltimeterRepository
     )
 
 

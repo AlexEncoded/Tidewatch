@@ -128,6 +128,8 @@ Humidity persistence and history queries use `HumidityRepository`.
 Air-temperature persistence and history queries use `AirTemperatureRepository`.
 Atmospheric-pressure persistence and history queries use
 `AtmosphericPressureRepository`.
+Acoustic-altimeter persistence and history queries use
+`AcousticAltimeterRepository`.
 
 ## Bounded contexts
 
