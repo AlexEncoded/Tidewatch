@@ -93,6 +93,8 @@ Quality summaries use `QualitySummaryRepository` to aggregate quality labels
 across every sensor family that records a quality value.
 Batch telemetry ingestion now composes fleet, battery, location and per-sensor
 adapters through `TelemetryIngestionRepository` rather than the legacy aggregate.
+The maintenance reader similarly uses `MaintenanceRepository` to combine
+health histories, device state, battery records, location and buoy snapshots.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 The same adapter owns buoy enumeration and snapshot mapping; the aggregate

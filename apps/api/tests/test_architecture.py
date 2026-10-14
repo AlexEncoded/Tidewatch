@@ -45,6 +45,7 @@ from app.battery_repository import BatteryRepository
 from app.sensor_health_repository import SensorHealthRepository
 from app.quality_summary_repository import QualitySummaryRepository
 from app.telemetry_ingestion_repository import TelemetryIngestionRepository
+from app.maintenance_repository import MaintenanceRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -357,6 +358,19 @@ def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
     assert gateway.locations.db is session
     assert gateway.battery.db is session
     assert gateway.sensors.registry.db is session
+
+
+def test_maintenance_reader_uses_its_composed_read_adapter() -> None:
+    from app.adapter_dependencies import get_maintenance_reader
+
+    session = object()
+    reader = get_maintenance_reader(session)
+    assert isinstance(reader, MaintenanceRepository)
+    assert isinstance(reader, MaintenanceReader)
+    assert reader.battery.db is session
+    assert reader.locations.db is session
+    assert reader.registry.db is session
+    assert reader.devices.db is session
 
 
 def test_buoy_repository_composes_device_repository_for_compatibility() -> None:

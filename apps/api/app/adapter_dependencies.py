@@ -78,6 +78,7 @@ from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository
 from .telemetry_ingestion_repository import TelemetryIngestionRepository
+from .maintenance_repository import MaintenanceRepository
 
 
 def get_quality_summary_reader(
@@ -112,7 +113,7 @@ def get_maintenance_reader(
     db: Session = Depends(get_db),
 ) -> MaintenanceReader:
     """Compose fleet maintenance queries with the SQL repository adapter."""
-    return BuoyRepository(db)
+    return MaintenanceRepository(db)
 
 
 def get_database_health_reader(
