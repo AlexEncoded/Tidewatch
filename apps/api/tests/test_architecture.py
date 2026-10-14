@@ -46,6 +46,7 @@ from app.sensor_health_repository import SensorHealthRepository
 from app.quality_summary_repository import QualitySummaryRepository
 from app.telemetry_ingestion_repository import TelemetryIngestionRepository
 from app.maintenance_repository import MaintenanceRepository
+from app.wave_analysis_repository import WaveAnalysisRepository
 
 
 API_APP = Path(__file__).parents[1] / "app"
@@ -112,8 +113,11 @@ def test_buoy_location_updates_use_the_location_adapter() -> None:
     assert isinstance(get_fleet_location_reader(session), BuoyLocationRepository)
     assert isinstance(get_movement_analysis_reader(session), BuoyLocationRepository)
     wave_reader = get_wave_analysis_reader(session)
-    assert isinstance(wave_reader, BuoyRepository)
+    assert isinstance(wave_reader, WaveAnalysisRepository)
+    assert callable(wave_reader.list_imu)
+    assert callable(wave_reader.list_locations)
     assert wave_reader.locations.db is session
+    assert wave_reader.imu.db is session
 
 
 def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:

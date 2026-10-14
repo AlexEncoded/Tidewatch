@@ -79,6 +79,7 @@ from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository
 from .telemetry_ingestion_repository import TelemetryIngestionRepository
 from .maintenance_repository import MaintenanceRepository
+from .wave_analysis_repository import WaveAnalysisRepository
 
 
 def get_quality_summary_reader(
@@ -323,7 +324,7 @@ def get_wave_analysis_reader(
     db: Session = Depends(get_db),
 ) -> WaveAnalysisReader:
     """Compose wave analysis through the compatibility telemetry facade."""
-    return BuoyRepository(db)
+    return WaveAnalysisRepository(db)
 
 
 def get_temperature_analysis_reader(
