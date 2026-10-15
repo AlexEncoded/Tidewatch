@@ -202,7 +202,9 @@ function renderBuoys(
             <div><dt>Humidity</dt><dd>${formatReading(latest_humidity, "humidity_percent", 1, "%")}</dd></div>
             <div><dt>Ambient light</dt><dd>${formatReading(latest_ambient_light, "illuminance_lux", 1, "lux")}</dd></div>
             <div><dt>Wind speed</dt><dd>${formatReading(latest_wind, "wind_speed_mps", 2, "m/s")}</dd></div>
+            <div><dt>Wind direction</dt><dd>${formatReading(latest_wind, "wind_direction_degrees", 1, "°")}</dd></div>
             <div><dt>Current speed</dt><dd>${formatReading(latest_marine_current, "current_speed_mps", 2, "m/s")}</dd></div>
+            <div><dt>Current direction</dt><dd>${formatReading(latest_marine_current, "current_direction_degrees", 1, "°")}</dd></div>
             <div><dt>Rainfall</dt><dd>${formatReading(latest_rainfall, "rainfall_mm_h", 2, "mm/h")}</dd></div>
             <div><dt>IMU acceleration</dt><dd>${latest_imu ? [latest_imu.acceleration_x_mps2, latest_imu.acceleration_y_mps2, latest_imu.acceleration_z_mps2].map((value) => `${value.toFixed(2)} m/s²`).join(" · ") : "No reading"}</dd></div>
             <div><dt>Dissolved oxygen</dt><dd>${formatReading(latest_dissolved_oxygen, "dissolved_oxygen_mg_l", 2, "mg/L")}</dd></div>
