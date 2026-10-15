@@ -78,3 +78,9 @@ class AcousticAltimeterRepository:
             )
             for entity in self.db.scalars(query).all()
         ]
+
+    def latest_acoustic_altimeter(
+        self, buoy_id: str, sensor_channel: str | None = "A"
+    ) -> AcousticAltimeterTelemetrySnapshot | None:
+        readings = self.list_acoustic_altimeter(buoy_id, 1, sensor_channel)
+        return readings[0] if readings else None

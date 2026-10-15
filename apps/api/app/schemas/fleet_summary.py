@@ -7,6 +7,7 @@ from .fleet import Buoy
 from .telemetry import (
     AirTemperatureReading,
     AmbientLightReading,
+    AcousticAltimeterReading,
     AtmosphericPressureReading,
     ChlorophyllAReading,
     ConductivityReading,
@@ -20,6 +21,7 @@ from .telemetry import (
     SalinityReading,
     TemperatureReading,
     TurbidityReading,
+    UnderwaterAcousticReading,
     WindReading,
 )
 
@@ -74,6 +76,12 @@ class BuoySummary(BaseModel):
     latest_atmospheric_pressure: AtmosphericPressureReading | None = None
     latest_atmospheric_pressure_a: AtmosphericPressureReading | None = None
     latest_atmospheric_pressure_b: AtmosphericPressureReading | None = None
+    latest_acoustic_altimeter: AcousticAltimeterReading | None = None
+    latest_acoustic_altimeter_a: AcousticAltimeterReading | None = None
+    latest_acoustic_altimeter_b: AcousticAltimeterReading | None = None
+    latest_underwater_acoustic: UnderwaterAcousticReading | None = None
+    latest_underwater_acoustic_a: UnderwaterAcousticReading | None = None
+    latest_underwater_acoustic_b: UnderwaterAcousticReading | None = None
     latest_battery: BatteryReading | None = None
     latest_battery_a: BatteryReading | None = None
     latest_battery_b: BatteryReading | None = None

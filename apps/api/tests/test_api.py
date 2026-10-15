@@ -140,6 +140,28 @@ def test_buoy_summary_keeps_latest_sensor_channels() -> None:
     assert summary["latest_temperature_b"]["temperature_celsius"] == 19.0
     assert summary["latest_temperature"]["temperature_celsius"] == 18.5
 
+    for channel, depth in (("A", 12.5), ("B", 18.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/acoustic-altimeter",
+            json={"depth_meters": depth, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+    for channel, intensity in (("A", 42.5), ("B", 48.0)):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/underwater-acoustic",
+            json={"echo_intensity_db": intensity, "sensor_channel": channel},
+        )
+        assert response.status_code == 201
+
+    response = client.get("/api/v1/buoys")
+    summary = next(item for item in response.json() if item["buoy"]["id"] == buoy_id)
+    assert summary["latest_acoustic_altimeter_a"]["depth_meters"] == 12.5
+    assert summary["latest_acoustic_altimeter_b"]["depth_meters"] == 18.0
+    assert summary["latest_acoustic_altimeter"]["depth_meters"] == 12.5
+    assert summary["latest_underwater_acoustic_a"]["echo_intensity_db"] == 42.5
+    assert summary["latest_underwater_acoustic_b"]["echo_intensity_db"] == 48.0
+    assert summary["latest_underwater_acoustic"]["echo_intensity_db"] == 42.5
+
 
 def test_modularized_sensor_routes_remain_registered() -> None:
     openapi_paths = app.openapi()["paths"]

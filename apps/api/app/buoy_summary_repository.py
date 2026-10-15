@@ -21,6 +21,8 @@ from .rainfall_repository import RainfallRepository
 from .humidity_repository import HumidityRepository
 from .air_temperature_repository import AirTemperatureRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
+from .acoustic_altimeter_repository import AcousticAltimeterRepository
+from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
 
 
@@ -46,6 +48,8 @@ class BuoySummaryRepository:
         self.humidity = HumidityRepository(db)
         self.air_temperature = AirTemperatureRepository(db)
         self.atmospheric_pressure = AtmosphericPressureRepository(db)
+        self.acoustic_altimeter = AcousticAltimeterRepository(db)
+        self.underwater_acoustic = UnderwaterAcousticRepository(db)
         self.battery = BatteryRepository(db)
 
     def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:
@@ -67,6 +71,8 @@ class BuoySummaryRepository:
             "humidity": self.humidity.latest_humidity,
             "air_temperature": self.air_temperature.latest_air_temperature,
             "atmospheric_pressure": self.atmospheric_pressure.latest_atmospheric_pressure,
+            "acoustic_altimeter": self.acoustic_altimeter.latest_acoustic_altimeter,
+            "underwater_acoustic": self.underwater_acoustic.latest_underwater_acoustic,
         }
         buoys = self.registry.list_buoys()
         for entity in buoys:
