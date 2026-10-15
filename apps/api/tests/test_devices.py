@@ -78,7 +78,7 @@ def test_batch_telemetry_records_device_heartbeat(client):
         json={"device_id": "heartbeat-unit", "location": {"latitude": 1, "longitude": 2}},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
     assert device["last_seen_at"] is not None
     metrics = client.get("/metrics").text
@@ -304,7 +304,7 @@ def test_batch_battery_uses_envelope_physical_device_and_records_heartbeat(clien
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     reading = client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A").json()
     assert reading["physical_device_id"] == "batch-battery-a"
     device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
@@ -334,7 +334,7 @@ def test_batch_location_keeps_originating_device(client):
         json={"device_id": "gnss-unit", "location": {"latitude": 1, "longitude": 2}},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]["device_id"] == "gnss-unit"
 
 
@@ -360,7 +360,7 @@ def test_batch_imu_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/imu").json()[0]["device_id"] == "imu-unit"
 
 
@@ -381,7 +381,7 @@ def test_batch_core_sensors_keep_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/temperatures").json()[0]["device_id"] == "core-unit"
     assert client.get(f"/api/v1/buoys/{buoy_id}/pressures").json()[0]["device_id"] == "core-unit"
     assert client.get(f"/api/v1/buoys/{buoy_id}/salinity").json()[0]["device_id"] == "core-unit"
@@ -399,7 +399,7 @@ def test_batch_ambient_light_keeps_originating_device(client):
         json={"device_id": "light-unit", "ambient_light": [{"illuminance_lux": 400}]},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/ambient-light").json()[0]["device_id"] == "light-unit"
 
 
@@ -418,7 +418,7 @@ def test_batch_wind_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/wind").json()[0]["device_id"] == "wind-unit"
 
 
@@ -437,7 +437,7 @@ def test_batch_marine_current_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/marine-current").json()[0]["device_id"] == "current-unit"
 
 
@@ -453,7 +453,7 @@ def test_batch_turbidity_keeps_originating_device(client):
         json={"device_id": "turbidity-unit", "turbidity": [{"turbidity_ntu": 12}]},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/turbidity").json()[0]["device_id"] == "turbidity-unit"
 
 
@@ -472,7 +472,7 @@ def test_batch_dissolved_oxygen_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/dissolved-oxygen").json()[0]["device_id"] == "oxygen-unit"
 
 
@@ -488,7 +488,7 @@ def test_batch_ph_keeps_originating_device(client):
         json={"device_id": "ph-unit", "ph": [{"ph": 8.1}]},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/ph").json()[0]["device_id"] == "ph-unit"
 
 
@@ -507,7 +507,7 @@ def test_batch_conductivity_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/conductivity").json()[0]["device_id"] == "conductivity-unit"
 
 
@@ -526,7 +526,7 @@ def test_batch_chlorophyll_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/chlorophyll-a").json()[0]["device_id"] == "chlorophyll-unit"
 
 
@@ -542,7 +542,7 @@ def test_batch_rainfall_keeps_originating_device(client):
         json={"device_id": "rain-unit", "rainfall": [{"rainfall_mm_h": 2.5}]},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/rainfall").json()[0]["device_id"] == "rain-unit"
 
 
@@ -558,7 +558,7 @@ def test_batch_humidity_keeps_originating_device(client):
         json={"device_id": "humidity-unit", "humidity": [{"humidity_percent": 60}]},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/humidity").json()[0]["device_id"] == "humidity-unit"
 
 
@@ -577,7 +577,7 @@ def test_batch_air_temperature_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/air-temperature").json()[0]["device_id"] == "air-temperature-unit"
 
 
@@ -596,7 +596,7 @@ def test_batch_atmospheric_pressure_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/atmospheric-pressure").json()[0]["device_id"] == "atmospheric-pressure-unit"
 
 
@@ -615,7 +615,7 @@ def test_batch_acoustic_altimeter_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/acoustic-altimeter").json()[0]["device_id"] == "altimeter-unit"
 
 
@@ -634,7 +634,7 @@ def test_batch_underwater_acoustic_keeps_originating_device(client):
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert client.get(f"/api/v1/buoys/{buoy_id}/underwater-acoustic").json()[0]["device_id"] == "underwater-acoustic-unit"
 
 

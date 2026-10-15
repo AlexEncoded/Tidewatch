@@ -117,7 +117,7 @@ def test_empty_telemetry_batch_returns_stable_family_counters() -> None:
         json={"location": {"latitude": 36.9, "longitude": 2.7}},
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     counts = response.json()["accepted_by_family"]
     assert tuple(counts) == TELEMETRY_FAMILIES
     assert all(value == 0 for value in counts.values())
@@ -415,7 +415,7 @@ def test_batch_telemetry_ingestion_accepts_all_sensor_families() -> None:
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert response.json() == {
         "buoy_id": buoy_id,
         "accepted_readings": 6,
@@ -488,7 +488,7 @@ def test_batch_telemetry_accepts_redundant_batteries() -> None:
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert response.json()["accepted_readings"] == 2
     assert response.json()["accepted_by_family"]["battery"] == 2
     assert client.get(f"/api/v1/buoys/{buoy_id}/battery?device_id=A").json()["battery_percent"] == 92
@@ -601,7 +601,7 @@ def test_gnss_metadata_is_persisted_with_location() -> None:
         },
     )
 
-    assert response.status_code == 202
+    assert response.status_code == 200
     location = client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]
     assert location["altitude_meters"] == 2.4
     assert location["speed_mps"] == 0.8
@@ -632,7 +632,7 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
                 },
             },
         )
-        assert response.status_code == 202
+        assert response.status_code == 200
 
     analysis = client.get(f"/api/v1/buoys/{buoy_id}/movement-analysis")
 
@@ -1004,7 +1004,7 @@ def test_wave_analysis_endpoint_uses_recent_gnss_and_imu_samples() -> None:
                 },
             },
         )
-        assert response.status_code == 202
+        assert response.status_code == 200
 
     analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
 
@@ -1029,7 +1029,7 @@ def test_wave_analysis_endpoint_exposes_experimental_period() -> None:
                 },
             },
         )
-        assert response.status_code == 202
+        assert response.status_code == 200
 
     analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
 
@@ -1050,7 +1050,7 @@ def test_wave_analysis_endpoint_handles_insufficient_samples() -> None:
             },
         },
     )
-    assert response.status_code == 202
+    assert response.status_code == 200
 
     analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
 

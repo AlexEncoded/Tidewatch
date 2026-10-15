@@ -76,7 +76,7 @@ def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str,
 @router.post(
     "/api/v1/buoys/{buoy_id}/telemetry",
     response_model=TelemetryIngestResponse,
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_200_OK,
     tags=["telemetry"],
 )
 def ingest_telemetry(
