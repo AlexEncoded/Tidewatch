@@ -34,6 +34,7 @@ from app.entities import (
 )
 from app.main import app, configured_wave_imu_factor
 from app.schemas.ingestion import TelemetryBatchCreate
+from app.schemas.fleet_summary import BuoySummary
 from app.application.telemetry_ingestion import TELEMETRY_FAMILIES
 from app.routers.alerts import router as alerts_router
 from app.routers.analytics import router as analytics_router
@@ -120,6 +121,15 @@ def test_empty_telemetry_batch_returns_stable_family_counters() -> None:
     counts = response.json()["accepted_by_family"]
     assert tuple(counts) == TELEMETRY_FAMILIES
     assert all(value == 0 for value in counts.values())
+
+
+def test_fleet_summary_schema_covers_every_telemetry_family_and_channel() -> None:
+    summary_fields = BuoySummary.model_fields
+
+    for family in TELEMETRY_FAMILIES:
+        assert f"latest_{family}" in summary_fields
+        assert f"latest_{family}_a" in summary_fields
+        assert f"latest_{family}_b" in summary_fields
 
 
 def test_buoy_summary_keeps_latest_sensor_channels() -> None:
