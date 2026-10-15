@@ -84,6 +84,9 @@ jobs:
       - name: Validate frontend JavaScript
         run: node --check apps/frontend/app.js
 
+      - name: Test frontend sensor formatting
+        run: node --test apps/frontend/tests/sensor-format.test.js
+
       - name: Build API image
         run: docker build --tag tidewatch-api:ci apps/api
 

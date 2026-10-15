@@ -1,6 +1,7 @@
 const grid = document.querySelector("#buoy-grid");
 const errorMessage = document.querySelector("#error");
 const refreshButton = document.querySelector("#refresh");
+const { formatReading } = window.TidewatchSensorFormatting;
 let fleetMap;
 let buoyMarkers;
 let buoyTracks;
@@ -154,7 +155,28 @@ function renderBuoys(
   }
 
   grid.innerHTML = buoys
-    .map(({ buoy, latest_temperature, latest_pressure, latest_salinity, latest_battery }, index) => {
+    .map(({
+      buoy,
+      latest_temperature,
+      latest_pressure,
+      latest_salinity,
+      latest_battery,
+      latest_dissolved_oxygen,
+      latest_imu,
+      latest_ambient_light,
+      latest_ph,
+      latest_turbidity,
+      latest_conductivity,
+      latest_chlorophyll_a,
+      latest_wind,
+      latest_marine_current,
+      latest_rainfall,
+      latest_humidity,
+      latest_air_temperature,
+      latest_atmospheric_pressure,
+      latest_acoustic_altimeter,
+      latest_underwater_acoustic,
+    }, index) => {
       const status = buoy.status.toLowerCase();
       const analysis = analyses[index];
       const health = sensorHealth[index];
@@ -184,6 +206,21 @@ function renderBuoys(
           <dl>
             <div><dt>Pressure</dt><dd>${formatPressure(latest_pressure)}</dd></div>
             <div><dt>Salinity</dt><dd>${formatSalinity(latest_salinity)}</dd></div>
+            <div><dt>Air temperature</dt><dd>${formatReading(latest_air_temperature, "air_temperature_celsius", 1, "°C")}</dd></div>
+            <div><dt>Air pressure</dt><dd>${formatReading(latest_atmospheric_pressure, "atmospheric_pressure_kpa", 2, "kPa")}</dd></div>
+            <div><dt>Humidity</dt><dd>${formatReading(latest_humidity, "humidity_percent", 1, "%")}</dd></div>
+            <div><dt>Ambient light</dt><dd>${formatReading(latest_ambient_light, "illuminance_lux", 1, "lux")}</dd></div>
+            <div><dt>Wind speed</dt><dd>${formatReading(latest_wind, "wind_speed_mps", 2, "m/s")}</dd></div>
+            <div><dt>Current speed</dt><dd>${formatReading(latest_marine_current, "current_speed_mps", 2, "m/s")}</dd></div>
+            <div><dt>Rainfall</dt><dd>${formatReading(latest_rainfall, "rainfall_mm_h", 2, "mm/h")}</dd></div>
+            <div><dt>IMU acceleration</dt><dd>${latest_imu ? [latest_imu.acceleration_x_mps2, latest_imu.acceleration_y_mps2, latest_imu.acceleration_z_mps2].map((value) => `${value.toFixed(2)} m/s²`).join(" · ") : "No reading"}</dd></div>
+            <div><dt>Dissolved oxygen</dt><dd>${formatReading(latest_dissolved_oxygen, "dissolved_oxygen_mg_l", 2, "mg/L")}</dd></div>
+            <div><dt>pH</dt><dd>${formatReading(latest_ph, "ph", 2, "pH")}</dd></div>
+            <div><dt>Turbidity</dt><dd>${formatReading(latest_turbidity, "turbidity_ntu", 2, "NTU")}</dd></div>
+            <div><dt>Conductivity</dt><dd>${formatReading(latest_conductivity, "conductivity_us_cm", 1, "µS/cm")}</dd></div>
+            <div><dt>Chlorophyll-a</dt><dd>${formatReading(latest_chlorophyll_a, "chlorophyll_a_ug_l", 2, "µg/L")}</dd></div>
+            <div><dt>Acoustic depth</dt><dd>${formatReading(latest_acoustic_altimeter, "depth_meters", 2, "m")}</dd></div>
+            <div><dt>Underwater echo</dt><dd>${formatReading(latest_underwater_acoustic, "echo_intensity_db", 1, "dB")}</dd></div>
             <div><dt>Battery</dt><dd>${formatBattery(latest_battery)}</dd></div>
             <div><dt>Battery A/B</dt><dd>${formatBatteryHealth(batteryStatus)}</dd></div>
             <div><dt>Autonomy A/B</dt><dd>${formatBatteryAutonomy(batteryAnalysis.A)} / ${formatBatteryAutonomy(batteryAnalysis.B)}</dd></div>
