@@ -163,6 +163,29 @@ These are domain boundaries inside one deployment, not independently deployed
 services. The application layer is the seam for extracting a use case later;
 the decision to split a service remains dependent on operational evidence.
 
+## Durable asynchronous telemetry ingestion
+
+Batch ingestion currently validates and persists readings during the HTTP
+request, so it returns `200 OK`. Do not report `202 Accepted` until a durable
+job has been committed and a separate consumer can process it; an in-process
+background task is not durable across restarts.
+
+The planned queue uses PostgreSQL as the source of truth, avoiding a second
+broker before throughput requires one. Enqueueing a validated batch and
+assigning its job identifier must be one transaction. The API will return
+`202 Accepted` with that identifier, and a read endpoint will expose queued,
+processing, completed and terminal-failure states without returning raw
+payloads.
+
+Workers will claim jobs with row-level locking (`SKIP LOCKED`) and a renewable
+lease so multiple replicas can share the queue and crashed workers do not hold
+jobs forever. Retries must be bounded and back off; exhausted jobs remain
+inspectable rather than being silently discarded. Processing must be safe to
+retry: telemetry writes and job completion need an atomic unit of work or an
+equivalent deduplication key, because the current sensor adapters commit each
+reading independently. The API, worker, migration and deployment changes must
+land together before switching the endpoint back to `202`.
+
 ## Servicios Azure
 
 - AKS para ejecutar las cargas de trabajo.
