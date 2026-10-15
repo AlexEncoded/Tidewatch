@@ -76,17 +76,19 @@ class BuoySummaryRepository:
         }
         buoys = self.registry.list_buoys()
         for entity in buoys:
-            latest_readings = {
-                family: {
-                    "latest": get_latest(entity.id),
-                    "A": get_latest(entity.id, "A"),
+            latest_readings = {}
+            for family, get_latest in telemetry_readers.items():
+                channel_a = get_latest(entity.id, "A")
+                latest_readings[family] = {
+                    "latest": channel_a,
+                    "A": channel_a,
                     "B": get_latest(entity.id, "B"),
                 }
-                for family, get_latest in telemetry_readers.items()
-            }
+
+            battery_a = self.battery.latest_battery(entity.id, "A")
             latest_readings["battery"] = {
-                "latest": self.battery.latest_battery(entity.id),
-                "A": self.battery.latest_battery(entity.id, "A"),
+                "latest": battery_a,
+                "A": battery_a,
                 "B": self.battery.latest_battery(entity.id, "B"),
             }
             summaries.append(
