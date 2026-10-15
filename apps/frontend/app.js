@@ -1,7 +1,7 @@
 const grid = document.querySelector("#buoy-grid");
 const errorMessage = document.querySelector("#error");
 const refreshButton = document.querySelector("#refresh");
-const { formatReading } = window.TidewatchSensorFormatting;
+const { escapeHtml, formatReading } = window.TidewatchSensorFormatting;
 let fleetMap;
 let buoyMarkers;
 let buoyTracks;
@@ -28,7 +28,7 @@ function formatBatteryHealth(health) {
   }
   const delta = health.delta_percent.toFixed(1);
   const details = `A ${health.device_a_percent.toFixed(1)}% · B ${health.device_b_percent.toFixed(1)}% · Δ ${delta}%`;
-  return `<span class="battery-health battery-health-${health.status}">${details}</span>`;
+  return `<span class="battery-health battery-health-${escapeHtml(health.status)}">${details}</span>`;
 }
 
 function formatBatteryAutonomy(analysis) {
@@ -47,7 +47,8 @@ function formatDeviceHealth(devices) {
     const age = device.age_seconds == null
       ? "no heartbeat"
       : `${Math.round(device.age_seconds)}s ago`;
-    return `<span class="device-health device-health-${state}">${escapeHtml(device.sensor_channel)} · ${escapeHtml(device.device_id)} · ${state} · ${age}</span>`;
+    const safeState = escapeHtml(state);
+    return `<span class="device-health device-health-${safeState}">${escapeHtml(device.sensor_channel)} · ${escapeHtml(device.device_id)} · ${safeState} · ${age}</span>`;
   }).join(" ");
 }
 
@@ -73,16 +74,6 @@ function formatQuality(summary) {
       <span class="quality quality-suspect">${summary.suspect_readings} suspect</span>
       <span class="quality quality-invalid">${summary.invalid_readings} invalid</span>
     </span>`;
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>'"]/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  })[character]);
 }
 
 function renderMap(buoys, locationHistory) {
@@ -177,7 +168,7 @@ function renderBuoys(
       latest_acoustic_altimeter,
       latest_underwater_acoustic,
     }, index) => {
-      const status = buoy.status.toLowerCase();
+      const status = escapeHtml(buoy.status.toLowerCase());
       const analysis = analyses[index];
       const health = sensorHealth[index];
       const quality = qualitySummaries[index];
@@ -185,22 +176,22 @@ function renderBuoys(
       const batteryStatus = batteryHealth[index];
       const batteryAnalysis = batteryAnalyses[index];
       const devices = deviceHealth[index];
-      const seaState = analysis?.sea_state ?? "unknown";
-      const sensorStatus = health?.status ?? "unknown";
+      const seaState = escapeHtml(analysis?.sea_state ?? "unknown");
+      const sensorStatus = escapeHtml(health?.status ?? "unknown");
       const movementSpeed = movement?.average_speed_mps;
       const movementStatus = movementSpeed == null
         ? "unknown"
         : movementSpeed > 1 ? "drifting" : "stable";
       const degradedSensors = health?.degraded_sensors?.length
-        ? ` (${health.degraded_sensors.join(", ")})`
+        ? ` (${health.degraded_sensors.map(escapeHtml).join(", ")})`
         : "";
       return `
         <article class="card">
           <div class="card-top">
             <span class="status status-${status}">${status}</span>
-            <span class="buoy-id">${buoy.id}</span>
+            <span class="buoy-id">${escapeHtml(buoy.id)}</span>
           </div>
-          <h3>${buoy.name}</h3>
+          <h3>${escapeHtml(buoy.name)}</h3>
           <p class="sensor-health sensor-health-${sensorStatus}">Sensors A/B: ${sensorStatus}${degradedSensors}</p>
           <p class="temperature">${formatTemperature(latest_temperature)}</p>
           <dl>

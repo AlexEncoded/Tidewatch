@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { formatReading } = require("../sensor-format.js");
+const { escapeHtml, formatReading } = require("../sensor-format.js");
 
 test("formats a sensor value with its precision and unit", () => {
   assert.equal(
@@ -21,4 +21,11 @@ test("shows a stable placeholder for missing sensor data", () => {
 
 test("does not render non-finite telemetry values", () => {
   assert.equal(formatReading({ depth_meters: Infinity }, "depth_meters", 2, "m"), "No reading");
+});
+
+test("escapes markup and quotes in buoy-controlled text", () => {
+  assert.equal(
+    escapeHtml(`<img src=x onerror='alert("x")'>&`),
+    "&lt;img src=x onerror=&#39;alert(&quot;x&quot;)&#39;&gt;&amp;",
+  );
 });
