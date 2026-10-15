@@ -61,15 +61,13 @@ grouped by responsibility under `apps/api/app/routers/`:
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
 notifications use an application transport port, and `maintenance_evaluation`
-coordinates the per-buoy issue snapshot. The remaining large cross-cutting
-work is concentrated in telemetry ingestion. HTTP boundaries are isolated so
-the use cases can be extracted incrementally and validated by the API and
+coordinates the per-buoy issue snapshot. HTTP boundaries and persistence
+adapters are isolated so use cases can be evolved and validated by the API and
 worker test suites.
 
-The maintenance use case now declares a read-only `MaintenanceReader` input
-port composed from the telemetry and battery query ports. `BuoyRepository` is
-the current infrastructure adapter; the application service does not need to
-know about its SQLAlchemy session.
+The maintenance use case declares a read-only `MaintenanceReader` input port.
+`MaintenanceRepository` composes its dedicated sources; the application service
+does not need to know about the SQLAlchemy session.
 
 The physical-device health summary follows the same pattern through the
 `DeviceHealthReader` port, keeping heartbeat and status mapping outside the
@@ -78,15 +76,12 @@ HTTP adapter.
 The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
 to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping
 functions stay separate from query and transaction orchestration in
-`BuoyRepository`, making persistence-to-domain translation directly testable.
+the focused SQLAlchemy adapters, making persistence-to-domain translation
+directly testable.
 Physical-device registration, heartbeat and status operations use a dedicated
-`DeviceRepository`. `BuoyRepository` no longer inherits from it; for the
-remaining battery-ingestion compatibility methods it composes a device
-repository over the same SQLAlchemy session and delegates device lookups and
-heartbeats explicitly.
+`DeviceRepository`.
 Battery persistence and history queries use `BatteryRepository`, which composes
-the device adapter for the battery-ingestion port; `BuoyRepository` keeps
-temporary delegation for the larger maintenance and ingestion gateways.
+the device adapter for the battery-ingestion port.
 Sensor-health history and check persistence use `SensorHealthRepository`,
 which composes the dedicated sensor adapters behind the health ports.
 Quality summaries use `QualitySummaryRepository` to aggregate quality labels
@@ -99,10 +94,12 @@ Batch telemetry ingestion now composes fleet, battery, location and per-sensor
 adapters through `TelemetryIngestionRepository` rather than the legacy aggregate.
 The maintenance reader similarly uses `MaintenanceRepository` to combine
 health histories, device state, battery records, location and buoy snapshots.
+`BuoyRepository` remains only as a compatibility facade; production adapters
+must not import it, enforced by an architecture test.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
 The same adapter owns buoy enumeration and snapshot mapping; the aggregate
-temporarily delegates snapshot enumeration for maintenance composition.
+compatibility facade delegates snapshot enumeration for older callers.
 Buoy entity lookup and existence checks also pass through this registry adapter,
 including the heartbeat refresh performed after telemetry writes.
 Stale-buoy evaluation reads heartbeat fields through a dedicated

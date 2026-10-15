@@ -74,6 +74,24 @@ def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     assert get_buoy_registrar(session).list_buoy_snapshots() == []
 
 
+def test_production_adapters_do_not_import_the_legacy_buoy_repository() -> None:
+    production_files = (
+        path for path in API_APP.rglob("*.py") if path.name != "repository.py"
+    )
+
+    for path in production_files:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imports_legacy_adapter = any(
+            isinstance(node, ast.ImportFrom)
+            and (
+                node.module in {"repository", "app.repository"}
+                or any(alias.name == "BuoyRepository" for alias in node.names)
+            )
+            for node in ast.walk(tree)
+        )
+        assert not imports_legacy_adapter, path.relative_to(API_APP)
+
+
 def test_buoy_repository_delegates_identity_lookups_to_registry() -> None:
     class RegistryAdapter:
         def get_buoy(self, buoy_id):

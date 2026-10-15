@@ -54,7 +54,6 @@ from .buoy_activity_repository import BuoyActivityRepository
 from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .buoy_summary_repository import BuoySummaryRepository
-from .repository import BuoyRepository
 from .temperature_alert_repository import TemperatureAlertRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository
