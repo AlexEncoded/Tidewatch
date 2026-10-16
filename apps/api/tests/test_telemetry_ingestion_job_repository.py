@@ -5,9 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, TidewatchSession
-from app.entities import BuoyEntity
+from app.entities import BuoyEntity, TemperatureReadingEntity
 from app.routers.ingestion import _atomic_telemetry_batch
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.telemetry_job_worker import process_next_telemetry_job
 
 
 @pytest.fixture
@@ -64,6 +65,34 @@ def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository
         persist_then_fail(gateway)
 
     assert db.get(BuoyEntity, "TW-ROLLBACK") is None
+
+
+def test_worker_processes_job_and_commits_readings_with_completion(job_repository) -> None:
+    job = job_repository.enqueue(
+        "TW-JOB", {"temperatures": [{"temperature_celsius": 19.5}]}
+    )
+
+    assert process_next_telemetry_job(job_repository.db) is True
+
+    completed = job_repository.get(job.job_id)
+    assert completed is not None
+    assert completed.status == "completed"
+    assert job_repository.db.query(TemperatureReadingEntity).count() == 1
+
+
+def test_worker_retries_invalid_batch_without_persisting_readings(job_repository) -> None:
+    job = job_repository.enqueue(
+        "TW-JOB", {"temperatures": [{"temperature_celsius": 999}]}
+    )
+
+    assert process_next_telemetry_job(job_repository.db) is True
+
+    failed_attempt = job_repository.get(job.job_id)
+    assert failed_attempt is not None
+    assert failed_attempt.status == "pending"
+    assert failed_attempt.attempts == 1
+    assert "temperature_celsius" in failed_attempt.last_error
+    assert job_repository.db.query(TemperatureReadingEntity).count() == 0
 
 
 def test_claim_sets_processing_lease_and_prevents_early_reclaim(job_repository) -> None:
