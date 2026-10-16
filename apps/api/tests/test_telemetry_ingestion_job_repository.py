@@ -58,6 +58,19 @@ def test_enqueue_returns_existing_job_for_repeated_idempotency_key(job_repositor
     assert repeated.idempotency_key == "simulator-cycle-1"
 
 
+def test_observability_snapshot_reports_queue_depth_and_expired_leases(job_repository) -> None:
+    now = datetime(2026, 10, 15, 10, tzinfo=timezone.utc)
+    job_repository.enqueue("TW-JOB", {}, now)
+    job_repository.claim_next(now, lease_seconds=10)
+
+    snapshot = job_repository.observability_snapshot(now + timedelta(seconds=70))
+
+    assert snapshot["pending"] == 0
+    assert snapshot["processing"] == 1
+    assert snapshot["oldest_pending_seconds"] == 0
+    assert snapshot["expired_leases"] == 1
+
+
 def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
     db = job_repository.db
     gateway = type("Gateway", (), {"db": db})()

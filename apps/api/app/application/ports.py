@@ -56,6 +56,13 @@ class DatabaseHealthReader(Protocol):
         ...
 
 
+class TelemetryQueueMetricsReader(Protocol):
+    """Read bounded-cardinality durable queue metrics for observability."""
+
+    def observability_snapshot(self) -> dict[str, int | float]:
+        ...
+
+
 class StaleBuoyReader(Protocol):
     def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
         ...

@@ -29,3 +29,43 @@ tests:
             value: 1
           - labels: '{__name__="tidewatch:device_availability_ratio5m",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
             value: 0.16666666666666666
+  - interval: 10s
+    input_series:
+      - series: tidewatch_telemetry_ingestion_jobs{status="pending"}
+        values: "125+0x30"
+      - series: tidewatch_telemetry_ingestion_jobs{status="failed"}
+        values: "2+0x30"
+      - series: tidewatch_telemetry_ingestion_oldest_pending_seconds
+        values: "360+0x30"
+      - series: tidewatch_telemetry_ingestion_expired_leases
+        values: "1+0x30"
+      - series: tidewatch_telemetry_ingestion_retried_jobs
+        values: "11+0x30"
+      - series: tidewatch_telemetry_ingestion_metrics_collection_success
+        values: "1+0x30"
+    promql_expr_test:
+      - expr: tidewatch_telemetry_ingestion_jobs{status="pending"} > 100
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch_telemetry_ingestion_jobs",status="pending"}'
+            value: 1
+      - expr: tidewatch_telemetry_ingestion_oldest_pending_seconds > 300
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch_telemetry_ingestion_oldest_pending_seconds"}'
+            value: 1
+      - expr: tidewatch_telemetry_ingestion_expired_leases > 0
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch_telemetry_ingestion_expired_leases"}'
+            value: 1
+      - expr: tidewatch_telemetry_ingestion_jobs{status="failed"} > 0
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch_telemetry_ingestion_jobs",status="failed"}'
+            value: 1
+      - expr: tidewatch_telemetry_ingestion_retried_jobs > 10
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch_telemetry_ingestion_retried_jobs"}'
+            value: 1

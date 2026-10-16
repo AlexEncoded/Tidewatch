@@ -42,6 +42,7 @@ from .application.ports import (
     TelemetryIngestionGateway,
     MaintenanceReader,
     DatabaseHealthReader,
+    TelemetryQueueMetricsReader,
     BuoySummaryReader,
 )
 from .application.device_listing import DeviceListingReader
@@ -114,6 +115,13 @@ def get_telemetry_ingestion_job_repository(
     db: Session = Depends(get_db),
 ) -> TelemetryIngestionJobRepository:
     """Provide the durable telemetry-job repository for HTTP operations."""
+    return TelemetryIngestionJobRepository(db)
+
+
+def get_telemetry_queue_metrics_reader(
+    db: Session = Depends(get_db),
+) -> TelemetryQueueMetricsReader:
+    """Provide queue state as a read-only observability port."""
     return TelemetryIngestionJobRepository(db)
 
 

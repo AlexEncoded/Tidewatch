@@ -153,6 +153,10 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     assert status_response.json()["job_id"] == accepted.json()["job_id"]
     assert status_response.json()["status"] == "pending"
     assert "payload" not in status_response.json()
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert 'tidewatch_telemetry_ingestion_jobs{status="pending"} 1.0' in metrics.text
+    assert "tidewatch_telemetry_ingestion_oldest_pending_seconds" in metrics.text
 
 
 def test_fleet_summary_schema_covers_every_telemetry_family_and_channel() -> None:

@@ -349,3 +349,35 @@ reading_quality_total = Counter(
     "Total sensor readings accepted by quality, family and channel.",
     ["buoy_id", "sensor_family", "sensor_channel", "quality"],
 )
+
+telemetry_ingestion_jobs = Gauge(
+    "tidewatch_telemetry_ingestion_jobs",
+    "Current durable telemetry jobs by lifecycle status.",
+    ["status"],
+)
+
+telemetry_ingestion_attempts = Gauge(
+    "tidewatch_telemetry_ingestion_attempts",
+    "Sum of processing attempts by durable telemetry job status.",
+    ["status"],
+)
+
+telemetry_ingestion_retried_jobs = Gauge(
+    "tidewatch_telemetry_ingestion_retried_jobs",
+    "Number of telemetry jobs that have been attempted more than once.",
+)
+
+telemetry_ingestion_oldest_pending_seconds = Gauge(
+    "tidewatch_telemetry_ingestion_oldest_pending_seconds",
+    "Age in seconds of the oldest pending telemetry job.",
+)
+
+telemetry_ingestion_expired_leases = Gauge(
+    "tidewatch_telemetry_ingestion_expired_leases",
+    "Number of processing telemetry jobs whose worker lease has expired.",
+)
+
+telemetry_ingestion_metrics_collection_success = Gauge(
+    "tidewatch_telemetry_ingestion_metrics_collection_success",
+    "Whether queue metrics were successfully refreshed from PostgreSQL.",
+)

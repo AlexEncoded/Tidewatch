@@ -17,6 +17,54 @@ groups:
         annotations:
           summary: "Tidewatch API is returning server errors"
           description: "More than one percent of API requests have returned 5xx responses during the last five minutes."
+      - alert: TidewatchTelemetryQueueBacklog
+        expr: tidewatch_telemetry_ingestion_jobs{status="pending"} > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch telemetry queue is backing up"
+          description: "More than 100 telemetry jobs have remained pending; check worker health and database capacity."
+      - alert: TidewatchTelemetryQueueOldestJob
+        expr: tidewatch_telemetry_ingestion_oldest_pending_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch telemetry jobs are delayed"
+          description: "The oldest pending telemetry job is more than five minutes old."
+      - alert: TidewatchTelemetryQueueExpiredLease
+        expr: tidewatch_telemetry_ingestion_expired_leases > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch telemetry worker lease expired"
+          description: "At least one processing job has an expired worker lease and awaits recovery."
+      - alert: TidewatchTelemetryQueueRetryingJobs
+        expr: tidewatch_telemetry_ingestion_retried_jobs > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch telemetry jobs are repeatedly retrying"
+          description: "More than ten queued jobs have been retried; inspect worker errors and database health."
+      - alert: TidewatchTelemetryQueueTerminalFailures
+        expr: tidewatch_telemetry_ingestion_jobs{status="failed"} > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch telemetry jobs have failed permanently"
+          description: "One or more telemetry jobs exhausted their retry budget and require inspection."
+      - alert: TidewatchTelemetryQueueMetricsUnavailable
+        expr: tidewatch_telemetry_ingestion_metrics_collection_success == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch queue metrics could not be refreshed"
+          description: "The API could not query PostgreSQL for telemetry queue metrics."
       - record: tidewatch:buoy_availability_ratio5m
         expr: |
           avg_over_time(

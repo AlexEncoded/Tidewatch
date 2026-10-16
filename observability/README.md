@@ -42,6 +42,15 @@ La salud energética dual se expone con `tidewatch_battery_device_percent` y
 `tidewatch_battery_delta_percent`.
 La ausencia de una unidad se publica como `tidewatch_redundant_device_missing`
 y dispara una alerta crítica tras cinco minutos.
+La cola durable publica en `/metrics` los jobs por estado,
+`tidewatch_telemetry_ingestion_oldest_pending_seconds`, leases vencidos, jobs
+reintentados y suma de intentos. Se refrescan desde PostgreSQL en cada scrape
+y no usan identificadores de job como etiquetas. Las alertas
+`TidewatchTelemetryQueueBacklog`, `TidewatchTelemetryQueueOldestJob`,
+`TidewatchTelemetryQueueExpiredLease`,
+`TidewatchTelemetryQueueRetryingJobs` y
+`TidewatchTelemetryQueueTerminalFailures` detectan congestión y fallos; el
+dashboard incluye paneles de profundidad y antigüedad de la cola.
 La ausencia de un canal ambiental se publica como
 `tidewatch_sensor_channel_missing` con las etiquetas de familia y canal, y
 dispara una alerta de mantenimiento tras cinco minutos.

@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -58,6 +58,64 @@ class TelemetryIngestionJobRepository:
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
         entity = self.db.get(TelemetryIngestionJobEntity, job_id)
         return self._snapshot(entity) if entity is not None else None
+
+    def observability_snapshot(
+        self, now: datetime | None = None
+    ) -> dict[str, int | float]:
+        """Return bounded-cardinality queue counts and oldest/expired work ages."""
+        observed_at = now or datetime.now(timezone.utc)
+        counts = {
+            status: count
+            for status, count in self.db.execute(
+                select(
+                    TelemetryIngestionJobEntity.status,
+                    func.count(TelemetryIngestionJobEntity.id),
+                ).group_by(TelemetryIngestionJobEntity.status)
+            ).all()
+        }
+        attempts_by_status = {
+            status: attempts
+            for status, attempts in self.db.execute(
+                select(
+                    TelemetryIngestionJobEntity.status,
+                    func.coalesce(func.sum(TelemetryIngestionJobEntity.attempts), 0),
+                ).group_by(TelemetryIngestionJobEntity.status)
+            ).all()
+        }
+        retried_jobs = self.db.scalar(
+            select(func.count(TelemetryIngestionJobEntity.id)).where(
+                TelemetryIngestionJobEntity.attempts > 1
+            )
+        )
+        oldest_pending = self.db.scalar(
+            select(func.min(TelemetryIngestionJobEntity.created_at)).where(
+                TelemetryIngestionJobEntity.status == "pending"
+            )
+        )
+        expired_leases = self.db.scalar(
+            select(func.count(TelemetryIngestionJobEntity.id)).where(
+                TelemetryIngestionJobEntity.status == "processing",
+                TelemetryIngestionJobEntity.lease_expires_at <= observed_at,
+            )
+        )
+        if oldest_pending is not None:
+            if oldest_pending.tzinfo is None:
+                oldest_pending = oldest_pending.replace(tzinfo=timezone.utc)
+            oldest_pending_age = max(
+                0.0, (observed_at - oldest_pending).total_seconds()
+            )
+        else:
+            oldest_pending_age = 0.0
+        return {
+            **{status: counts.get(status, 0) for status in ("pending", "processing", "completed", "failed")},
+            **{
+                f"{status}_attempts": attempts_by_status.get(status, 0)
+                for status in ("pending", "processing", "completed", "failed")
+            },
+            "retried_jobs": retried_jobs or 0,
+            "oldest_pending_seconds": oldest_pending_age,
+            "expired_leases": expired_leases or 0,
+        }
 
     def _by_idempotency_key(
         self, buoy_id: str, idempotency_key: str
