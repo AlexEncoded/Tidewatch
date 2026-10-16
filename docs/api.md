@@ -87,6 +87,9 @@ En modo `queued`, el mismo `POST` responde `202 Accepted` con `job_id`, estado
 inicial `pending` y `status_url`; el encabezado `Location` contiene esa URL.
 Consulta el endpoint de estado para seguir el trabajo hasta `completed` o
 `failed`. Por seguridad, la respuesta de estado no incluye el payload recibido.
+Los clientes deberían enviar `Idempotency-Key` (hasta 64 caracteres) y
+reutilizarlo en las retransmisiones del mismo lote; la clave se limita a cada
+boya y devuelve el job original si la petición se repite.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.

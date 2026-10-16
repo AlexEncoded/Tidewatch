@@ -13,6 +13,7 @@ class TelemetryIngestionJobSnapshot:
 
     job_id: str
     buoy_id: str
+    idempotency_key: str | None
     payload: dict
     status: TelemetryJobStatus
     attempts: int

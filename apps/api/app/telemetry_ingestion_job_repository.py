@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from sqlalchemy import and_, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .domain.telemetry_job import TelemetryIngestionJobSnapshot
@@ -17,12 +18,21 @@ class TelemetryIngestionJobRepository:
         self.db = db
 
     def enqueue(
-        self, buoy_id: str, payload: dict, now: datetime | None = None
+        self,
+        buoy_id: str,
+        payload: dict,
+        now: datetime | None = None,
+        idempotency_key: str | None = None,
     ) -> TelemetryIngestionJobSnapshot:
         created_at = now or datetime.now(timezone.utc)
+        if idempotency_key is not None:
+            existing = self._by_idempotency_key(buoy_id, idempotency_key)
+            if existing is not None:
+                return self._snapshot(existing)
         entity = TelemetryIngestionJobEntity(
             id=uuid4().hex,
             buoy_id=buoy_id,
+            idempotency_key=idempotency_key,
             payload=payload,
             status="pending",
             attempts=0,
@@ -30,13 +40,34 @@ class TelemetryIngestionJobRepository:
             created_at=created_at,
         )
         self.db.add(entity)
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            existing = (
+                self._by_idempotency_key(buoy_id, idempotency_key)
+                if idempotency_key is not None
+                else None
+            )
+            if existing is None:
+                raise
+            return self._snapshot(existing)
         self.db.refresh(entity)
         return self._snapshot(entity)
 
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
         entity = self.db.get(TelemetryIngestionJobEntity, job_id)
         return self._snapshot(entity) if entity is not None else None
+
+    def _by_idempotency_key(
+        self, buoy_id: str, idempotency_key: str
+    ) -> TelemetryIngestionJobEntity | None:
+        return self.db.scalars(
+            select(TelemetryIngestionJobEntity).where(
+                TelemetryIngestionJobEntity.buoy_id == buoy_id,
+                TelemetryIngestionJobEntity.idempotency_key == idempotency_key,
+            )
+        ).first()
 
     def claim_next(
         self, now: datetime, lease_seconds: int, max_attempts: int = 5
@@ -166,6 +197,7 @@ class TelemetryIngestionJobRepository:
         return TelemetryIngestionJobSnapshot(
             job_id=entity.id,
             buoy_id=entity.buoy_id,
+            idempotency_key=entity.idempotency_key,
             payload=entity.payload,
             status=entity.status,
             attempts=entity.attempts,

@@ -6,7 +6,7 @@ from functools import wraps
 from inspect import signature
 from typing import Callable, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.battery_ingestion import record_battery_reading
@@ -130,6 +130,7 @@ def ingest_telemetry(
     buoy_id: str,
     payload: TelemetryBatchCreate,
     response: Response,
+    idempotency_key: str | None = Header(default=None, min_length=1, max_length=64),
     gateway: TelemetryIngestionGateway = Depends(get_telemetry_ingestion_gateway),
     jobs: TelemetryIngestionJobRepository | None = Depends(
         get_telemetry_ingestion_job_repository
@@ -141,7 +142,11 @@ def ingest_telemetry(
         os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
         and jobs is not None
     ):
-        job = jobs.enqueue(buoy_id, payload.model_dump(mode="json"))
+        job = jobs.enqueue(
+            buoy_id,
+            payload.model_dump(mode="json"),
+            idempotency_key=idempotency_key,
+        )
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
         response.status_code = status.HTTP_202_ACCEPTED
         response.headers["Location"] = status_url

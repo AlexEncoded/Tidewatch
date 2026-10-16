@@ -43,6 +43,21 @@ def test_enqueue_creates_pending_job_with_payload(job_repository) -> None:
     assert job_repository.get(job.job_id) == job
 
 
+def test_enqueue_returns_existing_job_for_repeated_idempotency_key(job_repository) -> None:
+    first = job_repository.enqueue(
+        "TW-JOB", {"temperatures": [{"temperature_celsius": 19.5}]},
+        idempotency_key="simulator-cycle-1",
+    )
+    repeated = job_repository.enqueue(
+        "TW-JOB", {"temperatures": [{"temperature_celsius": 20.5}]},
+        idempotency_key="simulator-cycle-1",
+    )
+
+    assert repeated.job_id == first.job_id
+    assert repeated.payload == first.payload
+    assert repeated.idempotency_key == "simulator-cycle-1"
+
+
 def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
     db = job_repository.db
     gateway = type("Gateway", (), {"db": db})()

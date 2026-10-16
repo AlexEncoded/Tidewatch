@@ -2,6 +2,7 @@ import os
 import random
 import time
 from datetime import datetime, timezone
+from uuid import uuid4
 
 import httpx
 
@@ -181,11 +182,13 @@ def find_or_create_buoy(client: httpx.Client) -> str:
 
 
 def send_telemetry(client: httpx.Client, buoy_id: str, payload: dict) -> None:
+    idempotency_key = uuid4().hex
     for attempt in range(TELEMETRY_RETRIES + 1):
         try:
             response = client.post(
                 f"{API_URL}/api/v1/buoys/{buoy_id}/telemetry",
                 json=payload,
+                headers={"Idempotency-Key": idempotency_key},
             )
             if response.status_code < 500:
                 response.raise_for_status()

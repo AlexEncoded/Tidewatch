@@ -27,8 +27,10 @@ class FakeClient:
     def __init__(self, responses: list[FakeResponse]) -> None:
         self.responses = responses
         self.calls = 0
+        self.request_headers = []
 
     def post(self, *_args, **_kwargs) -> FakeResponse:
+        self.request_headers.append(_kwargs.get("headers", {}))
         response = self.responses[self.calls]
         self.calls += 1
         return response
@@ -42,6 +44,11 @@ def test_send_telemetry_retries_server_error(monkeypatch: pytest.MonkeyPatch) ->
     simulator.send_telemetry(client, "TW-TEST", {"temperatures": []})
 
     assert client.calls == 2
+    assert client.request_headers[0]["Idempotency-Key"]
+    assert (
+        client.request_headers[0]["Idempotency-Key"]
+        == client.request_headers[1]["Idempotency-Key"]
+    )
 
 
 def test_send_telemetry_does_not_retry_client_error(monkeypatch: pytest.MonkeyPatch) -> None:

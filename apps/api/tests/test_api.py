@@ -131,14 +131,23 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     ).json()["id"]
     monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
 
+    headers = {"Idempotency-Key": "queued-batch-001"}
     accepted = client.post(
         f"/api/v1/buoys/{buoy_id}/telemetry",
         json={"temperatures": [{"temperature_celsius": 19.5}]},
+        headers=headers,
     )
 
     assert accepted.status_code == 202
     assert accepted.headers["location"] == accepted.json()["status_url"]
     assert accepted.json()["status"] == "pending"
+    retried = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"temperatures": [{"temperature_celsius": 20.5}]},
+        headers=headers,
+    )
+    assert retried.status_code == 202
+    assert retried.json()["job_id"] == accepted.json()["job_id"]
     status_response = client.get(accepted.json()["status_url"])
     assert status_response.status_code == 200
     assert status_response.json()["job_id"] == accepted.json()["job_id"]
