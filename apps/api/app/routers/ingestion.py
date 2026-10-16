@@ -1,16 +1,20 @@
 """HTTP route for batch telemetry ingestion."""
 
 from datetime import datetime, timezone
+import os
 from functools import wraps
 from inspect import signature
 from typing import Callable, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from ..application.device_heartbeat import record_device_heartbeat
 from ..application.battery_ingestion import record_battery_reading
 from ..application.movement_analysis import analyze_movement_for_buoy
-from ..adapter_dependencies import get_telemetry_ingestion_gateway
+from ..adapter_dependencies import (
+    get_telemetry_ingestion_gateway,
+    get_telemetry_ingestion_job_repository,
+)
 from ..application.ports import TelemetryIngestionGateway
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
@@ -62,6 +66,11 @@ from ..metrics import (
 )
 from ..schemas.ingestion import TelemetryBatchCreate
 from ..schemas.telemetry import TelemetryIngestResponse
+from ..schemas.telemetry_job import (
+    TelemetryJobAcceptedResponse,
+    TelemetryJobStatusResponse,
+)
+from ..telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 
 
 router = APIRouter()
@@ -112,7 +121,7 @@ def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str,
 
 @router.post(
     "/api/v1/buoys/{buoy_id}/telemetry",
-    response_model=TelemetryIngestResponse,
+    response_model=TelemetryIngestResponse | TelemetryJobAcceptedResponse,
     status_code=status.HTTP_200_OK,
     tags=["telemetry"],
 )
@@ -120,10 +129,25 @@ def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str,
 def ingest_telemetry(
     buoy_id: str,
     payload: TelemetryBatchCreate,
+    response: Response,
     gateway: TelemetryIngestionGateway = Depends(get_telemetry_ingestion_gateway),
-) -> TelemetryIngestResponse:
+    jobs: TelemetryIngestionJobRepository | None = Depends(
+        get_telemetry_ingestion_job_repository
+    ),
+) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
     if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
+    if (
+        os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+        and jobs is not None
+    ):
+        job = jobs.enqueue(buoy_id, payload.model_dump(mode="json"))
+        status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
+        response.status_code = status.HTTP_202_ACCEPTED
+        response.headers["Location"] = status_url
+        return TelemetryJobAcceptedResponse(
+            job_id=job.job_id, status="pending", status_url=status_url
+        )
     if payload.device_id is not None:
         try:
             sensor_channels = (
@@ -518,4 +542,33 @@ def ingest_telemetry(
         buoy_id=buoy_id,
         accepted_readings=accepted,
         accepted_by_family=accepted_by_family,
+    )
+
+
+@router.get(
+    "/api/v1/telemetry/jobs/{job_id}",
+    response_model=TelemetryJobStatusResponse,
+    tags=["telemetry"],
+)
+def get_telemetry_job_status(
+    job_id: str,
+    jobs: TelemetryIngestionJobRepository = Depends(
+        get_telemetry_ingestion_job_repository
+    ),
+) -> TelemetryJobStatusResponse:
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Telemetry job not found"
+        )
+    return TelemetryJobStatusResponse(
+        job_id=job.job_id,
+        buoy_id=job.buoy_id,
+        status=job.status,
+        attempts=job.attempts,
+        available_at=job.available_at,
+        created_at=job.created_at,
+        started_at=job.started_at,
+        completed_at=job.completed_at,
+        last_error=job.last_error,
     )

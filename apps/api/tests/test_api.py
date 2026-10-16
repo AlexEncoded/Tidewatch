@@ -31,6 +31,7 @@ from app.entities import (
     SalinityReadingEntity,
     SensorHealthCheckEntity,
     TemperatureReadingEntity,
+    TelemetryIngestionJobEntity,
 )
 from app.main import app, configured_wave_imu_factor
 from app.schemas.ingestion import TelemetryBatchCreate
@@ -93,6 +94,7 @@ def setup_function() -> None:
         db.execute(delete(AtmosphericPressureReadingEntity))
         db.execute(delete(AcousticAltimeterReadingEntity))
         db.execute(delete(UnderwaterAcousticReadingEntity))
+        db.execute(delete(TelemetryIngestionJobEntity))
         db.execute(delete(TemperatureReadingEntity))
         db.execute(delete(SensorHealthCheckEntity))
         db.execute(delete(BuoyLocationReadingEntity))
@@ -121,6 +123,27 @@ def test_empty_telemetry_batch_returns_stable_family_counters() -> None:
     counts = response.json()["accepted_by_family"]
     assert tuple(counts) == TELEMETRY_FAMILIES
     assert all(value == 0 for value in counts.values())
+
+
+def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queued telemetry buoy"}
+    ).json()["id"]
+    monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
+
+    accepted = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"temperatures": [{"temperature_celsius": 19.5}]},
+    )
+
+    assert accepted.status_code == 202
+    assert accepted.headers["location"] == accepted.json()["status_url"]
+    assert accepted.json()["status"] == "pending"
+    status_response = client.get(accepted.json()["status_url"])
+    assert status_response.status_code == 200
+    assert status_response.json()["job_id"] == accepted.json()["job_id"]
+    assert status_response.json()["status"] == "pending"
+    assert "payload" not in status_response.json()
 
 
 def test_fleet_summary_schema_covers_every_telemetry_family_and_channel() -> None:

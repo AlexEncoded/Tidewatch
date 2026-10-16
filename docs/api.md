@@ -39,6 +39,7 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/buoys/{id}/salinity` | Consultar salinidad por canal |
 | `POST` | `/api/v1/buoys/{id}/battery` | Registrar batería |
 | `POST` | `/api/v1/buoys/{id}/telemetry` | Ingerir un lote de telemetría no vacío |
+| `GET` | `/api/v1/telemetry/jobs/{job_id}` | Consultar el estado de un lote en cola |
 | `GET` | `/api/v1/buoys/{id}/battery` | Consultar última batería (`device_id` opcional) |
 | `GET` | `/api/v1/buoys/{id}/battery/history` | Consultar histórico de batería por unidad |
 | `GET` | `/api/v1/buoys/{id}/battery-analysis` | Estimar descarga y autonomía por unidad |
@@ -69,7 +70,7 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/locations/export` | Exportar posiciones de toda la flota a CSV |
 | `GET` | `/api/v1/buoys/{id}/movement-analysis` | Estimar distancia y deriva |
 
-La respuesta de ingestión incluye `accepted_readings` y el desglose
+Con `TELEMETRY_INGESTION_MODE=sync`, la respuesta de ingestión incluye `accepted_readings` y el desglose
 `accepted_by_family` para confirmar cuántas lecturas de cada sensor se han
 procesado. `accepted_by_family` siempre contiene todas las familias de
 telemetría soportadas, aunque su contador sea `0`; una actualización que solo
@@ -81,6 +82,11 @@ objeto sigue siendo compatible. Un lote no puede repetir el mismo
 `device_id` ni el mismo `sensor_channel` dentro de una familia ambiental.
 Cada posición se conserva con su marca temporal para reconstruir
 desplazamientos.
+
+En modo `queued`, el mismo `POST` responde `202 Accepted` con `job_id`, estado
+inicial `pending` y `status_url`; el encabezado `Location` contiene esa URL.
+Consulta el endpoint de estado para seguir el trabajo hasta `completed` o
+`failed`. Por seguridad, la respuesta de estado no incluye el payload recibido.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.

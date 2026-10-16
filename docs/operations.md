@@ -26,7 +26,11 @@ be exercised with moving coordinates.
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with
 `telemetryQueueWorker.enabled=false`. The batch endpoint remains synchronous
-until queue submission and job-status API support are enabled together.
+when `TELEMETRY_INGESTION_MODE=sync`; Compose and Helm enable queued mode, which
+returns `202 Accepted` with a `Location` header. Poll that URL for job status;
+the response never includes the stored telemetry payload. To roll back to
+synchronous ingestion, set `api.telemetryIngestionMode=sync` in Helm or the
+equivalent environment variable in Compose.
 
 Run it from the repository root with:
 

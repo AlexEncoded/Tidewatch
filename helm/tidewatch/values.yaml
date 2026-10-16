@@ -7,6 +7,7 @@ api:
     pullPolicy: IfNotPresent
   port: 8000
   waveImuHeightFactor: 0.1
+  telemetryIngestionMode: queued
   resources:
     requests:
       cpu: 100m

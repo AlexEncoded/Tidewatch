@@ -77,6 +77,7 @@ from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository
 from .telemetry_ingestion_repository import TelemetryIngestionRepository
+from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -107,6 +108,13 @@ def get_telemetry_ingestion_gateway(
 ) -> TelemetryIngestionGateway:
     """Compose batch telemetry writes with the SQL repository adapter."""
     return TelemetryIngestionRepository(db)
+
+
+def get_telemetry_ingestion_job_repository(
+    db: Session = Depends(get_db),
+) -> TelemetryIngestionJobRepository:
+    """Provide the durable telemetry-job repository for HTTP operations."""
+    return TelemetryIngestionJobRepository(db)
 
 
 def get_maintenance_reader(

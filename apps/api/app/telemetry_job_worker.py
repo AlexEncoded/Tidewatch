@@ -6,6 +6,7 @@ import time
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
+from starlette.responses import Response
 
 from .adapter_dependencies import get_telemetry_ingestion_gateway
 from .routers.ingestion import ingest_telemetry
@@ -30,7 +31,7 @@ def process_next_telemetry_job(db: Session) -> bool:
     try:
         payload = TelemetryBatchCreate.model_validate(job.payload)
         gateway = get_telemetry_ingestion_gateway(db)
-        ingest_telemetry(job.buoy_id, payload, gateway)
+        ingest_telemetry(job.buoy_id, payload, Response(), gateway, jobs=None)
         completed = jobs.complete(job.job_id, job.attempts, datetime.now(timezone.utc))
         if completed is None:
             raise RuntimeError("Telemetry job lease expired before completion")

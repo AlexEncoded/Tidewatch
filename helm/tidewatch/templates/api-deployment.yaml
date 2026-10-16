@@ -51,6 +51,8 @@ spec:
             {{- end }}
             - name: WAVE_IMU_WAVE_HEIGHT_FACTOR
               value: {{ .Values.api.waveImuHeightFactor | quote }}
+            - name: TELEMETRY_INGESTION_MODE
+              value: {{ .Values.api.telemetryIngestionMode | quote }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
