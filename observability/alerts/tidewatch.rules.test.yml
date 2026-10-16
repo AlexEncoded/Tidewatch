@@ -48,12 +48,12 @@ tests:
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch_telemetry_ingestion_jobs",status="pending"}'
-            value: 1
+            value: 125
       - expr: tidewatch_telemetry_ingestion_oldest_pending_seconds > 300
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch_telemetry_ingestion_oldest_pending_seconds"}'
-            value: 1
+            value: 360
       - expr: tidewatch_telemetry_ingestion_expired_leases > 0
         eval_time: 5m
         exp_samples:
@@ -63,9 +63,9 @@ tests:
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch_telemetry_ingestion_jobs",status="failed"}'
-            value: 1
+            value: 2
       - expr: tidewatch_telemetry_ingestion_retried_jobs > 10
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch_telemetry_ingestion_retried_jobs"}'
-            value: 1
+            value: 11
