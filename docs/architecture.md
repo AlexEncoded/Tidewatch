@@ -165,26 +165,22 @@ the decision to split a service remains dependent on operational evidence.
 
 ## Durable asynchronous telemetry ingestion
 
-Batch ingestion currently validates and persists readings during the HTTP
-request, so it returns `200 OK`. Do not report `202 Accepted` until a durable
-job has been committed and a separate consumer can process it; an in-process
-background task is not durable across restarts.
+Batch ingestion supports synchronous `200 OK` and durable asynchronous
+`202 Accepted` modes. Set `TELEMETRY_INGESTION_MODE=queued` to persist the
+validated request as a PostgreSQL job before returning its identifier and a
+`Location` header; the default remains synchronous for compatibility. Clients
+can retrieve job state from the returned `/api/v1/telemetry/jobs/{job_id}` URL.
+The status response does not expose the submitted payload or raw exception
+details.
 
-The planned queue uses PostgreSQL as the source of truth, avoiding a second
-broker before throughput requires one. Enqueueing a validated batch and
-assigning its job identifier must be one transaction. The API will return
-`202 Accepted` with that identifier, and a read endpoint will expose queued,
-processing, completed and terminal-failure states without returning raw
-payloads.
-
-Workers will claim jobs with row-level locking (`SKIP LOCKED`) and a renewable
-lease so multiple replicas can share the queue and crashed workers do not hold
-jobs forever. Retries must be bounded and back off; exhausted jobs remain
-inspectable rather than being silently discarded. Processing must be safe to
-retry: telemetry writes and job completion need an atomic unit of work or an
-equivalent deduplication key, because the current sensor adapters commit each
-reading independently. The API, worker, migration and deployment changes must
-land together before switching the endpoint back to `202`.
+PostgreSQL is the queue source of truth, so no separate broker is required at
+the current scale. The queue worker claims jobs with row-level locking and
+leases, retries transient failures with bounded backoff, and records terminal
+failures for inspection. An optional idempotency key makes repeated submissions
+safe. A job's telemetry writes and completion are committed atomically, so a
+retry cannot leave a partially persisted batch. Docker Compose and Helm include
+the queue worker deployment; production use still requires validating the
+deployment and database capacity in the target environment.
 
 ## Servicios Azure
 
