@@ -23,6 +23,11 @@ compares both units through `battery-health`. The
 simulator sends a small position change so the fleet map and recent track can
 be exercised with moving coordinates.
 
+Compose also starts `telemetry-queue-worker` from the API image. It polls the
+durable PostgreSQL queue and can be disabled in Helm with
+`telemetryQueueWorker.enabled=false`. The batch endpoint remains synchronous
+until queue submission and job-status API support are enabled together.
+
 Run it from the repository root with:
 
 ```bash

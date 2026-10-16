@@ -32,6 +32,18 @@ services:
       timeout: 5s
       retries: 10
 
+  telemetry-queue-worker:
+    build:
+      context: ./apps/api
+    command: ["python", "-m", "app.telemetry_job_worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://tidewatch:tidewatch@postgres:5432/tidewatch
+      TELEMETRY_JOB_POLL_SECONDS: 2
+      TELEMETRY_JOB_LEASE_SECONDS: 300
+    depends_on:
+      api:
+        condition: service_healthy
+
   buoy-simulator:
     build:
       context: ./apps/worker

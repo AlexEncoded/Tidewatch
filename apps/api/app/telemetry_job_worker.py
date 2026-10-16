@@ -64,8 +64,12 @@ def run_worker() -> None:
     from .database import SessionLocal
 
     while True:
-        with SessionLocal() as db:
-            found_job = process_next_telemetry_job(db)
+        try:
+            with SessionLocal() as db:
+                found_job = process_next_telemetry_job(db)
+        except Exception:
+            logger.exception("Telemetry queue polling failed; will retry")
+            found_job = False
         if not found_job:
             time.sleep(JOB_POLL_SECONDS)
 

@@ -1,0 +1,78 @@
+{{- if .Values.telemetryQueueWorker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tidewatch.fullname" . }}-telemetry-queue-worker
+  labels:
+    {{- include "tidewatch.labels" . | nindent 4 }}
+    app.kubernetes.io/component: telemetry-queue-worker
+spec:
+  replicas: {{ .Values.telemetryQueueWorker.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tidewatch.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: telemetry-queue-worker
+  template:
+    metadata:
+      labels:
+        {{- include "tidewatch.labels" . | nindent 8 }}
+        app.kubernetes.io/component: telemetry-queue-worker
+    spec:
+      {{- if or .Values.workloadIdentity.enabled .Values.keyVault.enabled }}
+      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: telemetry-queue-worker
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          command: ["python", "-m", "app.telemetry_job_worker"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          env:
+            {{- if .Values.keyVault.enabled }}
+            - name: DATABASE_URL_FILE
+              value: /mnt/secrets-store/{{ .Values.keyVault.databaseSecretName }}
+            {{- else }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.existingSecretKey }}
+            {{- end }}
+            - name: TELEMETRY_JOB_POLL_SECONDS
+              value: {{ .Values.telemetryQueueWorker.pollSeconds | quote }}
+            - name: TELEMETRY_JOB_LEASE_SECONDS
+              value: {{ .Values.telemetryQueueWorker.leaseSeconds | quote }}
+            - name: TELEMETRY_JOB_MAX_ATTEMPTS
+              value: {{ .Values.telemetryQueueWorker.maxAttempts | quote }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            {{- if .Values.keyVault.enabled }}
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.telemetryQueueWorker.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.keyVault.enabled }}
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ include "tidewatch.fullname" . }}-api-secrets
+        {{- end }}
+{{- end }}

@@ -34,6 +34,20 @@ worker:
       cpu: 250m
       memory: 256Mi
 
+telemetryQueueWorker:
+  enabled: true
+  replicas: 1
+  pollSeconds: 2
+  leaseSeconds: 300
+  maxAttempts: 5
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
 frontend:
   image:
     repository: tidewatch/frontend
