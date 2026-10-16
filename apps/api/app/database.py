@@ -9,6 +9,16 @@ class Base(DeclarativeBase):
     pass
 
 
+class TidewatchSession(Session):
+    """Allow a use case to defer repository commits to its transaction boundary."""
+
+    def commit(self) -> None:
+        if self.info.get("tidewatch_defer_repository_commits", False):
+            self.flush()
+            return
+        super().commit()
+
+
 def resolve_database_url() -> str:
     """Resolve a direct URL or a mounted secret-file URL."""
     database_url = os.getenv("DATABASE_URL")
@@ -24,7 +34,9 @@ def resolve_database_url() -> str:
 DATABASE_URL = resolve_database_url()
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SessionLocal = sessionmaker(
+    bind=engine, autoflush=False, autocommit=False, class_=TidewatchSession
+)
 
 
 def create_tables() -> None:

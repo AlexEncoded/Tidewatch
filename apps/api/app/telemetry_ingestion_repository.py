@@ -38,6 +38,7 @@ class TelemetryIngestionRepository:
     """Compose per-sensor adapters for the batch-ingestion input port."""
 
     def __init__(self, db: Session) -> None:
+        self.db = db
         self.sensors = SensorHealthRepository(db)
         self.registry = BuoyRegistryRepository(db)
         self.locations = BuoyLocationRepository(db)

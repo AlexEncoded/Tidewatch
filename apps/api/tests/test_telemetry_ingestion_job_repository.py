@@ -2,10 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
-from app.database import Base
+from app.database import Base, TidewatchSession
 from app.entities import BuoyEntity
+from app.routers.ingestion import _atomic_telemetry_batch
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 
 
@@ -13,7 +14,7 @@ from app.telemetry_ingestion_job_repository import TelemetryIngestionJobReposito
 def job_repository():
     engine = create_engine("sqlite://")
     Base.metadata.create_all(engine)
-    with Session(engine) as db:
+    with sessionmaker(bind=engine, class_=TidewatchSession)() as db:
         db.add(
             BuoyEntity(
                 id="TW-JOB",
@@ -39,6 +40,30 @@ def test_enqueue_creates_pending_job_with_payload(job_repository) -> None:
     assert job.status == "pending"
     assert job.attempts == 0
     assert job_repository.get(job.job_id) == job
+
+
+def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
+    db = job_repository.db
+    gateway = type("Gateway", (), {"db": db})()
+
+    @_atomic_telemetry_batch
+    def persist_then_fail(gateway) -> None:
+        gateway.db.add(
+            BuoyEntity(
+                id="TW-ROLLBACK",
+                name="Must not persist",
+                status="active",
+                created_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
+            )
+        )
+        gateway.db.commit()
+        raise RuntimeError("simulated batch failure")
+
+    assert isinstance(db, TidewatchSession)
+    with pytest.raises(RuntimeError, match="simulated batch failure"):
+        persist_then_fail(gateway)
+
+    assert db.get(BuoyEntity, "TW-ROLLBACK") is None
 
 
 def test_claim_sets_processing_lease_and_prevents_early_reclaim(job_repository) -> None:
