@@ -21,4 +21,4 @@ class TelemetryJobStatusResponse(BaseModel):
     created_at: datetime
     started_at: datetime | None
     completed_at: datetime | None
-    last_error: str | None
+    error: Literal["processing_failed"] | None

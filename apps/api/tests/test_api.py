@@ -49,6 +49,7 @@ from app.routers.telemetry import router as telemetry_router
 import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
+from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from app.analytics import analyze_wave
 from app.telemetry import configure_telemetry
 import app.main as main_module
@@ -157,6 +158,33 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     assert metrics.status_code == 200
     assert 'tidewatch_telemetry_ingestion_jobs{status="pending"} 1.0' in metrics.text
     assert "tidewatch_telemetry_ingestion_oldest_pending_seconds" in metrics.text
+
+
+def test_failed_job_status_redacts_internal_error_text() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Failed job status buoy"}
+    ).json()["id"]
+    now = datetime.now(timezone.utc)
+    with SessionLocal() as db:
+        jobs = TelemetryIngestionJobRepository(db)
+        job = jobs.enqueue(buoy_id, {"temperatures": []}, now)
+        claim = jobs.claim_next(now, lease_seconds=60)
+        assert claim is not None
+        jobs.fail(
+            job.job_id,
+            claim.attempts,
+            "database error with private-value",
+            now,
+            max_attempts=1,
+            retry_delay_seconds=0,
+        )
+
+    response = client.get(f"/api/v1/telemetry/jobs/{job.job_id}")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "failed"
+    assert response.json()["error"] == "processing_failed"
+    assert "private-value" not in response.text
 
 
 def test_fleet_summary_schema_covers_every_telemetry_family_and_channel() -> None:

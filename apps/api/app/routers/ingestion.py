@@ -575,5 +575,5 @@ def get_telemetry_job_status(
         created_at=job.created_at,
         started_at=job.started_at,
         completed_at=job.completed_at,
-        last_error=job.last_error,
+        error="processing_failed" if job.status == "failed" else None,
     )
