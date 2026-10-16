@@ -36,6 +36,7 @@ from ..domain.buoy import (
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.devices import DeviceSnapshot
+from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
 
 
 class FleetLocationReader(Protocol):
@@ -60,6 +61,23 @@ class TelemetryQueueMetricsReader(Protocol):
     """Read bounded-cardinality durable queue metrics for observability."""
 
     def observability_snapshot(self) -> dict[str, int | float]:
+        ...
+
+
+@runtime_checkable
+class TelemetryIngestionJobStore(Protocol):
+    """Enqueue and read durable telemetry jobs without exposing a SQL adapter."""
+
+    def enqueue(
+        self,
+        buoy_id: str,
+        payload: dict,
+        now: datetime | None = None,
+        idempotency_key: str | None = None,
+    ) -> TelemetryIngestionJobSnapshot:
+        ...
+
+    def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
         ...
 
 

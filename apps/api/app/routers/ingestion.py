@@ -15,7 +15,7 @@ from ..adapter_dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_ingestion_job_repository,
 )
-from ..application.ports import TelemetryIngestionGateway
+from ..application.ports import TelemetryIngestionGateway, TelemetryIngestionJobStore
 from ..application.telemetry_ingestion import (
     build_location_snapshot,
     build_battery_snapshot,
@@ -70,7 +70,6 @@ from ..schemas.telemetry_job import (
     TelemetryJobAcceptedResponse,
     TelemetryJobStatusResponse,
 )
-from ..telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 
 
 router = APIRouter()
@@ -132,7 +131,7 @@ def ingest_telemetry(
     response: Response,
     idempotency_key: str | None = Header(default=None, min_length=1, max_length=64),
     gateway: TelemetryIngestionGateway = Depends(get_telemetry_ingestion_gateway),
-    jobs: TelemetryIngestionJobRepository | None = Depends(
+    jobs: TelemetryIngestionJobStore | None = Depends(
         get_telemetry_ingestion_job_repository
     ),
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
@@ -557,7 +556,7 @@ def ingest_telemetry(
 )
 def get_telemetry_job_status(
     job_id: str,
-    jobs: TelemetryIngestionJobRepository = Depends(
+    jobs: TelemetryIngestionJobStore = Depends(
         get_telemetry_ingestion_job_repository
     ),
 ) -> TelemetryJobStatusResponse:

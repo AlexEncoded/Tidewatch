@@ -14,6 +14,7 @@ from app.application.ports import (
     BuoySummaryReader,
     MaintenanceReader,
     TelemetryIngestionGateway,
+    TelemetryIngestionJobStore,
 )
 from app.application.sensor_health import SensorHealthCheckWriter
 from app.buoy_activity_repository import BuoyActivityRepository
@@ -149,6 +150,16 @@ def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:
     assert not hasattr(BuoyRepository, "list_buoy_identities")
     assert isinstance(get_temperature_alerts_reader(session), TemperatureAlertRepository)
     assert isinstance(get_temperature_alert_store(session), TemperatureAlertRepository)
+
+
+def test_telemetry_job_http_port_is_implemented_by_sql_adapter() -> None:
+    from app.adapter_dependencies import get_telemetry_ingestion_job_repository
+
+    adapter = get_telemetry_ingestion_job_repository(object())
+
+    assert isinstance(adapter, TelemetryIngestionJobStore)
+    route_source = (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
+    assert "from ..telemetry_ingestion_job_repository import" not in route_source
 
 
 def test_temperature_telemetry_uses_the_dedicated_adapter() -> None:
