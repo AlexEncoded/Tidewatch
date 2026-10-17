@@ -100,12 +100,16 @@ def load_windows(
 
     result = {"calibration": [], "validation": []}
     coverage = {"calibration": [], "validation": []}
+    intervals = {"calibration": [], "validation": []}
     for window_id, values in grouped.items():
         if len(values["altitudes"]) < 2 or len(values["accelerations"]) < 2:
             raise ValueError(
                 f"Window {window_id!r} needs at least two GNSS and two IMU samples"
             )
         split = values["split"]
+        start_at = min(values["timestamps"])
+        end_at = max(values["timestamps"])
+        intervals[split].append((window_id, start_at, end_at))
         result[split].append(
             WaveCalibrationWindow(
                 gnss_altitudes_m=tuple(values["altitudes"]),
@@ -116,15 +120,28 @@ def load_windows(
         coverage[split].append(
             {
                 "window_id": window_id,
-                "duration_seconds": (
-                    max(values["timestamps"]) - min(values["timestamps"])
-                ).total_seconds(),
+                "duration_seconds": (end_at - start_at).total_seconds(),
                 "gnss_samples": len(values["altitudes"]),
                 "imu_samples": len(values["accelerations"]),
             }
         )
     if not result["calibration"] or not result["validation"]:
         raise ValueError("CSV must contain at least one calibration and validation window")
+    calibration = sorted(intervals["calibration"], key=lambda item: item[1])
+    validation = sorted(intervals["validation"], key=lambda item: item[1])
+    calibration_index = validation_index = 0
+    while calibration_index < len(calibration) and validation_index < len(validation):
+        calibration_id, calibration_start, calibration_end = calibration[calibration_index]
+        validation_id, validation_start, validation_end = validation[validation_index]
+        if calibration_start <= validation_end and validation_start <= calibration_end:
+            raise ValueError(
+                f"Calibration window {calibration_id!r} overlaps validation "
+                f"window {validation_id!r} in time"
+            )
+        if calibration_end < validation_end:
+            calibration_index += 1
+        else:
+            validation_index += 1
     return result, coverage
 
 

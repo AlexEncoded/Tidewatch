@@ -20,8 +20,9 @@ The reference value must remain constant within each window. Each window needs
 at least two GNSS and two IMU samples. Empty sensor cells are allowed when the
 other samples in that window satisfy this minimum. Use synchronized timestamps
 on every row; timestamps must include a timezone and cannot repeat anywhere in
-the CSV. This prevents overlapping windows from leaking samples between
-calibration and validation. Keep the GNSS and IMU values from the same instant
+the CSV. Calibration and validation window time ranges must also not overlap,
+even when their sample timestamps differ. This prevents temporal leakage
+between calibration and validation. Keep the GNSS and IMU values from the same instant
 on the same row (an unavailable modality may be blank). Use a documented,
 independently measured reference source; do not use simulator output as
 calibration evidence.
