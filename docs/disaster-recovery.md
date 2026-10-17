@@ -47,6 +47,33 @@ Después de restaurar, ejecutar los smoke checks de `/health`, `/metrics`, una
 ingesta y una consulta. Los helpers no se ejecutan automáticamente ni apuntan
 a Azure por defecto.
 
+### Pruebas automatizadas
+
+La CI ejecuta dos niveles de comprobación para los scripts:
+
+1. `pwsh -NoProfile -File scripts/test-postgres-operations.ps1` simula fallos
+   de `pg_dump` y de validación de `pg_restore`, verificando que un backup
+   fallido no sustituye el archivo anterior y que un archivo inválido no
+   inicia una restauración destructiva.
+2. `scripts/test-postgres-recovery-integration.ps1` usa un PostgreSQL 16
+   efímero: crea una base aislada, inserta datos, genera un backup, altera la
+   base, restaura y comprueba que vuelve exactamente el estado anterior. La
+   base de prueba se elimina al terminar.
+
+La prueba de integración requiere `createdb`, `dropdb`, `psql`, `pg_dump`,
+`pg_restore` y una instancia PostgreSQL local disponible en `localhost:5432`
+con el usuario `tidewatch`; se puede ejecutar manualmente con:
+
+```powershell
+$env:PGPASSWORD = "tidewatch"
+./scripts/test-postgres-recovery-integration.ps1
+```
+
+Estas pruebas validan el procedimiento y las herramientas contra PostgreSQL,
+pero no simulan una pérdida de zona, un punto de restauración de Azure ni la
+reconstrucción de AKS. Por tanto, no acreditan todavía los objetivos reales de
+RPO/RTO.
+
 ## Medición de RPO/RTO
 
 En cada simulación o incidente registrar en UTC:
