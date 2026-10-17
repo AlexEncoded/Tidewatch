@@ -1,11 +1,14 @@
 """SQLAlchemy adapter for buoy registration and operational status."""
 
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoySnapshot, BuoyStatusCommand
 from .entities import BuoyEntity
 from .persistence_mappers import buoy_snapshot
+from .persistence_utils import is_newer_timestamp
 
 
 class BuoyRegistryRepository:
@@ -19,6 +22,18 @@ class BuoyRegistryRepository:
 
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.get_buoy(buoy_id) is not None
+
+    def mark_buoy_seen_by_id(
+        self, buoy_id: str, seen_at: datetime
+    ) -> BuoySnapshot | None:
+        buoy = self.get_buoy(buoy_id)
+        if buoy is None:
+            return None
+        if is_newer_timestamp(seen_at, buoy.last_seen_at):
+            buoy.last_seen_at = seen_at
+            self.db.commit()
+            self.db.refresh(buoy)
+        return buoy_snapshot(buoy)
 
     def list_buoys(self) -> list[BuoyEntity]:
         return list(

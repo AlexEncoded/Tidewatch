@@ -230,6 +230,26 @@ def test_queued_telemetry_records_device_heartbeat_when_accepted(monkeypatch) ->
     assert device["last_seen_at"] is not None
 
 
+def test_queued_telemetry_records_buoy_heartbeat_without_physical_device(monkeypatch) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queue buoy heartbeat"}
+    ).json()["id"]
+    monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"temperatures": [{"temperature_celsius": 19.5}]},
+    )
+
+    assert response.status_code == 202
+    with SessionLocal() as db:
+        buoy = db.get(BuoyEntity, buoy_id)
+        assert buoy is not None
+        assert buoy.last_seen_at is not None
+        last_seen_at = buoy.last_seen_at.replace(tzinfo=timezone.utc)
+        assert last_seen_at >= datetime.now(timezone.utc) - timedelta(minutes=1)
+
+
 def test_failed_job_status_redacts_internal_error_text() -> None:
     buoy_id = client.post(
         "/api/v1/buoys", json={"name": "Failed job status buoy"}

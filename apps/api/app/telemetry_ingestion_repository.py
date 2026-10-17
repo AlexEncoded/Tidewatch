@@ -28,6 +28,7 @@ from .domain.telemetry import (
     WindTelemetrySnapshot,
 )
 from .domain.devices import DeviceSnapshot
+from .domain.buoy import BuoySnapshot
 from .entities import BuoyLocationReadingEntity
 from .sensor_health_repository import SensorHealthRepository
 from .battery_repository import BatteryRepository
@@ -58,6 +59,9 @@ class TelemetryIngestionRepository:
 
     def mark_device_seen_by_id(self, device_id: str, seen_at: datetime) -> DeviceSnapshot | None:
         return self.battery.mark_device_seen_by_id(device_id, seen_at)
+
+    def mark_buoy_seen_by_id(self, buoy_id: str, seen_at: datetime) -> BuoySnapshot | None:
+        return self.registry.mark_buoy_seen_by_id(buoy_id, seen_at)
 
     def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryTelemetrySnapshot:
         return self.battery.add_battery(reading)

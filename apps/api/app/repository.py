@@ -135,6 +135,12 @@ class BuoyRepository:
         """Delegate battery-ingestion heartbeats to the device adapter."""
         return self.devices.mark_device_seen_by_id(device_id, seen_at)
 
+    def mark_buoy_seen_by_id(
+        self, buoy_id: str, seen_at: datetime
+    ) -> BuoySnapshot | None:
+        """Delegate queued-ingestion heartbeats to the fleet adapter."""
+        return self.registry.mark_buoy_seen_by_id(buoy_id, seen_at)
+
     def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
         return self.locations.add_location(reading)
 

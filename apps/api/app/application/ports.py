@@ -663,3 +663,8 @@ class TelemetryIngestionGateway(
         self, device_id: str, seen_at: datetime
     ) -> DeviceSnapshot | None:
         ...
+
+    def mark_buoy_seen_by_id(
+        self, buoy_id: str, seen_at: datetime
+    ) -> BuoySnapshot | None:
+        ...

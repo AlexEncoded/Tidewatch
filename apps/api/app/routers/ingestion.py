@@ -190,10 +190,17 @@ def ingest_telemetry(
     else:
         seen_at = None
 
-    if (
+    queued_mode = (
         os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
         and jobs is not None
-    ):
+    )
+    if queued_mode:
+        if payload.device_id is None:
+            seen_at = datetime.now(timezone.utc)
+            gateway.mark_buoy_seen_by_id(buoy_id, seen_at)
+            buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+                seen_at.timestamp()
+            )
         job = jobs.enqueue(
             buoy_id,
             payload.model_dump(mode="json"),
