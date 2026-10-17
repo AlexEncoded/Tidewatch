@@ -17,12 +17,14 @@ $temporaryFile = Join-Path $directory ("." + [System.IO.Path]::GetFileName($dest
 
 try {
     Write-Host "Creating PostgreSQL backup at $destination"
-    pg_dump --dbname=$databaseUrl --format=custom --file=$temporaryFile
+    pg_dump --dbname=$databaseUrl --format=custom --file $temporaryFile
     if ($LASTEXITCODE -ne 0) {
         throw "pg_dump failed with exit code $LASTEXITCODE."
     }
-    if (-not (Test-Path -LiteralPath $temporaryFile -PathType Leaf) -or
-        (Get-Item -LiteralPath $temporaryFile).Length -eq 0) {
+    if (-not (Test-Path -LiteralPath $temporaryFile -PathType Leaf)) {
+        throw "pg_dump did not create a non-empty backup."
+    }
+    if ((Get-Item -LiteralPath $temporaryFile).Length -eq 0) {
         throw "pg_dump did not create a non-empty backup."
     }
 
