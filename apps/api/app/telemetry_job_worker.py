@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import Response
 
 from .adapter_dependencies import get_telemetry_ingestion_gateway
+from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .routers.ingestion import ingest_telemetry
 from .schemas.ingestion import TelemetryBatchCreate
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
@@ -52,7 +53,7 @@ def process_next_telemetry_job(db: Session) -> bool:
             str(exc),
             datetime.now(timezone.utc),
             JOB_MAX_ATTEMPTS,
-            retry_delay_seconds=min(300, 2 ** job.attempts),
+            retry_delay_seconds=telemetry_job_retry_delay_seconds(job.attempts),
         )
         if failed is None:
             logger.warning("Telemetry job %s lost its lease while failing", job.job_id)
