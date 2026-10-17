@@ -11,10 +11,8 @@ function Assert-Equal($Actual, $Expected, $Message) {
 
 function pg_dump {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    $outputArgument = $Arguments | Where-Object { $_ -like "--file=*" }
-    $outputFile = $outputArgument.Substring(7)
     if ($script:DumpExitCode -eq 0) {
-        [System.IO.File]::WriteAllText($outputFile, "valid archive")
+        [System.IO.File]::WriteAllText($script:temporaryFile, "valid archive")
     }
     $global:LASTEXITCODE = $script:DumpExitCode
 }
