@@ -11,7 +11,6 @@ function Assert-Equal($Actual, $Expected, $Message) {
 
 function pg_dump {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    Write-Host ("pg_dump mock arguments: " + ($Arguments -join " | "))
     if ($script:DumpExitCode -eq 0) {
         $fileArgument = $Arguments | Where-Object { $_ -like "--file=*" } | Select-Object -First 1
         if ($null -ne $fileArgument) {
@@ -24,7 +23,6 @@ function pg_dump {
             }
             $outputFile = $Arguments[$fileIndex + 1]
         }
-        Write-Host "pg_dump mock output path: $outputFile"
         [System.IO.File]::WriteAllText($outputFile, "valid archive")
     }
     $global:LASTEXITCODE = $script:DumpExitCode

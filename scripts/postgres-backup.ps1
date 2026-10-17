@@ -24,7 +24,7 @@ try {
     if (-not (Test-Path -LiteralPath $temporaryFile -PathType Leaf)) {
         throw "pg_dump did not create a non-empty backup."
     }
-    if ((Get-Item -LiteralPath $temporaryFile).Length -eq 0) {
+    if ((Get-Item -Force -LiteralPath $temporaryFile).Length -eq 0) {
         throw "pg_dump did not create a non-empty backup."
     }
 
