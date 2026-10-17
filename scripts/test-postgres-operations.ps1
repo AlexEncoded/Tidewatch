@@ -12,7 +12,18 @@ function Assert-Equal($Actual, $Expected, $Message) {
 function pg_dump {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
     if ($script:DumpExitCode -eq 0) {
-        [System.IO.File]::WriteAllText($script:temporaryFile, "valid archive")
+        $fileArgument = $Arguments | Where-Object { $_ -like "--file=*" } | Select-Object -First 1
+        if ($null -ne $fileArgument) {
+            $outputFile = $fileArgument -replace "^--file=", ""
+        }
+        else {
+            $fileIndex = [array]::IndexOf($Arguments, "--file")
+            if ($fileIndex -lt 0 -or $fileIndex + 1 -ge $Arguments.Count) {
+                throw "pg_dump mock did not receive a --file output path: $Arguments"
+            }
+            $outputFile = $Arguments[$fileIndex + 1]
+        }
+        [System.IO.File]::WriteAllText($outputFile, "valid archive")
     }
     $global:LASTEXITCODE = $script:DumpExitCode
 }
