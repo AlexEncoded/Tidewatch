@@ -1,5 +1,7 @@
 """Application service for the experimental wave-analysis use case."""
 
+from datetime import datetime, timezone
+
 from ..domain.wave import (
     WaveAnalysisSnapshot,
     estimate_wave,
@@ -25,6 +27,47 @@ def analyze_wave_for_buoy(
         for reading in reader.list_locations(buoy_id, window)
         if getattr(reading, "quality", "good") != "invalid"
     ]
+    period_locations = locations
+    timed_imu = [
+        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
+        for reading in imu_readings
+    ]
+    timed_locations = [
+        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
+        for reading in locations
+    ]
+    if not timed_imu or not timed_locations:
+        # A single available modality can still produce an explicitly partial estimate.
+        pass
+    elif all(
+        timestamp is not None for _, timestamp in (*timed_imu, *timed_locations)
+    ):
+        start_at = max(
+            min(timestamp for _, timestamp in timed_imu if timestamp is not None),
+            min(timestamp for _, timestamp in timed_locations if timestamp is not None),
+        )
+        end_at = min(
+            max(timestamp for _, timestamp in timed_imu if timestamp is not None),
+            max(timestamp for _, timestamp in timed_locations if timestamp is not None),
+        )
+        if start_at <= end_at:
+            imu_readings = [
+                reading
+                for reading, timestamp in timed_imu
+                if timestamp is not None and start_at <= timestamp <= end_at
+            ]
+            locations = [
+                reading
+                for reading, timestamp in timed_locations
+                if timestamp is not None and start_at <= timestamp <= end_at
+            ]
+        else:
+            imu_readings = []
+            locations = []
+    else:
+        # Without timestamps there is no safe basis for fusing separate streams.
+        imu_readings = []
+        locations = []
     estimate = estimate_wave(
         [
             reading.altitude_meters
@@ -36,7 +79,7 @@ def analyze_wave_for_buoy(
     )
     period_samples = [
         (reading.measured_at, reading.altitude_meters)
-        for reading in reversed(locations)
+        for reading in reversed(period_locations)
         if reading.altitude_meters is not None
         and getattr(reading, "measured_at", None) is not None
     ]
@@ -64,3 +107,11 @@ def analyze_wave_for_buoy(
         estimated_period_seconds=period,
         confidence=estimate.confidence,
     )
+
+
+def _utc_timestamp(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)

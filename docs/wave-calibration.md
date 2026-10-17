@@ -5,6 +5,10 @@ not a field calibration. This tool evaluates candidate factors against an
 independent wave-height reference; it does not update API configuration or
 change production behavior.
 
+The live estimate combines GNSS and IMU samples only within the time interval
+covered by both streams. If their windows do not overlap, the API reports
+insufficient data instead of combining unrelated sensor ranges.
+
 Prepare a CSV with one row per synchronized sensor sample and these columns:
 
 | Column | Meaning |

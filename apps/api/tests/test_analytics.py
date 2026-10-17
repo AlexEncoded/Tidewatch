@@ -218,10 +218,22 @@ def test_wave_period_domain_orders_samples_by_timestamp() -> None:
 def test_wave_application_service_uses_a_telemetry_port() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):
-            return [SimpleNamespace(acceleration_z_mps2=value) for value in (9.7, 10.2)]
+            return [
+                SimpleNamespace(
+                    acceleration_z_mps2=value,
+                    measured_at=datetime(2026, 1, 1, 0, index, tzinfo=timezone.utc),
+                )
+                for index, value in enumerate((9.7, 10.2))
+            ]
 
         def list_locations(self, buoy_id, limit):
-            return [SimpleNamespace(altitude_meters=value) for value in (2.0, 2.4)]
+            return [
+                SimpleNamespace(
+                    altitude_meters=value,
+                    measured_at=datetime(2026, 1, 1, 0, index, tzinfo=timezone.utc),
+                )
+                for index, value in enumerate((2.0, 2.4))
+            ]
 
     analysis = analyze_wave_for_buoy(FakeReader(), "TW-PORT", 10, 0.1)
 
@@ -233,10 +245,22 @@ def test_wave_application_service_uses_a_telemetry_port() -> None:
 def test_wave_application_service_forwards_calibration_factor() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):
-            return [SimpleNamespace(acceleration_z_mps2=value) for value in (9.7, 10.2)]
+            return [
+                SimpleNamespace(
+                    acceleration_z_mps2=value,
+                    measured_at=datetime(2026, 1, 1, 0, index, tzinfo=timezone.utc),
+                )
+                for index, value in enumerate((9.7, 10.2))
+            ]
 
         def list_locations(self, buoy_id, limit):
-            return [SimpleNamespace(altitude_meters=value) for value in (2.0, 2.1)]
+            return [
+                SimpleNamespace(
+                    altitude_meters=value,
+                    measured_at=datetime(2026, 1, 1, 0, index, tzinfo=timezone.utc),
+                )
+                for index, value in enumerate((2.0, 2.1))
+            ]
 
     analysis = analyze_wave_for_buoy(FakeReader(), "TW-CAL", 10, 0.2)
 
@@ -248,20 +272,114 @@ def test_wave_application_service_filters_invalid_telemetry() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):
             return [
-                SimpleNamespace(acceleration_z_mps2=9.7, quality="good"),
-                SimpleNamespace(acceleration_z_mps2=100.0, quality="invalid"),
+                SimpleNamespace(
+                    acceleration_z_mps2=9.7,
+                    quality="good",
+                    measured_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                ),
+                SimpleNamespace(
+                    acceleration_z_mps2=100.0,
+                    quality="invalid",
+                    measured_at=datetime(2026, 1, 1, 0, 1, tzinfo=timezone.utc),
+                ),
             ]
 
         def list_locations(self, buoy_id, limit):
             return [
-                SimpleNamespace(altitude_meters=2.0, quality="good"),
-                SimpleNamespace(altitude_meters=20.0, quality="invalid"),
+                SimpleNamespace(
+                    altitude_meters=2.0,
+                    quality="good",
+                    measured_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                ),
+                SimpleNamespace(
+                    altitude_meters=20.0,
+                    quality="invalid",
+                    measured_at=datetime(2026, 1, 1, 0, 1, tzinfo=timezone.utc),
+                ),
             ]
 
     analysis = analyze_wave_for_buoy(FakeReader(), "TW-WAVE", 10, 0.1)
 
     assert analysis.sample_count == 1
     assert analysis.confidence == "insufficient_data"
+
+
+def test_wave_application_service_fuses_only_the_shared_time_range() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset),
+                    acceleration_z_mps2=value,
+                )
+                for offset, value in ((0, 0.0), (10, 1.0), (20, 100.0))
+            ]
+
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset), altitude_meters=value
+                )
+                for offset, value in ((10, 2.0), (20, 2.2), (30, 200.0))
+            ]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-SYNC", 10, 0.1)
+
+    assert analysis.imu_vertical_acceleration_range_mps2 == 99.0
+    assert analysis.gnss_vertical_range_m == 0.2
+
+
+def test_wave_application_service_does_not_fuse_disjoint_time_ranges() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset),
+                    acceleration_z_mps2=float(offset),
+                )
+                for offset in (0, 10)
+            ]
+
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset),
+                    altitude_meters=float(offset),
+                )
+                for offset in (20, 30)
+            ]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-DISJOINT", 10, 0.1)
+
+    assert analysis.estimated_wave_height_m is None
+    assert analysis.confidence == "insufficient_data"
+
+
+def test_wave_application_service_keeps_single_modality_estimate_partial() -> None:
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return []
+
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(
+                    altitude_meters=value,
+                    measured_at=datetime(
+                        2026, 1, 1, 0, index, tzinfo=timezone.utc
+                    ),
+                )
+                for index, value in enumerate((2.0, 2.4))
+            ]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-GNSS-ONLY", 10, 0.1)
+
+    assert analysis.estimated_wave_height_m == 0.4
+    assert analysis.confidence == "partial"
+    assert analysis.imu_vertical_acceleration_range_mps2 is None
 
 
 def test_sensor_health_averages_consistent_redundant_channels() -> None:
