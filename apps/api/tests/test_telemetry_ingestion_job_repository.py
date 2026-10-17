@@ -58,6 +58,29 @@ def test_enqueue_returns_existing_job_for_repeated_idempotency_key(job_repositor
     assert repeated.idempotency_key == "simulator-cycle-1"
 
 
+def test_idempotency_key_is_scoped_to_its_buoy(job_repository) -> None:
+    job_repository.db.add(
+        BuoyEntity(
+            id="TW-JOB-2",
+            name="Second queue test buoy",
+            status="active",
+            created_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
+        )
+    )
+    job_repository.db.commit()
+
+    first = job_repository.enqueue(
+        "TW-JOB", {"temperatures": []}, idempotency_key="cycle-1"
+    )
+    second = job_repository.enqueue(
+        "TW-JOB-2", {"temperatures": []}, idempotency_key="cycle-1"
+    )
+
+    assert first.job_id != second.job_id
+    assert first.buoy_id == "TW-JOB"
+    assert second.buoy_id == "TW-JOB-2"
+
+
 def test_observability_snapshot_reports_queue_depth_and_expired_leases(job_repository) -> None:
     now = datetime(2026, 10, 15, 10, tzinfo=timezone.utc)
     job_repository.enqueue("TW-JOB", {}, now)
