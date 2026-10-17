@@ -137,21 +137,6 @@ def ingest_telemetry(
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
     if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    if (
-        os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
-        and jobs is not None
-    ):
-        job = jobs.enqueue(
-            buoy_id,
-            payload.model_dump(mode="json"),
-            idempotency_key=idempotency_key,
-        )
-        status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
-        response.status_code = status.HTTP_202_ACCEPTED
-        response.headers["Location"] = status_url
-        return TelemetryJobAcceptedResponse(
-            job_id=job.job_id, status="pending", status_url=status_url
-        )
     if payload.device_id is not None:
         try:
             sensor_channels = (
@@ -204,6 +189,22 @@ def ingest_telemetry(
         )
     else:
         seen_at = None
+
+    if (
+        os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+        and jobs is not None
+    ):
+        job = jobs.enqueue(
+            buoy_id,
+            payload.model_dump(mode="json"),
+            idempotency_key=idempotency_key,
+        )
+        status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
+        response.status_code = status.HTTP_202_ACCEPTED
+        response.headers["Location"] = status_url
+        return TelemetryJobAcceptedResponse(
+            job_id=job.job_id, status="pending", status_url=status_url
+        )
 
     if payload.location is not None:
         location = build_location_snapshot(

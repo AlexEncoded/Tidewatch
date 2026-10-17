@@ -160,6 +160,76 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     assert "tidewatch_telemetry_ingestion_oldest_pending_seconds" in metrics.text
 
 
+def test_queued_telemetry_validates_device_ownership_before_enqueue(monkeypatch) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queue owner buoy"}
+    ).json()["id"]
+    other_buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queue other buoy"}
+    ).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{other_buoy_id}/devices",
+        json={"device_id": "foreign-queue-unit", "sensor_channel": "A"},
+    )
+    monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"device_id": "foreign-queue-unit", "temperatures": [{"temperature_celsius": 19.5}]},
+    )
+
+    assert response.status_code == 404
+    with SessionLocal() as db:
+        assert db.query(TelemetryIngestionJobEntity).filter_by(buoy_id=buoy_id).count() == 0
+
+
+def test_queued_telemetry_validates_device_channel_before_enqueue(monkeypatch) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queue channel buoy"}
+    ).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "queue-channel-a", "sensor_channel": "A"},
+    )
+    monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "queue-channel-a",
+            "temperatures": [{"temperature_celsius": 19.5, "sensor_channel": "B"}],
+        },
+    )
+
+    assert response.status_code == 422
+    assert client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]["last_seen_at"] is None
+    with SessionLocal() as db:
+        assert db.query(TelemetryIngestionJobEntity).filter_by(buoy_id=buoy_id).count() == 0
+
+
+def test_queued_telemetry_records_device_heartbeat_when_accepted(monkeypatch) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Queue heartbeat buoy"}
+    ).json()["id"]
+    client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": "queue-heartbeat-unit", "sensor_channel": "A"},
+    )
+    monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "queued")
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "queue-heartbeat-unit",
+            "temperatures": [{"temperature_celsius": 19.5, "sensor_channel": "A"}],
+        },
+    )
+
+    assert response.status_code == 202
+    device = client.get(f"/api/v1/buoys/{buoy_id}/devices").json()[0]
+    assert device["last_seen_at"] is not None
+
+
 def test_failed_job_status_redacts_internal_error_text() -> None:
     buoy_id = client.post(
         "/api/v1/buoys", json={"name": "Failed job status buoy"}
