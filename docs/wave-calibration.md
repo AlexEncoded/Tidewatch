@@ -19,6 +19,7 @@ Prepare a CSV with one row per synchronized sensor sample and these columns:
 | `gnss_altitude_m` | GNSS altitude in meters |
 | `imu_vertical_acceleration_mps2` | Vertical acceleration in m/s² |
 | `reference_wave_height_m` | Independently measured wave height in meters for the window |
+| `quality` (optional) | `good`, `suspect` or `invalid`; only `good` samples are evaluated |
 
 The reference value must remain constant within each window. Each window needs
 at least two GNSS and two IMU samples. Empty sensor cells are allowed when the
@@ -29,7 +30,9 @@ even when their sample timestamps differ. This prevents temporal leakage
 between calibration and validation. Keep the GNSS and IMU values from the same instant
 on the same row (an unavailable modality may be blank). Use a documented,
 independently measured reference source; do not use simulator output as
-calibration evidence.
+calibration evidence. If the optional `quality` column is omitted, all rows are
+treated as `good` for backward compatibility; the JSON report records whether
+quality filtering was available and how many rows were excluded.
 
 Run the evaluator from the repository root:
 

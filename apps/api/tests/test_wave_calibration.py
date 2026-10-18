@@ -77,6 +77,12 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["selected_factor"] == 0.4
     assert report["dataset"]["file_name"] == input_path.name
     assert report["dataset"]["sha256"] == hashlib.sha256(input_path.read_bytes()).hexdigest()
+    assert report["dataset"]["quality_filter"] == {
+        "accepted_good_samples": 6,
+        "column_present": False,
+        "excluded_invalid_samples": 0,
+        "excluded_suspect_samples": 0,
+    }
     assert report["search"] == {
         "candidate_count": 11,
         "max_factor": 1.0,
@@ -94,6 +100,49 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     ]
     assert report["validation_selected_metrics"]["rmse_m"] == 0
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
+
+
+def test_wave_calibration_cli_excludes_non_good_quality_samples(tmp_path: Path) -> None:
+    input_path = tmp_path / "quality-labeled-waves.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m,quality\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15,good\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,0.5,0.15,good\n"
+        "train,calibration,2026-01-01T00:00:02Z,1000,1000,0.15,suspect\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26,good\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26,good\n"
+        "holdout,validation,2026-01-01T00:01:02Z,1000,1000,0.26,invalid\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            str(input_path),
+            "--max-factor",
+            "1.0",
+            "--step",
+            "0.1",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["selected_factor"] == 0.4
+    assert report["window_coverage"]["calibration"][0]["gnss_samples"] == 2
+    assert report["window_coverage"]["validation"][0]["imu_samples"] == 2
+    assert report["dataset"]["quality_filter"] == {
+        "accepted_good_samples": 4,
+        "column_present": True,
+        "excluded_invalid_samples": 1,
+        "excluded_suspect_samples": 1,
+    }
 
 
 def test_wave_calibration_cli_reports_truncated_csv_without_traceback(

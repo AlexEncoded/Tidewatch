@@ -31,14 +31,21 @@ REQUIRED_COLUMNS = {
 
 def load_windows(
     path: Path,
-) -> tuple[dict[str, list[WaveCalibrationWindow]], dict[str, list[dict]]]:
+) -> tuple[
+    dict[str, list[WaveCalibrationWindow]],
+    dict[str, list[dict]],
+    dict[str, object],
+]:
     grouped: dict[str, dict] = {}
     seen_timestamps: dict[datetime, str] = {}
+    quality_column_present = False
+    quality_counts = {"good": 0, "suspect": 0, "invalid": 0}
     with path.open(newline="", encoding="utf-8-sig") as source:
         reader = csv.DictReader(source)
         missing = REQUIRED_COLUMNS - set(reader.fieldnames or ())
         if missing:
             raise ValueError(f"CSV is missing columns: {', '.join(sorted(missing))}")
+        quality_column_present = "quality" in (reader.fieldnames or ())
         for line_number, row in enumerate(reader, start=2):
             window_id = (row["window_id"] or "").strip()
             split = (row["split"] or "").strip().lower()
@@ -51,6 +58,15 @@ def load_windows(
                 measured_at = _parse_timestamp(row["measured_at"])
             except ValueError as exc:
                 raise ValueError(f"Line {line_number}: {exc}") from exc
+            quality_value = row.get("quality") if quality_column_present else "good"
+            quality = (quality_value or "").strip().lower()
+            if quality not in quality_counts:
+                raise ValueError(
+                    f"Line {line_number}: quality must be 'good', 'suspect' or 'invalid'"
+                )
+            quality_counts[quality] += 1
+            if quality != "good":
+                continue
             try:
                 reference = float(row["reference_wave_height_m"])
                 altitude = _optional_number(row["gnss_altitude_m"])
@@ -127,6 +143,12 @@ def load_windows(
         )
     if not result["calibration"] or not result["validation"]:
         raise ValueError("CSV must contain at least one calibration and validation window")
+    quality_summary = {
+        "column_present": quality_column_present,
+        "accepted_good_samples": quality_counts["good"],
+        "excluded_suspect_samples": quality_counts["suspect"],
+        "excluded_invalid_samples": quality_counts["invalid"],
+    }
     calibration = sorted(intervals["calibration"], key=lambda item: item[1])
     validation = sorted(intervals["validation"], key=lambda item: item[1])
     calibration_index = validation_index = 0
@@ -142,7 +164,7 @@ def load_windows(
             calibration_index += 1
         else:
             validation_index += 1
-    return result, coverage
+    return result, coverage, quality_summary
 
 
 def _optional_number(value: str | None) -> float | None:
@@ -195,7 +217,7 @@ def main() -> int:
         parser.error("--step would produce more than 100,001 factor candidates")
 
     try:
-        splits, window_coverage = load_windows(args.csv_path)
+        splits, window_coverage, quality_summary = load_windows(args.csv_path)
         candidates = [
             round(index * args.step, 10)
             for index in range(step_count + 1)
@@ -210,6 +232,7 @@ def main() -> int:
             "dataset": {
                 "file_name": args.csv_path.name,
                 "sha256": _sha256_file(args.csv_path),
+                "quality_filter": quality_summary,
             },
             "search": {
                 "min_factor": candidates[0],
