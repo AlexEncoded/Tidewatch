@@ -1,12 +1,9 @@
 """HTTP route for batch telemetry ingestion."""
 
-from datetime import datetime, timezone
 import os
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
-from ..application.device_heartbeat import record_device_heartbeat
-from ..application.battery_ingestion import record_battery_reading
-from ..application.movement_analysis import analyze_movement_for_buoy
 from ..adapter_dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_ingestion_job_repository,
@@ -17,54 +14,13 @@ from ..application.ports import (
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
 )
-from ..application.telemetry_ingestion import (
-    atomic_telemetry_batch,
-    build_location_snapshot,
-    build_battery_snapshot,
-    build_underwater_acoustic_snapshot,
-    build_acoustic_altimeter_snapshot,
-    build_atmospheric_pressure_snapshot,
-    build_air_temperature_snapshot,
-    build_humidity_snapshot,
-    build_rainfall_snapshot,
-    build_chlorophyll_a_snapshot,
-    build_conductivity_snapshot,
-    build_ph_snapshot,
-    build_dissolved_oxygen_snapshot,
-    build_imu_snapshot,
-    build_marine_current_snapshot,
-    build_turbidity_snapshot,
-    build_ambient_light_snapshot,
-    build_wind_snapshot,
-    build_pressure_snapshot,
-    build_salinity_snapshot,
-    build_temperature_snapshot,
-    empty_accepted_reading_counts,
-)
-from ..domain.devices import DeviceOwnershipError
-from ..metrics import (
-    acoustic_altimeter_readings_total, air_temperature_readings_total,
-    ambient_light_readings_total, atmospheric_pressure_readings_total,
-    battery_device_percent, battery_percent, buoy_last_seen_timestamp_seconds,
-    buoy_movement_speed_mps, chlorophyll_a_readings_total,
-    conductivity_readings_total,
-    current_acoustic_altimeter_depth_meters, current_air_temperature_celsius,
-    current_ambient_light_lux, current_atmospheric_pressure_kpa,
-    current_chlorophyll_a_ug_l, current_conductivity_us_cm,
-    current_dissolved_oxygen_mg_l, current_humidity_percent,
-    current_imu_acceleration_mps2, current_imu_angular_velocity_dps,
-    current_marine_current_direction_degrees, current_marine_current_speed_mps,
-    current_ph, current_pressure_kpa, current_rainfall_mm_h,
-    current_salinity_psu, current_temperature_celsius, current_turbidity_ntu,
-    current_underwater_acoustic_echo_intensity_db, current_wind_direction_degrees,
-    current_wind_speed_mps, device_last_seen_timestamp_seconds,
-    current_gnss_altitude_meters, current_gnss_speed_mps,
-    current_gnss_hdop, current_gnss_satellites,
-    dissolved_oxygen_readings_total, humidity_readings_total, imu_readings_total,
-    marine_current_readings_total, ph_readings_total, pressure_readings_total,
-    rainfall_readings_total, reading_quality_total, salinity_readings_total,
-    temperature_readings_total, turbidity_readings_total,
-    underwater_acoustic_readings_total, wind_readings_total,
+from ..telemetry_batch_processor import (
+    TelemetryBatchInvalid,
+    TelemetryBuoyNotFound,
+    TelemetryDeviceNotFound,
+    TelemetryIngestOutcome,
+    TelemetryQueuedOutcome,
+    process_telemetry_batch,
 )
 from ..schemas.ingestion import TelemetryBatchCreate
 from ..schemas.telemetry import TelemetryIngestResponse
@@ -77,22 +33,12 @@ from ..schemas.telemetry_job import (
 router = APIRouter()
 
 
-def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str, quality: str) -> None:
-    reading_quality_total.labels(
-        buoy_id=buoy_id,
-        sensor_family=sensor_family,
-        sensor_channel=sensor_channel,
-        quality=quality,
-    ).inc()
-
-
 @router.post(
     "/api/v1/buoys/{buoy_id}/telemetry",
     response_model=TelemetryIngestResponse | TelemetryJobAcceptedResponse,
     status_code=status.HTTP_200_OK,
     tags=["telemetry"],
 )
-@atomic_telemetry_batch
 def ingest_telemetry(
     buoy_id: str,
     payload: TelemetryBatchCreate,
@@ -104,425 +50,37 @@ def ingest_telemetry(
         get_telemetry_ingestion_job_repository
     ),
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    if payload.device_id is not None:
-        try:
-            sensor_channels = (
-                reading.sensor_channel
-                for family in (
-                    payload.temperatures,
-                    payload.pressures,
-                    payload.salinity,
-                    payload.imu,
-                    payload.ambient_light,
-                    payload.wind,
-                    payload.marine_current,
-                    payload.turbidity,
-                    payload.dissolved_oxygen,
-                    payload.ph,
-                    payload.conductivity,
-                    payload.chlorophyll_a,
-                    payload.rainfall,
-                    payload.humidity,
-                    payload.air_temperature,
-                    payload.atmospheric_pressure,
-                    payload.acoustic_altimeter,
-                    payload.underwater_acoustic,
-                )
-                for reading in family
-            )
-            sensor_channels = (
-                *sensor_channels,
-                *(reading.device_id for reading in payload.battery),
-            )
-            device, seen_at = record_device_heartbeat(
-                gateway,
-                buoy_id,
-                payload.device_id,
-                sensor_channels=sensor_channels,
-            )
-        except DeviceOwnershipError as exc:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
-        except ValueError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
-            ) from None
-        device_last_seen_timestamp_seconds.labels(
-            buoy_id=buoy_id,
-            device_id=device.device_id,
-            sensor_channel=device.sensor_channel,
-        ).set(seen_at.timestamp())
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            seen_at.timestamp()
-        )
-    else:
-        seen_at = None
-
-    queued_mode = (
-        os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
-        and jobs is not None
-    )
-    if queued_mode:
-        if payload.device_id is None:
-            seen_at = datetime.now(timezone.utc)
-            gateway.mark_buoy_seen_by_id(buoy_id, seen_at)
-            buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-                seen_at.timestamp()
-            )
-        job = jobs.enqueue(
+    queued_mode = os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+    try:
+        outcome = process_telemetry_batch(
             buoy_id,
-            payload.model_dump(mode="json"),
+            payload,
+            gateway=gateway,
+            unit_of_work=unit_of_work,
+            jobs=jobs,
             idempotency_key=idempotency_key,
+            queued_mode=queued_mode,
         )
-        status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
+    except TelemetryBuoyNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
+    except TelemetryDeviceNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
+    except TelemetryBatchInvalid as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
+        ) from None
+
+    if isinstance(outcome, TelemetryQueuedOutcome):
         response.status_code = status.HTTP_202_ACCEPTED
-        response.headers["Location"] = status_url
+        response.headers["Location"] = outcome.status_url
         return TelemetryJobAcceptedResponse(
-            job_id=job.job_id, status="pending", status_url=status_url
+            job_id=outcome.job_id, status="pending", status_url=outcome.status_url
         )
-
-    if payload.location is not None:
-        location = build_location_snapshot(
-            buoy_id, payload.location.model_dump(), payload.device_id
-        )
-        gateway.add_location(location)
-        if location.altitude_meters is not None:
-            current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)
-        if location.speed_mps is not None:
-            current_gnss_speed_mps.labels(buoy_id=buoy_id).set(location.speed_mps)
-        if location.hdop is not None:
-            current_gnss_hdop.labels(buoy_id=buoy_id).set(location.hdop)
-        if location.satellites is not None:
-            current_gnss_satellites.labels(buoy_id=buoy_id).set(location.satellites)
-        movement = analyze_movement_for_buoy(gateway, buoy_id, 50)
-        if movement.average_speed_mps is not None:
-            buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(
-                movement.average_speed_mps
-            )
-
-    accepted = 0
-    accepted_by_family = empty_accepted_reading_counts()
-    for reading_payload in payload.temperatures:
-        reading = build_temperature_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_temperature(reading)
-        temperature_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_temperature_celsius.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.temperature_celsius)
-        record_quality_metric(buoy_id, "temperature", reading.sensor_channel, reading.quality)
-        accepted_by_family["temperature"] += 1
-        accepted += 1
-
-    for reading_payload in payload.pressures:
-        reading = build_pressure_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_pressure(reading)
-        pressure_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_pressure_kpa.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.pressure_kpa)
-        record_quality_metric(buoy_id, "pressure", reading.sensor_channel, reading.quality)
-        accepted_by_family["pressure"] += 1
-        accepted += 1
-
-    for reading_payload in payload.salinity:
-        reading = build_salinity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_salinity(reading)
-        salinity_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_salinity_psu.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.salinity_psu)
-        record_quality_metric(buoy_id, "salinity", reading.sensor_channel, reading.quality)
-        accepted_by_family["salinity"] += 1
-        accepted += 1
-
-    for reading_payload in payload.imu:
-        reading = build_imu_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_imu(reading)
-        imu_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        for axis, value in {
-            "x": reading.acceleration_x_mps2,
-            "y": reading.acceleration_y_mps2,
-            "z": reading.acceleration_z_mps2,
-        }.items():
-            current_imu_acceleration_mps2.labels(
-                buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
-            ).set(value)
-        for axis, value in {
-            "x": reading.angular_velocity_x_dps,
-            "y": reading.angular_velocity_y_dps,
-            "z": reading.angular_velocity_z_dps,
-        }.items():
-            current_imu_angular_velocity_dps.labels(
-                buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
-            ).set(value)
-        record_quality_metric(buoy_id, "imu", reading.sensor_channel, reading.quality)
-        accepted_by_family["imu"] += 1
-        accepted += 1
-
-    for reading_payload in payload.ambient_light:
-        reading = build_ambient_light_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_ambient_light(reading)
-        ambient_light_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_ambient_light_lux.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.illuminance_lux)
-        record_quality_metric(
-            buoy_id, "ambient_light", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["ambient_light"] += 1
-        accepted += 1
-
-    for reading_payload in payload.wind:
-        reading = build_wind_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_wind(reading)
-        wind_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_wind_speed_mps.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.wind_speed_mps)
-        current_wind_direction_degrees.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.wind_direction_degrees)
-        record_quality_metric(buoy_id, "wind", reading.sensor_channel, reading.quality)
-        accepted_by_family["wind"] += 1
-        accepted += 1
-
-    for reading_payload in payload.marine_current:
-        reading = build_marine_current_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_marine_current(reading)
-        marine_current_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_marine_current_speed_mps.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.current_speed_mps)
-        current_marine_current_direction_degrees.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.current_direction_degrees)
-        record_quality_metric(
-            buoy_id, "marine_current", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["marine_current"] += 1
-        accepted += 1
-
-    for reading_payload in payload.turbidity:
-        reading = build_turbidity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_turbidity(reading)
-        turbidity_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_turbidity_ntu.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.turbidity_ntu)
-        record_quality_metric(
-            buoy_id, "turbidity", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["turbidity"] += 1
-        accepted += 1
-
-    for reading_payload in payload.dissolved_oxygen:
-        reading = build_dissolved_oxygen_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_dissolved_oxygen(reading)
-        dissolved_oxygen_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_dissolved_oxygen_mg_l.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.dissolved_oxygen_mg_l)
-        record_quality_metric(
-            buoy_id, "dissolved_oxygen", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["dissolved_oxygen"] += 1
-        accepted += 1
-
-    for reading_payload in payload.ph:
-        reading = build_ph_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_ph(reading)
-        ph_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_ph.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.ph)
-        record_quality_metric(buoy_id, "ph", reading.sensor_channel, reading.quality)
-        accepted_by_family["ph"] += 1
-        accepted += 1
-
-    for reading_payload in payload.conductivity:
-        reading = build_conductivity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_conductivity(reading)
-        conductivity_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_conductivity_us_cm.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.conductivity_us_cm)
-        record_quality_metric(
-            buoy_id, "conductivity", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["conductivity"] += 1
-        accepted += 1
-
-    for reading_payload in payload.chlorophyll_a:
-        reading = build_chlorophyll_a_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_chlorophyll_a(reading)
-        chlorophyll_a_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_chlorophyll_a_ug_l.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.chlorophyll_a_ug_l)
-        record_quality_metric(
-            buoy_id, "chlorophyll_a", reading.sensor_channel, reading.quality
-        )
-        accepted_by_family["chlorophyll_a"] += 1
-        accepted += 1
-
-    for reading_payload in payload.rainfall:
-        reading = build_rainfall_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_rainfall(reading)
-        rainfall_readings_total.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).inc()
-        current_rainfall_mm_h.labels(
-            buoy_id=buoy_id, sensor_channel=reading.sensor_channel
-        ).set(reading.rainfall_mm_h)
-        record_quality_metric(buoy_id, "rainfall", reading.sensor_channel, reading.quality)
-        accepted_by_family["rainfall"] += 1
-        accepted += 1
-
-    for reading_payload in payload.humidity:
-        reading = build_humidity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_humidity(reading)
-        humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
-        record_quality_metric(buoy_id, "humidity", reading.sensor_channel, reading.quality)
-        accepted_by_family["humidity"] += 1
-        accepted += 1
-
-    for reading_payload in payload.air_temperature:
-        reading = build_air_temperature_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_air_temperature(reading)
-        air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
-        record_quality_metric(buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
-        accepted_by_family["air_temperature"] += 1
-        accepted += 1
-
-    for reading_payload in payload.atmospheric_pressure:
-        reading = build_atmospheric_pressure_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_atmospheric_pressure(reading)
-        atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
-        record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
-        accepted_by_family["atmospheric_pressure"] += 1
-        accepted += 1
-
-    for reading_payload in payload.acoustic_altimeter:
-        reading = build_acoustic_altimeter_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_acoustic_altimeter(reading)
-        acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
-        record_quality_metric(buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
-        accepted_by_family["acoustic_altimeter"] += 1
-        accepted += 1
-
-    for reading_payload in payload.underwater_acoustic:
-        reading = build_underwater_acoustic_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
-        )
-        gateway.add_underwater_acoustic(reading)
-        underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
-        record_quality_metric(buoy_id, "underwater_acoustic", reading.sensor_channel, reading.quality)
-        accepted_by_family["underwater_acoustic"] += 1
-        accepted += 1
-
-    for battery_payload in payload.battery:
-        battery_data = battery_payload.model_dump()
-        if battery_data["physical_device_id"] is None:
-            battery_data["physical_device_id"] = payload.device_id
-        battery = build_battery_snapshot(buoy_id, battery_data)
-        battery_received_at = seen_at or datetime.now(timezone.utc)
-        try:
-            saved_battery = record_battery_reading(
-                gateway, battery, battery_received_at
-            )
-        except DeviceOwnershipError as exc:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
-        except ValueError as exc:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
-        battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
-        battery_device_percent.labels(
-            buoy_id=buoy_id, device_id=battery.device_id
-        ).set(battery.battery_percent)
-        if saved_battery.physical_device_id is not None and payload.device_id is None:
-            device_last_seen_timestamp_seconds.labels(
-                buoy_id=buoy_id,
-                device_id=saved_battery.physical_device_id,
-                sensor_channel=saved_battery.device_id,
-            ).set(battery_received_at.timestamp())
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            battery_received_at.timestamp()
-        )
-        accepted_by_family["battery"] += 1
-        accepted += 1
-
-    if payload.device_id is None and accepted:
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            datetime.now(timezone.utc).timestamp()
-        )
-
+    assert isinstance(outcome, TelemetryIngestOutcome)
     return TelemetryIngestResponse(
-        buoy_id=buoy_id,
-        accepted_readings=accepted,
-        accepted_by_family=accepted_by_family,
+        buoy_id=outcome.buoy_id,
+        accepted_readings=outcome.accepted_readings,
+        accepted_by_family=outcome.accepted_by_family,
     )
 
 

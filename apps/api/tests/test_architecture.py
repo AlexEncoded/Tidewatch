@@ -1025,6 +1025,45 @@ def test_telemetry_router_uses_unit_of_work_port_for_transactions() -> None:
     assert not infrastructure_attributes
 
 
+def test_telemetry_worker_does_not_depend_on_http_router() -> None:
+    tree = ast.parse(
+        (API_APP / "telemetry_job_worker.py").read_text(encoding="utf-8")
+    )
+    imported = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+
+    assert not any(module.endswith("routers.ingestion") for module in imported)
+
+
+def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
+    tree = ast.parse(
+        (API_APP / "telemetry_batch_processor.py").read_text(encoding="utf-8")
+    )
+    modules = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    } | {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+
+    assert not imports_package(modules, "fastapi")
+    assert not imports_package(modules, "starlette")
+    assert not any(
+        isinstance(node, ast.ImportFrom)
+        and node.level > 0
+        and node.module is not None
+        and node.module.startswith("routers")
+        for node in ast.walk(tree)
+    )
+
+
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
     imported = {

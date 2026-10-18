@@ -6,12 +6,11 @@ import time
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
-from starlette.responses import Response
 
 from .adapter_dependencies import get_telemetry_ingestion_gateway
 from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
-from .routers.ingestion import ingest_telemetry
 from .schemas.ingestion import TelemetryBatchCreate
+from .telemetry_batch_processor import process_telemetry_batch
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 
@@ -35,10 +34,9 @@ def process_next_telemetry_job(db: Session) -> bool:
         def process_batch() -> None:
             payload = TelemetryBatchCreate.model_validate(job.payload)
             gateway = get_telemetry_ingestion_gateway(db)
-            ingest_telemetry(
+            process_telemetry_batch(
                 job.buoy_id,
                 payload,
-                Response(),
                 gateway=gateway,
                 unit_of_work=unit_of_work,
                 jobs=None,
