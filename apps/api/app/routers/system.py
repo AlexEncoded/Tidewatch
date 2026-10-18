@@ -5,13 +5,12 @@ import logging
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from sqlalchemy.exc import SQLAlchemyError
-
 from ..adapter_dependencies import (
     get_database_health_reader,
     get_telemetry_queue_metrics_reader,
 )
 from ..application.ports import DatabaseHealthReader, TelemetryQueueMetricsReader
+from ..application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from ..metrics import (
     telemetry_ingestion_attempts,
     telemetry_ingestion_expired_leases,
@@ -51,7 +50,7 @@ def metrics(
         )
         telemetry_ingestion_expired_leases.set(snapshot["expired_leases"])
         telemetry_ingestion_metrics_collection_success.set(1)
-    except SQLAlchemyError:
+    except TelemetryQueueMetricsUnavailable:
         telemetry_ingestion_metrics_collection_success.set(0)
         logger.exception("telemetry_queue_metrics_refresh_failed")
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

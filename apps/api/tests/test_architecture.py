@@ -1000,6 +1000,19 @@ def test_http_routers_do_not_import_persistence_adapters() -> None:
         assert "repository" not in modules
 
 
+def test_http_routers_do_not_import_sqlalchemy() -> None:
+    for source_file in (API_APP / "routers").glob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+        assert not any(module == "sqlalchemy" or module.startswith("sqlalchemy.") for module in modules), (
+            f"{source_file.name} must translate persistence errors outside the HTTP adapter"
+        )
+
+
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
     imported = {

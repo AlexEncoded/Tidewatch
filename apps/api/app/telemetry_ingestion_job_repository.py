@@ -4,11 +4,12 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from sqlalchemy import and_, func, or_, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .domain.telemetry_job import TelemetryIngestionJobSnapshot
 from .entities import TelemetryIngestionJobEntity
+from .application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 
 
 class TelemetryIngestionJobRepository:
@@ -63,6 +64,17 @@ class TelemetryIngestionJobRepository:
         self, now: datetime | None = None
     ) -> dict[str, int | float]:
         """Return bounded-cardinality queue counts and oldest/expired work ages."""
+        try:
+            return self._observability_snapshot(now)
+        except SQLAlchemyError as exc:
+            self.db.rollback()
+            raise TelemetryQueueMetricsUnavailable(
+                "Telemetry queue metrics are unavailable"
+            ) from exc
+
+    def _observability_snapshot(
+        self, now: datetime | None = None
+    ) -> dict[str, int | float]:
         observed_at = now or datetime.now(timezone.utc)
         counts = {
             status: count

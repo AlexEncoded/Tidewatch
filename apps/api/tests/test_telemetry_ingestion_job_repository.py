@@ -2,9 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, TidewatchSession
+from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from app.entities import BuoyEntity, TemperatureReadingEntity
 from app.routers.ingestion import _atomic_telemetry_batch
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
@@ -92,6 +94,26 @@ def test_observability_snapshot_reports_queue_depth_and_expired_leases(job_repos
     assert snapshot["processing"] == 1
     assert snapshot["oldest_pending_seconds"] == 0
     assert snapshot["expired_leases"] == 1
+
+
+def test_observability_snapshot_translates_database_errors_and_rolls_back() -> None:
+    class BrokenSession:
+        rolled_back = False
+
+        def execute(self, statement):
+            raise SQLAlchemyError("database unavailable")
+
+        def rollback(self) -> None:
+            self.rolled_back = True
+
+    db = BrokenSession()
+    repository = TelemetryIngestionJobRepository(db)
+
+    with pytest.raises(TelemetryQueueMetricsUnavailable) as raised:
+        repository.observability_snapshot()
+
+    assert isinstance(raised.value.__cause__, SQLAlchemyError)
+    assert db.rolled_back
 
 
 def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
