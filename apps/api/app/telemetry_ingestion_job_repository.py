@@ -67,7 +67,13 @@ class TelemetryIngestionJobRepository:
         try:
             return self._observability_snapshot(now)
         except SQLAlchemyError as exc:
-            self.db.rollback()
+            try:
+                self.db.rollback()
+            except SQLAlchemyError:
+                # Preserve the application-level failure even if the broken
+                # connection also prevents cleanup. The request-scoped session
+                # will be discarded by its dependency lifecycle.
+                pass
             raise TelemetryQueueMetricsUnavailable(
                 "Telemetry queue metrics are unavailable"
             ) from exc

@@ -116,6 +116,22 @@ def test_observability_snapshot_translates_database_errors_and_rolls_back() -> N
     assert db.rolled_back
 
 
+def test_observability_snapshot_preserves_application_error_when_rollback_fails() -> None:
+    class BrokenSession:
+        def execute(self, statement):
+            raise SQLAlchemyError("query failed")
+
+        def rollback(self) -> None:
+            raise SQLAlchemyError("connection is unavailable")
+
+    repository = TelemetryIngestionJobRepository(BrokenSession())
+
+    with pytest.raises(TelemetryQueueMetricsUnavailable) as raised:
+        repository.observability_snapshot()
+
+    assert str(raised.value.__cause__) == "query failed"
+
+
 def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
     db = job_repository.db
     gateway = type("Gateway", (), {"db": db})()
