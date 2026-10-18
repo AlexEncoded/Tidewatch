@@ -359,6 +359,45 @@ def test_wave_application_service_does_not_fuse_disjoint_time_ranges() -> None:
     assert analysis.confidence == "insufficient_data"
 
 
+def test_wave_application_service_excludes_suspect_readings() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset),
+                    acceleration_z_mps2=value,
+                    quality=quality,
+                )
+                for offset, value, quality in (
+                    (0, 0.0, "good"),
+                    (1, 0.5, "good"),
+                    (2, 100.0, "suspect"),
+                )
+            ]
+
+        def list_locations(self, buoy_id, limit):
+            return [
+                SimpleNamespace(
+                    measured_at=start + timedelta(seconds=offset),
+                    altitude_meters=value,
+                    quality=quality,
+                )
+                for offset, value, quality in (
+                    (0, 2.0, "good"),
+                    (1, 2.4, "good"),
+                    (2, 200.0, "suspect"),
+                )
+            ]
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-SUSPECT", 10, 0.1)
+
+    assert analysis.gnss_vertical_range_m == 0.4
+    assert analysis.imu_vertical_acceleration_range_mps2 == 0.5
+    assert analysis.estimated_wave_height_m == 0.225
+
+
 def test_wave_application_service_keeps_single_modality_estimate_partial() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):

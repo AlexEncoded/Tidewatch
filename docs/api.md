@@ -14,6 +14,9 @@ con dispositivos antiguos. Las lecturas de batería usan `device_id` (`A` o
 
 Las lecturas `invalid` se conservan para auditoría, pero no participan en los
 análisis de tendencia, oleaje ni generación de alertas.
+El análisis experimental de oleaje utiliza únicamente lecturas `good`; las
+`suspect` se mantienen para auditoría y revisión, pero no intervienen en la
+estimación de altura ni de período.
 Tampoco participan en la comparación de salud entre canales A/B; se utiliza la
 última lectura no inválida disponible. Esta regla aplica a las familias
 ambientales con `sensor_channel`, no a la batería, que tiene su propia

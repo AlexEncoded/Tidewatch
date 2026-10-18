@@ -20,12 +20,12 @@ def analyze_wave_for_buoy(
     imu_readings = [
         reading
         for reading in reader.list_imu(buoy_id, window, None)
-        if getattr(reading, "quality", "good") != "invalid"
+        if getattr(reading, "quality", "good") == "good"
     ]
     locations = [
         reading
         for reading in reader.list_locations(buoy_id, window)
-        if getattr(reading, "quality", "good") != "invalid"
+        if getattr(reading, "quality", "good") == "good"
     ]
     period_locations = locations
     timed_imu = [
