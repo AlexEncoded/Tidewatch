@@ -1,6 +1,6 @@
 """Input ports shared by application services."""
 
-from typing import Protocol, runtime_checkable
+from typing import Callable, Protocol, TypeVar, runtime_checkable
 from datetime import datetime
 
 from ..domain.telemetry import (
@@ -37,6 +37,8 @@ from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnom
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.devices import DeviceSnapshot
 from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
+
+T = TypeVar("T")
 
 
 class FleetLocationReader(Protocol):
@@ -78,6 +80,13 @@ class TelemetryIngestionJobStore(Protocol):
         ...
 
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
+        ...
+
+
+class TelemetryBatchUnitOfWork(Protocol):
+    """Run telemetry ingestion and related state changes atomically."""
+
+    def run_atomically(self, action: Callable[[], T]) -> T:
         ...
 
 

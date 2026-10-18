@@ -1,5 +1,10 @@
 """Application helpers for normalising incoming telemetry batches."""
 
+from functools import wraps
+from inspect import signature
+from typing import Callable, TypeVar, cast
+
+from .ports import TelemetryBatchUnitOfWork
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
@@ -22,6 +27,25 @@ from ..domain.telemetry import (
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
+
+F = TypeVar("F", bound=Callable)
+
+
+def atomic_telemetry_batch(function: F) -> F:
+    """Execute one ingestion operation through its transaction port."""
+    function_signature = signature(function)
+
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        bound = function_signature.bind_partial(*args, **kwargs)
+        unit_of_work = bound.arguments.get("unit_of_work")
+        if unit_of_work is None:
+            raise RuntimeError("Telemetry ingestion requires a unit of work")
+        return cast(
+            TelemetryBatchUnitOfWork, unit_of_work
+        ).run_atomically(lambda: function(*args, **kwargs))
+
+    return cast(F, wrapped)
 
 
 TELEMETRY_FAMILIES = (

@@ -13,6 +13,7 @@ from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .routers.ingestion import ingest_telemetry
 from .schemas.ingestion import TelemetryBatchCreate
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 
 logger = logging.getLogger(__name__)
 JOB_LEASE_SECONDS = max(1, int(os.getenv("TELEMETRY_JOB_LEASE_SECONDS", "300")))
@@ -28,25 +29,28 @@ def process_next_telemetry_job(db: Session) -> bool:
     if job is None:
         return False
 
-    db.info["tidewatch_defer_repository_commits"] = True
     try:
-        payload = TelemetryBatchCreate.model_validate(job.payload)
-        gateway = get_telemetry_ingestion_gateway(db)
-        ingest_telemetry(
-            job.buoy_id,
-            payload,
-            Response(),
-            gateway=gateway,
-            jobs=None,
-        )
-        completed = jobs.complete(job.job_id, job.attempts, datetime.now(timezone.utc))
-        if completed is None:
-            raise RuntimeError("Telemetry job lease expired before completion")
-        db.info.pop("tidewatch_defer_repository_commits", None)
-        db.commit()
+        unit_of_work = SQLAlchemyTelemetryBatchUnitOfWork(db)
+
+        def process_batch() -> None:
+            payload = TelemetryBatchCreate.model_validate(job.payload)
+            gateway = get_telemetry_ingestion_gateway(db)
+            ingest_telemetry(
+                job.buoy_id,
+                payload,
+                Response(),
+                gateway=gateway,
+                unit_of_work=unit_of_work,
+                jobs=None,
+            )
+            completed = jobs.complete(
+                job.job_id, job.attempts, datetime.now(timezone.utc)
+            )
+            if completed is None:
+                raise RuntimeError("Telemetry job lease expired before completion")
+
+        unit_of_work.run_atomically(process_batch)
     except Exception as exc:
-        db.info.pop("tidewatch_defer_repository_commits", None)
-        db.rollback()
         failed = jobs.fail(
             job.job_id,
             job.attempts,

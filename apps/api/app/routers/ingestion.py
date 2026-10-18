@@ -2,10 +2,6 @@
 
 from datetime import datetime, timezone
 import os
-from functools import wraps
-from inspect import signature
-from typing import Callable, TypeVar
-
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
 from ..application.device_heartbeat import record_device_heartbeat
@@ -14,9 +10,15 @@ from ..application.movement_analysis import analyze_movement_for_buoy
 from ..adapter_dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_ingestion_job_repository,
+    get_telemetry_batch_unit_of_work,
 )
-from ..application.ports import TelemetryIngestionGateway, TelemetryIngestionJobStore
+from ..application.ports import (
+    TelemetryBatchUnitOfWork,
+    TelemetryIngestionGateway,
+    TelemetryIngestionJobStore,
+)
 from ..application.telemetry_ingestion import (
+    atomic_telemetry_batch,
     build_location_snapshot,
     build_battery_snapshot,
     build_underwater_acoustic_snapshot,
@@ -73,40 +75,6 @@ from ..schemas.telemetry_job import (
 
 
 router = APIRouter()
-F = TypeVar("F", bound=Callable)
-
-
-def _atomic_telemetry_batch(function: F) -> F:
-    """Commit all repository writes in a batch together, or roll them all back."""
-    function_signature = signature(function)
-
-    @wraps(function)
-    def wrapped(*args, **kwargs):
-        bound = function_signature.bind_partial(*args, **kwargs)
-        gateway = bound.arguments.get("gateway")
-        db = getattr(gateway, "db", None)
-        if db is None:
-            return function(*args, **kwargs)
-
-        was_deferred = db.info.get("tidewatch_defer_repository_commits", False)
-        db.info["tidewatch_defer_repository_commits"] = True
-        try:
-            response = function(*args, **kwargs)
-            if not was_deferred:
-                db.info["tidewatch_defer_repository_commits"] = False
-                db.commit()
-            return response
-        except Exception:
-            if not was_deferred:
-                db.rollback()
-            raise
-        finally:
-            if was_deferred:
-                db.info["tidewatch_defer_repository_commits"] = True
-            else:
-                db.info.pop("tidewatch_defer_repository_commits", None)
-
-    return wrapped  # type: ignore[return-value]
 
 
 def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str, quality: str) -> None:
@@ -124,13 +92,14 @@ def record_quality_metric(buoy_id: str, sensor_family: str, sensor_channel: str,
     status_code=status.HTTP_200_OK,
     tags=["telemetry"],
 )
-@_atomic_telemetry_batch
+@atomic_telemetry_batch
 def ingest_telemetry(
     buoy_id: str,
     payload: TelemetryBatchCreate,
     response: Response,
     idempotency_key: str | None = Header(default=None, min_length=1, max_length=64),
     gateway: TelemetryIngestionGateway = Depends(get_telemetry_ingestion_gateway),
+    unit_of_work: TelemetryBatchUnitOfWork = Depends(get_telemetry_batch_unit_of_work),
     jobs: TelemetryIngestionJobStore | None = Depends(
         get_telemetry_ingestion_job_repository
     ),

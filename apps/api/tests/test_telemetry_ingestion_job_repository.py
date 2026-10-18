@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.database import Base, TidewatchSession
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from app.entities import BuoyEntity, TemperatureReadingEntity
-from app.routers.ingestion import _atomic_telemetry_batch
+from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from app.telemetry_job_worker import process_next_telemetry_job
 
@@ -132,13 +132,12 @@ def test_observability_snapshot_preserves_application_error_when_rollback_fails(
     assert str(raised.value.__cause__) == "query failed"
 
 
-def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository) -> None:
+def test_telemetry_batch_unit_of_work_rolls_back_repository_commits_on_failure(job_repository) -> None:
     db = job_repository.db
-    gateway = type("Gateway", (), {"db": db})()
+    unit_of_work = SQLAlchemyTelemetryBatchUnitOfWork(db)
 
-    @_atomic_telemetry_batch
-    def persist_then_fail(gateway) -> None:
-        gateway.db.add(
+    def persist_then_fail() -> None:
+        db.add(
             BuoyEntity(
                 id="TW-ROLLBACK",
                 name="Must not persist",
@@ -146,12 +145,12 @@ def test_telemetry_batch_rolls_back_repository_commits_on_failure(job_repository
                 created_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
             )
         )
-        gateway.db.commit()
+        db.commit()
         raise RuntimeError("simulated batch failure")
 
     assert isinstance(db, TidewatchSession)
     with pytest.raises(RuntimeError, match="simulated batch failure"):
-        persist_then_fail(gateway)
+        unit_of_work.run_atomically(persist_then_fail)
 
     assert db.get(BuoyEntity, "TW-ROLLBACK") is None
 

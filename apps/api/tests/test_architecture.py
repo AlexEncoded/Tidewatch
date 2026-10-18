@@ -1013,6 +1013,18 @@ def test_http_routers_do_not_import_sqlalchemy() -> None:
         )
 
 
+def test_telemetry_router_uses_unit_of_work_port_for_transactions() -> None:
+    tree = ast.parse((API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8"))
+    infrastructure_attributes = {
+        node.attr
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Attribute)
+        and node.attr in {"db", "info", "commit", "rollback"}
+    }
+
+    assert not infrastructure_attributes
+
+
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:
     tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
     imported = {
