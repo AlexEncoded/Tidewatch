@@ -436,13 +436,21 @@ def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
 
 def imported_modules(directory: Path) -> set[str]:
     modules = set()
-    for source_file in directory.glob("*.py"):
+    for source_file in directory.rglob("*.py"):
+        package_parts = ["app", *source_file.relative_to(API_APP).parent.parts]
         tree = ast.parse(source_file.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 modules.update(alias.name for alias in node.names)
             elif isinstance(node, ast.ImportFrom) and node.module:
-                modules.add(node.module)
+                if node.level:
+                    parent_parts = package_parts[: len(package_parts) - node.level + 1]
+                    modules.add(".".join((*parent_parts, *node.module.split("."))))
+                else:
+                    modules.add(node.module)
+            elif isinstance(node, ast.ImportFrom) and node.level:
+                parent_parts = package_parts[: len(package_parts) - node.level + 1]
+                modules.add(".".join(parent_parts))
     return modules
 
 
@@ -453,9 +461,20 @@ def imports_package(modules: set[str], package: str) -> bool:
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
-    assert not imports_package(modules, "app.models")
-    assert not imports_package(modules, "app.entities")
-    assert not imports_package(modules, "app.schemas")
+    assert "app.domain.telemetry_types" in modules
+    forbidden_app_modules = (
+        "app.application",
+        "app.adapter_dependencies",
+        "app.database",
+        "app.entities",
+        "app.metrics",
+        "app.models",
+        "app.routers",
+        "app.schemas",
+    )
+    assert not any(
+        imports_package(modules, module) for module in forbidden_app_modules
+    )
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "sqlalchemy")
     assert not imports_package(modules, "pydantic")
@@ -464,6 +483,8 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
 def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
+    assert "app.application.ports" in modules
+    assert "app.domain.wave" in modules
     assert not imports_package(modules, "app.models")
     assert not imports_package(modules, "app.entities")
     assert not imports_package(modules, "app.schemas")
