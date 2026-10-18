@@ -462,18 +462,10 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
     assert "app.domain.telemetry_types" in modules
-    forbidden_app_modules = (
-        "app.application",
-        "app.adapter_dependencies",
-        "app.database",
-        "app.entities",
-        "app.metrics",
-        "app.models",
-        "app.routers",
-        "app.schemas",
-    )
     assert not any(
-        imports_package(modules, module) for module in forbidden_app_modules
+        module == "app"
+        or (module.startswith("app.") and not module.startswith("app.domain."))
+        for module in modules
     )
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "sqlalchemy")
