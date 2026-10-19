@@ -69,3 +69,13 @@ tests:
         exp_samples:
           - labels: '{__name__="tidewatch_telemetry_ingestion_retried_jobs"}'
             value: 11
+  - interval: 10s
+    input_series:
+      - series: tidewatch_wave_period_sensor_disagreements_total{buoy_id="wave-conflict"}
+        values: "0+1x30"
+    promql_expr_test:
+      - expr: increase(tidewatch_wave_period_sensor_disagreements_total[10m]) > bool 2
+        eval_time: 5m
+        exp_samples:
+          - labels: '{buoy_id="wave-conflict"}'
+            value: 1

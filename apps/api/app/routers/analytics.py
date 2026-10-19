@@ -23,7 +23,11 @@ from ..application.ports import (
     TemperatureAlertsReader,
     WaveAnalysisReader,
 )
-from ..metrics import current_estimated_wave_height_m, current_estimated_wave_period_seconds
+from ..metrics import (
+    current_estimated_wave_height_m,
+    current_estimated_wave_period_seconds,
+    wave_period_sensor_disagreements_total,
+)
 from ..schemas.analytics import (
     MovementAnalysis,
     PressureAnalysis,
@@ -82,6 +86,8 @@ def buoy_wave_analysis(
             current_estimated_wave_period_seconds.remove(buoy_id)
         except KeyError:
             pass
+    if result.period_confidence == "sensor_disagreement":
+        wave_period_sensor_disagreements_total.labels(buoy_id=buoy_id).inc()
     return WaveAnalysis.model_validate(result, from_attributes=True)
 
 
