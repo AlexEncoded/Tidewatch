@@ -10,6 +10,7 @@ from typing import Sequence
 DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
 MIN_IMU_WAVE_HEIGHT_FACTOR = 0.0
 MAX_IMU_WAVE_HEIGHT_FACTOR = 10.0
+MAX_WAVE_PERIOD_RELATIVE_DISAGREEMENT = 0.25
 
 
 @dataclass(frozen=True)
@@ -129,6 +130,31 @@ def estimate_wave_period(
             if (current - previous).total_seconds() > 0
         )
     return round(fmean(periods), 3) if periods else None
+
+
+def estimate_fused_wave_period(
+    gnss_samples: Sequence[tuple[datetime, float]],
+    imu_samples: Sequence[tuple[datetime, float]],
+) -> float | None:
+    """Fuse independent GNSS and IMU period estimates conservatively.
+
+    A single usable sensor can provide a partial period estimate. When both
+    modalities provide estimates, they are averaged only if their relative
+    disagreement is at most 25%; otherwise the period is withheld rather than
+    reporting a misleading compromise.
+    """
+    gnss_period = estimate_wave_period(gnss_samples)
+    imu_period = estimate_wave_period(imu_samples)
+    if gnss_period is None:
+        return imu_period
+    if imu_period is None:
+        return gnss_period
+
+    lower_period = min(gnss_period, imu_period)
+    relative_disagreement = abs(gnss_period - imu_period) / lower_period
+    if relative_disagreement > MAX_WAVE_PERIOD_RELATIVE_DISAGREEMENT:
+        return None
+    return round(fmean((gnss_period, imu_period)), 3)
 
 
 def estimate_wave(

@@ -12,7 +12,11 @@ from app.domain.battery_analysis import BatterySample, estimate_battery_discharg
 from app.domain.battery_analysis import BatteryAnalysisSnapshot
 from app.domain.temperature import estimate_temperature
 from app.domain.pressure import estimate_pressure
-from app.domain.wave import estimate_wave, estimate_wave_period
+from app.domain.wave import (
+    estimate_fused_wave_period,
+    estimate_wave,
+    estimate_wave_period,
+)
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.domain.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -215,6 +219,45 @@ def test_wave_period_domain_orders_samples_by_timestamp() -> None:
     assert estimate_wave_period(samples) == 120.0
 
 
+def test_fused_wave_period_averages_agreeing_gnss_and_imu_estimates() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    gnss = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 8))
+        for seconds in range(33)
+    ]
+    imu = [
+        (start + timedelta(seconds=seconds), 9.81 + 0.5 * sin(2 * pi * seconds / 8))
+        for seconds in range(33)
+    ]
+
+    assert estimate_fused_wave_period(gnss, imu) == 8.0
+
+
+def test_fused_wave_period_withholds_disagreeing_sensor_estimates() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    timestamps = range(0, 601, 10)
+    gnss = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 60))
+        for seconds in timestamps
+    ]
+    imu = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 120))
+        for seconds in range(0, 601, 10)
+    ]
+
+    assert estimate_fused_wave_period(gnss, imu) is None
+
+
+def test_fused_wave_period_uses_the_only_available_modality() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 12))
+        for seconds in range(49)
+    ]
+
+    assert estimate_fused_wave_period([], imu) == 12.0
+
+
 def test_wave_application_service_uses_a_telemetry_port() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):
@@ -357,6 +400,36 @@ def test_wave_application_service_does_not_fuse_disjoint_time_ranges() -> None:
 
     assert analysis.estimated_wave_height_m is None
     assert analysis.confidence == "insufficient_data"
+
+
+def test_wave_application_service_does_not_report_period_outside_shared_window() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=seconds),
+            altitude_meters=sin(2 * pi * seconds / 8),
+        )
+        for seconds in range(33)
+    ]
+    imu_readings = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=100 + seconds),
+            acceleration_z_mps2=9.81 + 0.5 * sin(2 * pi * seconds / 8),
+        )
+        for seconds in range(33)
+    ]
+
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return imu_readings
+
+        def list_locations(self, buoy_id, limit):
+            return locations
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-NO-OVERLAP", 40, 0.1)
+
+    assert analysis.estimated_period_seconds is None
+    assert analysis.estimated_wave_height_m is None
 
 
 def test_wave_application_service_excludes_suspect_readings() -> None:

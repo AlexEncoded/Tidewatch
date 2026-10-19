@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 
 from ..domain.wave import (
     WaveAnalysisSnapshot,
+    estimate_fused_wave_period,
     estimate_wave,
-    estimate_wave_period,
 )
 from .ports import WaveAnalysisReader
 
@@ -27,7 +27,6 @@ def analyze_wave_for_buoy(
         for reading in reader.list_locations(buoy_id, window)
         if getattr(reading, "quality", "good") == "good"
     ]
-    period_locations = locations
     timed_imu = [
         (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
         for reading in imu_readings
@@ -77,13 +76,18 @@ def analyze_wave_for_buoy(
         [reading.acceleration_z_mps2 for reading in imu_readings],
         imu_wave_height_factor=imu_wave_height_factor,
     )
-    period_samples = [
+    gnss_period_samples = [
         (reading.measured_at, reading.altitude_meters)
-        for reading in reversed(period_locations)
+        for reading in locations
         if reading.altitude_meters is not None
         and getattr(reading, "measured_at", None) is not None
     ]
-    period = estimate_wave_period(period_samples)
+    imu_period_samples = [
+        (reading.measured_at, reading.acceleration_z_mps2)
+        for reading in imu_readings
+        if getattr(reading, "measured_at", None) is not None
+    ]
+    period = estimate_fused_wave_period(gnss_period_samples, imu_period_samples)
     if estimate.estimated_wave_height_m is None:
         return WaveAnalysisSnapshot(
             buoy_id=buoy_id,
