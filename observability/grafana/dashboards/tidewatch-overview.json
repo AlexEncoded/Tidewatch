@@ -404,6 +404,16 @@
       "targets": [{"expr": "tidewatch_telemetry_ingestion_jobs", "legendFormat": "{{status}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 46,
+      "title": "Wave period sensor disagreements (10m)",
+      "type": "timeseries",
+      "description": "Number of recent analyses where GNSS and IMU period estimates differed beyond the experimental 25% tolerance.",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 248},
+      "targets": [{"expr": "sum by (buoy_id) (increase(tidewatch_wave_period_sensor_disagreements_total[10m]))", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
@@ -412,5 +422,5 @@
   "time": {"from": "now-6h", "to": "now"},
   "title": "Tidewatch overview",
   "uid": "tidewatch-overview",
-  "version": 4
+  "version": 5
 }

@@ -28,6 +28,7 @@ El dashboard `tidewatch-overview.json` muestra:
 - Temperatura del aire en °C por boya y canal redundante.
 - Presión atmosférica en kPa por boya y canal redundante.
 - Profundidad del altímetro acústico en metros por boya y canal redundante.
+- Discrepancias de periodo GNSS/IMU por boya en una ventana móvil de diez minutos.
 
 La configuración de provisioning espera el dashboard en
 `/var/lib/grafana/dashboards/tidewatch`. El datasource Prometheus debe estar
