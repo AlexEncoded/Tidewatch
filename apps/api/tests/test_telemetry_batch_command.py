@@ -1,6 +1,22 @@
 from datetime import datetime, timezone
 
-from app.application.telemetry_batch import TelemetryBatchCommand
+from app.application.telemetry_batch import (
+    TELEMETRY_READING_FAMILIES,
+    TelemetryBatchCommand,
+)
+from app.schemas.ingestion import TelemetryBatchCreate
+
+
+def test_batch_command_covers_every_validated_sensor_family() -> None:
+    schema_families = set(TelemetryBatchCreate.model_fields) - {
+        "device_id",
+        "location",
+    }
+
+    assert set(TELEMETRY_READING_FAMILIES) == schema_families
+    command = TelemetryBatchCommand.from_mapping({})
+    assert set(command.readings) == schema_families
+    assert all(command.readings[family] == () for family in schema_families)
 
 
 def test_batch_command_copies_readings_and_serializes_datetime_for_queue() -> None:
