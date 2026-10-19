@@ -1058,6 +1058,12 @@ def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "starlette")
     assert not imports_package(modules, "prometheus_client")
+    assert not imports_package(modules, "pydantic")
+    assert not imports_package(modules, "schemas")
+    assert not any(
+        isinstance(node, ast.Attribute) and node.attr == "model_dump"
+        for node in ast.walk(tree)
+    )
     assert not any(
         isinstance(node, ast.ImportFrom)
         and node.level > 0

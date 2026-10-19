@@ -12,6 +12,7 @@ from .adapter_dependencies import (
     get_telemetry_metrics,
 )
 from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
+from .application.telemetry_batch import TelemetryBatchCommand
 from .schemas.ingestion import TelemetryBatchCreate
 from .application.telemetry_batch_ingestion import process_telemetry_batch
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
@@ -36,11 +37,12 @@ def process_next_telemetry_job(db: Session) -> bool:
 
         def process_batch() -> None:
             payload = TelemetryBatchCreate.model_validate(job.payload)
+            command = TelemetryBatchCommand.from_mapping(payload.model_dump())
             gateway = get_telemetry_ingestion_gateway(db)
             metrics = get_telemetry_metrics()
             process_telemetry_batch(
                 job.buoy_id,
-                payload,
+                command,
                 gateway=gateway,
                 unit_of_work=unit_of_work,
                 metrics=metrics,

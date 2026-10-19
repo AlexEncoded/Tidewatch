@@ -16,6 +16,7 @@ from ..application.ports import (
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
+from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import (
     TelemetryBatchInvalid,
     TelemetryBuoyNotFound,
@@ -54,10 +55,11 @@ def ingest_telemetry(
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
     queued_mode = os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+    command = TelemetryBatchCommand.from_mapping(payload.model_dump())
     try:
         outcome = process_telemetry_batch(
             buoy_id,
-            payload,
+            command,
             gateway=gateway,
             unit_of_work=unit_of_work,
             metrics=metrics,

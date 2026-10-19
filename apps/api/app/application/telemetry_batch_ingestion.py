@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from .battery_ingestion import record_battery_reading
 from .device_heartbeat import record_device_heartbeat
 from .movement_analysis import analyze_movement_for_buoy
+from .telemetry_batch import TelemetryBatchCommand
 from .ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
@@ -82,7 +83,7 @@ def record_quality_metric(
 @atomic_telemetry_batch
 def process_telemetry_batch(
     buoy_id: str,
-    payload,
+    payload: TelemetryBatchCommand,
     *,
     gateway: TelemetryIngestionGateway,
     unit_of_work: TelemetryBatchUnitOfWork,
@@ -96,32 +97,14 @@ def process_telemetry_batch(
     if payload.device_id is not None:
         try:
             sensor_channels = (
-                reading.sensor_channel
-                for family in (
-                    payload.temperatures,
-                    payload.pressures,
-                    payload.salinity,
-                    payload.imu,
-                    payload.ambient_light,
-                    payload.wind,
-                    payload.marine_current,
-                    payload.turbidity,
-                    payload.dissolved_oxygen,
-                    payload.ph,
-                    payload.conductivity,
-                    payload.chlorophyll_a,
-                    payload.rainfall,
-                    payload.humidity,
-                    payload.air_temperature,
-                    payload.atmospheric_pressure,
-                    payload.acoustic_altimeter,
-                    payload.underwater_acoustic,
-                )
+                reading["sensor_channel"]
+                for family_name, family in payload.readings.items()
+                if family_name != "battery"
                 for reading in family
             )
             sensor_channels = (
                 *sensor_channels,
-                *(reading.device_id for reading in payload.battery),
+                *(reading["device_id"] for reading in payload.readings["battery"]),
             )
             device, seen_at = record_device_heartbeat(
                 gateway,
@@ -153,7 +136,7 @@ def process_telemetry_batch(
             )
         job = jobs.enqueue(
             buoy_id,
-            payload.model_dump(mode="json"),
+            payload.as_json_mapping(),
             idempotency_key=idempotency_key,
         )
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
@@ -161,7 +144,7 @@ def process_telemetry_batch(
 
     if payload.location is not None:
         location = build_location_snapshot(
-            buoy_id, payload.location.model_dump(), payload.device_id
+            buoy_id, dict(payload.location), payload.device_id
         )
         gateway.add_location(location)
         if location.altitude_meters is not None:
@@ -180,9 +163,9 @@ def process_telemetry_batch(
 
     accepted = 0
     accepted_by_family = empty_accepted_reading_counts()
-    for reading_payload in payload.temperatures:
+    for reading_payload in payload.readings["temperatures"]:
         reading = build_temperature_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_temperature(reading)
         metrics.metric("temperature_readings_total").labels(
@@ -195,9 +178,9 @@ def process_telemetry_batch(
         accepted_by_family["temperature"] += 1
         accepted += 1
 
-    for reading_payload in payload.pressures:
+    for reading_payload in payload.readings["pressures"]:
         reading = build_pressure_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_pressure(reading)
         metrics.metric("pressure_readings_total").labels(
@@ -210,9 +193,9 @@ def process_telemetry_batch(
         accepted_by_family["pressure"] += 1
         accepted += 1
 
-    for reading_payload in payload.salinity:
+    for reading_payload in payload.readings["salinity"]:
         reading = build_salinity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_salinity(reading)
         metrics.metric("salinity_readings_total").labels(
@@ -225,9 +208,9 @@ def process_telemetry_batch(
         accepted_by_family["salinity"] += 1
         accepted += 1
 
-    for reading_payload in payload.imu:
+    for reading_payload in payload.readings["imu"]:
         reading = build_imu_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_imu(reading)
         metrics.metric("imu_readings_total").labels(
@@ -253,9 +236,9 @@ def process_telemetry_batch(
         accepted_by_family["imu"] += 1
         accepted += 1
 
-    for reading_payload in payload.ambient_light:
+    for reading_payload in payload.readings["ambient_light"]:
         reading = build_ambient_light_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_ambient_light(reading)
         metrics.metric("ambient_light_readings_total").labels(
@@ -271,9 +254,9 @@ def process_telemetry_batch(
         accepted_by_family["ambient_light"] += 1
         accepted += 1
 
-    for reading_payload in payload.wind:
+    for reading_payload in payload.readings["wind"]:
         reading = build_wind_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_wind(reading)
         metrics.metric("wind_readings_total").labels(
@@ -289,9 +272,9 @@ def process_telemetry_batch(
         accepted_by_family["wind"] += 1
         accepted += 1
 
-    for reading_payload in payload.marine_current:
+    for reading_payload in payload.readings["marine_current"]:
         reading = build_marine_current_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_marine_current(reading)
         metrics.metric("marine_current_readings_total").labels(
@@ -310,9 +293,9 @@ def process_telemetry_batch(
         accepted_by_family["marine_current"] += 1
         accepted += 1
 
-    for reading_payload in payload.turbidity:
+    for reading_payload in payload.readings["turbidity"]:
         reading = build_turbidity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_turbidity(reading)
         metrics.metric("turbidity_readings_total").labels(
@@ -328,9 +311,9 @@ def process_telemetry_batch(
         accepted_by_family["turbidity"] += 1
         accepted += 1
 
-    for reading_payload in payload.dissolved_oxygen:
+    for reading_payload in payload.readings["dissolved_oxygen"]:
         reading = build_dissolved_oxygen_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_dissolved_oxygen(reading)
         metrics.metric("dissolved_oxygen_readings_total").labels(
@@ -346,9 +329,9 @@ def process_telemetry_batch(
         accepted_by_family["dissolved_oxygen"] += 1
         accepted += 1
 
-    for reading_payload in payload.ph:
+    for reading_payload in payload.readings["ph"]:
         reading = build_ph_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_ph(reading)
         metrics.metric("ph_readings_total").labels(
@@ -361,9 +344,9 @@ def process_telemetry_batch(
         accepted_by_family["ph"] += 1
         accepted += 1
 
-    for reading_payload in payload.conductivity:
+    for reading_payload in payload.readings["conductivity"]:
         reading = build_conductivity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_conductivity(reading)
         metrics.metric("conductivity_readings_total").labels(
@@ -379,9 +362,9 @@ def process_telemetry_batch(
         accepted_by_family["conductivity"] += 1
         accepted += 1
 
-    for reading_payload in payload.chlorophyll_a:
+    for reading_payload in payload.readings["chlorophyll_a"]:
         reading = build_chlorophyll_a_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_chlorophyll_a(reading)
         metrics.metric("chlorophyll_a_readings_total").labels(
@@ -397,9 +380,9 @@ def process_telemetry_batch(
         accepted_by_family["chlorophyll_a"] += 1
         accepted += 1
 
-    for reading_payload in payload.rainfall:
+    for reading_payload in payload.readings["rainfall"]:
         reading = build_rainfall_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_rainfall(reading)
         metrics.metric("rainfall_readings_total").labels(
@@ -412,9 +395,9 @@ def process_telemetry_batch(
         accepted_by_family["rainfall"] += 1
         accepted += 1
 
-    for reading_payload in payload.humidity:
+    for reading_payload in payload.readings["humidity"]:
         reading = build_humidity_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_humidity(reading)
         metrics.metric("humidity_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -423,9 +406,9 @@ def process_telemetry_batch(
         accepted_by_family["humidity"] += 1
         accepted += 1
 
-    for reading_payload in payload.air_temperature:
+    for reading_payload in payload.readings["air_temperature"]:
         reading = build_air_temperature_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_air_temperature(reading)
         metrics.metric("air_temperature_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -434,9 +417,9 @@ def process_telemetry_batch(
         accepted_by_family["air_temperature"] += 1
         accepted += 1
 
-    for reading_payload in payload.atmospheric_pressure:
+    for reading_payload in payload.readings["atmospheric_pressure"]:
         reading = build_atmospheric_pressure_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_atmospheric_pressure(reading)
         metrics.metric("atmospheric_pressure_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -445,9 +428,9 @@ def process_telemetry_batch(
         accepted_by_family["atmospheric_pressure"] += 1
         accepted += 1
 
-    for reading_payload in payload.acoustic_altimeter:
+    for reading_payload in payload.readings["acoustic_altimeter"]:
         reading = build_acoustic_altimeter_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_acoustic_altimeter(reading)
         metrics.metric("acoustic_altimeter_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -456,9 +439,9 @@ def process_telemetry_batch(
         accepted_by_family["acoustic_altimeter"] += 1
         accepted += 1
 
-    for reading_payload in payload.underwater_acoustic:
+    for reading_payload in payload.readings["underwater_acoustic"]:
         reading = build_underwater_acoustic_snapshot(
-            buoy_id, reading_payload.model_dump(), payload.device_id
+            buoy_id, dict(reading_payload), payload.device_id
         )
         gateway.add_underwater_acoustic(reading)
         metrics.metric("underwater_acoustic_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
@@ -467,8 +450,8 @@ def process_telemetry_batch(
         accepted_by_family["underwater_acoustic"] += 1
         accepted += 1
 
-    for battery_payload in payload.battery:
-        battery_data = battery_payload.model_dump()
+    for battery_payload in payload.readings["battery"]:
+        battery_data = dict(battery_payload)
         if battery_data["physical_device_id"] is None:
             battery_data["physical_device_id"] = payload.device_id
         battery = build_battery_snapshot(buoy_id, battery_data)
