@@ -1189,6 +1189,7 @@ def test_wave_analysis_endpoint_exposes_experimental_period() -> None:
 
     assert analysis.status_code == 200
     assert analysis.json()["estimated_period_seconds"] == 120.0
+    assert analysis.json()["period_confidence"] == "partial"
     assert "tidewatch_current_estimated_wave_period_seconds" in client.get("/metrics").text
 
 
@@ -1211,6 +1212,7 @@ def test_wave_analysis_endpoint_handles_insufficient_samples() -> None:
     assert analysis.status_code == 200
     assert analysis.json()["estimated_wave_height_m"] is None
     assert analysis.json()["estimated_period_seconds"] is None
+    assert analysis.json()["period_confidence"] == "insufficient_data"
 
 
 def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:

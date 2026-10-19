@@ -230,7 +230,9 @@ def test_fused_wave_period_averages_agreeing_gnss_and_imu_estimates() -> None:
         for seconds in range(33)
     ]
 
-    assert estimate_fused_wave_period(gnss, imu) == 8.0
+    estimate = estimate_fused_wave_period(gnss, imu)
+    assert estimate.estimated_period_seconds == 8.0
+    assert estimate.confidence == "experimental"
 
 
 def test_fused_wave_period_withholds_disagreeing_sensor_estimates() -> None:
@@ -245,7 +247,9 @@ def test_fused_wave_period_withholds_disagreeing_sensor_estimates() -> None:
         for seconds in range(0, 601, 10)
     ]
 
-    assert estimate_fused_wave_period(gnss, imu) is None
+    estimate = estimate_fused_wave_period(gnss, imu)
+    assert estimate.estimated_period_seconds is None
+    assert estimate.confidence == "sensor_disagreement"
 
 
 def test_fused_wave_period_uses_the_only_available_modality() -> None:
@@ -255,7 +259,9 @@ def test_fused_wave_period_uses_the_only_available_modality() -> None:
         for seconds in range(49)
     ]
 
-    assert estimate_fused_wave_period([], imu) == 12.0
+    estimate = estimate_fused_wave_period([], imu)
+    assert estimate.estimated_period_seconds == 12.0
+    assert estimate.confidence == "partial"
 
 
 def test_wave_application_service_uses_a_telemetry_port() -> None:
@@ -400,6 +406,7 @@ def test_wave_application_service_does_not_fuse_disjoint_time_ranges() -> None:
 
     assert analysis.estimated_wave_height_m is None
     assert analysis.confidence == "insufficient_data"
+    assert analysis.period_confidence == "insufficient_data"
 
 
 def test_wave_application_service_does_not_report_period_outside_shared_window() -> None:
@@ -759,4 +766,5 @@ def test_wave_fusion_recovers_known_period_from_synthetic_gnss_and_imu() -> None
     assert analysis.imu_vertical_acceleration_range_mps2 == pytest.approx(0.8)
     assert analysis.estimated_wave_height_m == pytest.approx(0.79)
     assert analysis.estimated_period_seconds == pytest.approx(period_seconds)
+    assert analysis.period_confidence == "experimental"
     assert analysis.confidence == "experimental"

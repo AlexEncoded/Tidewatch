@@ -23,6 +23,14 @@ class WaveEstimate:
 
 
 @dataclass(frozen=True)
+class WavePeriodEstimate:
+    """Period estimate plus the availability/agreement of its source sensors."""
+
+    estimated_period_seconds: float | None
+    confidence: str
+
+
+@dataclass(frozen=True)
 class WaveAnalysisSnapshot:
     """Domain result exposed by the experimental wave-analysis use case."""
 
@@ -32,6 +40,7 @@ class WaveAnalysisSnapshot:
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None
     estimated_period_seconds: float | None = None
+    period_confidence: str = "insufficient_data"
     confidence: str = "insufficient_data"
 
 
@@ -135,7 +144,7 @@ def estimate_wave_period(
 def estimate_fused_wave_period(
     gnss_samples: Sequence[tuple[datetime, float]],
     imu_samples: Sequence[tuple[datetime, float]],
-) -> float | None:
+) -> WavePeriodEstimate:
     """Fuse independent GNSS and IMU period estimates conservatively.
 
     A single usable sensor can provide a partial period estimate. When both
@@ -146,15 +155,27 @@ def estimate_fused_wave_period(
     gnss_period = estimate_wave_period(gnss_samples)
     imu_period = estimate_wave_period(imu_samples)
     if gnss_period is None:
-        return imu_period
+        return WavePeriodEstimate(
+            estimated_period_seconds=imu_period,
+            confidence="partial" if imu_period is not None else "insufficient_data",
+        )
     if imu_period is None:
-        return gnss_period
+        return WavePeriodEstimate(
+            estimated_period_seconds=gnss_period,
+            confidence="partial",
+        )
 
     lower_period = min(gnss_period, imu_period)
     relative_disagreement = abs(gnss_period - imu_period) / lower_period
     if relative_disagreement > MAX_WAVE_PERIOD_RELATIVE_DISAGREEMENT:
-        return None
-    return round(fmean((gnss_period, imu_period)), 3)
+        return WavePeriodEstimate(
+            estimated_period_seconds=None,
+            confidence="sensor_disagreement",
+        )
+    return WavePeriodEstimate(
+        estimated_period_seconds=round(fmean((gnss_period, imu_period)), 3),
+        confidence="experimental",
+    )
 
 
 def estimate_wave(

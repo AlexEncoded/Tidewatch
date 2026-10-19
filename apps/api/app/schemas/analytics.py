@@ -25,6 +25,7 @@ class WaveAnalysis(BaseModel):
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None
     estimated_period_seconds: float | None = None
+    period_confidence: str = "insufficient_data"
     confidence: str = "insufficient_data"
 
 

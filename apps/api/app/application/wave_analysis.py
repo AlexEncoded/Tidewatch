@@ -87,12 +87,15 @@ def analyze_wave_for_buoy(
         for reading in imu_readings
         if getattr(reading, "measured_at", None) is not None
     ]
-    period = estimate_fused_wave_period(gnss_period_samples, imu_period_samples)
+    period_estimate = estimate_fused_wave_period(
+        gnss_period_samples, imu_period_samples
+    )
     if estimate.estimated_wave_height_m is None:
         return WaveAnalysisSnapshot(
             buoy_id=buoy_id,
             sample_count=max(len(imu_readings), len(locations)),
-            estimated_period_seconds=period,
+            estimated_period_seconds=period_estimate.estimated_period_seconds,
+            period_confidence=period_estimate.confidence,
         )
     return WaveAnalysisSnapshot(
         buoy_id=buoy_id,
@@ -108,7 +111,8 @@ def analyze_wave_for_buoy(
             else None
         ),
         estimated_wave_height_m=round(estimate.estimated_wave_height_m, 3),
-        estimated_period_seconds=period,
+        estimated_period_seconds=period_estimate.estimated_period_seconds,
+        period_confidence=period_estimate.confidence,
         confidence=estimate.confidence,
     )
 
