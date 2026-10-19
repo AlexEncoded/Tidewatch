@@ -1220,11 +1220,12 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
     from types import SimpleNamespace
 
     from app.adapter_dependencies import get_wave_analysis_reader
-    from app.metrics import wave_period_sensor_disagreements_total
+    from app.metrics import wave_period_sensor_disagreement
 
     buoy_id = "TW-WAVE-PERIOD-DISAGREEMENT"
     start = datetime.now(timezone.utc)
     timestamps = range(0, 601, 10)
+    state = {"imu_period_seconds": 120}
 
     class FakeReader:
         def buoy_exists(self, requested_buoy_id):
@@ -1244,7 +1245,8 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
             return [
                 SimpleNamespace(
                     measured_at=start + timedelta(seconds=seconds),
-                    acceleration_z_mps2=9.81 + sin(2 * pi * seconds / 120),
+                    acceleration_z_mps2=9.81
+                    + sin(2 * pi * seconds / state["imu_period_seconds"]),
                     quality="good",
                 )
                 for seconds in timestamps
@@ -1253,15 +1255,16 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
     app.dependency_overrides[get_wave_analysis_reader] = FakeReader
     try:
         analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
-        metric_value = wave_period_sensor_disagreements_total.labels(
-            buoy_id=buoy_id
-        )._value.get()
+        state["imu_period_seconds"] = 60
+        consistent_analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+        metric_value = wave_period_sensor_disagreement.labels(buoy_id=buoy_id)._value.get()
     finally:
         app.dependency_overrides.pop(get_wave_analysis_reader, None)
 
     assert analysis.status_code == 200
     assert analysis.json()["period_confidence"] == "sensor_disagreement"
-    assert metric_value == 1
+    assert consistent_analysis.json()["period_confidence"] == "experimental"
+    assert metric_value == 0
 
 
 def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:

@@ -290,9 +290,9 @@ current_estimated_wave_period_seconds = Gauge(
     ["buoy_id"],
 )
 
-wave_period_sensor_disagreements_total = Counter(
-    "tidewatch_wave_period_sensor_disagreements_total",
-    "Wave period analyses where GNSS and IMU estimates disagree beyond tolerance.",
+wave_period_sensor_disagreement = Gauge(
+    "tidewatch_wave_period_sensor_disagreement",
+    "Whether the latest wave period analysis found GNSS and IMU estimates in disagreement.",
     ["buoy_id"],
 )
 

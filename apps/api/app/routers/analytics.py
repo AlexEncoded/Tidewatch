@@ -26,7 +26,7 @@ from ..application.ports import (
 from ..metrics import (
     current_estimated_wave_height_m,
     current_estimated_wave_period_seconds,
-    wave_period_sensor_disagreements_total,
+    wave_period_sensor_disagreement,
 )
 from ..schemas.analytics import (
     MovementAnalysis,
@@ -86,8 +86,9 @@ def buoy_wave_analysis(
             current_estimated_wave_period_seconds.remove(buoy_id)
         except KeyError:
             pass
-    if result.period_confidence == "sensor_disagreement":
-        wave_period_sensor_disagreements_total.labels(buoy_id=buoy_id).inc()
+    wave_period_sensor_disagreement.labels(buoy_id=buoy_id).set(
+        int(result.period_confidence == "sensor_disagreement")
+    )
     return WaveAnalysis.model_validate(result, from_attributes=True)
 
 

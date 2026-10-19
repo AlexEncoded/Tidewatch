@@ -180,8 +180,8 @@ groups:
           summary: "Tidewatch experimental wave estimate is high"
           description: "The GNSS/IMU wave estimate is above 2 m; validate calibration and local conditions before taking action."
       - alert: TidewatchWavePeriodSensorDisagreement
-        expr: increase(tidewatch_wave_period_sensor_disagreements_total[10m]) >= 3
-        for: 2m
+        expr: tidewatch_wave_period_sensor_disagreement == 1
+        for: 10m
         labels:
           severity: warning
         annotations:

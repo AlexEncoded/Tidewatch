@@ -407,11 +407,11 @@
     },
     {
       "id": 46,
-      "title": "Wave period sensor disagreements (10m)",
+      "title": "Current wave period sensor disagreement",
       "type": "timeseries",
-      "description": "Number of recent analyses where GNSS and IMU period estimates differed beyond the experimental 25% tolerance.",
+      "description": "Current state per buoy: 1 means the latest GNSS and IMU period estimates differed beyond the experimental 25% tolerance.",
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 248},
-      "targets": [{"expr": "sum by (buoy_id) (increase(tidewatch_wave_period_sensor_disagreements_total[10m]))", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "targets": [{"expr": "tidewatch_wave_period_sensor_disagreement", "legendFormat": "{{buoy_id}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
