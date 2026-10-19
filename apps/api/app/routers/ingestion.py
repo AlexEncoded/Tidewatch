@@ -5,6 +5,7 @@ import os
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
 from ..adapter_dependencies import (
+    get_telemetry_metrics,
     get_telemetry_ingestion_gateway,
     get_telemetry_ingestion_job_repository,
     get_telemetry_batch_unit_of_work,
@@ -13,6 +14,7 @@ from ..application.ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
+    TelemetryMetrics,
 )
 from ..telemetry_batch_processor import (
     TelemetryBatchInvalid,
@@ -49,6 +51,7 @@ def ingest_telemetry(
     jobs: TelemetryIngestionJobStore | None = Depends(
         get_telemetry_ingestion_job_repository
     ),
+    metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
     queued_mode = os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
     try:
@@ -57,6 +60,7 @@ def ingest_telemetry(
             payload,
             gateway=gateway,
             unit_of_work=unit_of_work,
+            metrics=metrics,
             jobs=jobs,
             idempotency_key=idempotency_key,
             queued_mode=queued_mode,

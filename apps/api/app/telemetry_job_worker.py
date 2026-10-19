@@ -7,7 +7,10 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from .adapter_dependencies import get_telemetry_ingestion_gateway
+from .adapter_dependencies import (
+    get_telemetry_ingestion_gateway,
+    get_telemetry_metrics,
+)
 from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .schemas.ingestion import TelemetryBatchCreate
 from .telemetry_batch_processor import process_telemetry_batch
@@ -34,11 +37,13 @@ def process_next_telemetry_job(db: Session) -> bool:
         def process_batch() -> None:
             payload = TelemetryBatchCreate.model_validate(job.payload)
             gateway = get_telemetry_ingestion_gateway(db)
+            metrics = get_telemetry_metrics()
             process_telemetry_batch(
                 job.buoy_id,
                 payload,
                 gateway=gateway,
                 unit_of_work=unit_of_work,
+                metrics=metrics,
                 jobs=None,
             )
             completed = jobs.complete(

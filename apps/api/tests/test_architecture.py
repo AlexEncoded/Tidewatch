@@ -1055,6 +1055,13 @@ def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
 
     assert not imports_package(modules, "fastapi")
     assert not imports_package(modules, "starlette")
+    assert not imports_package(modules, "prometheus_client")
+    assert not any(
+        isinstance(node, ast.ImportFrom)
+        and node.level > 0
+        and node.module == "metrics"
+        for node in ast.walk(tree)
+    )
     assert not any(
         isinstance(node, ast.ImportFrom)
         and node.level > 0
@@ -1062,6 +1069,35 @@ def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
         and node.module.startswith("routers")
         for node in ast.walk(tree)
     )
+
+
+def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
+    from app.prometheus_telemetry_metrics import PrometheusTelemetryMetrics
+
+    metrics = PrometheusTelemetryMetrics()
+    processor_tree = ast.parse(
+        (API_APP / "telemetry_batch_processor.py").read_text(encoding="utf-8")
+    )
+    metric_names = {
+        node.args[0].value
+        for node in ast.walk(processor_tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "metric"
+        and node.args
+        and isinstance(node.args[0], ast.Constant)
+        and isinstance(node.args[0].value, str)
+    }
+    assert metric_names
+    for metric_name in metric_names:
+        assert metrics.metric(metric_name) is not None
+
+    try:
+        metrics.metric("missing_telemetry_metric")
+    except KeyError as error:
+        assert "Unknown telemetry metric" in str(error)
+    else:
+        raise AssertionError("Unknown metrics must fail clearly")
 
 
 def test_repository_does_not_import_http_telemetry_reading_models() -> None:

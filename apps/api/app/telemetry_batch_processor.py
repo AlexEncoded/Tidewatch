@@ -10,6 +10,7 @@ from .application.ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
+    TelemetryMetrics,
 )
 from .application.telemetry_ingestion import (
     atomic_telemetry_batch,
@@ -34,30 +35,6 @@ from .application.telemetry_ingestion import (
     build_salinity_snapshot,
     build_temperature_snapshot,
     empty_accepted_reading_counts,
-)
-from .metrics import (
-    acoustic_altimeter_readings_total, air_temperature_readings_total,
-    ambient_light_readings_total, atmospheric_pressure_readings_total,
-    battery_device_percent, battery_percent, buoy_last_seen_timestamp_seconds,
-    buoy_movement_speed_mps, chlorophyll_a_readings_total,
-    conductivity_readings_total,
-    current_acoustic_altimeter_depth_meters, current_air_temperature_celsius,
-    current_ambient_light_lux, current_atmospheric_pressure_kpa,
-    current_chlorophyll_a_ug_l, current_conductivity_us_cm,
-    current_dissolved_oxygen_mg_l, current_humidity_percent,
-    current_imu_acceleration_mps2, current_imu_angular_velocity_dps,
-    current_marine_current_direction_degrees, current_marine_current_speed_mps,
-    current_ph, current_pressure_kpa, current_rainfall_mm_h,
-    current_salinity_psu, current_temperature_celsius, current_turbidity_ntu,
-    current_underwater_acoustic_echo_intensity_db, current_wind_direction_degrees,
-    current_wind_speed_mps, device_last_seen_timestamp_seconds,
-    current_gnss_altitude_meters, current_gnss_speed_mps,
-    current_gnss_hdop, current_gnss_satellites,
-    dissolved_oxygen_readings_total, humidity_readings_total, imu_readings_total,
-    marine_current_readings_total, ph_readings_total, pressure_readings_total,
-    rainfall_readings_total, reading_quality_total, salinity_readings_total,
-    temperature_readings_total, turbidity_readings_total,
-    underwater_acoustic_readings_total, wind_readings_total,
 )
 from .domain.devices import DeviceOwnershipError
 
@@ -88,9 +65,13 @@ class TelemetryQueuedOutcome:
 
 
 def record_quality_metric(
-    buoy_id: str, sensor_family: str, sensor_channel: str, quality: str
+    metrics: TelemetryMetrics,
+    buoy_id: str,
+    sensor_family: str,
+    sensor_channel: str,
+    quality: str,
 ) -> None:
-    reading_quality_total.labels(
+    metrics.metric("reading_quality_total").labels(
         buoy_id=buoy_id,
         sensor_family=sensor_family,
         sensor_channel=sensor_channel,
@@ -105,6 +86,7 @@ def process_telemetry_batch(
     *,
     gateway: TelemetryIngestionGateway,
     unit_of_work: TelemetryBatchUnitOfWork,
+    metrics: TelemetryMetrics,
     jobs: TelemetryIngestionJobStore | None = None,
     idempotency_key: str | None = None,
     queued_mode: bool = False,
@@ -151,12 +133,12 @@ def process_telemetry_batch(
             raise TelemetryDeviceNotFound(str(exc)) from None
         except ValueError as exc:
             raise TelemetryBatchInvalid(str(exc)) from None
-        device_last_seen_timestamp_seconds.labels(
+        metrics.metric("device_last_seen_timestamp_seconds").labels(
             buoy_id=buoy_id,
             device_id=device.device_id,
             sensor_channel=device.sensor_channel,
         ).set(seen_at.timestamp())
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+        metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
             seen_at.timestamp()
         )
     else:
@@ -166,7 +148,7 @@ def process_telemetry_batch(
         if payload.device_id is None:
             seen_at = datetime.now(timezone.utc)
             gateway.mark_buoy_seen_by_id(buoy_id, seen_at)
-            buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+            metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
                 seen_at.timestamp()
             )
         job = jobs.enqueue(
@@ -183,16 +165,16 @@ def process_telemetry_batch(
         )
         gateway.add_location(location)
         if location.altitude_meters is not None:
-            current_gnss_altitude_meters.labels(buoy_id=buoy_id).set(location.altitude_meters)
+            metrics.metric("current_gnss_altitude_meters").labels(buoy_id=buoy_id).set(location.altitude_meters)
         if location.speed_mps is not None:
-            current_gnss_speed_mps.labels(buoy_id=buoy_id).set(location.speed_mps)
+            metrics.metric("current_gnss_speed_mps").labels(buoy_id=buoy_id).set(location.speed_mps)
         if location.hdop is not None:
-            current_gnss_hdop.labels(buoy_id=buoy_id).set(location.hdop)
+            metrics.metric("current_gnss_hdop").labels(buoy_id=buoy_id).set(location.hdop)
         if location.satellites is not None:
-            current_gnss_satellites.labels(buoy_id=buoy_id).set(location.satellites)
+            metrics.metric("current_gnss_satellites").labels(buoy_id=buoy_id).set(location.satellites)
         movement = analyze_movement_for_buoy(gateway, buoy_id, 50)
         if movement.average_speed_mps is not None:
-            buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(
+            metrics.metric("buoy_movement_speed_mps").labels(buoy_id=buoy_id).set(
                 movement.average_speed_mps
             )
 
@@ -203,13 +185,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_temperature(reading)
-        temperature_readings_total.labels(
+        metrics.metric("temperature_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_temperature_celsius.labels(
+        metrics.metric("current_temperature_celsius").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.temperature_celsius)
-        record_quality_metric(buoy_id, "temperature", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "temperature", reading.sensor_channel, reading.quality)
         accepted_by_family["temperature"] += 1
         accepted += 1
 
@@ -218,13 +200,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_pressure(reading)
-        pressure_readings_total.labels(
+        metrics.metric("pressure_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_pressure_kpa.labels(
+        metrics.metric("current_pressure_kpa").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.pressure_kpa)
-        record_quality_metric(buoy_id, "pressure", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "pressure", reading.sensor_channel, reading.quality)
         accepted_by_family["pressure"] += 1
         accepted += 1
 
@@ -233,13 +215,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_salinity(reading)
-        salinity_readings_total.labels(
+        metrics.metric("salinity_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_salinity_psu.labels(
+        metrics.metric("current_salinity_psu").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.salinity_psu)
-        record_quality_metric(buoy_id, "salinity", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "salinity", reading.sensor_channel, reading.quality)
         accepted_by_family["salinity"] += 1
         accepted += 1
 
@@ -248,7 +230,7 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_imu(reading)
-        imu_readings_total.labels(
+        metrics.metric("imu_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
         for axis, value in {
@@ -256,7 +238,7 @@ def process_telemetry_batch(
             "y": reading.acceleration_y_mps2,
             "z": reading.acceleration_z_mps2,
         }.items():
-            current_imu_acceleration_mps2.labels(
+            metrics.metric("current_imu_acceleration_mps2").labels(
                 buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
             ).set(value)
         for axis, value in {
@@ -264,10 +246,10 @@ def process_telemetry_batch(
             "y": reading.angular_velocity_y_dps,
             "z": reading.angular_velocity_z_dps,
         }.items():
-            current_imu_angular_velocity_dps.labels(
+            metrics.metric("current_imu_angular_velocity_dps").labels(
                 buoy_id=buoy_id, sensor_channel=reading.sensor_channel, axis=axis
             ).set(value)
-        record_quality_metric(buoy_id, "imu", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "imu", reading.sensor_channel, reading.quality)
         accepted_by_family["imu"] += 1
         accepted += 1
 
@@ -276,10 +258,10 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_ambient_light(reading)
-        ambient_light_readings_total.labels(
+        metrics.metric("ambient_light_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_ambient_light_lux.labels(
+        metrics.metric("current_ambient_light_lux").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.illuminance_lux)
         record_quality_metric(
@@ -293,16 +275,16 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_wind(reading)
-        wind_readings_total.labels(
+        metrics.metric("wind_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_wind_speed_mps.labels(
+        metrics.metric("current_wind_speed_mps").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.wind_speed_mps)
-        current_wind_direction_degrees.labels(
+        metrics.metric("current_wind_direction_degrees").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.wind_direction_degrees)
-        record_quality_metric(buoy_id, "wind", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "wind", reading.sensor_channel, reading.quality)
         accepted_by_family["wind"] += 1
         accepted += 1
 
@@ -311,13 +293,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_marine_current(reading)
-        marine_current_readings_total.labels(
+        metrics.metric("marine_current_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_marine_current_speed_mps.labels(
+        metrics.metric("current_marine_current_speed_mps").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.current_speed_mps)
-        current_marine_current_direction_degrees.labels(
+        metrics.metric("current_marine_current_direction_degrees").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.current_direction_degrees)
         record_quality_metric(
@@ -331,10 +313,10 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_turbidity(reading)
-        turbidity_readings_total.labels(
+        metrics.metric("turbidity_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_turbidity_ntu.labels(
+        metrics.metric("current_turbidity_ntu").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.turbidity_ntu)
         record_quality_metric(
@@ -348,10 +330,10 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_dissolved_oxygen(reading)
-        dissolved_oxygen_readings_total.labels(
+        metrics.metric("dissolved_oxygen_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_dissolved_oxygen_mg_l.labels(
+        metrics.metric("current_dissolved_oxygen_mg_l").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.dissolved_oxygen_mg_l)
         record_quality_metric(
@@ -365,13 +347,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_ph(reading)
-        ph_readings_total.labels(
+        metrics.metric("ph_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_ph.labels(
+        metrics.metric("current_ph").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.ph)
-        record_quality_metric(buoy_id, "ph", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "ph", reading.sensor_channel, reading.quality)
         accepted_by_family["ph"] += 1
         accepted += 1
 
@@ -380,10 +362,10 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_conductivity(reading)
-        conductivity_readings_total.labels(
+        metrics.metric("conductivity_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_conductivity_us_cm.labels(
+        metrics.metric("current_conductivity_us_cm").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.conductivity_us_cm)
         record_quality_metric(
@@ -397,10 +379,10 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_chlorophyll_a(reading)
-        chlorophyll_a_readings_total.labels(
+        metrics.metric("chlorophyll_a_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_chlorophyll_a_ug_l.labels(
+        metrics.metric("current_chlorophyll_a_ug_l").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.chlorophyll_a_ug_l)
         record_quality_metric(
@@ -414,13 +396,13 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_rainfall(reading)
-        rainfall_readings_total.labels(
+        metrics.metric("rainfall_readings_total").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).inc()
-        current_rainfall_mm_h.labels(
+        metrics.metric("current_rainfall_mm_h").labels(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.rainfall_mm_h)
-        record_quality_metric(buoy_id, "rainfall", reading.sensor_channel, reading.quality)
+        record_quality_metric(metrics, buoy_id, "rainfall", reading.sensor_channel, reading.quality)
         accepted_by_family["rainfall"] += 1
         accepted += 1
 
@@ -429,9 +411,9 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_humidity(reading)
-        humidity_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_humidity_percent.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
-        record_quality_metric(buoy_id, "humidity", reading.sensor_channel, reading.quality)
+        metrics.metric("humidity_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        metrics.metric("current_humidity_percent").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.humidity_percent)
+        record_quality_metric(metrics, buoy_id, "humidity", reading.sensor_channel, reading.quality)
         accepted_by_family["humidity"] += 1
         accepted += 1
 
@@ -440,9 +422,9 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_air_temperature(reading)
-        air_temperature_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_air_temperature_celsius.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
-        record_quality_metric(buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
+        metrics.metric("air_temperature_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        metrics.metric("current_air_temperature_celsius").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.air_temperature_celsius)
+        record_quality_metric(metrics, buoy_id, "air_temperature", reading.sensor_channel, reading.quality)
         accepted_by_family["air_temperature"] += 1
         accepted += 1
 
@@ -451,9 +433,9 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_atmospheric_pressure(reading)
-        atmospheric_pressure_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_atmospheric_pressure_kpa.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
-        record_quality_metric(buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
+        metrics.metric("atmospheric_pressure_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        metrics.metric("current_atmospheric_pressure_kpa").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.atmospheric_pressure_kpa)
+        record_quality_metric(metrics, buoy_id, "atmospheric_pressure", reading.sensor_channel, reading.quality)
         accepted_by_family["atmospheric_pressure"] += 1
         accepted += 1
 
@@ -462,9 +444,9 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_acoustic_altimeter(reading)
-        acoustic_altimeter_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_acoustic_altimeter_depth_meters.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
-        record_quality_metric(buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
+        metrics.metric("acoustic_altimeter_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        metrics.metric("current_acoustic_altimeter_depth_meters").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.depth_meters)
+        record_quality_metric(metrics, buoy_id, "acoustic_altimeter", reading.sensor_channel, reading.quality)
         accepted_by_family["acoustic_altimeter"] += 1
         accepted += 1
 
@@ -473,9 +455,9 @@ def process_telemetry_batch(
             buoy_id, reading_payload.model_dump(), payload.device_id
         )
         gateway.add_underwater_acoustic(reading)
-        underwater_acoustic_readings_total.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
-        current_underwater_acoustic_echo_intensity_db.labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
-        record_quality_metric(buoy_id, "underwater_acoustic", reading.sensor_channel, reading.quality)
+        metrics.metric("underwater_acoustic_readings_total").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).inc()
+        metrics.metric("current_underwater_acoustic_echo_intensity_db").labels(buoy_id=buoy_id, sensor_channel=reading.sensor_channel).set(reading.echo_intensity_db)
+        record_quality_metric(metrics, buoy_id, "underwater_acoustic", reading.sensor_channel, reading.quality)
         accepted_by_family["underwater_acoustic"] += 1
         accepted += 1
 
@@ -493,24 +475,24 @@ def process_telemetry_batch(
             raise TelemetryDeviceNotFound(str(exc)) from None
         except ValueError as exc:
             raise TelemetryBatchInvalid(str(exc)) from None
-        battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
-        battery_device_percent.labels(
+        metrics.metric("battery_percent").labels(buoy_id=buoy_id).set(battery.battery_percent)
+        metrics.metric("battery_device_percent").labels(
             buoy_id=buoy_id, device_id=battery.device_id
         ).set(battery.battery_percent)
         if saved_battery.physical_device_id is not None and payload.device_id is None:
-            device_last_seen_timestamp_seconds.labels(
+            metrics.metric("device_last_seen_timestamp_seconds").labels(
                 buoy_id=buoy_id,
                 device_id=saved_battery.physical_device_id,
                 sensor_channel=saved_battery.device_id,
             ).set(battery_received_at.timestamp())
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+        metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
             battery_received_at.timestamp()
         )
         accepted_by_family["battery"] += 1
         accepted += 1
 
     if payload.device_id is None and accepted:
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
+        metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
             datetime.now(timezone.utc).timestamp()
         )
 

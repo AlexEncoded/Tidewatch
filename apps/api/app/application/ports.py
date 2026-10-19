@@ -90,6 +90,30 @@ class TelemetryBatchUnitOfWork(Protocol):
         ...
 
 
+class TelemetryMetricSample(Protocol):
+    """A labeled metric value that can be incremented or replaced."""
+
+    def inc(self, amount: float = 1) -> None:
+        ...
+
+    def set(self, value: float) -> None:
+        ...
+
+
+class TelemetryMetric(Protocol):
+    """A metric family supporting bounded labels."""
+
+    def labels(self, **labels: str) -> TelemetryMetricSample:
+        ...
+
+
+class TelemetryMetrics(Protocol):
+    """Port for recording telemetry counters and gauges."""
+
+    def metric(self, name: str) -> TelemetryMetric:
+        ...
+
+
 class StaleBuoyReader(Protocol):
     def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
         ...

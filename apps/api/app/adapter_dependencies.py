@@ -44,6 +44,7 @@ from .application.ports import (
     DatabaseHealthReader,
     TelemetryQueueMetricsReader,
     TelemetryBatchUnitOfWork,
+    TelemetryMetrics,
     BuoySummaryReader,
 )
 from .application.device_listing import DeviceListingReader
@@ -81,6 +82,7 @@ from .quality_summary_repository import QualitySummaryRepository
 from .telemetry_ingestion_repository import TelemetryIngestionRepository
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -118,6 +120,11 @@ def get_telemetry_batch_unit_of_work(
 ) -> TelemetryBatchUnitOfWork:
     """Compose the telemetry transaction port with its SQL adapter."""
     return SQLAlchemyTelemetryBatchUnitOfWork(db)
+
+
+def get_telemetry_metrics() -> TelemetryMetrics:
+    """Compose the telemetry metrics port with Prometheus instruments."""
+    return PrometheusTelemetryMetrics()
 
 
 def get_telemetry_ingestion_job_repository(
