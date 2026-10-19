@@ -1220,7 +1220,10 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
     from types import SimpleNamespace
 
     from app.adapter_dependencies import get_wave_analysis_reader
-    from app.metrics import wave_period_sensor_disagreement
+    from app.metrics import (
+        wave_analysis_last_run_timestamp_seconds,
+        wave_period_sensor_disagreement,
+    )
 
     buoy_id = "TW-WAVE-PERIOD-DISAGREEMENT"
     start = datetime.now(timezone.utc)
@@ -1258,6 +1261,9 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
         state["imu_period_seconds"] = 60
         consistent_analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
         metric_value = wave_period_sensor_disagreement.labels(buoy_id=buoy_id)._value.get()
+        last_run = wave_analysis_last_run_timestamp_seconds.labels(
+            buoy_id=buoy_id
+        )._value.get()
     finally:
         app.dependency_overrides.pop(get_wave_analysis_reader, None)
 
@@ -1265,6 +1271,7 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
     assert analysis.json()["period_confidence"] == "sensor_disagreement"
     assert consistent_analysis.json()["period_confidence"] == "experimental"
     assert metric_value == 0
+    assert last_run > 0
 
 
 def test_wave_analysis_returns_not_found_for_unknown_buoy() -> None:

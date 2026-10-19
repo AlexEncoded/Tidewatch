@@ -296,6 +296,12 @@ wave_period_sensor_disagreement = Gauge(
     ["buoy_id"],
 )
 
+wave_analysis_last_run_timestamp_seconds = Gauge(
+    "tidewatch_wave_analysis_last_run_timestamp_seconds",
+    "Unix timestamp of the latest requested wave analysis by buoy.",
+    ["buoy_id"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

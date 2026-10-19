@@ -1,5 +1,7 @@
 """HTTP routes for buoy analytics."""
 
+from time import time
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.movement_analysis import analyze_movement_for_buoy
@@ -27,6 +29,7 @@ from ..metrics import (
     current_estimated_wave_height_m,
     current_estimated_wave_period_seconds,
     wave_period_sensor_disagreement,
+    wave_analysis_last_run_timestamp_seconds,
 )
 from ..schemas.analytics import (
     MovementAnalysis,
@@ -72,6 +75,7 @@ def buoy_wave_analysis(
     if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     result = analyze_wave_for_buoy(reader, buoy_id, window, configured_wave_imu_factor())
+    wave_analysis_last_run_timestamp_seconds.labels(buoy_id=buoy_id).set(time())
     if result.estimated_wave_height_m is not None:
         current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(result.estimated_wave_height_m)
     else:
