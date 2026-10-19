@@ -13,7 +13,7 @@ from .adapter_dependencies import (
 )
 from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .schemas.ingestion import TelemetryBatchCreate
-from .telemetry_batch_processor import process_telemetry_batch
+from .application.telemetry_batch_ingestion import process_telemetry_batch
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 

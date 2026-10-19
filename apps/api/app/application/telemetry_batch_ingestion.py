@@ -3,16 +3,16 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .application.battery_ingestion import record_battery_reading
-from .application.device_heartbeat import record_device_heartbeat
-from .application.movement_analysis import analyze_movement_for_buoy
-from .application.ports import (
+from .battery_ingestion import record_battery_reading
+from .device_heartbeat import record_device_heartbeat
+from .movement_analysis import analyze_movement_for_buoy
+from .ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
-from .application.telemetry_ingestion import (
+from .telemetry_ingestion import (
     atomic_telemetry_batch,
     build_location_snapshot,
     build_battery_snapshot,
@@ -36,7 +36,7 @@ from .application.telemetry_ingestion import (
     build_temperature_snapshot,
     empty_accepted_reading_counts,
 )
-from .domain.devices import DeviceOwnershipError
+from ..domain.devices import DeviceOwnershipError
 
 
 class TelemetryBuoyNotFound(LookupError):
@@ -265,6 +265,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.illuminance_lux)
         record_quality_metric(
+            metrics,
             buoy_id, "ambient_light", reading.sensor_channel, reading.quality
         )
         accepted_by_family["ambient_light"] += 1
@@ -303,6 +304,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.current_direction_degrees)
         record_quality_metric(
+            metrics,
             buoy_id, "marine_current", reading.sensor_channel, reading.quality
         )
         accepted_by_family["marine_current"] += 1
@@ -320,6 +322,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.turbidity_ntu)
         record_quality_metric(
+            metrics,
             buoy_id, "turbidity", reading.sensor_channel, reading.quality
         )
         accepted_by_family["turbidity"] += 1
@@ -337,6 +340,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.dissolved_oxygen_mg_l)
         record_quality_metric(
+            metrics,
             buoy_id, "dissolved_oxygen", reading.sensor_channel, reading.quality
         )
         accepted_by_family["dissolved_oxygen"] += 1
@@ -369,6 +373,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.conductivity_us_cm)
         record_quality_metric(
+            metrics,
             buoy_id, "conductivity", reading.sensor_channel, reading.quality
         )
         accepted_by_family["conductivity"] += 1
@@ -386,6 +391,7 @@ def process_telemetry_batch(
             buoy_id=buoy_id, sensor_channel=reading.sensor_channel
         ).set(reading.chlorophyll_a_ug_l)
         record_quality_metric(
+            metrics,
             buoy_id, "chlorophyll_a", reading.sensor_channel, reading.quality
         )
         accepted_by_family["chlorophyll_a"] += 1

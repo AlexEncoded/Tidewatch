@@ -16,7 +16,7 @@ from ..application.ports import (
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
-from ..telemetry_batch_processor import (
+from ..application.telemetry_batch_ingestion import (
     TelemetryBatchInvalid,
     TelemetryBuoyNotFound,
     TelemetryDeviceNotFound,

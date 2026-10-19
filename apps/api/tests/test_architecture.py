@@ -1040,7 +1040,9 @@ def test_telemetry_worker_does_not_depend_on_http_router() -> None:
 
 def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
     tree = ast.parse(
-        (API_APP / "telemetry_batch_processor.py").read_text(encoding="utf-8")
+        (API_APP / "application" / "telemetry_batch_ingestion.py").read_text(
+            encoding="utf-8"
+        )
     )
     modules = {
         alias.name
@@ -1076,7 +1078,9 @@ def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
 
     metrics = PrometheusTelemetryMetrics()
     processor_tree = ast.parse(
-        (API_APP / "telemetry_batch_processor.py").read_text(encoding="utf-8")
+        (API_APP / "application" / "telemetry_batch_ingestion.py").read_text(
+            encoding="utf-8"
+        )
     )
     metric_names = {
         node.args[0].value
