@@ -7,13 +7,17 @@ from fastapi import FastAPI
 from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables, resolve_database_url
-from app.sensor_entities import PressureReadingEntity, TemperatureReadingEntity
+from app.sensor_entities import (
+    ImuReadingEntity,
+    PressureReadingEntity,
+    SalinityReadingEntity,
+    TemperatureReadingEntity,
+)
 from app.entities import (
     BuoyEntity,
     DeviceEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
-    ImuReadingEntity,
     AmbientLightReadingEntity,
     WindReadingEntity,
     MarineCurrentReadingEntity,
@@ -28,7 +32,6 @@ from app.entities import (
     AtmosphericPressureReadingEntity,
     AcousticAltimeterReadingEntity,
     UnderwaterAcousticReadingEntity,
-    SalinityReadingEntity,
     SensorHealthCheckEntity,
     TelemetryIngestionJobEntity,
 )
