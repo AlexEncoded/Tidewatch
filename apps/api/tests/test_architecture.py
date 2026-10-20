@@ -68,16 +68,22 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
+        AmbientLightReadingEntity,
         ImuReadingEntity,
+        MarineCurrentReadingEntity,
         PressureReadingEntity,
         SalinityReadingEntity,
         TemperatureReadingEntity,
+        WindReadingEntity,
     )
 
+    assert AmbientLightReadingEntity.__module__ == "app.sensor_entities"
     assert PressureReadingEntity.__module__ == "app.sensor_entities"
     assert SalinityReadingEntity.__module__ == "app.sensor_entities"
     assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
     assert ImuReadingEntity.__module__ == "app.sensor_entities"
+    assert MarineCurrentReadingEntity.__module__ == "app.sensor_entities"
+    assert WindReadingEntity.__module__ == "app.sensor_entities"
 
 
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:

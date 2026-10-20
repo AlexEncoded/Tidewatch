@@ -6,58 +6,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
 from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity, DeviceEntity
 from .sensor_entities import (
+    AmbientLightReadingEntity,
     ImuReadingEntity,
+    MarineCurrentReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureReadingEntity,
+    WindReadingEntity,
 )
-
-
-class AmbientLightReadingEntity(Base):
-    __tablename__ = "ambient_light_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    illuminance_lux: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="ambient_light_readings")
-
-
-class WindReadingEntity(Base):
-    __tablename__ = "wind_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    wind_speed_mps: Mapped[float] = mapped_column(Float, nullable=False)
-    wind_direction_degrees: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="wind_readings")
-
-
-class MarineCurrentReadingEntity(Base):
-    __tablename__ = "marine_current_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    current_speed_mps: Mapped[float] = mapped_column(Float, nullable=False)
-    current_direction_degrees: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="marine_current_readings")
 
 
 class TurbidityReadingEntity(Base):

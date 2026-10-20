@@ -8,19 +8,19 @@ from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables, resolve_database_url
 from app.sensor_entities import (
+    AmbientLightReadingEntity,
     ImuReadingEntity,
+    MarineCurrentReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureReadingEntity,
+    WindReadingEntity,
 )
 from app.entities import (
     BuoyEntity,
     DeviceEntity,
     BuoyLocationReadingEntity,
     BatteryReadingEntity,
-    AmbientLightReadingEntity,
-    WindReadingEntity,
-    MarineCurrentReadingEntity,
     TurbidityReadingEntity,
     DissolvedOxygenReadingEntity,
     PHReadingEntity,
