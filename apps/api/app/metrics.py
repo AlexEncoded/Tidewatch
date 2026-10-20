@@ -298,7 +298,7 @@ wave_period_sensor_disagreement = Gauge(
 
 wave_analysis_last_run_timestamp_seconds = Gauge(
     "tidewatch_wave_analysis_last_run_timestamp_seconds",
-    "Unix timestamp of the latest requested wave analysis by buoy.",
+    "Unix timestamp of the latest completed wave analysis by buoy.",
     ["buoy_id"],
 )
 
