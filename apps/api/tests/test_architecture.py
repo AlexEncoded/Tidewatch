@@ -66,6 +66,13 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
 
 
+def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
+    from app.sensor_entities import PressureReadingEntity, TemperatureReadingEntity
+
+    assert PressureReadingEntity.__module__ == "app.sensor_entities"
+    assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
+
+
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     from app.adapter_dependencies import (
         get_buoy_registrar,
