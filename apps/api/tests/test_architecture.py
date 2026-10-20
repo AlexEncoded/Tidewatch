@@ -54,6 +54,10 @@ def test_legacy_analytics_adapter_module_is_removed() -> None:
     assert not (API_APP / "analytics.py").exists()
 
 
+def test_legacy_models_facade_module_is_removed() -> None:
+    assert not (API_APP / "models.py").exists()
+
+
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     from app.adapter_dependencies import (
         get_buoy_registrar,
@@ -442,7 +446,7 @@ def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
 
 
-def test_device_http_contracts_are_outside_the_general_models_module() -> None:
+def test_device_router_uses_scoped_http_contracts() -> None:
     device_router = ast.parse(
         (API_APP / "routers" / "devices.py").read_text(encoding="utf-8")
     )
@@ -452,16 +456,8 @@ def test_device_http_contracts_are_outside_the_general_models_module() -> None:
     assert "schemas.devices" in imported_modules
     assert "models" not in imported_modules
 
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {"DeviceCreate", "DeviceStatusUpdate", "Device", "DeviceHealth"}
-    )
 
-
-def test_fleet_http_contracts_are_outside_the_general_models_module() -> None:
+def test_fleet_router_uses_scoped_http_contracts() -> None:
     buoy_router = ast.parse(
         (API_APP / "routers" / "buoys.py").read_text(encoding="utf-8")
     )
@@ -469,25 +465,10 @@ def test_fleet_http_contracts_are_outside_the_general_models_module() -> None:
         node.module for node in ast.walk(buoy_router) if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.fleet" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {
-            "BuoyCreate",
-            "BuoyStatusUpdate",
-            "BuoyLocationUpdate",
-            "BuoyLocationReadingCreate",
-            "BuoyLocationReading",
-            "Buoy",
-            "BuoyHealth",
-        }
-    )
+    assert "models" not in imported_modules
 
 
-def test_quality_http_contract_is_outside_the_general_models_module() -> None:
+def test_quality_router_uses_scoped_http_contracts() -> None:
     quality_router = ast.parse(
         (API_APP / "routers" / "quality.py").read_text(encoding="utf-8")
     )
@@ -497,15 +478,10 @@ def test_quality_http_contract_is_outside_the_general_models_module() -> None:
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.quality" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert "QualitySummary" not in model_names
+    assert "models" not in imported_modules
 
 
-def test_battery_http_contracts_are_outside_the_general_models_module() -> None:
+def test_battery_router_uses_scoped_http_contracts() -> None:
     battery_router = ast.parse(
         (API_APP / "routers" / "battery.py").read_text(encoding="utf-8")
     )
@@ -515,22 +491,10 @@ def test_battery_http_contracts_are_outside_the_general_models_module() -> None:
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.battery" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {
-            "BatteryReadingCreate",
-            "BatteryReading",
-            "BatteryHealth",
-            "BatteryAnalysis",
-        }
-    )
+    assert "models" not in imported_modules
 
 
-def test_analytics_http_contracts_are_outside_the_general_models_module() -> None:
+def test_analytics_routers_use_scoped_http_contracts() -> None:
     analytics_router = ast.parse(
         (API_APP / "routers" / "analytics.py").read_text(encoding="utf-8")
     )
@@ -544,24 +508,10 @@ def test_analytics_http_contracts_are_outside_the_general_models_module() -> Non
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.analytics" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {
-            "PressureAnalysis",
-            "WaveAnalysis",
-            "MovementAnalysis",
-            "TemperatureAnalysis",
-            "TemperatureAlert",
-            "StoredTemperatureAlert",
-        }
-    )
+    assert "models" not in imported_modules
 
 
-def test_sensor_health_http_contracts_are_outside_the_general_models_module() -> None:
+def test_sensor_router_uses_scoped_http_contracts() -> None:
     sensor_router = ast.parse(
         (API_APP / "routers" / "sensors.py").read_text(encoding="utf-8")
     )
@@ -571,15 +521,10 @@ def test_sensor_health_http_contracts_are_outside_the_general_models_module() ->
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.sensors" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection({"SensorHealth", "SensorHealthCheck"})
+    assert "models" not in imported_modules
 
 
-def test_maintenance_http_contracts_are_outside_the_general_models_module() -> None:
+def test_maintenance_router_uses_scoped_http_contracts() -> None:
     maintenance_router = ast.parse(
         (API_APP / "routers" / "maintenance.py").read_text(encoding="utf-8")
     )
@@ -589,17 +534,10 @@ def test_maintenance_http_contracts_are_outside_the_general_models_module() -> N
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.maintenance" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {"MaintenanceIssue", "MaintenanceNotificationResult"}
-    )
+    assert "models" not in imported_modules
 
 
-def test_telemetry_response_contract_is_outside_the_general_models_module() -> None:
+def test_ingestion_router_uses_scoped_http_contracts() -> None:
     ingestion_router = ast.parse(
         (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
     )
@@ -609,15 +547,10 @@ def test_telemetry_response_contract_is_outside_the_general_models_module() -> N
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.telemetry" in imported_modules
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert "TelemetryIngestResponse" not in model_names
+    assert "models" not in imported_modules
 
 
-def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> None:
+def test_core_sensor_http_contracts_use_scoped_schema_modules() -> None:
     sensor_router = ast.parse(
         (API_APP / "routers" / "sensors.py").read_text(encoding="utf-8")
     )
@@ -627,6 +560,7 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.telemetry" in imported_modules
+    assert "models" not in imported_modules
 
     ingestion_router = ast.parse(
         (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
@@ -637,6 +571,7 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.ingestion" in ingestion_imports
+    assert "models" not in ingestion_imports
 
     fleet_router = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
     fleet_imports = {
@@ -645,53 +580,7 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
         if isinstance(node, ast.ImportFrom)
     }
     assert "schemas.fleet_summary" in fleet_imports
-
-    model_tree = ast.parse((API_APP / "models.py").read_text(encoding="utf-8"))
-    model_names = {
-        node.name for node in model_tree.body if isinstance(node, ast.ClassDef)
-    }
-    assert not model_names.intersection(
-        {
-            "TemperatureReadingCreate",
-            "TemperatureReading",
-            "PressureReadingCreate",
-            "PressureReading",
-            "SalinityReadingCreate",
-            "SalinityReading",
-            "ImuReadingCreate",
-            "ImuReading",
-            "AmbientLightReadingCreate",
-            "AmbientLightReading",
-            "WindReadingCreate",
-            "WindReading",
-            "MarineCurrentReadingCreate",
-            "MarineCurrentReading",
-            "TurbidityReadingCreate",
-            "TurbidityReading",
-            "DissolvedOxygenReadingCreate",
-            "DissolvedOxygenReading",
-            "PHReadingCreate",
-            "PHReading",
-            "ConductivityReadingCreate",
-            "ConductivityReading",
-            "ChlorophyllAReadingCreate",
-            "ChlorophyllAReading",
-            "RainfallReadingCreate",
-            "RainfallReading",
-            "HumidityReadingCreate",
-            "HumidityReading",
-            "AirTemperatureReadingCreate",
-            "AirTemperatureReading",
-            "AtmosphericPressureReadingCreate",
-            "AtmosphericPressureReading",
-            "AcousticAltimeterReadingCreate",
-            "AcousticAltimeterReading",
-            "UnderwaterAcousticReadingCreate",
-            "UnderwaterAcousticReading",
-            "TelemetryBatchCreate",
-            "BuoySummary",
-        }
-    )
+    assert "models" not in fleet_imports
 
 
 def test_batch_ingestion_route_uses_injected_gateway() -> None:
