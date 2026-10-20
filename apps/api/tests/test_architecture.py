@@ -58,6 +58,13 @@ def test_legacy_models_facade_module_is_removed() -> None:
     assert not (API_APP / "models.py").exists()
 
 
+def test_fleet_persistence_entities_are_grouped_by_context() -> None:
+    from app.fleet_entities import BuoyEntity, DeviceEntity
+
+    assert BuoyEntity.__module__ == "app.fleet_entities"
+    assert DeviceEntity.__module__ == "app.fleet_entities"
+
+
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     from app.adapter_dependencies import (
         get_buoy_registrar,
