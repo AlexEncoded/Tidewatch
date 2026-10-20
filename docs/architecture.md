@@ -78,7 +78,7 @@ to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping
 functions stay separate from query and transaction orchestration in
 the focused SQLAlchemy adapters, making persistence-to-domain translation
 directly testable.
-Fleet identity and physical-device ORM entities are grouped in
+Fleet identity, physical-device, and location-history ORM entities are grouped in
 `apps/api/app/fleet_entities.py`; sensor and telemetry mappings remain in the
 shared entities module while they are separated incrementally by context.
 Physical-device registration, heartbeat and status operations use a dedicated

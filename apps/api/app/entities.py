@@ -4,23 +4,7 @@ from sqlalchemy import DateTime, Float, ForeignKey, Index, JSON, String, UniqueC
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
-from .fleet_entities import BuoyEntity, DeviceEntity
-
-
-class BuoyLocationReadingEntity(Base):
-    __tablename__ = "buoy_location_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    latitude: Mapped[float] = mapped_column(Float, nullable=False)
-    longitude: Mapped[float] = mapped_column(Float, nullable=False)
-    altitude_meters: Mapped[float | None] = mapped_column(Float, nullable=True)
-    speed_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
-    hdop: Mapped[float | None] = mapped_column(Float, nullable=True)
-    satellites: Mapped[int | None] = mapped_column(nullable=True)
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="location_readings")
+from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity, DeviceEntity
 
 
 class TemperatureReadingEntity(Base):
