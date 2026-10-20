@@ -94,28 +94,23 @@ Batch telemetry ingestion now composes fleet, battery, location and per-sensor
 adapters through `TelemetryIngestionRepository` rather than the legacy aggregate.
 The maintenance reader similarly uses `MaintenanceRepository` to combine
 health histories, device state, battery records, location and buoy snapshots.
-`BuoyRepository` remains only as a compatibility facade; production adapters
-must not import it, enforced by an architecture test.
 Buoy registration and operational status persistence now use a separate
 `BuoyRegistryRepository`, leaving telemetry storage out of those fleet writes.
-The same adapter owns buoy enumeration and snapshot mapping; the aggregate
-compatibility facade delegates snapshot enumeration for older callers.
+The same adapter owns buoy enumeration and snapshot mapping.
 Buoy entity lookup and existence checks also pass through this registry adapter,
 including the heartbeat refresh performed after telemetry writes.
 Stale-buoy evaluation reads heartbeat fields through a dedicated
 `BuoyActivityRepository`; the age and eligibility rules remain in the
 application layer.
-The fleet overview uses `BuoySummaryRepository`, which composes buoy records
-with the telemetry adapter's latest-reading queries instead of placing that
-cross-context projection in `BuoyRepository`. Its projection includes the
-latest readings for every sensor family, including both acoustic sensors and
-their A/B channels.
+The fleet overview uses `BuoySummaryRepository` to compose buoy records with
+the latest telemetry readings across every sensor family, including both
+acoustic sensors and their A/B channels.
 Location history writes and current-coordinate synchronization use a dedicated
 `BuoyLocationRepository`; batch ingestion delegates to the same adapter, so
 both entry points preserve one persistence path.
-Location-history and fleet-wide position queries use that adapter as well;
-`BuoyRepository` retains only temporary delegation for compound telemetry and
-maintenance gateways.
+Location-history and fleet-wide position queries use that adapter as well.
+The former aggregate repository compatibility facade has been removed;
+callers use the focused adapters and application ports directly.
 Temperature anomaly persistence and the buoy identity query used for fleet-wide
 analysis now live in `TemperatureAlertRepository`, which composes the existing
 temperature-reading adapter.

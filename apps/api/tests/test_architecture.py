@@ -9,20 +9,17 @@ from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
 
 from app.application.ports import (
-    DeviceHealthReader,
     DatabaseHealthReader,
     BuoySummaryReader,
     MaintenanceReader,
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
 )
-from app.application.sensor_health import SensorHealthCheckWriter
 from app.buoy_activity_repository import BuoyActivityRepository
 from app.buoy_location_repository import BuoyLocationRepository
 from app.buoy_registry_repository import BuoyRegistryRepository
 from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
-from app.repository import BuoyRepository
 from app.temperature_alert_repository import TemperatureAlertRepository
 from app.temperature_repository import TemperatureRepository
 from app.pressure_repository import PressureRepository
@@ -67,18 +64,14 @@ def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
             return []
 
     session = EmptySession()
-    assert not hasattr(BuoyRepository, "register_buoy")
-    assert not hasattr(BuoyRepository, "update_buoy_status")
-    assert not hasattr(BuoyRepository, "list_buoys")
     assert isinstance(get_buoy_registrar(session), BuoyRegistryRepository)
     assert isinstance(get_buoy_status_registry(session), BuoyRegistryRepository)
     assert get_buoy_registrar(session).list_buoy_snapshots() == []
 
 
-def test_production_adapters_do_not_import_the_legacy_buoy_repository() -> None:
-    production_files = (
-        path for path in API_APP.rglob("*.py") if path.name != "repository.py"
-    )
+def test_legacy_buoy_repository_module_is_removed_and_never_imported() -> None:
+    assert not (API_APP / "repository.py").exists()
+    production_files = API_APP.rglob("*.py")
 
     for path in production_files:
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -93,26 +86,9 @@ def test_production_adapters_do_not_import_the_legacy_buoy_repository() -> None:
         assert not imports_legacy_adapter, path.relative_to(API_APP)
 
 
-def test_buoy_repository_delegates_identity_lookups_to_registry() -> None:
-    class RegistryAdapter:
-        def get_buoy(self, buoy_id):
-            return ("buoy", buoy_id)
-
-        def buoy_exists(self, buoy_id):
-            return buoy_id == "known"
-
-    repository = BuoyRepository.__new__(BuoyRepository)
-    repository.registry = RegistryAdapter()
-
-    assert repository.get_buoy("known") == ("buoy", "known")
-    assert repository.buoy_exists("known")
-    assert not repository.buoy_exists("unknown")
-
-
 def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
     from app.adapter_dependencies import get_stale_buoy_reader
 
-    assert not hasattr(BuoyRepository, "list_buoy_activity")
     assert isinstance(get_stale_buoy_reader(object()), BuoyActivityRepository)
 
 
@@ -125,7 +101,6 @@ def test_buoy_location_updates_use_the_location_adapter() -> None:
         get_wave_analysis_reader,
     )
 
-    assert not hasattr(BuoyRepository, "update_buoy_location")
     session = object()
     assert isinstance(get_buoy_location_updater(session), BuoyLocationRepository)
     assert isinstance(get_buoy_location_history_reader(session), BuoyLocationRepository)
@@ -146,8 +121,6 @@ def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:
     )
 
     session = object()
-    assert not hasattr(BuoyRepository, "find_alert")
-    assert not hasattr(BuoyRepository, "list_buoy_identities")
     assert isinstance(get_temperature_alerts_reader(session), TemperatureAlertRepository)
     assert isinstance(get_temperature_alert_store(session), TemperatureAlertRepository)
 
@@ -171,7 +144,6 @@ def test_temperature_telemetry_uses_the_dedicated_adapter() -> None:
     session = object()
     assert isinstance(get_temperature_telemetry_gateway(session), TemperatureRepository)
     assert isinstance(get_temperature_analysis_reader(session), TemperatureRepository)
-    assert isinstance(BuoyRepository(session).temperature, TemperatureRepository)
 
 
 def test_pressure_telemetry_uses_the_dedicated_adapter() -> None:
@@ -183,7 +155,6 @@ def test_pressure_telemetry_uses_the_dedicated_adapter() -> None:
     session = object()
     assert isinstance(get_pressure_telemetry_gateway(session), PressureRepository)
     assert isinstance(get_pressure_analysis_reader(session), PressureRepository)
-    assert isinstance(BuoyRepository(session).pressure, PressureRepository)
 
 
 def test_salinity_telemetry_uses_the_dedicated_adapter() -> None:
@@ -191,7 +162,6 @@ def test_salinity_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_salinity_telemetry_gateway(session), SalinityRepository)
-    assert isinstance(BuoyRepository(session).salinity, SalinityRepository)
 
 
 def test_imu_telemetry_uses_the_dedicated_adapter() -> None:
@@ -199,7 +169,6 @@ def test_imu_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_imu_telemetry_gateway(session), ImuRepository)
-    assert isinstance(BuoyRepository(session).imu, ImuRepository)
 
 
 def test_ambient_light_telemetry_uses_the_dedicated_adapter() -> None:
@@ -209,7 +178,6 @@ def test_ambient_light_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_ambient_light_telemetry_gateway(session), AmbientLightRepository
     )
-    assert isinstance(BuoyRepository(session).ambient_light, AmbientLightRepository)
 
 
 def test_wind_telemetry_uses_the_dedicated_adapter() -> None:
@@ -217,7 +185,6 @@ def test_wind_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_wind_telemetry_gateway(session), WindRepository)
-    assert isinstance(BuoyRepository(session).wind, WindRepository)
 
 
 def test_marine_current_telemetry_uses_the_dedicated_adapter() -> None:
@@ -227,7 +194,6 @@ def test_marine_current_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_marine_current_telemetry_gateway(session), MarineCurrentRepository
     )
-    assert isinstance(BuoyRepository(session).marine_current, MarineCurrentRepository)
 
 
 def test_turbidity_telemetry_uses_the_dedicated_adapter() -> None:
@@ -235,7 +201,6 @@ def test_turbidity_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_turbidity_telemetry_gateway(session), TurbidityRepository)
-    assert isinstance(BuoyRepository(session).turbidity, TurbidityRepository)
 
 
 def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
@@ -245,9 +210,6 @@ def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_dissolved_oxygen_telemetry_gateway(session), DissolvedOxygenRepository
     )
-    assert isinstance(
-        BuoyRepository(session).dissolved_oxygen, DissolvedOxygenRepository
-    )
 
 
 def test_ph_telemetry_uses_the_dedicated_adapter() -> None:
@@ -255,7 +217,6 @@ def test_ph_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_ph_telemetry_gateway(session), PHRepository)
-    assert isinstance(BuoyRepository(session).ph, PHRepository)
 
 
 def test_conductivity_telemetry_uses_the_dedicated_adapter() -> None:
@@ -265,7 +226,6 @@ def test_conductivity_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_conductivity_telemetry_gateway(session), ConductivityRepository
     )
-    assert isinstance(BuoyRepository(session).conductivity, ConductivityRepository)
 
 
 def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
@@ -275,7 +235,6 @@ def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_chlorophyll_a_telemetry_gateway(session), ChlorophyllARepository
     )
-    assert isinstance(BuoyRepository(session).chlorophyll_a, ChlorophyllARepository)
 
 
 def test_rainfall_telemetry_uses_the_dedicated_adapter() -> None:
@@ -283,7 +242,6 @@ def test_rainfall_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_rainfall_telemetry_gateway(session), RainfallRepository)
-    assert isinstance(BuoyRepository(session).rainfall, RainfallRepository)
 
 
 def test_humidity_telemetry_uses_the_dedicated_adapter() -> None:
@@ -291,7 +249,6 @@ def test_humidity_telemetry_uses_the_dedicated_adapter() -> None:
 
     session = object()
     assert isinstance(get_humidity_telemetry_gateway(session), HumidityRepository)
-    assert isinstance(BuoyRepository(session).humidity, HumidityRepository)
 
 
 def test_air_temperature_telemetry_uses_the_dedicated_adapter() -> None:
@@ -301,9 +258,6 @@ def test_air_temperature_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_air_temperature_telemetry_gateway(session), AirTemperatureRepository
     )
-    assert isinstance(
-        BuoyRepository(session).air_temperature, AirTemperatureRepository
-    )
 
 
 def test_atmospheric_pressure_telemetry_uses_the_dedicated_adapter() -> None:
@@ -312,10 +266,6 @@ def test_atmospheric_pressure_telemetry_uses_the_dedicated_adapter() -> None:
     session = object()
     assert isinstance(
         get_atmospheric_pressure_telemetry_gateway(session),
-        AtmosphericPressureRepository,
-    )
-    assert isinstance(
-        BuoyRepository(session).atmospheric_pressure,
         AtmosphericPressureRepository,
     )
 
@@ -328,9 +278,6 @@ def test_acoustic_altimeter_telemetry_uses_the_dedicated_adapter() -> None:
         get_acoustic_altimeter_telemetry_gateway(session),
         AcousticAltimeterRepository,
     )
-    assert isinstance(
-        BuoyRepository(session).acoustic_altimeter, AcousticAltimeterRepository
-    )
 
 
 def test_underwater_acoustic_telemetry_uses_the_dedicated_adapter() -> None:
@@ -340,9 +287,6 @@ def test_underwater_acoustic_telemetry_uses_the_dedicated_adapter() -> None:
     assert isinstance(
         get_underwater_acoustic_telemetry_gateway(session),
         UnderwaterAcousticRepository,
-    )
-    assert isinstance(
-        BuoyRepository(session).underwater_acoustic, UnderwaterAcousticRepository
     )
 
 
@@ -354,7 +298,6 @@ def test_battery_telemetry_uses_its_adapter_and_device_composition() -> None:
     assert isinstance(adapter, BatteryRepository)
     assert adapter.db is session
     assert isinstance(adapter.devices, DeviceRepository)
-    assert isinstance(BuoyRepository(session).battery, BatteryRepository)
 
 
 def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
@@ -368,7 +311,6 @@ def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
     assert isinstance(
         get_sensor_health_check_gateway(session), SensorHealthRepository
     )
-    assert isinstance(BuoyRepository(session).sensor_health, SensorHealthRepository)
 
 
 def test_quality_summary_uses_its_dedicated_repository() -> None:
@@ -376,9 +318,6 @@ def test_quality_summary_uses_its_dedicated_repository() -> None:
 
     session = object()
     assert isinstance(get_quality_summary_reader(session), QualitySummaryRepository)
-    assert isinstance(
-        BuoyRepository(session).quality_summary, QualitySummaryRepository
-    )
 
 
 def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
@@ -404,34 +343,6 @@ def test_maintenance_reader_uses_its_composed_read_adapter() -> None:
     assert reader.locations.db is session
     assert reader.registry.db is session
     assert reader.devices.db is session
-
-
-def test_buoy_repository_composes_device_repository_for_compatibility() -> None:
-    class DeviceAdapter:
-        def get_device(self, device_id):
-            return ("device", device_id)
-
-        def get_device_snapshot(self, device_id):
-            return ("snapshot", device_id)
-
-        def list_device_snapshots(self, buoy_id):
-            return [("snapshots", buoy_id)]
-
-        def mark_device_seen_by_id(self, device_id, seen_at):
-            return ("seen", device_id, seen_at)
-
-    repository = BuoyRepository.__new__(BuoyRepository)
-    repository.devices = DeviceAdapter()
-
-    assert not issubclass(BuoyRepository, DeviceRepository)
-    assert repository.get_device("unit-a") == ("device", "unit-a")
-    assert repository.get_device_snapshot("unit-a") == ("snapshot", "unit-a")
-    assert repository.list_device_snapshots("buoy-a") == [("snapshots", "buoy-a")]
-    assert repository.mark_device_seen_by_id("unit-a", "now") == (
-        "seen",
-        "unit-a",
-        "now",
-    )
 
 
 def imported_modules(directory: Path) -> set[str]:
@@ -789,30 +700,6 @@ def test_core_sensor_http_contracts_are_outside_the_general_models_module() -> N
     )
 
 
-def test_repository_implements_the_maintenance_read_port() -> None:
-    adapter = BuoyRepository.__new__(BuoyRepository)
-
-    assert isinstance(adapter, MaintenanceReader)
-
-
-def test_repository_implements_the_device_health_read_port() -> None:
-    adapter = BuoyRepository.__new__(BuoyRepository)
-
-    assert isinstance(adapter, DeviceHealthReader)
-
-
-def test_repository_implements_the_sensor_health_writer_port() -> None:
-    adapter = BuoyRepository.__new__(BuoyRepository)
-
-    assert isinstance(adapter, SensorHealthCheckWriter)
-
-
-def test_repository_implements_the_batch_ingestion_gateway() -> None:
-    adapter = BuoyRepository.__new__(BuoyRepository)
-
-    assert isinstance(adapter, TelemetryIngestionGateway)
-
-
 def test_batch_ingestion_route_uses_injected_gateway() -> None:
     tree = ast.parse((API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8"))
     route = next(
@@ -876,7 +763,6 @@ def test_buoy_summary_port_uses_composed_fleet_adapter() -> None:
 
     adapter = get_buoy_summary_reader(object())
 
-    assert not hasattr(BuoyRepository, "list_buoy_summaries")
     assert isinstance(adapter, BuoySummaryRepository)
     assert isinstance(adapter, BuoySummaryReader)
     assert not hasattr(adapter, "telemetry")
@@ -1108,28 +994,6 @@ def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
         assert "Unknown telemetry metric" in str(error)
     else:
         raise AssertionError("Unknown metrics must fail clearly")
-
-
-def test_repository_does_not_import_http_telemetry_reading_models() -> None:
-    tree = ast.parse((API_APP / "repository.py").read_text(encoding="utf-8"))
-    imported = {
-        node.module
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom) and node.module is not None
-    }
-    reading_models = [
-        alias.name
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-        and node.module == "models"
-        for alias in node.names
-        if alias.name.endswith("Reading")
-    ]
-
-    assert not reading_models
-    assert not imports_package(imported, "schemas")
-    assert not imports_package(imported, "fastapi")
-    assert not imports_package(imported, "pydantic")
 
 
 def test_quality_router_depends_on_application_port_not_repository_adapter() -> None:
