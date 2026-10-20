@@ -4,9 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.analytics import analyze_pressure, analyze_wave, distance_between_points
-from app.analytics import analyze_movement
-from app.domain.movement import estimate_movement
+from app.domain.movement import distance_between_points, estimate_movement
 from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
 from app.domain.battery_analysis import BatteryAnalysisSnapshot
@@ -42,7 +40,6 @@ from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference
 from app.domain.sensor_health_rules import degraded_sensor_names
 from app.domain.sensor_status import sensor_health_status
-from app.schemas.telemetry import PressureReading
 
 
 def test_distance_between_points_is_zero_for_same_coordinates() -> None:
@@ -60,18 +57,6 @@ def test_movement_domain_service_is_independent_from_persistence_models() -> Non
     assert estimate.sample_count == 2
     assert estimate.distance_travelled_m is not None
     assert estimate.confidence == "experimental"
-
-
-def test_movement_analytics_adapter_preserves_buoy_contract() -> None:
-    locations = [
-        SimpleNamespace(latitude=36.71, longitude=3.11, measured_at=datetime(2024, 1, 1, 0, 1)),
-        SimpleNamespace(latitude=36.7, longitude=3.1, measured_at=datetime(2024, 1, 1, 0, 0)),
-    ]
-
-    analysis = analyze_movement("TW-MOVE", locations)
-
-    assert analysis.buoy_id == "TW-MOVE"
-    assert analysis.confidence == "experimental"
 
 
 def test_movement_domain_normalizes_mixed_datetime_awareness() -> None:
@@ -113,19 +98,6 @@ def test_movement_application_service_uses_a_telemetry_port() -> None:
 
 
 
-def test_pressure_analysis_requires_three_samples_for_wave_estimate() -> None:
-    readings = [
-        PressureReading(buoy_id="TW-TEST", pressure_kpa=value)
-        for value in (101.3, 101.8)
-    ]
-
-    analysis = analyze_pressure("TW-TEST", readings)
-
-    assert analysis.pressure_range_kpa == 0.5
-    assert analysis.estimated_wave_height_m is None
-    assert analysis.confidence == "insufficient_data"
-
-
 def test_pressure_domain_service_estimates_wave_height_and_sea_state() -> None:
     estimate = estimate_pressure([101.3, 102.0, 101.5])
 
@@ -153,7 +125,14 @@ def test_pressure_application_service_filters_invalid_readings() -> None:
 
 
 def test_wave_analysis_returns_insufficient_data_without_vertical_samples() -> None:
-    analysis = analyze_wave("TW-TEST", [], [SimpleNamespace(altitude_meters=None)])
+    class EmptyReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return []
+
+        def list_locations(self, buoy_id, limit):
+            return [SimpleNamespace(altitude_meters=None)]
+
+    analysis = analyze_wave_for_buoy(EmptyReader(), "TW-TEST", 10, 0.1)
 
     assert analysis.sample_count == 1
     assert analysis.estimated_wave_height_m is None

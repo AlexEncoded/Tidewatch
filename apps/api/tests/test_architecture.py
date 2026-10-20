@@ -50,6 +50,10 @@ from app.wave_analysis_repository import WaveAnalysisRepository
 API_APP = Path(__file__).parents[1] / "app"
 
 
+def test_legacy_analytics_adapter_module_is_removed() -> None:
+    assert not (API_APP / "analytics.py").exists()
+
+
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     from app.adapter_dependencies import (
         get_buoy_registrar,
@@ -400,16 +404,6 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     assert not imports_package(modules, "sqlalchemy")
     assert not imports_package(modules, "pydantic")
     assert "os" not in modules
-
-
-def test_analytics_adapter_does_not_use_the_legacy_models_facade() -> None:
-    analytics_module = ast.parse((API_APP / "analytics.py").read_text(encoding="utf-8"))
-    imported = {
-        node.module
-        for node in ast.walk(analytics_module)
-        if isinstance(node, ast.ImportFrom)
-    }
-    assert "models" not in imported
 
 
 def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types() -> None:

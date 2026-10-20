@@ -50,7 +50,7 @@ import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
-from app.analytics import analyze_wave
+from app.application.wave_analysis import analyze_wave_for_buoy
 from app.telemetry import configure_telemetry
 import app.main as main_module
 
@@ -1088,16 +1088,32 @@ def test_pressure_analysis_estimates_wave_height() -> None:
 
 
 def test_wave_analysis_combines_gnss_altitude_and_imu_motion() -> None:
+    measured_at = datetime.now(timezone.utc)
     imu_readings = [
-        type("Imu", (), {"acceleration_z_mps2": value})()
+        type(
+            "Imu",
+            (),
+            {"acceleration_z_mps2": value, "measured_at": measured_at, "quality": "good"},
+        )()
         for value in (9.7, 10.2, 9.9)
     ]
     locations = [
-        type("Location", (), {"altitude_meters": value})()
+        type(
+            "Location",
+            (),
+            {"altitude_meters": value, "measured_at": measured_at, "quality": "good"},
+        )()
         for value in (2.0, 2.4, 2.1)
     ]
 
-    analysis = analyze_wave("TW-WAVE", imu_readings, locations)
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return imu_readings
+
+        def list_locations(self, buoy_id, limit):
+            return locations
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-WAVE", 10, 0.1)
 
     assert analysis.sample_count == 3
     assert analysis.gnss_vertical_range_m == 0.4
@@ -1122,12 +1138,24 @@ def test_wave_calibration_factor_uses_default_for_non_finite_values(monkeypatch)
 
 
 def test_wave_analysis_reports_partial_gnss_data() -> None:
+    measured_at = datetime.now(timezone.utc)
     locations = [
-        type("Location", (), {"altitude_meters": value})()
+        type(
+            "Location",
+            (),
+            {"altitude_meters": value, "measured_at": measured_at, "quality": "good"},
+        )()
         for value in (2.0, 2.4)
     ]
 
-    analysis = analyze_wave("TW-GNSS-ONLY", [], locations)
+    class FakeReader:
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            return []
+
+        def list_locations(self, buoy_id, limit):
+            return locations
+
+    analysis = analyze_wave_for_buoy(FakeReader(), "TW-GNSS-ONLY", 10, 0.1)
 
     assert analysis.estimated_wave_height_m == 0.4
     assert analysis.confidence == "partial"
