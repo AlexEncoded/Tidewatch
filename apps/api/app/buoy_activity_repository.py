@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoyActivitySnapshot
-from .entities import BuoyEntity
+from .fleet_entities import BuoyEntity
 
 
 class BuoyActivityRepository:

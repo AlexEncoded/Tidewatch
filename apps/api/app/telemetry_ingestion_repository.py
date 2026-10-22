@@ -29,7 +29,7 @@ from .domain.telemetry import (
 )
 from .domain.devices import DeviceSnapshot
 from .domain.buoy import BuoySnapshot
-from .entities import BuoyLocationReadingEntity
+from .fleet_entities import BuoyLocationReadingEntity
 from .sensor_health_repository import SensorHealthRepository
 from .battery_repository import BatteryRepository
 from .buoy_registry_repository import BuoyRegistryRepository

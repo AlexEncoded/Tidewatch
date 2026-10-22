@@ -104,15 +104,15 @@ Fleet identity, physical-device, and location-history ORM entities are grouped i
 `apps/api/app/fleet_entities.py`. Sensor reading, health, and battery mappings
 are grouped in `apps/api/app/sensor_entities.py`; alert and telemetry-ingestion
 job mappings are grouped in `apps/api/app/alert_entities.py` and
-`apps/api/app/telemetry_entities.py`, respectively. `entities.py` re-exports
-these mappings for Alembic registration and compatibility.
+`apps/api/app/telemetry_entities.py`, respectively. `entities.py` remains a
+compatibility facade for Alembic registration; production adapters import
+entities directly from their context modules.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
 turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
 air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-
 acoustic mappings are grouped in
 `apps/api/app/sensor_entities.py`.
-Sensor-health snapshots and battery readings are also mapped there; alert and
-telemetry-ingestion job entities remain in the shared registry module.
+Sensor-health snapshots and battery readings are also mapped there.
 Physical-device registration, heartbeat and status operations use a dedicated
 `DeviceRepository`.
 Battery persistence and history queries use `BatteryRepository`, which composes

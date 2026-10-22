@@ -3,7 +3,7 @@
 from .domain.buoy import BuoySnapshot
 from .domain.devices import DeviceSnapshot
 from .domain.sensor_health import SensorHealthCheckSnapshot
-from .entities import BuoyEntity, DeviceEntity
+from .fleet_entities import BuoyEntity, DeviceEntity
 from .sensor_entities import SensorHealthCheckEntity
 
 

@@ -9,7 +9,7 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .device_repository import DeviceRepository
 from .domain.devices import DeviceSnapshot
 from .domain.telemetry import BatteryTelemetrySnapshot
-from .entities import DeviceEntity
+from .fleet_entities import DeviceEntity
 from .sensor_entities import BatteryReadingEntity
 from .persistence_utils import is_newer_timestamp
 

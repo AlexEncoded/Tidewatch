@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .entities import BuoyEntity, DeviceEntity
+from .fleet_entities import BuoyEntity, DeviceEntity
 from .metrics import buoy_last_seen_timestamp_seconds, device_last_seen_timestamp_seconds
 
 

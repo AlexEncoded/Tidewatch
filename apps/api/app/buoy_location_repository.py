@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoyLocationCommand, BuoySnapshot
 from .domain.telemetry import LocationTelemetrySnapshot
-from .entities import BuoyEntity, BuoyLocationReadingEntity
+from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity
 from .persistence_mappers import buoy_snapshot
 
 

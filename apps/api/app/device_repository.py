@@ -12,7 +12,7 @@ from .domain.devices import (
     DeviceSnapshot,
     DeviceStatusCommand,
 )
-from .entities import BuoyEntity, DeviceEntity
+from .fleet_entities import BuoyEntity, DeviceEntity
 from .persistence_mappers import device_snapshot
 from .persistence_utils import is_newer_timestamp
 

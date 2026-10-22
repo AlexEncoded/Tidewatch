@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoySnapshot, BuoyStatusCommand
-from .entities import BuoyEntity
+from .fleet_entities import BuoyEntity
 from .persistence_mappers import buoy_snapshot
 from .persistence_utils import is_newer_timestamp
 
