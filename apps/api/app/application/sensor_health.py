@@ -15,7 +15,7 @@ from ..domain.telemetry import latest_usable_reading
 from ..domain.deltas import absolute_difference
 from ..domain.directions import circular_difference_degrees
 from ..domain.vectors import euclidean_difference
-from .ports import SensorHealthReader
+from .sensor_ports import SensorHealthReader
 
 
 @runtime_checkable

@@ -115,6 +115,13 @@ def test_fleet_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.fleet_ports"
 
 
+def test_sensor_health_ports_are_grouped_by_context() -> None:
+    from app.application.sensor_ports import SensorHealthCheckGateway, SensorHealthReader
+
+    assert SensorHealthCheckGateway.__module__ == "app.application.sensor_ports"
+    assert SensorHealthReader.__module__ == "app.application.sensor_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

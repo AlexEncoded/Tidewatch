@@ -42,10 +42,9 @@ from ..application.ports import (
     AtmosphericPressureTelemetryGateway,
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
-    SensorHealthReader,
-    SensorHealthCheckGateway,
     TemperatureTelemetryGateway,
 )
+from ..application.sensor_ports import SensorHealthCheckGateway, SensorHealthReader
 from ..application.sensor_health import (
     SensorHealthSnapshot as SensorHealthEvaluationSnapshot,
     evaluate_sensor_health_snapshot,

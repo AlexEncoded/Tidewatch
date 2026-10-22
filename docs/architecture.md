@@ -69,6 +69,8 @@ Telemetry queue, unit-of-work, and metrics contracts are grouped in
 backward compatibility while other contexts are separated incrementally.
 Fleet registration, status, location, and summary contracts are grouped in
 `application/fleet_ports.py` with the same compatibility re-export strategy.
+Redundant sensor-health read and write contracts are grouped in
+`application/sensor_ports.py`.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service

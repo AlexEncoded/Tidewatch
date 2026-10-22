@@ -30,8 +30,6 @@ from .application.ports import (
     TemperatureAlertsReader,
     TemperatureAlertStore,
     QualitySummaryReader,
-    SensorHealthReader,
-    SensorHealthCheckGateway,
     TelemetryIngestionGateway,
     MaintenanceReader,
     DatabaseHealthReader,
@@ -51,6 +49,7 @@ from .application.telemetry_ports import (
     TelemetryMetrics,
     TelemetryQueueMetricsReader,
 )
+from .application.sensor_ports import SensorHealthCheckGateway, SensorHealthReader
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry
 from .application.device_status import DeviceStatusRegistry
