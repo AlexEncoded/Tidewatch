@@ -21,7 +21,7 @@ from ..domain.devices import (
 )
 from ..application.device_health import summarize_device_health_for_buoy
 from ..schemas.devices import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
-from ..application.ports import DeviceHealthReader
+from ..application.device_listing import DeviceHealthReader
 from ..application.device_listing import DeviceListingReader
 from ..application.device_registration import DeviceRegistry
 from ..application.device_status import DeviceStatusRegistry

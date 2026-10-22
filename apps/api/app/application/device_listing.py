@@ -15,6 +15,16 @@ class DeviceListingReader(Protocol):
         ...
 
 
+class DeviceHealthReader(Protocol):
+    """Input port for the registered-device health summary."""
+
+    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
+        ...
+
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+
 def list_devices_for_buoy(
     reader: DeviceListingReader, buoy_id: str
 ) -> list[DeviceSnapshot]:

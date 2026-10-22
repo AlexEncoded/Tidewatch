@@ -30,6 +30,7 @@ object.
 
 Fleet lifecycle and location contracts live in `fleet_ports.py`, while durable
 telemetry and its metrics/unit-of-work contracts live in `telemetry_ports.py`.
+Registered-device health listing is defined with the device-listing use case.
 The shared `ports.py` remains a compatibility facade during incremental
 migration.
 

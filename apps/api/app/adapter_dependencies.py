@@ -4,7 +4,6 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from .application.ports import (
-    DeviceHealthReader,
     WaveAnalysisReader,
     TelemetryIngestionGateway,
     MaintenanceReader,
@@ -53,7 +52,7 @@ from .application.sensor_ports import (
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
 )
-from .application.device_listing import DeviceListingReader
+from .application.device_listing import DeviceHealthReader, DeviceListingReader
 from .application.device_registration import DeviceRegistry
 from .application.device_status import DeviceStatusRegistry
 from .database import get_db

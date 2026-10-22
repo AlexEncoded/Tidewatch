@@ -34,6 +34,7 @@ from .fleet_ports import (
     MovementAnalysisReader,
     StaleBuoyReader,
 )
+from .device_listing import DeviceHealthReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -76,17 +77,6 @@ class DatabaseHealthReader(Protocol):
 
 
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-@runtime_checkable
-class DeviceHealthReader(Protocol):
-    """Read-only port for registered physical devices."""
-
-    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        ...
-
     def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
