@@ -79,8 +79,9 @@ functions stay separate from query and transaction orchestration in
 the focused SQLAlchemy adapters, making persistence-to-domain translation
 directly testable.
 Fleet identity, physical-device, and location-history ORM entities are grouped in
-`apps/api/app/fleet_entities.py`; sensor and telemetry mappings remain in the
-shared entities module while they are separated incrementally by context.
+`apps/api/app/fleet_entities.py`. Sensor reading, health, and battery mappings
+are grouped in `apps/api/app/sensor_entities.py`; alert and telemetry-ingestion
+job mappings remain in the shared entities module.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
 turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
 air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-
