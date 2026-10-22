@@ -82,7 +82,7 @@ Fleet identity, physical-device, and location-history ORM entities are grouped i
 `apps/api/app/fleet_entities.py`; sensor and telemetry mappings remain in the
 shared entities module while they are separated incrementally by context.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
-turbidity, and dissolved-oxygen mappings are grouped in
+turbidity, dissolved-oxygen, pH, and conductivity mappings are grouped in
 `apps/api/app/sensor_entities.py`.
 Physical-device registration, heartbeat and status operations use a dedicated
 `DeviceRepository`.

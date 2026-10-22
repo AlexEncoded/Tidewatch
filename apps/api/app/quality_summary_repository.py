@@ -7,9 +7,11 @@ from .application.ports import QualitySummaryReader
 from .buoy_registry_repository import BuoyRegistryRepository
 from .sensor_entities import (
     AmbientLightReadingEntity,
+    ConductivityReadingEntity,
     DissolvedOxygenReadingEntity,
     ImuReadingEntity,
     MarineCurrentReadingEntity,
+    PHReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureReadingEntity,
@@ -21,9 +23,7 @@ from .entities import (
     AirTemperatureReadingEntity,
     AtmosphericPressureReadingEntity,
     ChlorophyllAReadingEntity,
-    ConductivityReadingEntity,
     HumidityReadingEntity,
-    PHReadingEntity,
     RainfallReadingEntity,
     UnderwaterAcousticReadingEntity,
 )

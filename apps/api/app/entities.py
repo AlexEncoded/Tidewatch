@@ -7,45 +7,17 @@ from .database import Base
 from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity, DeviceEntity
 from .sensor_entities import (
     AmbientLightReadingEntity,
+    ConductivityReadingEntity,
     DissolvedOxygenReadingEntity,
     ImuReadingEntity,
     MarineCurrentReadingEntity,
+    PHReadingEntity,
     PressureReadingEntity,
     SalinityReadingEntity,
     TemperatureReadingEntity,
     TurbidityReadingEntity,
     WindReadingEntity,
 )
-
-
-class PHReadingEntity(Base):
-    __tablename__ = "ph_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    ph: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="ph_readings")
-
-
-class ConductivityReadingEntity(Base):
-    __tablename__ = "conductivity_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    conductivity_us_cm: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="conductivity_readings")
 
 
 class ChlorophyllAReadingEntity(Base):

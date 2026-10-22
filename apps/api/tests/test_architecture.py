@@ -72,14 +72,17 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
         DissolvedOxygenReadingEntity,
         ImuReadingEntity,
         MarineCurrentReadingEntity,
+        PHReadingEntity,
         PressureReadingEntity,
         SalinityReadingEntity,
         TemperatureReadingEntity,
         TurbidityReadingEntity,
+        ConductivityReadingEntity,
         WindReadingEntity,
     )
 
     assert AmbientLightReadingEntity.__module__ == "app.sensor_entities"
+    assert ConductivityReadingEntity.__module__ == "app.sensor_entities"
     assert DissolvedOxygenReadingEntity.__module__ == "app.sensor_entities"
     assert PressureReadingEntity.__module__ == "app.sensor_entities"
     assert SalinityReadingEntity.__module__ == "app.sensor_entities"
@@ -87,6 +90,7 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     assert TurbidityReadingEntity.__module__ == "app.sensor_entities"
     assert ImuReadingEntity.__module__ == "app.sensor_entities"
     assert MarineCurrentReadingEntity.__module__ == "app.sensor_entities"
+    assert PHReadingEntity.__module__ == "app.sensor_entities"
     assert WindReadingEntity.__module__ == "app.sensor_entities"
 
 
