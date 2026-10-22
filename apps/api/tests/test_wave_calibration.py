@@ -360,3 +360,31 @@ def test_wave_calibration_cli_limits_sensor_samples_to_shared_time_range(
             "imu_samples": 2,
         }
     ]
+
+
+def test_wave_calibration_cli_rejects_good_rows_without_sensor_samples(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "empty-good-row.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,0.5,0.15\n"
+        "train,calibration,2026-01-01T00:00:02Z,,,0.15\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "Line 4: good-quality row must contain a GNSS or IMU sample" in result.stderr
+    assert "Traceback" not in result.stderr

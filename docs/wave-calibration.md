@@ -24,7 +24,8 @@ Prepare a CSV with one row per synchronized sensor sample and these columns:
 The reference value must remain constant within each window. Each window needs
 at least two GNSS and two IMU samples inside the time range shared by both
 modalities. Empty sensor cells are allowed when the other samples in that
-window satisfy this minimum. The evaluator excludes samples outside the shared
+window satisfy this minimum, but a `good` row cannot have both sensor cells
+empty. The evaluator excludes samples outside the shared
 GNSS/IMU time range and reports coverage for the retained interval. Use
 synchronized timestamps on every row; timestamps must include a timezone and
 cannot repeat anywhere in the CSV. Calibration and validation window time

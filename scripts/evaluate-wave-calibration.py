@@ -81,6 +81,10 @@ def load_windows(
                 raise ValueError(
                     f"Line {line_number}: reference height must be finite and non-negative"
                 )
+            if altitude is None and acceleration is None:
+                raise ValueError(
+                    f"Line {line_number}: good-quality row must contain a GNSS or IMU sample"
+                )
             entry = grouped.setdefault(
                 window_id,
                 {
