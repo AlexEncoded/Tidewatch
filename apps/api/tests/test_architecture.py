@@ -74,6 +74,20 @@ def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
     assert TelemetryIngestionJobEntity.__module__ == "app.telemetry_entities"
 
 
+def test_telemetry_ports_are_grouped_by_context() -> None:
+    from app.application.telemetry_ports import (
+        TelemetryBatchUnitOfWork,
+        TelemetryIngestionJobStore,
+        TelemetryMetrics,
+        TelemetryQueueMetricsReader,
+    )
+
+    assert TelemetryBatchUnitOfWork.__module__ == "app.application.telemetry_ports"
+    assert TelemetryIngestionJobStore.__module__ == "app.application.telemetry_ports"
+    assert TelemetryMetrics.__module__ == "app.application.telemetry_ports"
+    assert TelemetryQueueMetricsReader.__module__ == "app.application.telemetry_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

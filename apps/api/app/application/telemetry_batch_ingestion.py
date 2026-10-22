@@ -7,12 +7,12 @@ from .battery_ingestion import record_battery_reading
 from .device_heartbeat import record_device_heartbeat
 from .movement_analysis import analyze_movement_for_buoy
 from .telemetry_batch import TelemetryBatchCommand
-from .ports import (
+from .telemetry_ports import (
     TelemetryBatchUnitOfWork,
-    TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
+from .ports import TelemetryIngestionGateway
 from .telemetry_ingestion import (
     atomic_telemetry_batch,
     build_location_snapshot,

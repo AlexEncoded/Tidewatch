@@ -10,12 +10,12 @@ from ..adapter_dependencies import (
     get_telemetry_ingestion_job_repository,
     get_telemetry_batch_unit_of_work,
 )
-from ..application.ports import (
+from ..application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
-    TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
+from ..application.ports import TelemetryIngestionGateway
 from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import (
     TelemetryBatchInvalid,

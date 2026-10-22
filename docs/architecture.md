@@ -64,6 +64,9 @@ notifications use an application transport port, and `maintenance_evaluation`
 coordinates the per-buoy issue snapshot. HTTP boundaries and persistence
 adapters are isolated so use cases can be evolved and validated by the API and
 worker test suites.
+Telemetry queue, unit-of-work, and metrics contracts are grouped in
+`application/telemetry_ports.py`; `application/ports.py` re-exports them for
+backward compatibility while other contexts are separated incrementally.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service

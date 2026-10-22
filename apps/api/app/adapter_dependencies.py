@@ -42,10 +42,12 @@ from .application.ports import (
     TelemetryIngestionGateway,
     MaintenanceReader,
     DatabaseHealthReader,
-    TelemetryQueueMetricsReader,
+    BuoySummaryReader,
+)
+from .application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryMetrics,
-    BuoySummaryReader,
+    TelemetryQueueMetricsReader,
 )
 from .application.device_listing import DeviceListingReader
 from .application.device_registration import DeviceRegistry

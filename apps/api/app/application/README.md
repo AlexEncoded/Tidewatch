@@ -1,7 +1,7 @@
 # Application layer
 
 This package contains the application services that coordinate Tidewatch use
-cases. Services depend on input ports from `ports.py` and call domain
+cases. Services depend on context-specific input ports and call domain
 services. HTTP adapters map application and domain results to response models.
 
 The intended dependency direction is:

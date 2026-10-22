@@ -4,7 +4,7 @@ from functools import wraps
 from inspect import signature
 from typing import Callable, TypeVar, cast
 
-from .ports import TelemetryBatchUnitOfWork
+from .telemetry_ports import TelemetryBatchUnitOfWork
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,

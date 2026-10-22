@@ -1,6 +1,6 @@
 """Input ports shared by application services."""
 
-from typing import Callable, Protocol, TypeVar, runtime_checkable
+from typing import Protocol, runtime_checkable
 from datetime import datetime
 
 from ..domain.telemetry import (
@@ -36,9 +36,14 @@ from ..domain.buoy import (
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.devices import DeviceSnapshot
-from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
-
-T = TypeVar("T")
+from .telemetry_ports import (
+    TelemetryBatchUnitOfWork,
+    TelemetryIngestionJobStore,
+    TelemetryMetric,
+    TelemetryMetrics,
+    TelemetryMetricSample,
+    TelemetryQueueMetricsReader,
+)
 
 
 class FleetLocationReader(Protocol):
@@ -56,61 +61,6 @@ class DatabaseHealthReader(Protocol):
     """Port for checking whether the primary database can answer queries."""
 
     def check_database(self) -> None:
-        ...
-
-
-class TelemetryQueueMetricsReader(Protocol):
-    """Read bounded-cardinality durable queue metrics for observability."""
-
-    def observability_snapshot(self) -> dict[str, int | float]:
-        ...
-
-
-@runtime_checkable
-class TelemetryIngestionJobStore(Protocol):
-    """Enqueue and read durable telemetry jobs without exposing a SQL adapter."""
-
-    def enqueue(
-        self,
-        buoy_id: str,
-        payload: dict,
-        now: datetime | None = None,
-        idempotency_key: str | None = None,
-    ) -> TelemetryIngestionJobSnapshot:
-        ...
-
-    def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
-        ...
-
-
-class TelemetryBatchUnitOfWork(Protocol):
-    """Run telemetry ingestion and related state changes atomically."""
-
-    def run_atomically(self, action: Callable[[], T]) -> T:
-        ...
-
-
-class TelemetryMetricSample(Protocol):
-    """A labeled metric value that can be incremented or replaced."""
-
-    def inc(self, amount: float = 1) -> None:
-        ...
-
-    def set(self, value: float) -> None:
-        ...
-
-
-class TelemetryMetric(Protocol):
-    """A metric family supporting bounded labels."""
-
-    def labels(self, **labels: str) -> TelemetryMetricSample:
-        ...
-
-
-class TelemetryMetrics(Protocol):
-    """Port for recording telemetry counters and gauges."""
-
-    def metric(self, name: str) -> TelemetryMetric:
         ...
 
 
