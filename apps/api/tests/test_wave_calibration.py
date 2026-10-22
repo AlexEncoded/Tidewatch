@@ -7,7 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from app.domain.wave_calibration import WaveCalibrationWindow, select_factor
+from app.domain.wave_calibration import (
+    WaveCalibrationWindow,
+    evaluate_factor,
+    select_factor,
+)
 
 
 def test_select_factor_minimizes_calibration_error() -> None:
@@ -30,6 +34,23 @@ def test_select_factor_rejects_empty_windows_and_invalid_candidates() -> None:
 
     with pytest.raises(ValueError, match="factor between 0 and 10"):
         select_factor([window], (-1.0, 11.0))
+
+
+@pytest.mark.parametrize(
+    ("gnss_altitudes", "imu_accelerations"),
+    (
+        ((0.0, 0.1), ()),
+        ((), (0.0, 0.5)),
+    ),
+)
+def test_evaluate_factor_requires_both_sensor_modalities(
+    gnss_altitudes: tuple[float, ...],
+    imu_accelerations: tuple[float, ...],
+) -> None:
+    window = WaveCalibrationWindow(gnss_altitudes, imu_accelerations, 0.15)
+
+    with pytest.raises(ValueError, match="enough GNSS and IMU samples"):
+        evaluate_factor([window], 0.1)
 
 
 def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:

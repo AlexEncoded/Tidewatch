@@ -30,12 +30,16 @@ def evaluate_factor(
             window.gnss_altitudes_m,
             window.imu_vertical_accelerations_mps2,
             factor,
-        ).estimated_wave_height_m
-        if estimate is None:
+        )
+        if (
+            estimate.gnss_vertical_range_m is None
+            or estimate.imu_vertical_acceleration_range_mps2 is None
+            or estimate.estimated_wave_height_m is None
+        ):
             raise ValueError("Every window must contain enough GNSS and IMU samples")
         if not isfinite(window.reference_wave_height_m) or window.reference_wave_height_m < 0:
             raise ValueError("Reference wave heights must be finite and non-negative")
-        errors.append(estimate - window.reference_wave_height_m)
+        errors.append(estimate.estimated_wave_height_m - window.reference_wave_height_m)
 
     return {
         "mae_m": fmean(abs(error) for error in errors),
