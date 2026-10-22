@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from ..application.maintenance_evaluation import evaluate_maintenance_fleet
 from ..application.maintenance_notifications import deliver_maintenance_notification
 from ..adapter_dependencies import get_maintenance_reader
-from ..application.ports import MaintenanceReader
+from ..application.maintenance_ports import MaintenanceReader
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,

@@ -199,6 +199,12 @@ def test_device_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.device_ports"
 
 
+def test_maintenance_reader_is_grouped_with_maintenance_ports() -> None:
+    from app.application.maintenance_ports import MaintenanceReader
+
+    assert MaintenanceReader.__module__ == "app.application.maintenance_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

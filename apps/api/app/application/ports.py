@@ -40,6 +40,7 @@ from .device_ports import (
     DeviceRegistry,
     DeviceStatusRegistry,
 )
+from .maintenance_ports import MaintenanceReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -83,20 +84,6 @@ class DatabaseHealthReader(Protocol):
 
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-@runtime_checkable
-class MaintenanceReader(
-    LocationTelemetryReader,
-    BatteryTelemetryReader,
-    SensorHealthReader,
-    DeviceHealthReader,
-    Protocol,
-):
-    """Read-only queries required by the maintenance application service."""
-
-    def list_buoy_snapshots(self) -> list[BuoySnapshot]:
         ...
 
 

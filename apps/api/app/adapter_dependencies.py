@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 from .application.ports import (
     WaveAnalysisReader,
     TelemetryIngestionGateway,
-    MaintenanceReader,
     DatabaseHealthReader,
 )
+from .application.maintenance_ports import MaintenanceReader
 from .application.fleet_ports import (
     BuoyLocationHistoryReader,
     BuoyLocationUpdater,

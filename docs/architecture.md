@@ -87,6 +87,8 @@ does not need to know about the SQLAlchemy session.
 Device listing, registration, status, and health summary ports are grouped in
 `application/device_ports.py`, keeping heartbeat/status mapping outside the
 HTTP adapter.
+The composite maintenance read port is defined separately in
+`application/maintenance_ports.py`.
 
 The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
 to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping

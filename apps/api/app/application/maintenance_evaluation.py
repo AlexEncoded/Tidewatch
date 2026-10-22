@@ -7,7 +7,7 @@ from .battery_health import analyze_battery_health_for_buoy
 from .device_health import summarize_device_health_for_buoy
 from .maintenance_issues import build_maintenance_issues_for_buoy
 from .movement_analysis import analyze_movement_for_buoy
-from .ports import MaintenanceReader
+from .maintenance_ports import MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
 from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.buoy import BuoySnapshot
