@@ -50,6 +50,8 @@ from .fleet_ports import (
 from .sensor_ports import (
     ImuTelemetryGateway,
     ImuTelemetryReader,
+    AmbientLightTelemetryGateway,
+    MarineCurrentTelemetryGateway,
     PressureTelemetryGateway,
     PressureTelemetryReader,
     SalinityTelemetryGateway,
@@ -57,6 +59,7 @@ from .sensor_ports import (
     SensorHealthReader,
     TemperatureTelemetryGateway,
     TemperatureTelemetryReader,
+    WindTelemetryGateway,
 )
 
 
@@ -70,49 +73,6 @@ class DatabaseHealthReader(Protocol):
 
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class AmbientLightTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_ambient_light(
-        self, reading: AmbientLightTelemetrySnapshot
-    ) -> AmbientLightTelemetrySnapshot:
-        ...
-
-    def list_ambient_light(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[AmbientLightTelemetrySnapshot]:
-        ...
-
-
-class WindTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_wind(self, reading: WindTelemetrySnapshot) -> WindTelemetrySnapshot:
-        ...
-
-    def list_wind(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[WindTelemetrySnapshot]:
-        ...
-
-
-class MarineCurrentTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_marine_current(
-        self, reading: MarineCurrentTelemetrySnapshot
-    ) -> MarineCurrentTelemetrySnapshot:
-        ...
-
-    def list_marine_current(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[MarineCurrentTelemetrySnapshot]:
         ...
 
 
