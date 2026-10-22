@@ -213,6 +213,14 @@ def test_wave_analysis_reader_is_grouped_with_cross_context_analysis_ports() -> 
     assert WaveAnalysisReader.__module__ == "app.application.analysis_ports"
 
 
+def test_database_health_reader_is_grouped_with_system_ports() -> None:
+    from app.application.system_ports import (
+        DatabaseHealthReader as SystemDatabaseHealthReader,
+    )
+
+    assert SystemDatabaseHealthReader.__module__ == "app.application.system_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

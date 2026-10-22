@@ -9,7 +9,7 @@ from ..adapter_dependencies import (
     get_database_health_reader,
     get_telemetry_queue_metrics_reader,
 )
-from ..application.ports import DatabaseHealthReader
+from ..application.system_ports import DatabaseHealthReader
 from ..application.telemetry_ports import TelemetryQueueMetricsReader
 from ..application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from ..metrics import (

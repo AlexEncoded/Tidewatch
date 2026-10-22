@@ -1,6 +1,5 @@
-"""Input ports shared by application services."""
+"""Backward-compatible facade for context-specific application ports."""
 
-from typing import Protocol, runtime_checkable
 from .telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionJobStore,
@@ -60,14 +59,4 @@ from .sensor_ports import (
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
 )
-
-
-@runtime_checkable
-class DatabaseHealthReader(Protocol):
-    """Port for checking whether the primary database can answer queries."""
-
-    def check_database(self) -> None:
-        ...
-
-
-# Shared system health port for API liveness and readiness adapters.
+from .system_ports import DatabaseHealthReader

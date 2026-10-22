@@ -3,7 +3,7 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from .application.ports import DatabaseHealthReader
+from .application.system_ports import DatabaseHealthReader
 
 
 class SQLDatabaseHealthReader(DatabaseHealthReader):

@@ -92,6 +92,8 @@ The composite maintenance read port is defined separately in
 `application/maintenance_ports.py`.
 Wave analysis, which composes sensor and fleet reads, uses
 `application/analysis_ports.py`.
+The database liveness/readiness input port is in
+`application/system_ports.py`.
 
 The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
 to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping

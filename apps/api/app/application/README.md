@@ -37,6 +37,7 @@ The composite read contract for maintenance evaluation lives in
 `maintenance_ports.py` and explicitly composes those contexts.
 Cross-context analysis contracts, such as wave analysis combining sensor and
 fleet reads, live in `analysis_ports.py`.
+The database liveness/readiness contract lives in `system_ports.py`.
 The shared `ports.py` remains a compatibility facade during incremental
 migration.
 
