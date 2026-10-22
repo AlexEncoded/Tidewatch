@@ -5,10 +5,6 @@ from sqlalchemy.orm import Session
 
 from .application.ports import (
     BatteryTelemetryReader,
-    RainfallTelemetryGateway,
-    HumidityTelemetryGateway,
-    AirTemperatureTelemetryGateway,
-    AtmosphericPressureTelemetryGateway,
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     DeviceHealthReader,
@@ -38,13 +34,17 @@ from .application.telemetry_ports import (
     TelemetryQueueMetricsReader,
 )
 from .application.sensor_ports import (
+    AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     ImuTelemetryGateway,
+    HumidityTelemetryGateway,
     MarineCurrentTelemetryGateway,
     PHTelemetryGateway,
+    RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,

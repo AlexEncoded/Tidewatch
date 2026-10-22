@@ -72,7 +72,8 @@ Fleet registration, status, location, and summary contracts are grouped in
 Redundant sensor-health read and write contracts are grouped in
 `application/sensor_ports.py`, as are core temperature, pressure, salinity,
 IMU, ambient-light, wind, current, and water-chemistry gateways (turbidity,
-dissolved oxygen, pH, conductivity, and chlorophyll-A).
+dissolved oxygen, pH, conductivity, and chlorophyll-A), plus weather gateways
+for rainfall, humidity, air temperature, and atmospheric pressure.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service
