@@ -25,11 +25,6 @@ from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
 from ..adapter_dependencies import get_sensor_health_reader
 from ..adapter_dependencies import get_sensor_health_check_gateway
 from ..application.ports import (
-    TurbidityTelemetryGateway,
-    DissolvedOxygenTelemetryGateway,
-    PHTelemetryGateway,
-    ConductivityTelemetryGateway,
-    ChlorophyllATelemetryGateway,
     RainfallTelemetryGateway,
     HumidityTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -39,13 +34,18 @@ from ..application.ports import (
 )
 from ..application.sensor_ports import (
     AmbientLightTelemetryGateway,
+    ChlorophyllATelemetryGateway,
+    ConductivityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
+    PHTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,
     SensorHealthReader,
     TemperatureTelemetryGateway,
+    TurbidityTelemetryGateway,
     WindTelemetryGateway,
 )
 from ..application.sensor_health import (

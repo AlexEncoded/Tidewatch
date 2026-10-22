@@ -118,31 +118,41 @@ def test_fleet_ports_are_grouped_by_context() -> None:
 def test_sensor_health_ports_are_grouped_by_context() -> None:
     from app.application.sensor_ports import (
         AmbientLightTelemetryGateway,
+        ChlorophyllATelemetryGateway,
+        ConductivityTelemetryGateway,
+        DissolvedOxygenTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
+        PHTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
         SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
+        TurbidityTelemetryGateway,
         WindTelemetryGateway,
     )
 
     for port in (
         AmbientLightTelemetryGateway,
+        ChlorophyllATelemetryGateway,
+        ConductivityTelemetryGateway,
+        DissolvedOxygenTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
+        PHTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
         SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
+        TurbidityTelemetryGateway,
         WindTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
