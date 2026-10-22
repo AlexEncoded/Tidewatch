@@ -68,6 +68,7 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
+        AcousticAltimeterReadingEntity,
         AirTemperatureReadingEntity,
         AmbientLightReadingEntity,
         AtmosphericPressureReadingEntity,
@@ -82,11 +83,13 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
         SalinityReadingEntity,
         TemperatureReadingEntity,
         TurbidityReadingEntity,
+        UnderwaterAcousticReadingEntity,
         ConductivityReadingEntity,
         WindReadingEntity,
     )
 
     assert AmbientLightReadingEntity.__module__ == "app.sensor_entities"
+    assert AcousticAltimeterReadingEntity.__module__ == "app.sensor_entities"
     assert AirTemperatureReadingEntity.__module__ == "app.sensor_entities"
     assert AtmosphericPressureReadingEntity.__module__ == "app.sensor_entities"
     assert ChlorophyllAReadingEntity.__module__ == "app.sensor_entities"
@@ -98,6 +101,7 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     assert SalinityReadingEntity.__module__ == "app.sensor_entities"
     assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
     assert TurbidityReadingEntity.__module__ == "app.sensor_entities"
+    assert UnderwaterAcousticReadingEntity.__module__ == "app.sensor_entities"
     assert ImuReadingEntity.__module__ == "app.sensor_entities"
     assert MarineCurrentReadingEntity.__module__ == "app.sensor_entities"
     assert PHReadingEntity.__module__ == "app.sensor_entities"

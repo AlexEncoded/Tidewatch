@@ -83,7 +83,8 @@ Fleet identity, physical-device, and location-history ORM entities are grouped i
 shared entities module while they are separated incrementally by context.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
 turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
-air-temperature, and atmospheric-pressure mappings are grouped in
+air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-
+acoustic mappings are grouped in
 `apps/api/app/sensor_entities.py`.
 Physical-device registration, heartbeat and status operations use a dedicated
 `DeviceRepository`.

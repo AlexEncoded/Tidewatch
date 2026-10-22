@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
 from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity, DeviceEntity
 from .sensor_entities import (
+    AcousticAltimeterReadingEntity,
     AirTemperatureReadingEntity,
     AmbientLightReadingEntity,
     AtmosphericPressureReadingEntity,
@@ -21,38 +22,9 @@ from .sensor_entities import (
     TemperatureReadingEntity,
     TurbidityReadingEntity,
     RainfallReadingEntity,
+    UnderwaterAcousticReadingEntity,
     WindReadingEntity,
 )
-
-
-class AcousticAltimeterReadingEntity(Base):
-    __tablename__ = "acoustic_altimeter_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    depth_meters: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="acoustic_altimeter_readings")
-
-
-class UnderwaterAcousticReadingEntity(Base):
-    __tablename__ = "underwater_acoustic_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    echo_intensity_db: Mapped[float] = mapped_column(Float, nullable=False)
-    sensor_channel: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    device_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    sensor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="underwater_acoustic_readings")
 
 
 class SensorHealthCheckEntity(Base):
