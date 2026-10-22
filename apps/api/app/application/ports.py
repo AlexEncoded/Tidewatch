@@ -28,6 +28,7 @@ from .device_ports import (
     DeviceStatusRegistry,
 )
 from .maintenance_ports import MaintenanceReader
+from .analysis_ports import WaveAnalysisReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -69,11 +70,4 @@ class DatabaseHealthReader(Protocol):
         ...
 
 
-class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
-    """Compose sensor and fleet reads required by wave analysis."""
-
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-# This cross-context protocol remains re-exported here for compatibility.
+# Shared system health port for API liveness and readiness adapters.

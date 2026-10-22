@@ -7,7 +7,7 @@ from ..domain.wave import (
     estimate_fused_wave_period,
     estimate_wave,
 )
-from .ports import WaveAnalysisReader
+from .analysis_ports import WaveAnalysisReader
 
 
 def analyze_wave_for_buoy(

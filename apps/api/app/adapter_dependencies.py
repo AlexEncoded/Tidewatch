@@ -4,9 +4,9 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from .application.ports import (
-    WaveAnalysisReader,
     DatabaseHealthReader,
 )
+from .application.analysis_ports import WaveAnalysisReader
 from .application.maintenance_ports import MaintenanceReader
 from .application.fleet_ports import (
     BuoyLocationHistoryReader,

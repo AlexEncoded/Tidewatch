@@ -207,6 +207,12 @@ def test_maintenance_reader_is_grouped_with_maintenance_ports() -> None:
     assert MaintenanceReader.__module__ == "app.application.maintenance_ports"
 
 
+def test_wave_analysis_reader_is_grouped_with_cross_context_analysis_ports() -> None:
+    from app.application.analysis_ports import WaveAnalysisReader
+
+    assert WaveAnalysisReader.__module__ == "app.application.analysis_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,
