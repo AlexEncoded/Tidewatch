@@ -1,29 +1,12 @@
 """Application service for registering physical buoy devices."""
 
-from typing import Protocol
-
 from ..domain.devices import (
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceSnapshot,
     validate_device_registration,
 )
-
-
-class DeviceRegistry(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
-        ...
-
-    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        ...
-
-    def create_device_snapshot(
-        self, buoy_id: str, device: DeviceRegistrationCommand
-    ) -> DeviceSnapshot:
-        ...
+from .device_ports import DeviceRegistry
 
 
 def register_device(

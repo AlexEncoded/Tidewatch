@@ -28,9 +28,9 @@ supported redundant A/B sensor family. Storage adapters therefore implement an
 explicit query contract instead of being passed as an untyped repository
 object.
 
-Fleet lifecycle and location contracts live in `fleet_ports.py`, while durable
-telemetry and its metrics/unit-of-work contracts live in `telemetry_ports.py`.
-Registered-device health listing is defined with the device-listing use case.
+Fleet lifecycle and location contracts live in `fleet_ports.py`, device
+contracts in `device_ports.py`, and durable telemetry and its metrics/unit-of-
+work contracts in `telemetry_ports.py`.
 The shared `ports.py` remains a compatibility facade during incremental
 migration.
 

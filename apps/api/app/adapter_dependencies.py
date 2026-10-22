@@ -52,9 +52,12 @@ from .application.sensor_ports import (
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
 )
-from .application.device_listing import DeviceHealthReader, DeviceListingReader
-from .application.device_registration import DeviceRegistry
-from .application.device_status import DeviceStatusRegistry
+from .application.device_ports import (
+    DeviceHealthReader,
+    DeviceListingReader,
+    DeviceRegistry,
+    DeviceStatusRegistry,
+)
 from .database import get_db
 from .database_health import SQLDatabaseHealthReader
 from .device_repository import DeviceRepository

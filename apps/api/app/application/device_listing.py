@@ -1,28 +1,7 @@
 """Application service for listing devices assigned to a buoy."""
 
-from typing import Protocol
-
 from ..domain.devices import DeviceSnapshot
-
-
-class DeviceListingReader(Protocol):
-    """Input port for reading registered devices."""
-
-    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        ...
-
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class DeviceHealthReader(Protocol):
-    """Input port for the registered-device health summary."""
-
-    def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        ...
-
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
+from .device_ports import DeviceHealthReader, DeviceListingReader
 
 
 def list_devices_for_buoy(

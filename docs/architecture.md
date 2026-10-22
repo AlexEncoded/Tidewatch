@@ -84,9 +84,9 @@ The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service
 does not need to know about the SQLAlchemy session.
 
-The physical-device health summary follows the same pattern through the
-`DeviceHealthReader` port, defined alongside device listing and keeping
-heartbeat/status mapping outside the HTTP adapter.
+Device listing, registration, status, and health summary ports are grouped in
+`application/device_ports.py`, keeping heartbeat/status mapping outside the
+HTTP adapter.
 
 The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
 to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping

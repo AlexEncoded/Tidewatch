@@ -182,10 +182,21 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.sensor_ports"
 
 
-def test_device_health_reader_is_grouped_with_device_listing() -> None:
-    from app.application.device_listing import DeviceHealthReader
+def test_device_ports_are_grouped_by_context() -> None:
+    from app.application.device_ports import (
+        DeviceHealthReader,
+        DeviceListingReader,
+        DeviceRegistry,
+        DeviceStatusRegistry,
+    )
 
-    assert DeviceHealthReader.__module__ == "app.application.device_listing"
+    for port in (
+        DeviceHealthReader,
+        DeviceListingReader,
+        DeviceRegistry,
+        DeviceStatusRegistry,
+    ):
+        assert port.__module__ == "app.application.device_ports"
 
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:

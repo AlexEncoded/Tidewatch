@@ -34,7 +34,12 @@ from .fleet_ports import (
     MovementAnalysisReader,
     StaleBuoyReader,
 )
-from .device_listing import DeviceHealthReader
+from .device_ports import (
+    DeviceHealthReader,
+    DeviceListingReader,
+    DeviceRegistry,
+    DeviceStatusRegistry,
+)
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,

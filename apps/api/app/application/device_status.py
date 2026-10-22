@@ -1,21 +1,7 @@
 """Application service for changing the operational state of a device."""
 
-from typing import Protocol
-
 from ..domain.devices import DeviceOwnershipError, DeviceSnapshot, DeviceStatusCommand
-
-
-class DeviceStatusRegistry(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def update_device_status(
-        self,
-        buoy_id: str,
-        device_id: str,
-        update: DeviceStatusCommand,
-    ) -> DeviceSnapshot | None:
-        ...
+from .device_ports import DeviceStatusRegistry
 
 
 def update_device_status(
