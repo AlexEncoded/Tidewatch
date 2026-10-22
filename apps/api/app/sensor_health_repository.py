@@ -34,7 +34,7 @@ from .domain.telemetry import (
     UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
-from .entities import SensorHealthCheckEntity
+from .sensor_entities import SensorHealthCheckEntity
 from .temperature_repository import TemperatureRepository
 from .humidity_repository import HumidityRepository
 from .air_temperature_repository import AirTemperatureRepository

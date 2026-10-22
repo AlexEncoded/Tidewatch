@@ -86,6 +86,8 @@ turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
 air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-
 acoustic mappings are grouped in
 `apps/api/app/sensor_entities.py`.
+Sensor-health snapshots and battery readings are also mapped there; alert and
+telemetry-ingestion job entities remain in the shared registry module.
 Physical-device registration, heartbeat and status operations use a dedicated
 `DeviceRepository`.
 Battery persistence and history queries use `BatteryRepository`, which composes

@@ -22,56 +22,11 @@ from .sensor_entities import (
     TemperatureReadingEntity,
     TurbidityReadingEntity,
     RainfallReadingEntity,
+    BatteryReadingEntity,
+    SensorHealthCheckEntity,
     UnderwaterAcousticReadingEntity,
     WindReadingEntity,
 )
-
-
-class SensorHealthCheckEntity(Base):
-    __tablename__ = "sensor_health_checks"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    status: Mapped[str] = mapped_column(String(20), nullable=False)
-    temperature_delta_celsius: Mapped[float | None] = mapped_column(Float, nullable=True)
-    pressure_delta_kpa: Mapped[float | None] = mapped_column(Float, nullable=True)
-    salinity_delta_psu: Mapped[float | None] = mapped_column(Float, nullable=True)
-    imu_acceleration_delta_mps2: Mapped[float | None] = mapped_column(Float, nullable=True)
-    ambient_light_delta_lux: Mapped[float | None] = mapped_column(Float, nullable=True)
-    wind_speed_delta_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
-    wind_direction_delta_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
-    marine_current_speed_delta_mps: Mapped[float | None] = mapped_column(Float, nullable=True)
-    marine_current_direction_delta_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
-    turbidity_delta_ntu: Mapped[float | None] = mapped_column(Float, nullable=True)
-    dissolved_oxygen_delta_mg_l: Mapped[float | None] = mapped_column(Float, nullable=True)
-    ph_delta: Mapped[float | None] = mapped_column(Float, nullable=True)
-    conductivity_delta_us_cm: Mapped[float | None] = mapped_column(Float, nullable=True)
-    chlorophyll_a_delta_ug_l: Mapped[float | None] = mapped_column(Float, nullable=True)
-    rainfall_delta_mm_h: Mapped[float | None] = mapped_column(Float, nullable=True)
-    humidity_delta_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
-    air_temperature_delta_celsius: Mapped[float | None] = mapped_column(Float, nullable=True)
-    atmospheric_pressure_delta_kpa: Mapped[float | None] = mapped_column(Float, nullable=True)
-    acoustic_altimeter_delta_meters: Mapped[float | None] = mapped_column(Float, nullable=True)
-    underwater_acoustic_delta_db: Mapped[float | None] = mapped_column(Float, nullable=True)
-    degraded_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
-    missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
-    decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
-    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship()
-
-
-class BatteryReadingEntity(Base):
-    __tablename__ = "battery_readings"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    buoy_id: Mapped[str] = mapped_column(ForeignKey("buoys.id", ondelete="CASCADE"), index=True)
-    device_id: Mapped[str] = mapped_column(String(1), nullable=False, default="A")
-    physical_device_id: Mapped[str | None] = mapped_column(
-        ForeignKey("devices.device_id", ondelete="SET NULL"), nullable=True, index=True
-    )
-    battery_percent: Mapped[float] = mapped_column(Float, nullable=False)
-    measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="battery_readings")
 
 
 class TemperatureAlertEntity(Base):

@@ -81,6 +81,8 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
         PressureReadingEntity,
         RainfallReadingEntity,
         SalinityReadingEntity,
+        SensorHealthCheckEntity,
+        BatteryReadingEntity,
         TemperatureReadingEntity,
         TurbidityReadingEntity,
         UnderwaterAcousticReadingEntity,
@@ -99,6 +101,8 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     assert PressureReadingEntity.__module__ == "app.sensor_entities"
     assert RainfallReadingEntity.__module__ == "app.sensor_entities"
     assert SalinityReadingEntity.__module__ == "app.sensor_entities"
+    assert SensorHealthCheckEntity.__module__ == "app.sensor_entities"
+    assert BatteryReadingEntity.__module__ == "app.sensor_entities"
     assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
     assert TurbidityReadingEntity.__module__ == "app.sensor_entities"
     assert UnderwaterAcousticReadingEntity.__module__ == "app.sensor_entities"
