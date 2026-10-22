@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from .application.system_ports import DatabaseHealthReader
+from .application.battery_ports import BatteryTelemetryReader
 from .application.analysis_ports import WaveAnalysisReader
 from .application.maintenance_ports import MaintenanceReader
 from .application.fleet_ports import (
@@ -27,7 +28,6 @@ from .application.sensor_ports import (
     AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
-    BatteryTelemetryReader,
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,

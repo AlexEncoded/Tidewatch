@@ -28,11 +28,11 @@ from .device_ports import (
 )
 from .maintenance_ports import MaintenanceReader
 from .analysis_ports import WaveAnalysisReader
+from .battery_ports import BatteryTelemetryReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
-    BatteryTelemetryReader,
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,

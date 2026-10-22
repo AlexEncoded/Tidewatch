@@ -11,7 +11,7 @@ from ..application.telemetry_ingestion import build_battery_snapshot
 from ..domain.devices import DeviceOwnershipError
 from ..domain.devices import validate_device_ownership
 from ..adapter_dependencies import get_battery_telemetry_reader
-from ..application.sensor_ports import BatteryTelemetryReader
+from ..application.battery_ports import BatteryTelemetryReader
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,

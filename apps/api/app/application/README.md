@@ -29,8 +29,9 @@ explicit query contract instead of being passed as an untyped repository
 object.
 
 Fleet lifecycle and location contracts live in `fleet_ports.py`, device
-contracts in `device_ports.py`, and durable telemetry and its metrics/unit-of-
-work contracts in `telemetry_ports.py`.
+contracts in `device_ports.py`, battery telemetry in `battery_ports.py`, and
+durable telemetry, queueing, metrics, and unit-of-work contracts in
+`telemetry_ports.py`.
 The composite telemetry ingestion gateway is grouped there alongside its
 queueing, transaction, and metrics contracts.
 The composite read contract for maintenance evaluation lives in
@@ -46,7 +47,8 @@ pressure, salinity, IMU, ambient-light, wind, and current gateway contracts use
 `sensor_ports.py`; water-chemistry gateways for turbidity, dissolved oxygen, pH,
 conductivity, and chlorophyll-A are grouped there as well. Remaining sensor
 families, including weather and acoustic gateways, are grouped there as well.
-Battery telemetry reading is also grouped in `sensor_ports.py`.
+That module also retains the cross-sensor health, quality, and analysis
+contracts.
 Sensor quality-summary reads use that module too.
 Pressure/temperature analysis and alert persistence contracts are grouped in
 the sensor ports as well.

@@ -123,7 +123,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         AirTemperatureTelemetryGateway,
         AtmosphericPressureTelemetryGateway,
-        BatteryTelemetryReader,
         ChlorophyllATelemetryGateway,
         ConductivityTelemetryGateway,
         DissolvedOxygenTelemetryGateway,
@@ -155,7 +154,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         AirTemperatureTelemetryGateway,
         AtmosphericPressureTelemetryGateway,
-        BatteryTelemetryReader,
         ChlorophyllATelemetryGateway,
         ConductivityTelemetryGateway,
         DissolvedOxygenTelemetryGateway,
@@ -182,6 +180,14 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         WindTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
+
+
+def test_battery_port_is_grouped_by_context() -> None:
+    from app.application.battery_ports import BatteryTelemetryReader
+    from app.application.ports import BatteryTelemetryReader as LegacyBatteryTelemetryReader
+
+    assert BatteryTelemetryReader.__module__ == "app.application.battery_ports"
+    assert LegacyBatteryTelemetryReader is BatteryTelemetryReader
 
 
 def test_device_ports_are_grouped_by_context() -> None:

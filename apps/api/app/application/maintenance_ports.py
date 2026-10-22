@@ -3,9 +3,10 @@
 from typing import Protocol, runtime_checkable
 
 from ..domain.buoy import BuoySnapshot
+from .battery_ports import BatteryTelemetryReader
 from .device_ports import DeviceHealthReader
 from .fleet_ports import LocationTelemetryReader
-from .sensor_ports import BatteryTelemetryReader, SensorHealthReader
+from .sensor_ports import SensorHealthReader
 
 
 @runtime_checkable

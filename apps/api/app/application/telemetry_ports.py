@@ -7,13 +7,13 @@ from ..domain.buoy import BuoySnapshot
 from ..domain.devices import DeviceSnapshot
 from ..domain.telemetry import LocationTelemetrySnapshot
 from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
+from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
-    BatteryTelemetryReader,
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,

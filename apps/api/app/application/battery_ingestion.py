@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from ..domain.devices import DeviceOwnershipError, validate_device_ownership
 from ..domain.telemetry import BatteryTelemetrySnapshot
-from .sensor_ports import BatteryTelemetryReader
+from .battery_ports import BatteryTelemetryReader
 
 
 def record_battery_reading(
