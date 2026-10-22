@@ -603,7 +603,7 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
 def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
-    assert "app.application.ports" in modules
+    assert "app.application.ports" not in modules
     assert "app.domain.wave" in modules
     assert not any(
         module == "app"

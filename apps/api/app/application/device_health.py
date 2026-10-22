@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from ..domain.device_health import DeviceHealthSnapshot, assess_device_liveness
-from .ports import DeviceHealthReader
+from .device_ports import DeviceHealthReader
 
 
 def summarize_device_health_for_buoy(
