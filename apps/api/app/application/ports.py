@@ -51,6 +51,7 @@ from .sensor_ports import (
     MarineCurrentTelemetryGateway,
     PressureTelemetryGateway,
     PressureTelemetryReader,
+    QualitySummaryReader,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,
@@ -78,14 +79,6 @@ class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
 
 class PressureAnalysisReader(PressureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class QualitySummaryReader(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def quality_counts(self, buoy_id: str) -> dict[str, int]:
         ...
 
 

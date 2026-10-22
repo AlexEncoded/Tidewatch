@@ -132,6 +132,7 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryGateway,
         PressureTelemetryReader,
         PHTelemetryGateway,
+        QualitySummaryReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
@@ -159,6 +160,7 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryGateway,
         PressureTelemetryReader,
         PHTelemetryGateway,
+        QualitySummaryReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
@@ -1039,7 +1041,7 @@ def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
         raise AssertionError("Unknown metrics must fail clearly")
 
 
-def test_quality_router_depends_on_application_port_not_repository_adapter() -> None:
+def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {
         node.module
@@ -1048,7 +1050,7 @@ def test_quality_router_depends_on_application_port_not_repository_adapter() -> 
     }
 
     assert "repository" not in imported_modules
-    assert "application.ports" in imported_modules
+    assert "application.sensor_ports" in imported_modules
 
 
 def test_fleet_telemetry_router_depends_on_application_port_not_repository_adapter() -> None:
