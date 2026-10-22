@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.telemetry import ChlorophyllATelemetrySnapshot
-from .entities import ChlorophyllAReadingEntity
 from .persistence_utils import is_newer_timestamp
+from .sensor_entities import ChlorophyllAReadingEntity
 
 
 class ChlorophyllARepository:
