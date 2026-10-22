@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .domain.telemetry_job import TelemetryIngestionJobSnapshot
-from .entities import TelemetryIngestionJobEntity
+from .telemetry_entities import TelemetryIngestionJobEntity
 from .application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 
 

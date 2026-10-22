@@ -66,6 +66,14 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
 
 
+def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
+    from app.alert_entities import TemperatureAlertEntity
+    from app.telemetry_entities import TelemetryIngestionJobEntity
+
+    assert TemperatureAlertEntity.__module__ == "app.alert_entities"
+    assert TelemetryIngestionJobEntity.__module__ == "app.telemetry_entities"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

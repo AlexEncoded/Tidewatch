@@ -11,7 +11,8 @@ from .domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
 )
-from .entities import BuoyEntity, TemperatureAlertEntity
+from .alert_entities import TemperatureAlertEntity
+from .fleet_entities import BuoyEntity
 from .temperature_repository import TemperatureRepository
 
 
