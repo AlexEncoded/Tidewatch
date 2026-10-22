@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 
 from ..domain.battery_health import BatteryHealthSnapshot, estimate_battery_health
-from .ports import BatteryTelemetryReader
+from .sensor_ports import BatteryTelemetryReader
 
 
 def analyze_battery_health_for_buoy(

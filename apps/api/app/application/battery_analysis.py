@@ -5,7 +5,7 @@ from ..domain.battery_analysis import (
     BatterySample,
     estimate_battery_discharge,
 )
-from .ports import BatteryTelemetryReader
+from .sensor_ports import BatteryTelemetryReader
 
 
 def analyze_battery_for_buoy(

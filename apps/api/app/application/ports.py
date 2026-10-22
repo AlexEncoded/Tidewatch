@@ -4,7 +4,6 @@ from typing import Protocol, runtime_checkable
 from datetime import datetime
 
 from ..domain.telemetry import (
-    BatteryTelemetrySnapshot,
     LocationTelemetrySnapshot,
     SalinityTelemetrySnapshot,
     AmbientLightTelemetrySnapshot,
@@ -40,6 +39,7 @@ from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
+    BatteryTelemetryReader,
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
@@ -78,39 +78,6 @@ class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
 
 class PressureAnalysisReader(PressureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class BatteryTelemetryReader(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
-        ...
-
-    def mark_device_seen_by_id(
-        self, device_id: str, seen_at: datetime
-    ) -> DeviceSnapshot | None:
-        ...
-
-    def add_battery(self, reading: BatteryTelemetrySnapshot) -> BatteryTelemetrySnapshot:
-        ...
-
-    def list_batteries(
-        self,
-        buoy_id: str,
-        limit: int,
-        device_id: str | None = None,
-        physical_device_id: str | None = None,
-    ) -> list[BatteryTelemetrySnapshot]:
-        ...
-
-    def latest_battery(
-        self,
-        buoy_id: str,
-        device_id: str | None = None,
-        physical_device_id: str | None = None,
-    ) -> BatteryTelemetrySnapshot | None:
         ...
 
 

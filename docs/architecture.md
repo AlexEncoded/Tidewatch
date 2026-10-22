@@ -75,6 +75,7 @@ IMU, ambient-light, wind, current, and water-chemistry gateways (turbidity,
 dissolved oxygen, pH, conductivity, and chlorophyll-A), plus weather gateways
 for rainfall, humidity, air temperature, and atmospheric pressure, and acoustic
 gateways for altimeter and underwater acoustic readings.
+Battery telemetry reading uses the same sensor-port module.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service
