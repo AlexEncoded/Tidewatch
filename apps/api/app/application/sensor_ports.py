@@ -268,6 +268,36 @@ class AtmosphericPressureTelemetryGateway(Protocol):
         ...
 
 
+class AcousticAltimeterTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_acoustic_altimeter(
+        self, reading: AcousticAltimeterTelemetrySnapshot
+    ) -> AcousticAltimeterTelemetrySnapshot:
+        ...
+
+    def list_acoustic_altimeter(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[AcousticAltimeterTelemetrySnapshot]:
+        ...
+
+
+class UnderwaterAcousticTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_underwater_acoustic(
+        self, reading: UnderwaterAcousticTelemetrySnapshot
+    ) -> UnderwaterAcousticTelemetrySnapshot:
+        ...
+
+    def list_underwater_acoustic(
+        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+    ) -> list[UnderwaterAcousticTelemetrySnapshot]:
+        ...
+
+
 @runtime_checkable
 class SensorHealthReader(Protocol):
     """Read sensor telemetry and persisted redundant-health checks."""

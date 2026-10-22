@@ -24,11 +24,8 @@ from ..adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
 from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
 from ..adapter_dependencies import get_sensor_health_reader
 from ..adapter_dependencies import get_sensor_health_check_gateway
-from ..application.ports import (
-    AcousticAltimeterTelemetryGateway,
-    UnderwaterAcousticTelemetryGateway,
-)
 from ..application.sensor_ports import (
+    AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
@@ -46,6 +43,7 @@ from ..application.sensor_ports import (
     SensorHealthReader,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
 )
 from ..application.sensor_health import (
