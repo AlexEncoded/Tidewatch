@@ -116,10 +116,30 @@ def test_fleet_ports_are_grouped_by_context() -> None:
 
 
 def test_sensor_health_ports_are_grouped_by_context() -> None:
-    from app.application.sensor_ports import SensorHealthCheckGateway, SensorHealthReader
+    from app.application.sensor_ports import (
+        ImuTelemetryGateway,
+        ImuTelemetryReader,
+        PressureTelemetryGateway,
+        PressureTelemetryReader,
+        SalinityTelemetryGateway,
+        SensorHealthCheckGateway,
+        SensorHealthReader,
+        TemperatureTelemetryGateway,
+        TemperatureTelemetryReader,
+    )
 
-    assert SensorHealthCheckGateway.__module__ == "app.application.sensor_ports"
-    assert SensorHealthReader.__module__ == "app.application.sensor_ports"
+    for port in (
+        ImuTelemetryGateway,
+        ImuTelemetryReader,
+        PressureTelemetryGateway,
+        PressureTelemetryReader,
+        SalinityTelemetryGateway,
+        SensorHealthCheckGateway,
+        SensorHealthReader,
+        TemperatureTelemetryGateway,
+        TemperatureTelemetryReader,
+    ):
+        assert port.__module__ == "app.application.sensor_ports"
 
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:

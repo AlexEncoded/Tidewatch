@@ -47,7 +47,17 @@ from .fleet_ports import (
     MovementAnalysisReader,
     StaleBuoyReader,
 )
-from .sensor_ports import SensorHealthCheckGateway, SensorHealthReader
+from .sensor_ports import (
+    ImuTelemetryGateway,
+    ImuTelemetryReader,
+    PressureTelemetryGateway,
+    PressureTelemetryReader,
+    SalinityTelemetryGateway,
+    SensorHealthCheckGateway,
+    SensorHealthReader,
+    TemperatureTelemetryGateway,
+    TemperatureTelemetryReader,
+)
 
 
 @runtime_checkable
@@ -58,61 +68,8 @@ class DatabaseHealthReader(Protocol):
         ...
 
 
-class ImuTelemetryReader(Protocol):
-    def list_imu(
-        self,
-        buoy_id: str,
-        limit: int,
-        sensor_channel: str | None = "A",
-    ) -> list[ImuTelemetrySnapshot]:
-        ...
-
-
-class ImuTelemetryGateway(ImuTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_imu(self, reading: ImuTelemetrySnapshot) -> ImuTelemetrySnapshot:
-        ...
-
-
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class PressureTelemetryReader(Protocol):
-    def list_pressures(
-        self,
-        buoy_id: str,
-        limit: int,
-        sensor_channel: str | None = "A",
-    ) -> list[PressureTelemetrySnapshot]:
-        ...
-
-
-class PressureTelemetryGateway(PressureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_pressure(
-        self, reading: PressureTelemetrySnapshot
-    ) -> PressureTelemetrySnapshot:
-        ...
-
-
-class SalinityTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_salinity(
-        self, reading: SalinityTelemetrySnapshot
-    ) -> SalinityTelemetrySnapshot:
-        ...
-
-    def list_salinity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
-    ) -> list[SalinityTelemetrySnapshot]:
         ...
 
 
@@ -376,26 +333,6 @@ class DeviceHealthReader(Protocol):
         ...
 
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class TemperatureTelemetryReader(Protocol):
-    def list_temperatures(
-        self,
-        buoy_id: str,
-        limit: int,
-        sensor_channel: str | None = "A",
-    ) -> list[TemperatureTelemetrySnapshot]:
-        ...
-
-
-class TemperatureTelemetryGateway(TemperatureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_temperature(
-        self, reading: TemperatureTelemetrySnapshot
-    ) -> TemperatureTelemetrySnapshot:
         ...
 
 

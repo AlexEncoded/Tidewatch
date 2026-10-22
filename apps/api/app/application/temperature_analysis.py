@@ -1,7 +1,7 @@
 """Application service for historical temperature analysis."""
 
 from ..domain.temperature import TemperatureAnalysisSnapshot, estimate_temperature
-from .ports import TemperatureTelemetryReader
+from .sensor_ports import TemperatureTelemetryReader
 
 
 def list_valid_temperature_readings(

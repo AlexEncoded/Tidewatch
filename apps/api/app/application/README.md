@@ -33,8 +33,9 @@ telemetry and its metrics/unit-of-work contracts live in `telemetry_ports.py`.
 The shared `ports.py` remains a compatibility facade during incremental
 migration.
 
-Sensor-health reads and persisted-check writes use `sensor_ports.py`; telemetry
-family gateway contracts will be migrated to that context incrementally.
+Sensor-health reads and persisted-check writes, plus core temperature,
+pressure, salinity, and IMU gateway contracts, use `sensor_ports.py`; remaining
+sensor-family gateway contracts will move there incrementally.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while
