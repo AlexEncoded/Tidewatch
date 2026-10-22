@@ -110,35 +110,62 @@ def load_windows(
             seen_timestamps[measured_at] = window_id
             entry["timestamps"].add(measured_at)
             if altitude is not None:
-                entry["altitudes"].append(altitude)
+                entry["altitudes"].append((measured_at, altitude))
             if acceleration is not None:
-                entry["accelerations"].append(acceleration)
+                entry["accelerations"].append((measured_at, acceleration))
 
     result = {"calibration": [], "validation": []}
     coverage = {"calibration": [], "validation": []}
     intervals = {"calibration": [], "validation": []}
     for window_id, values in grouped.items():
-        if len(values["altitudes"]) < 2 or len(values["accelerations"]) < 2:
-            raise ValueError(
-                f"Window {window_id!r} needs at least two GNSS and two IMU samples"
-            )
         split = values["split"]
         start_at = min(values["timestamps"])
         end_at = max(values["timestamps"])
         intervals[split].append((window_id, start_at, end_at))
+        if not values["altitudes"] or not values["accelerations"]:
+            raise ValueError(
+                f"Window {window_id!r} needs GNSS and IMU samples with overlapping ranges"
+            )
+        shared_start = max(
+            min(timestamp for timestamp, _ in values["altitudes"]),
+            min(timestamp for timestamp, _ in values["accelerations"]),
+        )
+        shared_end = min(
+            max(timestamp for timestamp, _ in values["altitudes"]),
+            max(timestamp for timestamp, _ in values["accelerations"]),
+        )
+        if shared_start > shared_end:
+            raise ValueError(
+                f"Window {window_id!r} has no overlapping GNSS and IMU sample ranges"
+            )
+        altitudes = [
+            value
+            for timestamp, value in values["altitudes"]
+            if shared_start <= timestamp <= shared_end
+        ]
+        accelerations = [
+            value
+            for timestamp, value in values["accelerations"]
+            if shared_start <= timestamp <= shared_end
+        ]
+        if len(altitudes) < 2 or len(accelerations) < 2:
+            raise ValueError(
+                f"Window {window_id!r} needs at least two GNSS and two IMU samples "
+                "inside their shared time range"
+            )
         result[split].append(
             WaveCalibrationWindow(
-                gnss_altitudes_m=tuple(values["altitudes"]),
-                imu_vertical_accelerations_mps2=tuple(values["accelerations"]),
+                gnss_altitudes_m=tuple(altitudes),
+                imu_vertical_accelerations_mps2=tuple(accelerations),
                 reference_wave_height_m=values["reference"],
             )
         )
         coverage[split].append(
             {
                 "window_id": window_id,
-                "duration_seconds": (end_at - start_at).total_seconds(),
-                "gnss_samples": len(values["altitudes"]),
-                "imu_samples": len(values["accelerations"]),
+                "duration_seconds": (shared_end - shared_start).total_seconds(),
+                "gnss_samples": len(altitudes),
+                "imu_samples": len(accelerations),
             }
         )
     if not result["calibration"] or not result["validation"]:

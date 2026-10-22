@@ -287,3 +287,76 @@ def test_wave_calibration_cli_rejects_overlapping_time_windows(
     assert result.returncode == 2
     assert "Calibration window 'train' overlaps validation window 'holdout' in time" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_wave_calibration_cli_rejects_disjoint_sensor_time_ranges(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "disjoint-sensors.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,,0.15\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,,0.15\n"
+        "train,calibration,2026-01-01T00:00:10Z,,0.0,0.15\n"
+        "train,calibration,2026-01-01T00:00:11Z,,0.5,0.15\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "Window 'train' has no overlapping GNSS and IMU sample ranges" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_wave_calibration_cli_limits_sensor_samples_to_shared_time_range(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "shared-sensor-range.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,100.0,,0.075\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.0,0.0,0.075\n"
+        "train,calibration,2026-01-01T00:00:02Z,0.1,0.5,0.075\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            str(input_path),
+            "--max-factor",
+            "1.0",
+            "--step",
+            "0.1",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["selected_factor"] == 0.1
+    assert report["window_coverage"]["calibration"] == [
+        {
+            "window_id": "train",
+            "duration_seconds": 1.0,
+            "gnss_samples": 2,
+            "imu_samples": 2,
+        }
+    ]
