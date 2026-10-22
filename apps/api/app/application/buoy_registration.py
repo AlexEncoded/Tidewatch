@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from ..domain.buoy import BuoyRegistrationCommand, BuoySnapshot
-from .ports import BuoyRegistrar
+from .fleet_ports import BuoyRegistrar
 
 
 def register_buoy(

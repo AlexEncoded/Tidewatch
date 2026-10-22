@@ -1,7 +1,7 @@
 """Application service for the movement-analysis use case."""
 
 from ..domain.movement import MovementAnalysisSnapshot, estimate_movement
-from .ports import LocationTelemetryReader
+from .fleet_ports import LocationTelemetryReader
 
 
 def analyze_movement_for_buoy(

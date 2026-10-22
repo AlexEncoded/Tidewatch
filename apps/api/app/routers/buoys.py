@@ -12,9 +12,15 @@ from ..application.buoy_registration import register_buoy as create_buoy_use_cas
 from ..application.buoy_locations import list_buoy_locations as query_buoy_locations
 from ..adapter_dependencies import get_buoy_location_history_reader
 from ..adapter_dependencies import get_buoy_summary_reader
-from ..application.ports import BuoyLocationHistoryReader, BuoyLocationUpdater
-from ..application.ports import BuoySummaryReader
-from ..application.ports import StaleBuoyReader, BuoyStatusRegistry
+from ..application.fleet_ports import (
+    BuoyLocationHistoryReader,
+    BuoyLocationUpdater,
+    BuoySummaryReader,
+    BuoyStatusRegistry,
+    StaleBuoyReader,
+    MovementAnalysisReader,
+    BuoyRegistrar,
+)
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..adapter_dependencies import get_buoy_status_registry
 from ..adapter_dependencies import (
@@ -22,7 +28,6 @@ from ..adapter_dependencies import (
     get_buoy_registrar,
     get_movement_analysis_reader,
 )
-from ..application.ports import MovementAnalysisReader, BuoyRegistrar
 from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader

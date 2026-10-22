@@ -1,7 +1,7 @@
 """Application use case for changing a buoy's operational status."""
 
 from ..domain.buoy import BuoySnapshot, BuoyStatusCommand
-from .ports import BuoyStatusRegistry
+from .fleet_ports import BuoyStatusRegistry
 
 
 def update_buoy_status(

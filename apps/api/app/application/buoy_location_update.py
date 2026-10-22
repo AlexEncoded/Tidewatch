@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from ..domain.buoy import BuoyLocationCommand, BuoySnapshot
 from ..domain.movement import MovementAnalysisSnapshot
 from .movement_analysis import analyze_movement_for_buoy
-from .ports import BuoyLocationUpdater, LocationTelemetryReader
+from .fleet_ports import BuoyLocationUpdater, LocationTelemetryReader
 
 
 @dataclass(frozen=True)

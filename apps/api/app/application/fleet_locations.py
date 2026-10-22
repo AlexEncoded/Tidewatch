@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from ..domain.telemetry import LocationTelemetrySnapshot
-from .ports import FleetLocationReader
+from .fleet_ports import FleetLocationReader
 
 
 def list_fleet_locations(

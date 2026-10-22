@@ -88,6 +88,33 @@ def test_telemetry_ports_are_grouped_by_context() -> None:
     assert TelemetryQueueMetricsReader.__module__ == "app.application.telemetry_ports"
 
 
+def test_fleet_ports_are_grouped_by_context() -> None:
+    from app.application.fleet_ports import (
+        BuoyLocationHistoryReader,
+        BuoyLocationUpdater,
+        BuoyRegistrar,
+        BuoyStatusRegistry,
+        BuoySummaryReader,
+        FleetLocationReader,
+        LocationTelemetryReader,
+        MovementAnalysisReader,
+        StaleBuoyReader,
+    )
+
+    for port in (
+        BuoyLocationHistoryReader,
+        BuoyLocationUpdater,
+        BuoyRegistrar,
+        BuoyStatusRegistry,
+        BuoySummaryReader,
+        FleetLocationReader,
+        LocationTelemetryReader,
+        MovementAnalysisReader,
+        StaleBuoyReader,
+    ):
+        assert port.__module__ == "app.application.fleet_ports"
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,
@@ -976,7 +1003,7 @@ def test_fleet_telemetry_router_depends_on_application_port_not_repository_adapt
     }
 
     assert "repository" not in imported_modules
-    assert "application.ports" in imported_modules
+    assert "application.fleet_ports" in imported_modules
 
 
 def test_movement_route_uses_injected_reader_and_not_repository_constructor() -> None:

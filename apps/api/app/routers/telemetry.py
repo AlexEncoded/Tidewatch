@@ -9,7 +9,7 @@ from fastapi.responses import Response
 
 from ..adapter_dependencies import get_fleet_location_reader
 from ..application.fleet_locations import list_fleet_locations
-from ..application.ports import FleetLocationReader
+from ..application.fleet_ports import FleetLocationReader
 
 
 router = APIRouter()

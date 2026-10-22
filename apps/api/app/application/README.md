@@ -28,6 +28,11 @@ supported redundant A/B sensor family. Storage adapters therefore implement an
 explicit query contract instead of being passed as an untyped repository
 object.
 
+Fleet lifecycle and location contracts live in `fleet_ports.py`, while durable
+telemetry and its metrics/unit-of-work contracts live in `telemetry_ports.py`.
+The shared `ports.py` remains a compatibility facade during incremental
+migration.
+
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while
 payload construction and delivery remain testable without an HTTP client.

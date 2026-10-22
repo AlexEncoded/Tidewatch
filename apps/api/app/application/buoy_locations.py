@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from ..domain.telemetry import LocationTelemetrySnapshot
-from .ports import BuoyLocationHistoryReader
+from .fleet_ports import BuoyLocationHistoryReader
 
 
 def list_buoy_locations(

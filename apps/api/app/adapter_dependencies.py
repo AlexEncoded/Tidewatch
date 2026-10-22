@@ -4,10 +4,6 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from .application.ports import (
-    BuoyLocationHistoryReader,
-    BuoyRegistrar,
-    BuoyStatusRegistry,
-    BuoyLocationUpdater,
     BatteryTelemetryReader,
     TemperatureTelemetryGateway,
     PressureTelemetryGateway,
@@ -27,10 +23,7 @@ from .application.ports import (
     AtmosphericPressureTelemetryGateway,
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
-    StaleBuoyReader,
     DeviceHealthReader,
-    FleetLocationReader,
-    MovementAnalysisReader,
     PressureAnalysisReader,
     WaveAnalysisReader,
     TemperatureAnalysisReader,
@@ -42,7 +35,16 @@ from .application.ports import (
     TelemetryIngestionGateway,
     MaintenanceReader,
     DatabaseHealthReader,
+)
+from .application.fleet_ports import (
+    BuoyLocationHistoryReader,
+    BuoyLocationUpdater,
+    BuoyRegistrar,
+    BuoyStatusRegistry,
     BuoySummaryReader,
+    FleetLocationReader,
+    MovementAnalysisReader,
+    StaleBuoyReader,
 )
 from .application.telemetry_ports import (
     TelemetryBatchUnitOfWork,

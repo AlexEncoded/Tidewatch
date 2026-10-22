@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from ..domain.buoy import StaleBuoySnapshot
 from ..domain.staleness import stale_age_seconds
-from .ports import StaleBuoyReader
+from .fleet_ports import StaleBuoyReader
 
 
 def find_stale_buoys(

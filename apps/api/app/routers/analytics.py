@@ -18,8 +18,8 @@ from ..adapter_dependencies import (
     get_temperature_analysis_reader,
     get_temperature_alerts_reader,
 )
+from ..application.fleet_ports import MovementAnalysisReader
 from ..application.ports import (
-    MovementAnalysisReader,
     PressureAnalysisReader,
     TemperatureAnalysisReader,
     TemperatureAlertsReader,

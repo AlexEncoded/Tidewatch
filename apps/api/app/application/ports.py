@@ -25,14 +25,7 @@ from ..domain.telemetry import (
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.buoy import (
-    BuoyActivitySnapshot,
-    BuoyIdentitySnapshot,
-    BuoySnapshot,
-    BuoySummarySnapshot,
-    BuoyStatusCommand,
-    BuoyLocationCommand,
-)
+from ..domain.buoy import BuoyIdentitySnapshot, BuoySnapshot
 from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.devices import DeviceSnapshot
@@ -44,16 +37,17 @@ from .telemetry_ports import (
     TelemetryMetricSample,
     TelemetryQueueMetricsReader,
 )
-
-
-class FleetLocationReader(Protocol):
-    def list_all_locations(
-        self,
-        limit: int,
-        since: datetime | None = None,
-        until: datetime | None = None,
-    ) -> list[LocationTelemetrySnapshot]:
-        ...
+from .fleet_ports import (
+    BuoyLocationHistoryReader,
+    BuoyLocationUpdater,
+    BuoyRegistrar,
+    BuoyStatusRegistry,
+    BuoySummaryReader,
+    FleetLocationReader,
+    LocationTelemetryReader,
+    MovementAnalysisReader,
+    StaleBuoyReader,
+)
 
 
 @runtime_checkable
@@ -61,57 +55,6 @@ class DatabaseHealthReader(Protocol):
     """Port for checking whether the primary database can answer queries."""
 
     def check_database(self) -> None:
-        ...
-
-
-class StaleBuoyReader(Protocol):
-    def list_buoy_activity(self) -> list[BuoyActivitySnapshot]:
-        ...
-
-
-class BuoyStatusRegistry(Protocol):
-    def update_buoy_status(
-        self, buoy_id: str, command: BuoyStatusCommand
-    ) -> BuoySnapshot | None:
-        ...
-
-
-class BuoyLocationUpdater(Protocol):
-    def update_buoy_location(
-        self, buoy_id: str, command: BuoyLocationCommand
-    ) -> BuoySnapshot | None:
-        ...
-
-
-class BuoyRegistrar(Protocol):
-    def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
-        ...
-
-
-@runtime_checkable
-class BuoySummaryReader(Protocol):
-    def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:
-        ...
-
-
-class LocationTelemetryReader(Protocol):
-    def list_locations(
-        self,
-        buoy_id: str,
-        limit: int,
-        since: datetime | None = None,
-        until: datetime | None = None,
-    ) -> list[LocationTelemetrySnapshot]:
-        ...
-
-
-class MovementAnalysisReader(LocationTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class BuoyLocationHistoryReader(LocationTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
 
