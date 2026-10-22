@@ -3,7 +3,32 @@
 from datetime import datetime
 from typing import Callable, Protocol, TypeVar, runtime_checkable
 
+from ..domain.buoy import BuoySnapshot
+from ..domain.devices import DeviceSnapshot
+from ..domain.telemetry import LocationTelemetrySnapshot
 from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
+from .fleet_ports import LocationTelemetryReader
+from .sensor_ports import (
+    AcousticAltimeterTelemetryGateway,
+    AirTemperatureTelemetryGateway,
+    AmbientLightTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
+    BatteryTelemetryReader,
+    ChlorophyllATelemetryGateway,
+    ConductivityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
+    HumidityTelemetryGateway,
+    ImuTelemetryGateway,
+    MarineCurrentTelemetryGateway,
+    PHTelemetryGateway,
+    PressureTelemetryGateway,
+    RainfallTelemetryGateway,
+    SalinityTelemetryGateway,
+    TemperatureTelemetryGateway,
+    TurbidityTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
+    WindTelemetryGateway,
+)
 
 T = TypeVar("T")
 
@@ -60,4 +85,47 @@ class TelemetryMetrics(Protocol):
     """Port for recording telemetry counters and gauges."""
 
     def metric(self, name: str) -> TelemetryMetric:
+        ...
+
+
+@runtime_checkable
+class TelemetryIngestionGateway(
+    TemperatureTelemetryGateway,
+    PressureTelemetryGateway,
+    SalinityTelemetryGateway,
+    ImuTelemetryGateway,
+    AmbientLightTelemetryGateway,
+    WindTelemetryGateway,
+    MarineCurrentTelemetryGateway,
+    TurbidityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
+    PHTelemetryGateway,
+    ConductivityTelemetryGateway,
+    ChlorophyllATelemetryGateway,
+    RainfallTelemetryGateway,
+    HumidityTelemetryGateway,
+    AirTemperatureTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
+    AcousticAltimeterTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
+    BatteryTelemetryReader,
+    LocationTelemetryReader,
+    Protocol,
+):
+    """Write batch telemetry and support heartbeat/movement use cases."""
+
+    def add_location(self, reading: LocationTelemetrySnapshot):
+        ...
+
+    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
+        ...
+
+    def mark_device_seen_by_id(
+        self, device_id: str, seen_at: datetime
+    ) -> DeviceSnapshot | None:
+        ...
+
+    def mark_buoy_seen_by_id(
+        self, buoy_id: str, seen_at: datetime
+    ) -> BuoySnapshot | None:
         ...

@@ -80,12 +80,14 @@ def test_telemetry_ports_are_grouped_by_context() -> None:
         TelemetryIngestionJobStore,
         TelemetryMetrics,
         TelemetryQueueMetricsReader,
+        TelemetryIngestionGateway,
     )
 
     assert TelemetryBatchUnitOfWork.__module__ == "app.application.telemetry_ports"
     assert TelemetryIngestionJobStore.__module__ == "app.application.telemetry_ports"
     assert TelemetryMetrics.__module__ == "app.application.telemetry_ports"
     assert TelemetryQueueMetricsReader.__module__ == "app.application.telemetry_ports"
+    assert TelemetryIngestionGateway.__module__ == "app.application.telemetry_ports"
 
 
 def test_fleet_ports_are_grouped_by_context() -> None:

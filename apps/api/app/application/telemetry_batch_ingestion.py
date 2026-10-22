@@ -12,7 +12,7 @@ from .telemetry_ports import (
     TelemetryIngestionJobStore,
     TelemetryMetrics,
 )
-from .ports import TelemetryIngestionGateway
+from .telemetry_ports import TelemetryIngestionGateway
 from .telemetry_ingestion import (
     atomic_telemetry_batch,
     build_location_snapshot,

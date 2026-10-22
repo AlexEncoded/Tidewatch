@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from .application.ports import (
     WaveAnalysisReader,
-    TelemetryIngestionGateway,
     DatabaseHealthReader,
 )
 from .application.maintenance_ports import MaintenanceReader
@@ -21,6 +20,7 @@ from .application.fleet_ports import (
 )
 from .application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
+    TelemetryIngestionGateway,
     TelemetryMetrics,
     TelemetryQueueMetricsReader,
 )

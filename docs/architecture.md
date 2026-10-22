@@ -67,6 +67,7 @@ worker test suites.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
 `application/telemetry_ports.py`; `application/ports.py` re-exports them for
 backward compatibility while other contexts are separated incrementally.
+The composite telemetry-ingestion gateway is defined in the same module.
 Fleet registration, status, location, and summary contracts are grouped in
 `application/fleet_ports.py` with the same compatibility re-export strategy.
 Redundant sensor-health read and write contracts are grouped in

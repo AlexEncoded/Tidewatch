@@ -1,20 +1,6 @@
 """Input ports shared by application services."""
 
 from typing import Protocol, runtime_checkable
-from datetime import datetime
-
-from ..domain.telemetry import (
-    LocationTelemetrySnapshot,
-    SalinityTelemetrySnapshot,
-    AmbientLightTelemetrySnapshot,
-    WindTelemetrySnapshot,
-    MarineCurrentTelemetrySnapshot,
-)
-from ..domain.pressure import PressureTelemetrySnapshot
-from ..domain.telemetry import ImuTelemetrySnapshot
-from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.buoy import BuoySnapshot
-from ..domain.devices import DeviceSnapshot
 from .telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionJobStore,
@@ -22,6 +8,7 @@ from .telemetry_ports import (
     TelemetryMetrics,
     TelemetryMetricSample,
     TelemetryQueueMetricsReader,
+    TelemetryIngestionGateway,
 )
 from .fleet_ports import (
     BuoyLocationHistoryReader,
@@ -83,48 +70,10 @@ class DatabaseHealthReader(Protocol):
 
 
 class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
+    """Compose sensor and fleet reads required by wave analysis."""
+
     def buoy_exists(self, buoy_id: str) -> bool:
         ...
 
 
-@runtime_checkable
-class TelemetryIngestionGateway(
-    TemperatureTelemetryGateway,
-    PressureTelemetryGateway,
-    SalinityTelemetryGateway,
-    ImuTelemetryGateway,
-    AmbientLightTelemetryGateway,
-    WindTelemetryGateway,
-    MarineCurrentTelemetryGateway,
-    TurbidityTelemetryGateway,
-    DissolvedOxygenTelemetryGateway,
-    PHTelemetryGateway,
-    ConductivityTelemetryGateway,
-    ChlorophyllATelemetryGateway,
-    RainfallTelemetryGateway,
-    HumidityTelemetryGateway,
-    AirTemperatureTelemetryGateway,
-    AtmosphericPressureTelemetryGateway,
-    AcousticAltimeterTelemetryGateway,
-    UnderwaterAcousticTelemetryGateway,
-    BatteryTelemetryReader,
-    LocationTelemetryReader,
-    Protocol,
-):
-    """Write batch telemetry and support heartbeat/movement use cases."""
-
-    def add_location(self, reading: LocationTelemetrySnapshot):
-        ...
-
-    def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
-        ...
-
-    def mark_device_seen_by_id(
-        self, device_id: str, seen_at: datetime
-    ) -> DeviceSnapshot | None:
-        ...
-
-    def mark_buoy_seen_by_id(
-        self, buoy_id: str, seen_at: datetime
-    ) -> BuoySnapshot | None:
-        ...
+# This cross-context protocol remains re-exported here for compatibility.

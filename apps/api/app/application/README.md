@@ -31,6 +31,8 @@ object.
 Fleet lifecycle and location contracts live in `fleet_ports.py`, device
 contracts in `device_ports.py`, and durable telemetry and its metrics/unit-of-
 work contracts in `telemetry_ports.py`.
+The composite telemetry ingestion gateway is grouped there alongside its
+queueing, transaction, and metrics contracts.
 The composite read contract for maintenance evaluation lives in
 `maintenance_ports.py` and explicitly composes those contexts.
 The shared `ports.py` remains a compatibility facade during incremental
