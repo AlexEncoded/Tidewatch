@@ -7,6 +7,7 @@ from .application.system_ports import DatabaseHealthReader
 from .application.battery_ports import BatteryTelemetryReader
 from .application.analysis_ports import WaveAnalysisReader
 from .application.maintenance_ports import MaintenanceReader
+from .application.quality_ports import QualitySummaryReader
 from .application.fleet_ports import (
     BuoyLocationHistoryReader,
     BuoyLocationUpdater,
@@ -36,7 +37,6 @@ from .application.sensor_ports import (
     MarineCurrentTelemetryGateway,
     PHTelemetryGateway,
     PressureAnalysisReader,
-    QualitySummaryReader,
     RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,

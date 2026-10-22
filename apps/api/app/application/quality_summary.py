@@ -1,7 +1,7 @@
 """Application service for reading-quality summaries."""
 
 from ..domain.quality import QualitySummarySnapshot
-from .sensor_ports import QualitySummaryReader
+from .quality_ports import QualitySummaryReader
 
 
 def summarize_quality(

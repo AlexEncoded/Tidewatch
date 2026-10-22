@@ -134,7 +134,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryReader,
         PHTelemetryGateway,
         PressureAnalysisReader,
-        QualitySummaryReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
@@ -165,7 +164,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryReader,
         PHTelemetryGateway,
         PressureAnalysisReader,
-        QualitySummaryReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
@@ -188,6 +186,14 @@ def test_battery_port_is_grouped_by_context() -> None:
 
     assert BatteryTelemetryReader.__module__ == "app.application.battery_ports"
     assert LegacyBatteryTelemetryReader is BatteryTelemetryReader
+
+
+def test_quality_summary_port_is_grouped_by_context() -> None:
+    from app.application.ports import QualitySummaryReader as LegacyQualitySummaryReader
+    from app.application.quality_ports import QualitySummaryReader
+
+    assert QualitySummaryReader.__module__ == "app.application.quality_ports"
+    assert LegacyQualitySummaryReader is QualitySummaryReader
 
 
 def test_device_ports_are_grouped_by_context() -> None:
@@ -1117,7 +1123,7 @@ def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     }
 
     assert "repository" not in imported_modules
-    assert "application.sensor_ports" in imported_modules
+    assert "application.quality_ports" in imported_modules
 
 
 def test_fleet_telemetry_router_depends_on_application_port_not_repository_adapter() -> None:

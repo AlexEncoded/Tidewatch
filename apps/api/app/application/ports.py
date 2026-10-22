@@ -20,6 +20,7 @@ from .fleet_ports import (
     MovementAnalysisReader,
     StaleBuoyReader,
 )
+from .quality_ports import QualitySummaryReader
 from .device_ports import (
     DeviceHealthReader,
     DeviceListingReader,
@@ -45,7 +46,6 @@ from .sensor_ports import (
     PressureTelemetryGateway,
     PressureTelemetryReader,
     PressureAnalysisReader,
-    QualitySummaryReader,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,
