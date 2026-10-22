@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from ..adapter_dependencies import get_temperature_alert_store
-from ..application.ports import TemperatureAlertStore
+from ..application.sensor_ports import TemperatureAlertStore
 from ..application.temperature_alerts import (
     evaluate_and_store_temperature_alerts,
     list_stored_temperature_alerts,

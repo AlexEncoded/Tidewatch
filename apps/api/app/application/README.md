@@ -40,6 +40,8 @@ conductivity, and chlorophyll-A are grouped there as well. Remaining sensor
 families, including weather and acoustic gateways, are grouped there as well.
 Battery telemetry reading is also grouped in `sensor_ports.py`.
 Sensor quality-summary reads use that module too.
+Pressure/temperature analysis and alert persistence contracts are grouped in
+the sensor ports as well.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while

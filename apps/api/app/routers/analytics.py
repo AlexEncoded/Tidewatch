@@ -19,11 +19,11 @@ from ..adapter_dependencies import (
     get_temperature_alerts_reader,
 )
 from ..application.fleet_ports import MovementAnalysisReader
-from ..application.ports import (
+from ..application.ports import WaveAnalysisReader
+from ..application.sensor_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
     TemperatureAlertsReader,
-    WaveAnalysisReader,
 )
 from ..metrics import (
     current_estimated_wave_height_m,

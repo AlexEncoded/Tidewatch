@@ -13,8 +13,7 @@ from ..domain.telemetry import (
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.telemetry import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.buoy import BuoyIdentitySnapshot, BuoySnapshot
-from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
+from ..domain.buoy import BuoySnapshot
 from ..domain.devices import DeviceSnapshot
 from .telemetry_ports import (
     TelemetryBatchUnitOfWork,
@@ -51,6 +50,7 @@ from .sensor_ports import (
     MarineCurrentTelemetryGateway,
     PressureTelemetryGateway,
     PressureTelemetryReader,
+    PressureAnalysisReader,
     QualitySummaryReader,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
@@ -58,6 +58,9 @@ from .sensor_ports import (
     SensorHealthReader,
     TemperatureTelemetryGateway,
     TemperatureTelemetryReader,
+    TemperatureAnalysisReader,
+    TemperatureAlertsReader,
+    TemperatureAlertStore,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
@@ -77,11 +80,6 @@ class WaveAnalysisReader(ImuTelemetryReader, LocationTelemetryReader, Protocol):
         ...
 
 
-class PressureAnalysisReader(PressureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
 @runtime_checkable
 class DeviceHealthReader(Protocol):
     """Read-only port for registered physical devices."""
@@ -90,34 +88,6 @@ class DeviceHealthReader(Protocol):
         ...
 
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class TemperatureAlertsReader(TemperatureTelemetryReader, Protocol):
-    def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
-        ...
-
-
-class TemperatureAlertStore(TemperatureAlertsReader, Protocol):
-    def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertSnapshot | None:
-        ...
-
-    def create_alert(
-        self,
-        alert: TemperatureAnomalySnapshot,
-        reading_measured_at: datetime,
-    ) -> TemperatureAlertSnapshot:
-        ...
-
-    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
-        ...
-
-    def resolve_alert(self, alert_id: int) -> TemperatureAlertSnapshot | None:
         ...
 
 

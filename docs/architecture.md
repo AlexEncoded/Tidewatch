@@ -77,6 +77,8 @@ for rainfall, humidity, air temperature, and atmospheric pressure, and acoustic
 gateways for altimeter and underwater acoustic readings.
 Battery telemetry reading uses the same sensor-port module.
 Sensor quality-summary queries are defined there as well.
+Pressure and temperature analysis readers and temperature alert-store ports
+are grouped with the sensor contracts.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
 `MaintenanceRepository` composes its dedicated sources; the application service
