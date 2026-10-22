@@ -3,7 +3,11 @@ from math import inf, nan, pi, sin
 
 import pytest
 
-from app.domain.wave import estimate_wave, estimate_wave_period
+from app.domain.wave import (
+    estimate_fused_wave_period,
+    estimate_wave,
+    estimate_wave_period,
+)
 
 
 def test_estimate_wave_requires_two_samples_per_signal() -> None:
@@ -116,3 +120,32 @@ def test_estimate_wave_period_normalizes_naive_timestamps() -> None:
     ]
 
     assert estimate_wave_period(samples) == 20.0
+
+
+def test_fused_wave_period_handles_independent_irregular_sensor_cadences() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    def samples(
+        step: float, phase: float, amplitude: float
+    ) -> list[tuple[datetime, float]]:
+        elapsed = phase
+        index = 0
+        result = []
+        while elapsed <= 160:
+            result.append(
+                (
+                    start + timedelta(seconds=elapsed),
+                    amplitude * sin(2 * pi * elapsed / 8),
+                )
+            )
+            elapsed += step * (1 + 0.2 * sin(index * 1.7))
+            index += 1
+        return result
+
+    estimate = estimate_fused_wave_period(
+        samples(0.7, 0.0, 1.0),
+        samples(1.3, 0.25, 0.5),
+    )
+
+    assert estimate.estimated_period_seconds == pytest.approx(8.0, abs=0.02)
+    assert estimate.confidence == "experimental"
