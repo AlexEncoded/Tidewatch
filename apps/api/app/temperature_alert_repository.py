@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .application.alert_ports import TemperatureAlertStore
 from .domain.buoy import BuoyIdentitySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.temperature_alert import (
@@ -16,7 +17,7 @@ from .fleet_entities import BuoyEntity
 from .temperature_repository import TemperatureRepository
 
 
-class TemperatureAlertRepository:
+class TemperatureAlertRepository(TemperatureAlertStore):
     """Provide temperature-alert ports while composing the telemetry reader."""
 
     def __init__(self, db: Session) -> None:

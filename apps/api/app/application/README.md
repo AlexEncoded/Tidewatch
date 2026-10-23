@@ -30,9 +30,9 @@ object.
 
 Fleet lifecycle and location contracts live in `fleet_ports.py`, device
 contracts in `device_ports.py`, battery telemetry in `battery_ports.py`,
-quality summaries in `quality_ports.py`, and
-durable telemetry, queueing, metrics, and unit-of-work contracts in
-`telemetry_ports.py`.
+quality summaries in `quality_ports.py`, temperature anomaly and alert
+contracts in `alert_ports.py`, and durable telemetry, queueing, metrics, and
+unit-of-work contracts in `telemetry_ports.py`.
 The composite telemetry ingestion gateway is grouped there alongside its
 queueing, transaction, and metrics contracts.
 The composite read contract for maintenance evaluation lives in
@@ -50,8 +50,8 @@ conductivity, and chlorophyll-A are grouped there as well. Remaining sensor
 families, including weather and acoustic gateways, are grouped there as well.
 That module also retains the cross-sensor health, quality, and analysis
 contracts.
-Pressure/temperature analysis and alert persistence contracts are grouped in
-the sensor ports as well.
+Pressure and temperature analysis reader contracts remain grouped in the
+sensor ports.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while

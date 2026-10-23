@@ -21,6 +21,7 @@ from .fleet_ports import (
     StaleBuoyReader,
 )
 from .quality_ports import QualitySummaryReader
+from .alert_ports import TemperatureAlertsReader, TemperatureAlertStore
 from .device_ports import (
     DeviceHealthReader,
     DeviceListingReader,
@@ -53,8 +54,6 @@ from .sensor_ports import (
     TemperatureTelemetryGateway,
     TemperatureTelemetryReader,
     TemperatureAnalysisReader,
-    TemperatureAlertsReader,
-    TemperatureAlertStore,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,

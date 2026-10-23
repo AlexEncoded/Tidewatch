@@ -141,8 +141,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TemperatureAnalysisReader,
-        TemperatureAlertsReader,
-        TemperatureAlertStore,
         TurbidityTelemetryGateway,
         UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,
@@ -171,8 +169,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TemperatureAnalysisReader,
-        TemperatureAlertsReader,
-        TemperatureAlertStore,
         TurbidityTelemetryGateway,
         UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,
@@ -194,6 +190,19 @@ def test_quality_summary_port_is_grouped_by_context() -> None:
 
     assert QualitySummaryReader.__module__ == "app.application.quality_ports"
     assert LegacyQualitySummaryReader is QualitySummaryReader
+
+
+def test_temperature_alert_ports_are_grouped_by_context() -> None:
+    from app.application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
+    from app.application.ports import (
+        TemperatureAlertsReader as LegacyTemperatureAlertsReader,
+        TemperatureAlertStore as LegacyTemperatureAlertStore,
+    )
+
+    assert TemperatureAlertsReader.__module__ == "app.application.alert_ports"
+    assert TemperatureAlertStore.__module__ == "app.application.alert_ports"
+    assert LegacyTemperatureAlertsReader is TemperatureAlertsReader
+    assert LegacyTemperatureAlertStore is TemperatureAlertStore
 
 
 def test_device_ports_are_grouped_by_context() -> None:

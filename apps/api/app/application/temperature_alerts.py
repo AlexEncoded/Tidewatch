@@ -4,8 +4,7 @@ from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
 )
-from .sensor_ports import TemperatureAlertsReader
-from .sensor_ports import TemperatureAlertStore
+from .alert_ports import TemperatureAlertsReader, TemperatureAlertStore
 from .temperature_analysis import analyze_temperature_readings, list_valid_temperature_readings
 
 

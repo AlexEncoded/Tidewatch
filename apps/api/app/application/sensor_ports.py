@@ -1,12 +1,9 @@
 """Application ports for sensor diagnostics and health persistence."""
 
-from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from ..domain.buoy import BuoyIdentitySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
-from ..domain.temperature_alert import TemperatureAlertSnapshot, TemperatureAnomalySnapshot
 from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
@@ -308,29 +305,6 @@ class PressureAnalysisReader(PressureTelemetryReader, Protocol):
 
 class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class TemperatureAlertsReader(TemperatureTelemetryReader, Protocol):
-    def list_buoy_identities(self) -> list[BuoyIdentitySnapshot]:
-        ...
-
-
-class TemperatureAlertStore(TemperatureAlertsReader, Protocol):
-    def find_alert(self, buoy_id: str, measured_at: datetime) -> TemperatureAlertSnapshot | None:
-        ...
-
-    def create_alert(
-        self,
-        alert: TemperatureAnomalySnapshot,
-        reading_measured_at: datetime,
-    ) -> TemperatureAlertSnapshot:
-        ...
-
-    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
-        ...
-
-    def resolve_alert(self, alert_id: int) -> TemperatureAlertSnapshot | None:
         ...
 
 
