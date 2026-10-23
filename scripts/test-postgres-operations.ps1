@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 $script:DumpExitCode = 0
+$script:DumpCalls = 0
 $script:RestoreExitCodes = [System.Collections.Generic.Queue[int]]::new()
 $script:RestoreCalls = [System.Collections.Generic.List[string]]::new()
 
@@ -11,6 +12,7 @@ function Assert-Equal($Actual, $Expected, $Message) {
 
 function pg_dump {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    $script:DumpCalls++
     if ($script:DumpExitCode -eq 0) {
         $fileArgument = $Arguments | Where-Object { $_ -like "--file=*" } | Select-Object -First 1
         if ($null -ne $fileArgument) {
@@ -42,6 +44,18 @@ $env:DATABASE_URL = "postgresql://test:test@localhost/tidewatch"
 try {
     $backup = Join-Path $temporaryDirectory "backup.dump"
     [System.IO.File]::WriteAllText($backup, "previous complete archive")
+    $env:DATABASE_URL = ""
+    $missingBackupDatabaseUrlRejected = $false
+    try {
+        . (Join-Path $PSScriptRoot "postgres-backup.ps1") -OutputFile $backup
+    }
+    catch {
+        $missingBackupDatabaseUrlRejected = $true
+    }
+    Assert-Equal $missingBackupDatabaseUrlRejected $true "Backup must require DATABASE_URL"
+    Assert-Equal $script:DumpCalls 0 "Backup without DATABASE_URL must not invoke pg_dump"
+    $env:DATABASE_URL = "postgresql://test:test@localhost/tidewatch"
+
     $script:DumpExitCode = 1
     $backupFailed = $false
     try {
@@ -68,6 +82,16 @@ try {
     }
 
     $script:RestoreCalls.Clear()
+    $missingRestoreBackupRejected = $false
+    try {
+        . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile (Join-Path $temporaryDirectory "missing.dump") -ConfirmRestore
+    }
+    catch {
+        $missingRestoreBackupRejected = $true
+    }
+    Assert-Equal $missingRestoreBackupRejected $true "Restore must reject a missing backup archive"
+    Assert-Equal $script:RestoreCalls.Count 0 "A missing archive must not invoke pg_restore"
+
     $restoreConfirmationRequired = $false
     try {
         . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $backup
@@ -89,6 +113,18 @@ try {
     }
     Assert-Equal $emptyBackupRejected $true "An empty backup must be rejected"
     Assert-Equal $script:RestoreCalls.Count 0 "An empty backup must not invoke pg_restore"
+
+    $env:DATABASE_URL = ""
+    $missingRestoreDatabaseUrlRejected = $false
+    try {
+        . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $backup -ConfirmRestore
+    }
+    catch {
+        $missingRestoreDatabaseUrlRejected = $true
+    }
+    Assert-Equal $missingRestoreDatabaseUrlRejected $true "Restore must require DATABASE_URL"
+    Assert-Equal $script:RestoreCalls.Count 0 "Restore without DATABASE_URL must not invoke pg_restore"
+    $env:DATABASE_URL = "postgresql://test:test@localhost/tidewatch"
 
     $script:RestoreExitCodes.Enqueue(1)
     $restoreFailed = $false
