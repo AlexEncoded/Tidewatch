@@ -86,6 +86,22 @@ def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> No
     assert "list_buoy_snapshots" in called_attributes
 
 
+def test_core_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
+    for module_name in (
+        "temperature_repository.py",
+        "pressure_repository.py",
+        "salinity_repository.py",
+    ):
+        tree = ast.parse((API_APP / module_name).read_text(encoding="utf-8"))
+        called_attributes = {
+            node.func.attr
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+        }
+        assert "get_buoy" not in called_attributes
+        assert "mark_buoy_seen_by_id" in called_attributes
+
+
 def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
     from app.alert_entities import TemperatureAlertEntity
     from app.telemetry_entities import TelemetryIngestionJobEntity
