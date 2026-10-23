@@ -66,6 +66,26 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
 
 
+def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> None:
+    source = (API_APP / "buoy_summary_repository.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    imported_names = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        for alias in node.names
+    }
+    called_attributes = {
+        node.func.attr
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+
+    assert "buoy_snapshot" not in imported_names
+    assert "list_buoy_snapshots" in called_attributes
+
+
 def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
     from app.alert_entities import TemperatureAlertEntity
     from app.telemetry_entities import TelemetryIngestionJobEntity

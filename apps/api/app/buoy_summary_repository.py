@@ -3,7 +3,6 @@
 from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoySummarySnapshot
-from .persistence_mappers import buoy_snapshot
 from .buoy_registry_repository import BuoyRegistryRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository
@@ -74,26 +73,26 @@ class BuoySummaryRepository:
             "acoustic_altimeter": self.acoustic_altimeter.latest_acoustic_altimeter,
             "underwater_acoustic": self.underwater_acoustic.latest_underwater_acoustic,
         }
-        buoys = self.registry.list_buoys()
-        for entity in buoys:
+        buoys = self.registry.list_buoy_snapshots()
+        for buoy in buoys:
             latest_readings = {}
             for family, get_latest in telemetry_readers.items():
-                channel_a = get_latest(entity.id, "A")
+                channel_a = get_latest(buoy.buoy_id, "A")
                 latest_readings[family] = {
                     "latest": channel_a,
                     "A": channel_a,
-                    "B": get_latest(entity.id, "B"),
+                    "B": get_latest(buoy.buoy_id, "B"),
                 }
 
-            battery_a = self.battery.latest_battery(entity.id, "A")
+            battery_a = self.battery.latest_battery(buoy.buoy_id, "A")
             latest_readings["battery"] = {
                 "latest": battery_a,
                 "A": battery_a,
-                "B": self.battery.latest_battery(entity.id, "B"),
+                "B": self.battery.latest_battery(buoy.buoy_id, "B"),
             }
             summaries.append(
                 BuoySummarySnapshot(
-                    buoy=buoy_snapshot(entity), latest_readings=latest_readings
+                    buoy=buoy, latest_readings=latest_readings
                 )
             )
         return summaries
