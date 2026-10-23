@@ -43,6 +43,9 @@ Use `--once` for a smoke test or `--buoy-id` to send data to an existing buoy.
 ## Availability monitoring
 
 Prometheus scrapes the API's `/metrics` endpoint. The
+`TidewatchApiTargetUnavailable` alert fires if the `tidewatch-api` scrape target
+is down for one minute; investigate API/container health and the Prometheus
+target page before interpreting request-based availability rules. The
 `tidewatch_buoy_last_seen_timestamp_seconds` and
 `tidewatch_device_last_seen_timestamp_seconds` gauges contain Unix timestamps
 for the most recently received telemetry, not the device-provided measurement

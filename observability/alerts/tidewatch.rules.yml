@@ -17,6 +17,14 @@ groups:
         annotations:
           summary: "Tidewatch API is returning server errors"
           description: "More than one percent of API requests have returned 5xx responses during the last five minutes."
+      - alert: TidewatchApiTargetUnavailable
+        expr: up{job="tidewatch-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tidewatch API metrics endpoint is unavailable"
+          description: "Prometheus cannot scrape the Tidewatch API; request-based availability metrics may be absent."
       - alert: TidewatchTelemetryQueueBacklog
         expr: tidewatch_telemetry_ingestion_jobs{status="pending"} > 100
         for: 5m

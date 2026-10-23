@@ -14,6 +14,10 @@ tests:
         values: "0+10x30"
       - series: tidewatch_device_last_seen_timestamp_seconds{buoy_id="stopped",device_id="device-b",sensor_channel="B"}
         values: "0+0x30"
+      - series: up{job="tidewatch-api",instance="tidewatch-api:8000"}
+        values: "1+0x30"
+      - series: up{job="tidewatch-api",instance="unavailable-api:8000"}
+        values: "0+0x30"
     promql_expr_test:
       - expr: tidewatch:buoy_availability_ratio5m
         eval_time: 5m
@@ -29,6 +33,17 @@ tests:
             value: 1
           - labels: '{__name__="tidewatch:device_availability_ratio5m",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
             value: 0.16666666666666666
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: TidewatchApiTargetUnavailable
+        exp_alerts:
+          - exp_labels:
+              instance: unavailable-api:8000
+              job: tidewatch-api
+              severity: critical
+            exp_annotations:
+              summary: "Tidewatch API metrics endpoint is unavailable"
+              description: "Prometheus cannot scrape the Tidewatch API; request-based availability metrics may be absent."
   - interval: 10s
     input_series:
       - series: tidewatch_telemetry_ingestion_jobs{status="pending"}

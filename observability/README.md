@@ -60,6 +60,9 @@ La disponibilidad de la API se publica como la recording rule
 alerta `TidewatchApiServerErrors` avisa cuando esa disponibilidad cae por
 debajo del 99% durante cinco minutos; el panel de errores 5xx reutiliza la
 misma serie para mantener una única definición operativa.
+`TidewatchApiTargetUnavailable` detecta aparte que Prometheus no pueda scrapear
+el endpoint `/metrics`, un caso en el que las métricas basadas en peticiones
+dejan de estar disponibles.
 La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
 de validación completa en un entorno desplegado. La recording rule
 `tidewatch:buoy_availability_ratio5m` ya mide, por `buoy_id`, la proporción de
