@@ -1,5 +1,5 @@
 param(
-    [string]$OutputFile = "tidewatch-backup.sql"
+    [string]$OutputFile = "tidewatch-backup.dump"
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,7 +8,13 @@ if ([string]::IsNullOrWhiteSpace($databaseUrl)) {
     throw "Define DATABASE_URL before creating a backup."
 }
 
-$destination = [System.IO.Path]::GetFullPath($OutputFile)
+$resolvedOutputFile = if ([System.IO.Path]::IsPathRooted($OutputFile)) {
+    $OutputFile
+}
+else {
+    Join-Path (Get-Location).Path $OutputFile
+}
+$destination = [System.IO.Path]::GetFullPath($resolvedOutputFile)
 $directory = [System.IO.Path]::GetDirectoryName($destination)
 if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
     throw "Backup directory does not exist: $directory"

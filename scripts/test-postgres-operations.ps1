@@ -58,6 +58,15 @@ try {
     . (Join-Path $PSScriptRoot "postgres-backup.ps1") -OutputFile $backup
     Assert-Equal ([System.IO.File]::ReadAllText($backup)) "valid archive" "A successful backup must replace the destination"
 
+    Push-Location $temporaryDirectory
+    try {
+        . (Join-Path $PSScriptRoot "postgres-backup.ps1")
+        Assert-Equal (Test-Path -LiteralPath (Join-Path $temporaryDirectory "tidewatch-backup.dump") -PathType Leaf) $true "The default backup filename must match the custom archive format"
+    }
+    finally {
+        Pop-Location
+    }
+
     $script:RestoreCalls.Clear()
     $script:RestoreExitCodes.Enqueue(1)
     $restoreFailed = $false
