@@ -35,7 +35,11 @@ $env:DATABASE_URL = "postgresql+psycopg://tidewatch:tidewatch@localhost:5432/tid
 ```
 
 Restaurarlo requiere una confirmación explícita porque `pg_restore --clean`
-elimina objetos existentes en la base destino:
+elimina objetos existentes en la base destino. La restauración se ejecuta con
+`--exit-on-error --single-transaction`: un error aborta el proceso y revierte
+los cambios de esa restauración, evitando dejar una recuperación parcial. La
+transacción larga puede aumentar el uso de recursos durante restauraciones
+grandes:
 
 ```powershell
 ./scripts/postgres-restore.ps1 -BackupFile ./.tmp/tidewatch-backup.dump -ConfirmRestore

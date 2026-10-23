@@ -26,7 +26,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Backup archive validation failed with exit code $LASTEXITCODE."
 }
 
-pg_restore --clean --if-exists --dbname=$databaseUrl $resolvedBackupFile
+pg_restore --exit-on-error --single-transaction --clean --if-exists --dbname=$databaseUrl $resolvedBackupFile
 if ($LASTEXITCODE -ne 0) {
     throw "pg_restore failed with exit code $LASTEXITCODE."
 }

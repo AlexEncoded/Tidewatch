@@ -113,6 +113,8 @@ try {
     }
     Assert-Equal $script:RestoreCalls.Count 2 "A valid archive must be inspected and then restored"
     Assert-Equal ($script:RestoreCalls[1] -match "--clean") $true "Restore must retain its explicit clean semantics"
+    Assert-Equal ($script:RestoreCalls[1] -match "--exit-on-error") $true "Restore must stop after its first error"
+    Assert-Equal ($script:RestoreCalls[1] -match "--single-transaction") $true "Restore must roll back instead of leaving a partial database"
     Assert-Equal ($script:RestoreCalls[0].Contains($backup)) $true "Restore must pass an absolute path to archive validation"
     Assert-Equal ($script:RestoreCalls[1].Contains($backup)) $true "Restore must pass an absolute path to pg_restore"
 
