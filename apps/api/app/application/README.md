@@ -17,16 +17,12 @@ Application services must not import SQLAlchemy sessions or FastAPI objects.
 Repository implementations satisfy the protocols structurally, so the use
 cases remain testable without PostgreSQL.
 
-The sensor-health application service exposes a
-`SensorHealthCheckWriter` input port for persisting completed evaluations as
-domain snapshots. The SQLAlchemy repository is passed in by the API adapter and
-satisfies this port structurally; the application layer therefore does not
-depend on the repository implementation or HTTP response models.
-
-Its read side uses the `SensorHealthReader` input port, which lists every
-supported redundant A/B sensor family. Storage adapters therefore implement an
-explicit query contract instead of being passed as an untyped repository
-object.
+Sensor health contracts live in `sensor_health_ports.py`: its reader lists the
+supported A/B sensor families and persisted checks, while its writer and
+gateway ports persist completed evaluations as domain snapshots. This explicit
+query contract prevents passing untyped repositories into the use case.
+SQLAlchemy repositories satisfy the contracts structurally; the application
+layer does not depend on repository implementations or HTTP response models.
 
 Fleet lifecycle and location contracts live in `fleet_ports.py`, device
 contracts in `device_ports.py`, battery telemetry in `battery_ports.py`,

@@ -35,6 +35,11 @@ from .analysis_ports import (
     WaveAnalysisReader,
 )
 from .battery_ports import BatteryTelemetryReader
+from .sensor_health_ports import (
+    SensorHealthCheckGateway,
+    SensorHealthCheckWriter,
+    SensorHealthReader,
+)
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -52,8 +57,6 @@ from .sensor_ports import (
     PressureTelemetryReader,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
-    SensorHealthCheckGateway,
-    SensorHealthReader,
     TemperatureTelemetryGateway,
     TemperatureTelemetryReader,
     TurbidityTelemetryGateway,

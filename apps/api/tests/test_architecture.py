@@ -154,8 +154,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PHTelemetryGateway,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
-        SensorHealthCheckGateway,
-        SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TurbidityTelemetryGateway,
@@ -180,8 +178,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PHTelemetryGateway,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
-        SensorHealthCheckGateway,
-        SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TurbidityTelemetryGateway,
@@ -218,6 +214,25 @@ def test_temperature_alert_ports_are_grouped_by_context() -> None:
     assert TemperatureAlertStore.__module__ == "app.application.alert_ports"
     assert LegacyTemperatureAlertsReader is TemperatureAlertsReader
     assert LegacyTemperatureAlertStore is TemperatureAlertStore
+
+
+def test_sensor_health_ports_are_grouped_by_context() -> None:
+    from app.application.ports import (
+        SensorHealthCheckGateway as LegacySensorHealthCheckGateway,
+        SensorHealthCheckWriter as LegacySensorHealthCheckWriter,
+        SensorHealthReader as LegacySensorHealthReader,
+    )
+    from app.application.sensor_health_ports import (
+        SensorHealthCheckGateway,
+        SensorHealthCheckWriter,
+        SensorHealthReader,
+    )
+
+    for port in (SensorHealthCheckGateway, SensorHealthCheckWriter, SensorHealthReader):
+        assert port.__module__ == "app.application.sensor_health_ports"
+    assert LegacySensorHealthCheckGateway is SensorHealthCheckGateway
+    assert LegacySensorHealthCheckWriter is SensorHealthCheckWriter
+    assert LegacySensorHealthReader is SensorHealthReader
 
 
 def test_device_ports_are_grouped_by_context() -> None:

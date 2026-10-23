@@ -13,6 +13,10 @@ from .application.analysis_ports import (
 )
 from .application.maintenance_ports import MaintenanceReader
 from .application.quality_ports import QualitySummaryReader
+from .application.sensor_health_ports import (
+    SensorHealthCheckGateway,
+    SensorHealthReader,
+)
 from .application.fleet_ports import (
     BuoyLocationHistoryReader,
     BuoyLocationUpdater,
@@ -44,8 +48,6 @@ from .application.sensor_ports import (
     RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
-    SensorHealthCheckGateway,
-    SensorHealthReader,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,

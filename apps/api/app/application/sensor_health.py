@@ -3,7 +3,6 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, runtime_checkable
 
 from ..domain.sensor_health import (
     SensorHealthEvaluation,
@@ -15,17 +14,7 @@ from ..domain.telemetry import latest_usable_reading
 from ..domain.deltas import absolute_difference
 from ..domain.directions import circular_difference_degrees
 from ..domain.vectors import euclidean_difference
-from .sensor_ports import SensorHealthReader
-
-
-@runtime_checkable
-class SensorHealthCheckWriter(Protocol):
-    """Persistence port required to store a sensor-health evaluation."""
-
-    def add_sensor_health_check(
-        self, health: DomainSensorHealthSnapshot
-    ) -> SensorHealthCheckSnapshot:
-        ...
+from .sensor_health_ports import SensorHealthCheckWriter, SensorHealthReader
 
 
 @dataclass(frozen=True)

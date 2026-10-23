@@ -39,12 +39,14 @@ from ..application.sensor_ports import (
     RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
-    SensorHealthCheckGateway,
-    SensorHealthReader,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
+)
+from ..application.sensor_health_ports import (
+    SensorHealthCheckGateway,
+    SensorHealthReader,
 )
 from ..application.sensor_health import (
     SensorHealthSnapshot as SensorHealthEvaluationSnapshot,

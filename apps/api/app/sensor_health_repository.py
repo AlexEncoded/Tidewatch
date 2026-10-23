@@ -3,6 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .application.sensor_health_ports import SensorHealthCheckGateway
 from .ambient_light_repository import AmbientLightRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
@@ -50,7 +51,7 @@ from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .wind_repository import WindRepository
 
 
-class SensorHealthRepository:
+class SensorHealthRepository(SensorHealthCheckGateway):
     """Read sensor histories and persist redundant-health evaluations."""
 
     def __init__(self, db: Session) -> None:
