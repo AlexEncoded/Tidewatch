@@ -91,6 +91,11 @@ def test_core_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> N
         "temperature_repository.py",
         "pressure_repository.py",
         "salinity_repository.py",
+        "dissolved_oxygen_repository.py",
+        "conductivity_repository.py",
+        "ph_repository.py",
+        "chlorophyll_a_repository.py",
+        "turbidity_repository.py",
     ):
         tree = ast.parse((API_APP / module_name).read_text(encoding="utf-8"))
         called_attributes = {
