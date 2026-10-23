@@ -117,6 +117,25 @@ def test_fleet_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.fleet_ports"
 
 
+def test_analysis_ports_are_grouped_by_context() -> None:
+    from app.application.analysis_ports import (
+        PressureAnalysisReader,
+        TemperatureAnalysisReader,
+        WaveAnalysisReader,
+    )
+    from app.application.ports import (
+        PressureAnalysisReader as LegacyPressureAnalysisReader,
+        TemperatureAnalysisReader as LegacyTemperatureAnalysisReader,
+        WaveAnalysisReader as LegacyWaveAnalysisReader,
+    )
+
+    for port in (PressureAnalysisReader, TemperatureAnalysisReader, WaveAnalysisReader):
+        assert port.__module__ == "app.application.analysis_ports"
+    assert LegacyPressureAnalysisReader is PressureAnalysisReader
+    assert LegacyTemperatureAnalysisReader is TemperatureAnalysisReader
+    assert LegacyWaveAnalysisReader is WaveAnalysisReader
+
+
 def test_sensor_health_ports_are_grouped_by_context() -> None:
     from app.application.sensor_ports import (
         AcousticAltimeterTelemetryGateway,
@@ -133,14 +152,12 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryGateway,
         PressureTelemetryReader,
         PHTelemetryGateway,
-        PressureAnalysisReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
         SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
-        TemperatureAnalysisReader,
         TurbidityTelemetryGateway,
         UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,
@@ -161,14 +178,12 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         PressureTelemetryGateway,
         PressureTelemetryReader,
         PHTelemetryGateway,
-        PressureAnalysisReader,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         SensorHealthCheckGateway,
         SensorHealthReader,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
-        TemperatureAnalysisReader,
         TurbidityTelemetryGateway,
         UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,

@@ -6,7 +6,11 @@ from sqlalchemy.orm import Session
 from .application.system_ports import DatabaseHealthReader
 from .application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
 from .application.battery_ports import BatteryTelemetryReader
-from .application.analysis_ports import WaveAnalysisReader
+from .application.analysis_ports import (
+    PressureAnalysisReader,
+    TemperatureAnalysisReader,
+    WaveAnalysisReader,
+)
 from .application.maintenance_ports import MaintenanceReader
 from .application.quality_ports import QualitySummaryReader
 from .application.fleet_ports import (
@@ -37,14 +41,12 @@ from .application.sensor_ports import (
     HumidityTelemetryGateway,
     MarineCurrentTelemetryGateway,
     PHTelemetryGateway,
-    PressureAnalysisReader,
     RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,
     SensorHealthReader,
     TemperatureTelemetryGateway,
-    TemperatureAnalysisReader,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,

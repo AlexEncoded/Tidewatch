@@ -298,16 +298,6 @@ class UnderwaterAcousticTelemetryGateway(Protocol):
         ...
 
 
-class PressureAnalysisReader(PressureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
-class TemperatureAnalysisReader(TemperatureTelemetryReader, Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-
 @runtime_checkable
 class SensorHealthReader(Protocol):
     """Read sensor telemetry and persisted redundant-health checks."""

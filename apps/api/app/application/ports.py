@@ -29,7 +29,11 @@ from .device_ports import (
     DeviceStatusRegistry,
 )
 from .maintenance_ports import MaintenanceReader
-from .analysis_ports import WaveAnalysisReader
+from .analysis_ports import (
+    PressureAnalysisReader,
+    TemperatureAnalysisReader,
+    WaveAnalysisReader,
+)
 from .battery_ports import BatteryTelemetryReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
@@ -46,14 +50,12 @@ from .sensor_ports import (
     MarineCurrentTelemetryGateway,
     PressureTelemetryGateway,
     PressureTelemetryReader,
-    PressureAnalysisReader,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
     SensorHealthCheckGateway,
     SensorHealthReader,
     TemperatureTelemetryGateway,
     TemperatureTelemetryReader,
-    TemperatureAnalysisReader,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,

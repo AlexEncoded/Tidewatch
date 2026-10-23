@@ -37,8 +37,8 @@ The composite telemetry ingestion gateway is grouped there alongside its
 queueing, transaction, and metrics contracts.
 The composite read contract for maintenance evaluation lives in
 `maintenance_ports.py` and explicitly composes those contexts.
-Cross-context analysis contracts, such as wave analysis combining sensor and
-fleet reads, live in `analysis_ports.py`.
+Cross-context pressure, temperature, and wave analysis contracts, including
+wave analysis combining sensor and fleet reads, live in `analysis_ports.py`.
 The database liveness/readiness contract lives in `system_ports.py`.
 The shared `ports.py` remains a compatibility facade during incremental
 migration.
@@ -50,8 +50,6 @@ conductivity, and chlorophyll-A are grouped there as well. Remaining sensor
 families, including weather and acoustic gateways, are grouped there as well.
 That module also retains the cross-sensor health, quality, and analysis
 contracts.
-Pressure and temperature analysis reader contracts remain grouped in the
-sensor ports.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while

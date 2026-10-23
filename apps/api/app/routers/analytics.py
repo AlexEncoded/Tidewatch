@@ -10,7 +10,6 @@ from ..application.temperature_analysis import (
     analyze_temperature_for_buoy,
 )
 from ..application.temperature_alerts import find_temperature_anomalies
-from ..application.alert_ports import TemperatureAlertsReader
 from ..application.wave_analysis import analyze_wave_for_buoy
 from ..adapter_dependencies import (
     get_movement_analysis_reader,
@@ -20,11 +19,12 @@ from ..adapter_dependencies import (
     get_temperature_alerts_reader,
 )
 from ..application.fleet_ports import MovementAnalysisReader
-from ..application.analysis_ports import WaveAnalysisReader
-from ..application.sensor_ports import (
+from ..application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
+    WaveAnalysisReader,
 )
+from ..application.alert_ports import TemperatureAlertsReader
 from ..metrics import (
     current_estimated_wave_height_m,
     current_estimated_wave_period_seconds,
