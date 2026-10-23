@@ -104,9 +104,17 @@ try {
     $script:RestoreCalls.Clear()
     $script:RestoreExitCodes.Enqueue(0)
     $script:RestoreExitCodes.Enqueue(0)
-    . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $backup -ConfirmRestore
+    Push-Location $temporaryDirectory
+    try {
+        . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile "backup.dump" -ConfirmRestore
+    }
+    finally {
+        Pop-Location
+    }
     Assert-Equal $script:RestoreCalls.Count 2 "A valid archive must be inspected and then restored"
     Assert-Equal ($script:RestoreCalls[1] -match "--clean") $true "Restore must retain its explicit clean semantics"
+    Assert-Equal ($script:RestoreCalls[0].Contains($backup)) $true "Restore must pass an absolute path to archive validation"
+    Assert-Equal ($script:RestoreCalls[1].Contains($backup)) $true "Restore must pass an absolute path to pg_restore"
 
     Write-Host "PostgreSQL backup and restore safety tests passed."
 }

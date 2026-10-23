@@ -15,17 +15,18 @@ if ([string]::IsNullOrWhiteSpace($databaseUrl)) {
 if (-not (Test-Path -LiteralPath $BackupFile -PathType Leaf)) {
     throw "Backup file not found: $BackupFile"
 }
-if ((Get-Item -LiteralPath $BackupFile).Length -eq 0) {
+$resolvedBackupFile = (Resolve-Path -LiteralPath $BackupFile).Path
+if ((Get-Item -LiteralPath $resolvedBackupFile).Length -eq 0) {
     throw "Backup file is empty: $BackupFile"
 }
 
-Write-Host "Restoring PostgreSQL backup from $BackupFile"
-pg_restore --list $BackupFile
+Write-Host "Restoring PostgreSQL backup from $resolvedBackupFile"
+pg_restore --list $resolvedBackupFile
 if ($LASTEXITCODE -ne 0) {
     throw "Backup archive validation failed with exit code $LASTEXITCODE."
 }
 
-pg_restore --clean --if-exists --dbname=$databaseUrl $BackupFile
+pg_restore --clean --if-exists --dbname=$databaseUrl $resolvedBackupFile
 if ($LASTEXITCODE -ne 0) {
     throw "pg_restore failed with exit code $LASTEXITCODE."
 }
