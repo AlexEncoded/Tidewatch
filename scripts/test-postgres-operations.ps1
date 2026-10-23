@@ -68,6 +68,28 @@ try {
     }
 
     $script:RestoreCalls.Clear()
+    $restoreConfirmationRequired = $false
+    try {
+        . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $backup
+    }
+    catch {
+        $restoreConfirmationRequired = $true
+    }
+    Assert-Equal $restoreConfirmationRequired $true "Restore must require explicit confirmation"
+    Assert-Equal $script:RestoreCalls.Count 0 "Restore without confirmation must not invoke pg_restore"
+
+    $emptyBackup = Join-Path $temporaryDirectory "empty.dump"
+    [System.IO.File]::WriteAllText($emptyBackup, "")
+    $emptyBackupRejected = $false
+    try {
+        . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $emptyBackup -ConfirmRestore
+    }
+    catch {
+        $emptyBackupRejected = $true
+    }
+    Assert-Equal $emptyBackupRejected $true "An empty backup must be rejected"
+    Assert-Equal $script:RestoreCalls.Count 0 "An empty backup must not invoke pg_restore"
+
     $script:RestoreExitCodes.Enqueue(1)
     $restoreFailed = $false
     try {
