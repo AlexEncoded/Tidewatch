@@ -8,10 +8,10 @@ from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
 
-from app.application.ports import (
-    DatabaseHealthReader,
-    BuoySummaryReader,
-    MaintenanceReader,
+from app.application.fleet_ports import BuoySummaryReader
+from app.application.maintenance_ports import MaintenanceReader
+from app.application.system_ports import DatabaseHealthReader
+from app.application.telemetry_ports import (
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
 )
@@ -286,17 +286,8 @@ def test_analysis_ports_are_grouped_by_context() -> None:
         TemperatureAnalysisReader,
         WaveAnalysisReader,
     )
-    from app.application.ports import (
-        PressureAnalysisReader as LegacyPressureAnalysisReader,
-        TemperatureAnalysisReader as LegacyTemperatureAnalysisReader,
-        WaveAnalysisReader as LegacyWaveAnalysisReader,
-    )
-
     for port in (PressureAnalysisReader, TemperatureAnalysisReader, WaveAnalysisReader):
         assert port.__module__ == "app.application.analysis_ports"
-    assert LegacyPressureAnalysisReader is PressureAnalysisReader
-    assert LegacyTemperatureAnalysisReader is TemperatureAnalysisReader
-    assert LegacyWaveAnalysisReader is WaveAnalysisReader
 
 
 def test_sensor_health_ports_are_grouped_by_context() -> None:
@@ -352,39 +343,24 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
 
 def test_battery_port_is_grouped_by_context() -> None:
     from app.application.battery_ports import BatteryTelemetryReader
-    from app.application.ports import BatteryTelemetryReader as LegacyBatteryTelemetryReader
 
     assert BatteryTelemetryReader.__module__ == "app.application.battery_ports"
-    assert LegacyBatteryTelemetryReader is BatteryTelemetryReader
 
 
 def test_quality_summary_port_is_grouped_by_context() -> None:
-    from app.application.ports import QualitySummaryReader as LegacyQualitySummaryReader
     from app.application.quality_ports import QualitySummaryReader
 
     assert QualitySummaryReader.__module__ == "app.application.quality_ports"
-    assert LegacyQualitySummaryReader is QualitySummaryReader
 
 
 def test_temperature_alert_ports_are_grouped_by_context() -> None:
     from app.application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
-    from app.application.ports import (
-        TemperatureAlertsReader as LegacyTemperatureAlertsReader,
-        TemperatureAlertStore as LegacyTemperatureAlertStore,
-    )
 
     assert TemperatureAlertsReader.__module__ == "app.application.alert_ports"
     assert TemperatureAlertStore.__module__ == "app.application.alert_ports"
-    assert LegacyTemperatureAlertsReader is TemperatureAlertsReader
-    assert LegacyTemperatureAlertStore is TemperatureAlertStore
 
 
 def test_sensor_health_ports_are_grouped_by_context() -> None:
-    from app.application.ports import (
-        SensorHealthCheckGateway as LegacySensorHealthCheckGateway,
-        SensorHealthCheckWriter as LegacySensorHealthCheckWriter,
-        SensorHealthReader as LegacySensorHealthReader,
-    )
     from app.application.sensor_health_ports import (
         SensorHealthCheckGateway,
         SensorHealthCheckWriter,
@@ -393,9 +369,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
 
     for port in (SensorHealthCheckGateway, SensorHealthCheckWriter, SensorHealthReader):
         assert port.__module__ == "app.application.sensor_health_ports"
-    assert LegacySensorHealthCheckGateway is SensorHealthCheckGateway
-    assert LegacySensorHealthCheckWriter is SensorHealthCheckWriter
-    assert LegacySensorHealthReader is SensorHealthReader
 
 
 def test_device_ports_are_grouped_by_context() -> None:
@@ -853,6 +826,7 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
     modules = imported_modules(API_APP / "application")
 
     assert "app.application.ports" not in modules
+    assert not (API_APP / "application" / "ports.py").exists()
     assert "app.domain.wave" in modules
     assert not any(
         module == "app"
