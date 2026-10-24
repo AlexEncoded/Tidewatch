@@ -8,7 +8,12 @@ from sqlalchemy import engine_from_config, pool
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app.database import Base  # noqa: E402
-from app import entities  # noqa: F401, E402
+from app import (  # noqa: E402, F401
+    alert_entities,
+    fleet_entities,
+    sensor_entities,
+    telemetry_entities,
+)
 
 
 config = context.config

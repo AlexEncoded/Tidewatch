@@ -495,6 +495,23 @@ def test_production_adapters_do_not_import_the_orm_compatibility_facade() -> Non
         assert not compatibility_imports, path.relative_to(API_APP)
 
 
+def test_alembic_registers_context_entities_without_compatibility_facade() -> None:
+    migration_env = ast.parse(
+        (API_APP.parent / "alembic" / "env.py").read_text(encoding="utf-8")
+    )
+    imported_contexts = {
+        alias.name
+        for node in ast.walk(migration_env)
+        if isinstance(node, ast.ImportFrom) and node.module == "app"
+        for alias in node.names
+    }
+
+    assert "entities" not in imported_contexts
+    assert imported_contexts.issuperset(
+        {"alert_entities", "fleet_entities", "sensor_entities", "telemetry_entities"}
+    )
+
+
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
     from app.adapter_dependencies import (
         get_buoy_registrar,
