@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, TidewatchSession
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
-from app.entities import BuoyEntity
+from app.fleet_entities import BuoyEntity
 from app.sensor_entities import TemperatureReadingEntity
 from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository

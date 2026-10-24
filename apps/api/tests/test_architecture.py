@@ -481,18 +481,22 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     assert WindReadingEntity.__module__ == "app.sensor_entities"
 
 
-def test_production_adapters_do_not_import_the_orm_compatibility_facade() -> None:
-    for path in API_APP.rglob("*.py"):
-        if path.name == "entities.py":
-            continue
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        compatibility_imports = [
-            node
-            for node in ast.walk(tree)
-            if isinstance(node, ast.ImportFrom)
-            and node.module in {"entities", "app.entities"}
-        ]
-        assert not compatibility_imports, path.relative_to(API_APP)
+def test_orm_compatibility_facade_is_removed_and_never_imported() -> None:
+    assert not (API_APP / "entities.py").exists()
+    for source_root in (
+        API_APP,
+        API_APP.parent / "tests",
+        API_APP.parent / "alembic",
+    ):
+        for path in source_root.rglob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            compatibility_imports = [
+                node
+                for node in ast.walk(tree)
+                if isinstance(node, ast.ImportFrom)
+                and node.module in {"entities", "app.entities"}
+            ]
+            assert not compatibility_imports, path.relative_to(API_APP.parent)
 
 
 def test_alembic_registers_context_entities_without_compatibility_facade() -> None:

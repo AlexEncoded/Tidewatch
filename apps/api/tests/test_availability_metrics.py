@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.availability_metrics import initialize_availability_metrics
 from app.database import Base
-from app.entities import BuoyEntity, DeviceEntity
+from app.fleet_entities import BuoyEntity, DeviceEntity
 
 
 def test_initialize_availability_metrics_includes_unseen_registered_entities() -> None:

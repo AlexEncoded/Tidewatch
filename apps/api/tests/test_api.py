@@ -8,33 +8,33 @@ from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables, resolve_database_url
 from app.sensor_entities import (
+    AcousticAltimeterReadingEntity,
+    AirTemperatureReadingEntity,
     AmbientLightReadingEntity,
+    AtmosphericPressureReadingEntity,
+    BatteryReadingEntity,
+    ChlorophyllAReadingEntity,
+    ConductivityReadingEntity,
+    DissolvedOxygenReadingEntity,
+    HumidityReadingEntity,
     ImuReadingEntity,
     MarineCurrentReadingEntity,
+    PHReadingEntity,
     PressureReadingEntity,
+    RainfallReadingEntity,
     SalinityReadingEntity,
+    SensorHealthCheckEntity,
     TemperatureReadingEntity,
+    TurbidityReadingEntity,
+    UnderwaterAcousticReadingEntity,
     WindReadingEntity,
 )
-from app.entities import (
+from app.fleet_entities import (
     BuoyEntity,
     DeviceEntity,
     BuoyLocationReadingEntity,
-    BatteryReadingEntity,
-    TurbidityReadingEntity,
-    DissolvedOxygenReadingEntity,
-    PHReadingEntity,
-    ConductivityReadingEntity,
-    ChlorophyllAReadingEntity,
-    RainfallReadingEntity,
-    HumidityReadingEntity,
-    AirTemperatureReadingEntity,
-    AtmosphericPressureReadingEntity,
-    AcousticAltimeterReadingEntity,
-    UnderwaterAcousticReadingEntity,
-    SensorHealthCheckEntity,
-    TelemetryIngestionJobEntity,
 )
+from app.telemetry_entities import TelemetryIngestionJobEntity
 from app.main import app, configured_wave_imu_factor
 from app.schemas.ingestion import TelemetryBatchCreate
 from app.schemas.fleet_summary import BuoySummary
