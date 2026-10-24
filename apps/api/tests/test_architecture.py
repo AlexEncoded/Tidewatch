@@ -86,6 +86,25 @@ def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> No
     assert "list_buoy_snapshots" in called_attributes
 
 
+def test_buoy_registry_keeps_orm_entity_queries_private() -> None:
+    source = (API_APP / "buoy_registry_repository.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    registry_class = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "BuoyRegistryRepository"
+    )
+    method_names = {
+        node.name for node in registry_class.body if isinstance(node, ast.FunctionDef)
+    }
+
+    assert "get_buoy" not in method_names
+    assert "list_buoys" not in method_names
+    assert "_get_buoy_entity" in method_names
+    assert "_list_buoy_entities" in method_names
+    assert "list_buoy_snapshots" in method_names
+
+
 def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",

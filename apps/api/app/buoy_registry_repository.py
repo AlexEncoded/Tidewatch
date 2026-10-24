@@ -17,16 +17,16 @@ class BuoyRegistryRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_buoy(self, buoy_id: str) -> BuoyEntity | None:
+    def _get_buoy_entity(self, buoy_id: str) -> BuoyEntity | None:
         return self.db.get(BuoyEntity, buoy_id)
 
     def buoy_exists(self, buoy_id: str) -> bool:
-        return self.get_buoy(buoy_id) is not None
+        return self._get_buoy_entity(buoy_id) is not None
 
     def mark_buoy_seen_by_id(
         self, buoy_id: str, seen_at: datetime
     ) -> BuoySnapshot | None:
-        buoy = self.get_buoy(buoy_id)
+        buoy = self._get_buoy_entity(buoy_id)
         if buoy is None:
             return None
         if is_newer_timestamp(seen_at, buoy.last_seen_at):
@@ -35,7 +35,7 @@ class BuoyRegistryRepository:
             self.db.refresh(buoy)
         return buoy_snapshot(buoy)
 
-    def list_buoys(self) -> list[BuoyEntity]:
+    def _list_buoy_entities(self) -> list[BuoyEntity]:
         return list(
             self.db.scalars(
                 select(BuoyEntity).order_by(BuoyEntity.created_at)
@@ -43,7 +43,7 @@ class BuoyRegistryRepository:
         )
 
     def list_buoy_snapshots(self) -> list[BuoySnapshot]:
-        return [buoy_snapshot(buoy) for buoy in self.list_buoys()]
+        return [buoy_snapshot(buoy) for buoy in self._list_buoy_entities()]
 
     def register_buoy(self, buoy: BuoySnapshot) -> BuoySnapshot:
         entity = BuoyEntity(
