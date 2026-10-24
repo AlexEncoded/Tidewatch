@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.telemetry import ImuTelemetrySnapshot
-from .persistence_utils import is_newer_timestamp
 from .sensor_entities import ImuReadingEntity
 
 
@@ -38,12 +37,7 @@ class ImuRepository:
         self.db.add(entity)
         self.db.commit()
         self.db.refresh(entity)
-        buoy = self.registry.get_buoy(reading.buoy_id)
-        if buoy is not None and is_newer_timestamp(
-            reading.measured_at, buoy.last_seen_at
-        ):
-            buoy.last_seen_at = reading.measured_at
-            self.db.commit()
+        self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
         return ImuTelemetrySnapshot(
             buoy_id=entity.buoy_id,
             acceleration_x_mps2=entity.acceleration_x_mps2,
