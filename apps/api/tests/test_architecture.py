@@ -149,6 +149,54 @@ def test_location_ingestion_gateway_returns_domain_snapshot_not_orm_entity() -> 
     assert add_location.returns.id == "LocationTelemetrySnapshot"
 
 
+def test_domain_and_application_layers_avoid_framework_and_persistence_imports() -> None:
+    for layer in ("domain", "application"):
+        for path in (API_APP / layer).rglob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            imported_modules = {
+                node.module
+                for node in ast.walk(tree)
+                if isinstance(node, ast.ImportFrom) and node.module is not None
+            }
+            imported_roots = {
+                alias.name.split(".", maxsplit=1)[0]
+                for node in ast.walk(tree)
+                if isinstance(node, ast.Import)
+                for alias in node.names
+            }
+
+            assert not imported_roots.intersection({"sqlalchemy", "fastapi"}), path
+            assert not any(
+                module.split(".")[-1].endswith("entities")
+                or module.split(".")[-1] == "schemas"
+                or module in {"fastapi", "sqlalchemy"}
+                for module in imported_modules
+            ), path
+
+
+def test_http_routers_do_not_import_orm_entities_or_sqlalchemy() -> None:
+    for path in (API_APP / "routers").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+        imported_roots = {
+            alias.name.split(".", maxsplit=1)[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+
+        assert "sqlalchemy" not in imported_roots, path
+        assert not any(
+            module.split(".")[-1].endswith("entities")
+            or module.split(".")[-1] == "sqlalchemy"
+            for module in imported_modules
+        ), path
+
+
 def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",
