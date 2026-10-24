@@ -37,7 +37,7 @@ def load_windows(
     dict[str, object],
 ]:
     grouped: dict[str, dict] = {}
-    seen_timestamps: dict[datetime, str] = {}
+    seen_timestamps: dict[datetime, tuple[str, set[str]]] = {}
     quality_column_present = False
     quality_counts = {"good": 0, "suspect": 0, "invalid": 0}
     with path.open(newline="", encoding="utf-8-sig") as source:
@@ -101,17 +101,29 @@ def load_windows(
                 raise ValueError(
                     f"Line {line_number}: reference height changes within window {window_id!r}"
                 )
-            previous_window = seen_timestamps.get(measured_at)
-            if previous_window is not None:
-                if previous_window == window_id:
+            modalities = {
+                name
+                for name, value in (
+                    ("GNSS", altitude),
+                    ("IMU", acceleration),
+                )
+                if value is not None
+            }
+            previous = seen_timestamps.get(measured_at)
+            if previous is not None:
+                previous_window, previous_modalities = previous
+                if previous_window != window_id:
+                    raise ValueError(
+                        f"Line {line_number}: timestamp is reused by window "
+                        f"{window_id!r} after {previous_window!r}"
+                    )
+                if previous_modalities.intersection(modalities):
                     raise ValueError(
                         f"Line {line_number}: duplicate timestamp in window {window_id!r}"
                     )
-                raise ValueError(
-                    f"Line {line_number}: timestamp is reused by window "
-                    f"{window_id!r} after {previous_window!r}"
-                )
-            seen_timestamps[measured_at] = window_id
+                previous_modalities.update(modalities)
+            else:
+                seen_timestamps[measured_at] = (window_id, modalities)
             entry["timestamps"].add(measured_at)
             if altitude is not None:
                 entry["altitudes"].append((measured_at, altitude))

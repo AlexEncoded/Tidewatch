@@ -237,6 +237,36 @@ def test_wave_calibration_cli_rejects_duplicate_instants_in_window(
     assert "Traceback" not in result.stderr
 
 
+def test_wave_calibration_cli_accepts_synchronized_sensor_rows(tmp_path: Path) -> None:
+    input_path = tmp_path / "synchronized-sensors.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,,0.15\n"
+        "train,calibration,2026-01-01T00:00:00+00:00,,0.0,0.15\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,,0.15\n"
+        "train,calibration,2026-01-01T00:00:01+00:00,,0.5,0.15\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,,0.26\n"
+        "holdout,validation,2026-01-01T00:01:00+00:00,,0.0,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01+00:00,,0.8,0.26\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["window_coverage"]["calibration"][0]["gnss_samples"] == 2
+    assert report["window_coverage"]["calibration"][0]["imu_samples"] == 2
+
+
 def test_wave_calibration_cli_rejects_timestamp_reuse_across_splits(
     tmp_path: Path,
 ) -> None:
