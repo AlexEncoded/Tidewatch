@@ -26,7 +26,7 @@ class DeviceRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.db.get(BuoyEntity, buoy_id) is not None
 
-    def create_device(
+    def _create_device_entity(
         self, buoy_id: str, device: DeviceRegistrationCommand
     ) -> DeviceEntity:
         entity = DeviceEntity(
@@ -41,9 +41,9 @@ class DeviceRepository:
             self.db.commit()
         except IntegrityError:
             self.db.rollback()
-            if self.get_device(device.device_id) is not None or any(
+            if self._get_device_entity(device.device_id) is not None or any(
                 existing.sensor_channel == device.sensor_channel
-                for existing in self.list_devices(buoy_id)
+                for existing in self._list_device_entities(buoy_id)
             ):
                 raise DeviceRegistrationConflict(
                     "Device or sensor channel already registered"
@@ -55,9 +55,9 @@ class DeviceRepository:
     def create_device_snapshot(
         self, buoy_id: str, device: DeviceRegistrationCommand
     ) -> DeviceSnapshot:
-        return device_snapshot(self.create_device(buoy_id, device))
+        return device_snapshot(self._create_device_entity(buoy_id, device))
 
-    def list_devices(self, buoy_id: str) -> list[DeviceEntity]:
+    def _list_device_entities(self, buoy_id: str) -> list[DeviceEntity]:
         query = (
             select(DeviceEntity)
             .where(DeviceEntity.buoy_id == buoy_id)
@@ -66,25 +66,29 @@ class DeviceRepository:
         return list(self.db.scalars(query).all())
 
     def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
-        return [device_snapshot(device) for device in self.list_devices(buoy_id)]
+        return [
+            device_snapshot(device)
+            for device in self._list_device_entities(buoy_id)
+        ]
 
-    def get_device(self, device_id: str) -> DeviceEntity | None:
+    def _get_device_entity(self, device_id: str) -> DeviceEntity | None:
         return self.db.get(DeviceEntity, device_id)
 
     def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
-        device = self.get_device(device_id)
+        device = self._get_device_entity(device_id)
         return device_snapshot(device) if device is not None else None
 
     def mark_device_seen_by_id(
         self, device_id: str, seen_at: datetime
     ) -> DeviceSnapshot | None:
-        device = self.get_device(device_id)
+        device = self._get_device_entity(device_id)
         if device is None:
             return None
-        self.mark_device_seen(device, seen_at)
-        return self.get_device_snapshot(device_id)
+        return device_snapshot(self._mark_device_seen(device, seen_at))
 
-    def mark_device_seen(self, device: DeviceEntity, seen_at: datetime) -> DeviceEntity:
+    def _mark_device_seen(
+        self, device: DeviceEntity, seen_at: datetime
+    ) -> DeviceEntity:
         if is_newer_timestamp(seen_at, device.last_seen_at):
             device.last_seen_at = seen_at
             self.db.commit()
@@ -94,7 +98,7 @@ class DeviceRepository:
     def update_device_status(
         self, buoy_id: str, device_id: str, update: DeviceStatusCommand
     ) -> DeviceSnapshot | None:
-        device = self.get_device(device_id)
+        device = self._get_device_entity(device_id)
         if device is None or device.buoy_id != buoy_id:
             return None
         device.status = update.status

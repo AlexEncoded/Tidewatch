@@ -9,7 +9,6 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .device_repository import DeviceRepository
 from .domain.devices import DeviceSnapshot
 from .domain.telemetry import BatteryTelemetrySnapshot
-from .fleet_entities import DeviceEntity
 from .sensor_entities import BatteryReadingEntity
 
 
@@ -23,9 +22,6 @@ class BatteryRepository:
 
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.devices.buoy_exists(buoy_id)
-
-    def get_device(self, device_id: str) -> DeviceEntity | None:
-        return self.devices.get_device(device_id)
 
     def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:
         return self.devices.get_device_snapshot(device_id)

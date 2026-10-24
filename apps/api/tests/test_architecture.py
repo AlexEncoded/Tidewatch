@@ -105,6 +105,28 @@ def test_buoy_registry_keeps_orm_entity_queries_private() -> None:
     assert "list_buoy_snapshots" in method_names
 
 
+def test_device_repository_keeps_orm_entity_queries_private() -> None:
+    source = (API_APP / "device_repository.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    repository_class = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "DeviceRepository"
+    )
+    method_names = {
+        node.name
+        for node in repository_class.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    assert {"create_device", "list_devices", "get_device", "mark_device_seen"}.isdisjoint(
+        method_names
+    )
+    assert "get_device_snapshot" in method_names
+    assert "list_device_snapshots" in method_names
+    assert "create_device_snapshot" in method_names
+
+
 def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",
@@ -835,8 +857,15 @@ def test_battery_router_uses_scoped_http_contracts() -> None:
         for node in ast.walk(battery_router)
         if isinstance(node, ast.ImportFrom)
     }
+    called_attributes = {
+        node.func.attr
+        for node in ast.walk(battery_router)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
     assert "schemas.battery" in imported_modules
     assert "models" not in imported_modules
+    assert "get_device_snapshot" in called_attributes
+    assert "get_device" not in called_attributes
 
 
 def test_analytics_routers_use_scoped_http_contracts() -> None:

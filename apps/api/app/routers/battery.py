@@ -92,7 +92,7 @@ def battery_history(
 def _ensure_device_belongs_to_buoy(
     reader: BatteryTelemetryReader, device_id: str, buoy_id: str
 ) -> None:
-    device = reader.get_device(device_id)
+    device = reader.get_device_snapshot(device_id)
     try:
         validate_device_ownership(device, buoy_id)
     except DeviceOwnershipError as exc:
