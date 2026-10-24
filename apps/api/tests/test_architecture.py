@@ -86,7 +86,7 @@ def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> No
     assert "list_buoy_snapshots" in called_attributes
 
 
-def test_core_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
+def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",
         "pressure_repository.py",
@@ -104,6 +104,9 @@ def test_core_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> N
         "ambient_light_repository.py",
         "wind_repository.py",
         "marine_current_repository.py",
+        "acoustic_altimeter_repository.py",
+        "underwater_acoustic_repository.py",
+        "battery_repository.py",
     ):
         tree = ast.parse((API_APP / module_name).read_text(encoding="utf-8"))
         called_attributes = {
