@@ -93,7 +93,7 @@ class BuoyLocationRepository:
 
     def add_location(
         self, reading: LocationTelemetrySnapshot
-    ) -> BuoyLocationReadingEntity:
+    ) -> LocationTelemetrySnapshot:
         entity = BuoyLocationReadingEntity(
             buoy_id=reading.buoy_id,
             latitude=reading.latitude,
@@ -114,4 +114,4 @@ class BuoyLocationRepository:
             buoy.longitude = reading.longitude
             self.db.commit()
             self.db.refresh(buoy)
-        return entity
+        return self._location_snapshot(entity)

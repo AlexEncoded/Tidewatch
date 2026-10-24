@@ -29,7 +29,6 @@ from .domain.telemetry import (
 )
 from .domain.devices import DeviceSnapshot
 from .domain.buoy import BuoySnapshot
-from .fleet_entities import BuoyLocationReadingEntity
 from .sensor_health_repository import SensorHealthRepository
 from .battery_repository import BatteryRepository
 from .buoy_registry_repository import BuoyRegistryRepository
@@ -48,7 +47,9 @@ class TelemetryIngestionRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_location(self, reading: LocationTelemetrySnapshot) -> BuoyLocationReadingEntity:
+    def add_location(
+        self, reading: LocationTelemetrySnapshot
+    ) -> LocationTelemetrySnapshot:
         return self.locations.add_location(reading)
 
     def list_locations(self, buoy_id: str, limit: int, since: datetime | None = None, until: datetime | None = None) -> list[LocationTelemetrySnapshot]:

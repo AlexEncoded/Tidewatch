@@ -114,7 +114,9 @@ class TelemetryIngestionGateway(
 ):
     """Write batch telemetry and support heartbeat/movement use cases."""
 
-    def add_location(self, reading: LocationTelemetrySnapshot):
+    def add_location(
+        self, reading: LocationTelemetrySnapshot
+    ) -> LocationTelemetrySnapshot:
         ...
 
     def get_device_snapshot(self, device_id: str) -> DeviceSnapshot | None:

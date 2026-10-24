@@ -127,6 +127,28 @@ def test_device_repository_keeps_orm_entity_queries_private() -> None:
     assert "create_device_snapshot" in method_names
 
 
+def test_location_ingestion_gateway_returns_domain_snapshot_not_orm_entity() -> None:
+    source = (API_APP / "telemetry_ingestion_repository.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    imported_names = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        for alias in node.names
+    }
+    add_location = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "add_location"
+    )
+
+    assert "BuoyLocationReadingEntity" not in imported_names
+    assert isinstance(add_location.returns, ast.Name)
+    assert add_location.returns.id == "LocationTelemetrySnapshot"
+
+
 def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",
