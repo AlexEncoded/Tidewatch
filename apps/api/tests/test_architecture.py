@@ -159,6 +159,45 @@ def test_device_repository_keeps_orm_entity_queries_private() -> None:
     assert "create_device_snapshot" in method_names
 
 
+def test_public_repository_contracts_do_not_expose_orm_entities() -> None:
+    for path in API_APP.glob("*_repository.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for repository in (
+            node for node in tree.body if isinstance(node, ast.ClassDef)
+        ):
+            for method in (
+                node
+                for node in repository.body
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and not node.name.startswith("_")
+            ):
+                annotations = [method.returns]
+                arguments = [
+                    argument.annotation
+                    for argument in (
+                        *method.args.posonlyargs,
+                        *method.args.args,
+                        *method.args.kwonlyargs,
+                    )
+                ]
+                if method.args.vararg is not None:
+                    arguments.append(method.args.vararg.annotation)
+                if method.args.kwarg is not None:
+                    arguments.append(method.args.kwarg.annotation)
+                annotations.extend(arguments)
+                exposed_entities = {
+                    name.id
+                    for annotation in annotations
+                    if annotation is not None
+                    for name in ast.walk(annotation)
+                    if isinstance(name, ast.Name) and name.id.endswith("Entity")
+                }
+                assert not exposed_entities, (
+                    f"{path.name}.{repository.name}.{method.name} exposes "
+                    f"ORM entities: {sorted(exposed_entities)}"
+                )
+
+
 def test_location_ingestion_gateway_returns_domain_snapshot_not_orm_entity() -> None:
     source = (API_APP / "telemetry_ingestion_repository.py").read_text(
         encoding="utf-8"
