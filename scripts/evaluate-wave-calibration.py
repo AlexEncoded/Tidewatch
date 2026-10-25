@@ -58,6 +58,8 @@ def load_windows(
             raise ValueError(f"CSV is missing columns: {', '.join(sorted(missing))}")
         quality_column_present = "quality" in fieldnames
         for line_number, row in enumerate(reader, start=2):
+            if row.get(None):
+                raise ValueError(f"Line {line_number}: too many CSV fields")
             window_id = (row["window_id"] or "").strip()
             split = (row["split"] or "").strip().lower()
             if not window_id or split not in {"calibration", "validation"}:
