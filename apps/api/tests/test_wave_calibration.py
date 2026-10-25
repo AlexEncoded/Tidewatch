@@ -117,6 +117,10 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
             "duration_seconds": 1.0,
             "gnss_samples": 2,
             "imu_samples": 2,
+            "gnss_median_interval_seconds": 1.0,
+            "gnss_max_interval_seconds": 1.0,
+            "imu_median_interval_seconds": 1.0,
+            "imu_max_interval_seconds": 1.0,
         }
     ]
     assert report["validation_selected_metrics"]["rmse_m"] == 0
@@ -246,6 +250,8 @@ def test_wave_calibration_cli_accepts_synchronized_sensor_rows(tmp_path: Path) -
         "train,calibration,2026-01-01T00:00:00+00:00,,0.0,0.15\n"
         "train,calibration,2026-01-01T00:00:01Z,0.1,,0.15\n"
         "train,calibration,2026-01-01T00:00:01+00:00,,0.5,0.15\n"
+        "train,calibration,2026-01-01T00:00:04Z,0.3,,0.15\n"
+        "train,calibration,2026-01-01T00:00:04+00:00,,1.0,0.15\n"
         "holdout,validation,2026-01-01T00:01:00Z,0.0,,0.26\n"
         "holdout,validation,2026-01-01T00:01:00+00:00,,0.0,0.26\n"
         "holdout,validation,2026-01-01T00:01:01Z,0.2,,0.26\n"
@@ -263,8 +269,12 @@ def test_wave_calibration_cli_accepts_synchronized_sensor_rows(tmp_path: Path) -
 
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
-    assert report["window_coverage"]["calibration"][0]["gnss_samples"] == 2
-    assert report["window_coverage"]["calibration"][0]["imu_samples"] == 2
+    assert report["window_coverage"]["calibration"][0]["gnss_samples"] == 3
+    assert report["window_coverage"]["calibration"][0]["imu_samples"] == 3
+    assert report["window_coverage"]["calibration"][0]["gnss_median_interval_seconds"] == 2.0
+    assert report["window_coverage"]["calibration"][0]["gnss_max_interval_seconds"] == 3.0
+    assert report["window_coverage"]["calibration"][0]["imu_median_interval_seconds"] == 2.0
+    assert report["window_coverage"]["calibration"][0]["imu_max_interval_seconds"] == 3.0
 
 
 def test_wave_calibration_cli_rejects_timestamp_reuse_across_splits(
@@ -388,6 +398,10 @@ def test_wave_calibration_cli_limits_sensor_samples_to_shared_time_range(
             "duration_seconds": 1.0,
             "gnss_samples": 2,
             "imu_samples": 2,
+            "gnss_median_interval_seconds": 1.0,
+            "gnss_max_interval_seconds": 1.0,
+            "imu_median_interval_seconds": 1.0,
+            "imu_max_interval_seconds": 1.0,
         }
     ]
 

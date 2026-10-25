@@ -8,6 +8,7 @@ import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from statistics import median
 
 API_ROOT = Path(__file__).resolve().parents[1] / "apps" / "api"
 sys.path.insert(0, str(API_ROOT))
@@ -182,6 +183,18 @@ def load_windows(
                 "duration_seconds": (shared_end - shared_start).total_seconds(),
                 "gnss_samples": len(altitudes),
                 "imu_samples": len(accelerations),
+                "gnss_median_interval_seconds": _median_interval_seconds(
+                    values["altitudes"], shared_start, shared_end
+                ),
+                "gnss_max_interval_seconds": _max_interval_seconds(
+                    values["altitudes"], shared_start, shared_end
+                ),
+                "imu_median_interval_seconds": _median_interval_seconds(
+                    values["accelerations"], shared_start, shared_end
+                ),
+                "imu_max_interval_seconds": _max_interval_seconds(
+                    values["accelerations"], shared_start, shared_end
+                ),
             }
         )
     if not result["calibration"] or not result["validation"]:
@@ -217,6 +230,30 @@ def _optional_number(value: str | None) -> float | None:
     if not math.isfinite(number):
         raise ValueError("sensor values must be finite")
     return number
+
+
+def _sample_intervals_seconds(
+    samples: list[tuple[datetime, float]], start: datetime, end: datetime
+) -> list[float]:
+    timestamps = sorted(
+        timestamp for timestamp, _ in samples if start <= timestamp <= end
+    )
+    return [
+        (current - previous).total_seconds()
+        for previous, current in zip(timestamps, timestamps[1:])
+    ]
+
+
+def _median_interval_seconds(
+    samples: list[tuple[datetime, float]], start: datetime, end: datetime
+) -> float:
+    return round(median(_sample_intervals_seconds(samples, start, end)), 6)
+
+
+def _max_interval_seconds(
+    samples: list[tuple[datetime, float]], start: datetime, end: datetime
+) -> float:
+    return round(max(_sample_intervals_seconds(samples, start, end)), 6)
 
 
 def _parse_timestamp(value: str | None) -> datetime:

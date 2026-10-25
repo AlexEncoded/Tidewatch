@@ -48,8 +48,10 @@ python scripts/evaluate-wave-calibration.py data/labeled-waves.csv
 It selects the factor with the lowest RMSE on `calibration` windows, then
 reports MAE, RMSE and signed bias for both the baseline and selected factor on
 the untouched `validation` windows. The JSON report also lists each window's
-sample counts by sensor and elapsed duration. Since the estimator uses a range
-over each window, compare results only across windows with durations appropriate
+sample counts by sensor, elapsed duration, and median and maximum interval
+between retained samples for each sensor. These cadence fields help identify
+irregular sampling and long gaps. Since the estimator uses a range over each
+window, compare results only across windows with durations appropriate
 to the same measurement protocol; investigate large duration differences
 before interpreting the error metrics. It includes the input file's SHA-256 and
 the factor-search bounds and step so the results can be traced back to their
