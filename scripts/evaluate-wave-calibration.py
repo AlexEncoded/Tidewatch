@@ -43,10 +43,20 @@ def load_windows(
     quality_counts = {"good": 0, "suspect": 0, "invalid": 0}
     with path.open(newline="", encoding="utf-8-sig") as source:
         reader = csv.DictReader(source)
-        missing = REQUIRED_COLUMNS - set(reader.fieldnames or ())
+        fieldnames = reader.fieldnames or ()
+        if any(not (name or "").strip() for name in fieldnames):
+            raise ValueError("CSV contains an empty column name")
+        duplicate_columns = sorted(
+            name for name in set(fieldnames) if fieldnames.count(name) > 1
+        )
+        if duplicate_columns:
+            raise ValueError(
+                f"CSV contains duplicate columns: {', '.join(duplicate_columns)}"
+            )
+        missing = REQUIRED_COLUMNS - set(fieldnames)
         if missing:
             raise ValueError(f"CSV is missing columns: {', '.join(sorted(missing))}")
-        quality_column_present = "quality" in (reader.fieldnames or ())
+        quality_column_present = "quality" in fieldnames
         for line_number, row in enumerate(reader, start=2):
             window_id = (row["window_id"] or "").strip()
             split = (row["split"] or "").strip().lower()

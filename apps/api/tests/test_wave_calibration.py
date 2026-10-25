@@ -260,6 +260,41 @@ def test_wave_calibration_cli_reports_truncated_csv_without_traceback(
     assert "Traceback" not in result.stderr
 
 
+@pytest.mark.parametrize(
+    ("header", "error"),
+    (
+        (
+            "window_id,split,measured_at,gnss_altitude_m,"
+            "imu_vertical_acceleration_mps2,reference_wave_height_m,"
+            "gnss_altitude_m",
+            "CSV contains duplicate columns: gnss_altitude_m",
+        ),
+        (
+            "window_id,split,measured_at,gnss_altitude_m,"
+            "imu_vertical_acceleration_mps2,reference_wave_height_m,",
+            "CSV contains an empty column name",
+        ),
+    ),
+)
+def test_wave_calibration_cli_rejects_ambiguous_column_headers(
+    tmp_path: Path, header: str, error: str
+) -> None:
+    input_path = tmp_path / "ambiguous-headers.csv"
+    input_path.write_text(header + "\n", encoding="utf-8")
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert error in result.stderr
+    assert "Traceback" not in result.stderr
+
+
 def test_wave_calibration_cli_rejects_naive_timestamps(tmp_path: Path) -> None:
     input_path = tmp_path / "naive-timestamp.csv"
     input_path.write_text(
