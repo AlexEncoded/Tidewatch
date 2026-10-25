@@ -229,6 +229,12 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 for node in ast.walk(tree)
                 if isinstance(node, ast.ImportFrom) and node.module is not None
             }
+            imported_modules.update(
+                alias.name
+                for node in ast.walk(tree)
+                if isinstance(node, ast.Import)
+                for alias in node.names
+            )
             imported_roots = {
                 alias.name.split(".", maxsplit=1)[0]
                 for node in ast.walk(tree)
@@ -241,6 +247,7 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 module.split(".")[-1].endswith("entities")
                 or module.split(".")[-1] == "schemas"
                 or module in {"fastapi", "sqlalchemy"}
+                or module.split(".")[-1].endswith("_repository")
                 for module in imported_modules
             ), path
 
