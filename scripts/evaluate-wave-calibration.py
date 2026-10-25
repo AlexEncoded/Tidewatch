@@ -280,7 +280,7 @@ def _factor_candidates(max_factor: float, step: float) -> list[float]:
     ratio = max_factor / step
     nearest_step_count = round(ratio)
     reaches_maximum = math.isclose(
-        ratio, nearest_step_count, rel_tol=1e-12, abs_tol=1e-12
+        ratio, nearest_step_count, rel_tol=1e-12, abs_tol=0.0
     )
     full_step_count = (
         nearest_step_count if reaches_maximum else math.floor(ratio)

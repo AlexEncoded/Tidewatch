@@ -129,7 +129,13 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
 
 
-def test_wave_calibration_cli_includes_non_divisible_max_factor(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("max_factor", "step", "candidate_count"),
+    ((1.0, 0.3, 5), (1e-15, 1.0, 2)),
+)
+def test_wave_calibration_cli_includes_max_factor(
+    tmp_path: Path, max_factor: float, step: float, candidate_count: int
+) -> None:
     input_path = tmp_path / "non-divisible-search.csv"
     input_path.write_text(
         "window_id,split,measured_at,gnss_altitude_m,"
@@ -148,9 +154,9 @@ def test_wave_calibration_cli_includes_non_divisible_max_factor(tmp_path: Path) 
             str(script),
             str(input_path),
             "--max-factor",
-            "1.0",
+            str(max_factor),
             "--step",
-            "0.3",
+            str(step),
         ],
         check=False,
         capture_output=True,
@@ -159,8 +165,8 @@ def test_wave_calibration_cli_includes_non_divisible_max_factor(tmp_path: Path) 
 
     assert result.returncode == 0, result.stderr
     search = json.loads(result.stdout)["search"]
-    assert search["candidate_count"] == 5
-    assert search["max_factor"] == 1.0
+    assert search["candidate_count"] == candidate_count
+    assert search["max_factor"] == max_factor
 
 
 def test_wave_calibration_cli_rejects_candidate_count_over_limit(
