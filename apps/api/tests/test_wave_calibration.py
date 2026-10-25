@@ -129,6 +129,64 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
 
 
+def test_wave_calibration_cli_includes_non_divisible_max_factor(tmp_path: Path) -> None:
+    input_path = tmp_path / "non-divisible-search.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,0.5,0.15\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            str(input_path),
+            "--max-factor",
+            "1.0",
+            "--step",
+            "0.3",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    search = json.loads(result.stdout)["search"]
+    assert search["candidate_count"] == 5
+    assert search["max_factor"] == 1.0
+
+
+def test_wave_calibration_cli_rejects_candidate_count_over_limit(
+    tmp_path: Path,
+) -> None:
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+    step = 10 / 100_000.5
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            str(tmp_path / "not-read.csv"),
+            "--step",
+            str(step),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "more than 100,001 factor candidates" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
 def test_wave_calibration_cli_excludes_non_good_quality_samples(tmp_path: Path) -> None:
     input_path = tmp_path / "quality-labeled-waves.csv"
     input_path.write_text(

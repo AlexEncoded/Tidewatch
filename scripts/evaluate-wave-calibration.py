@@ -276,6 +276,33 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _factor_candidates(max_factor: float, step: float) -> list[float]:
+    ratio = max_factor / step
+    nearest_step_count = round(ratio)
+    reaches_maximum = math.isclose(
+        ratio, nearest_step_count, rel_tol=1e-12, abs_tol=1e-12
+    )
+    full_step_count = (
+        nearest_step_count if reaches_maximum else math.floor(ratio)
+    )
+    candidate_count = full_step_count + 1 + (not reaches_maximum)
+    if candidate_count > 100_001:
+        raise ValueError("--step would produce more than 100,001 factor candidates")
+
+    candidates = [index * step for index in range(full_step_count + 1)]
+    if reaches_maximum:
+        candidates[-1] = max_factor
+    else:
+        candidates.append(max_factor)
+    has_duplicate_candidates = any(
+        current <= previous
+        for previous, current in zip(candidates, candidates[1:])
+    )
+    if has_duplicate_candidates:
+        raise ValueError("--step is too small to produce distinct factor candidates")
+    return candidates
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv_path", type=Path, help="CSV containing labeled windows")
@@ -292,18 +319,13 @@ def main() -> int:
         or args.step <= 0
     ):
         parser.error("--max-factor must be in (0, 10] and --step must be positive")
-    step_count = math.floor(args.max_factor / args.step)
-    if step_count > 100_000:
-        parser.error("--step would produce more than 100,001 factor candidates")
+    try:
+        candidates = _factor_candidates(args.max_factor, args.step)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     try:
         splits, window_coverage, quality_summary = load_windows(args.csv_path)
-        candidates = [
-            round(index * args.step, 10)
-            for index in range(step_count + 1)
-        ]
-        if candidates[-1] < args.max_factor:
-            candidates.append(args.max_factor)
         selected_factor, calibration_metrics = select_factor(
             splits["calibration"], candidates
         )
