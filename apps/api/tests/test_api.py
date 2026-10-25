@@ -12,7 +12,6 @@ from app.sensor_entities import (
     AirTemperatureReadingEntity,
     AmbientLightReadingEntity,
     AtmosphericPressureReadingEntity,
-    BatteryReadingEntity,
     ChlorophyllAReadingEntity,
     ConductivityReadingEntity,
     DissolvedOxygenReadingEntity,
@@ -31,6 +30,7 @@ from app.sensor_entities import (
 )
 from app.fleet_entities import (
     BuoyEntity,
+    BatteryReadingEntity,
     DeviceEntity,
     BuoyLocationReadingEntity,
 )

@@ -59,11 +59,17 @@ def test_legacy_models_facade_module_is_removed() -> None:
 
 
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
-    from app.fleet_entities import BuoyEntity, BuoyLocationReadingEntity, DeviceEntity
+    from app.fleet_entities import (
+        BatteryReadingEntity,
+        BuoyEntity,
+        BuoyLocationReadingEntity,
+        DeviceEntity,
+    )
 
     assert BuoyEntity.__module__ == "app.fleet_entities"
     assert DeviceEntity.__module__ == "app.fleet_entities"
     assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
+    assert BatteryReadingEntity.__module__ == "app.fleet_entities"
 
 
 def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> None:
@@ -424,7 +430,6 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
         RainfallReadingEntity,
         SalinityReadingEntity,
         SensorHealthCheckEntity,
-        BatteryReadingEntity,
         TemperatureReadingEntity,
         TurbidityReadingEntity,
         UnderwaterAcousticReadingEntity,
@@ -444,7 +449,6 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     assert RainfallReadingEntity.__module__ == "app.sensor_entities"
     assert SalinityReadingEntity.__module__ == "app.sensor_entities"
     assert SensorHealthCheckEntity.__module__ == "app.sensor_entities"
-    assert BatteryReadingEntity.__module__ == "app.sensor_entities"
     assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
     assert TurbidityReadingEntity.__module__ == "app.sensor_entities"
     assert UnderwaterAcousticReadingEntity.__module__ == "app.sensor_entities"
