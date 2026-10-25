@@ -3,10 +3,9 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Float, ForeignKey, JSON, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
-from .fleet_entities import BuoyEntity
 
 
 class TemperatureReadingEntity(Base):
@@ -21,7 +20,6 @@ class TemperatureReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="temperature_readings")
 
 
 class PressureReadingEntity(Base):
@@ -36,7 +34,6 @@ class PressureReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="pressure_readings")
 
 
 class SalinityReadingEntity(Base):
@@ -51,7 +48,6 @@ class SalinityReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="salinity_readings")
 
 
 class ImuReadingEntity(Base):
@@ -71,7 +67,6 @@ class ImuReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="imu_readings")
 
 
 class AmbientLightReadingEntity(Base):
@@ -86,7 +81,6 @@ class AmbientLightReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="ambient_light_readings")
 
 
 class WindReadingEntity(Base):
@@ -102,7 +96,6 @@ class WindReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="wind_readings")
 
 
 class MarineCurrentReadingEntity(Base):
@@ -118,7 +111,6 @@ class MarineCurrentReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="marine_current_readings")
 
 
 class TurbidityReadingEntity(Base):
@@ -133,7 +125,6 @@ class TurbidityReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="turbidity_readings")
 
 
 class DissolvedOxygenReadingEntity(Base):
@@ -148,7 +139,6 @@ class DissolvedOxygenReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="dissolved_oxygen_readings")
 
 
 class PHReadingEntity(Base):
@@ -163,7 +153,6 @@ class PHReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="ph_readings")
 
 
 class ConductivityReadingEntity(Base):
@@ -178,7 +167,6 @@ class ConductivityReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="conductivity_readings")
 
 
 class ChlorophyllAReadingEntity(Base):
@@ -193,7 +181,6 @@ class ChlorophyllAReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="chlorophyll_a_readings")
 
 
 class RainfallReadingEntity(Base):
@@ -208,7 +195,6 @@ class RainfallReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="rainfall_readings")
 
 
 class HumidityReadingEntity(Base):
@@ -223,7 +209,6 @@ class HumidityReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="humidity_readings")
 
 
 class AirTemperatureReadingEntity(Base):
@@ -238,7 +223,6 @@ class AirTemperatureReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="air_temperature_readings")
 
 
 class AtmosphericPressureReadingEntity(Base):
@@ -253,7 +237,6 @@ class AtmosphericPressureReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="atmospheric_pressure_readings")
 
 
 class AcousticAltimeterReadingEntity(Base):
@@ -268,7 +251,6 @@ class AcousticAltimeterReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="acoustic_altimeter_readings")
 
 
 class UnderwaterAcousticReadingEntity(Base):
@@ -283,7 +265,6 @@ class UnderwaterAcousticReadingEntity(Base):
     firmware_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     quality: Mapped[str] = mapped_column(String(12), nullable=False, default="good")
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship(back_populates="underwater_acoustic_readings")
 
 
 class SensorHealthCheckEntity(Base):
@@ -316,4 +297,3 @@ class SensorHealthCheckEntity(Base):
     missing_sensors: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     decisions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
     checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    buoy: Mapped[BuoyEntity] = relationship()

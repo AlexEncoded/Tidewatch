@@ -59,6 +59,7 @@ def test_legacy_models_facade_module_is_removed() -> None:
 
 
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
+    from app.fleet_entities import BuoyEntity
     from app.fleet_entities import (
         BatteryReadingEntity,
         BuoyEntity,
@@ -70,6 +71,31 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     assert DeviceEntity.__module__ == "app.fleet_entities"
     assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
     assert BatteryReadingEntity.__module__ == "app.fleet_entities"
+    assert set(BuoyEntity.__mapper__.relationships.keys()) == {
+        "battery_readings",
+        "devices",
+        "location_readings",
+    }
+
+
+def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
+    from app import sensor_entities
+
+    sensor_mappings = [
+        mapping
+        for mapping in vars(sensor_entities).values()
+        if getattr(mapping, "__module__", None) == sensor_entities.__name__
+        and hasattr(mapping, "__table__")
+    ]
+
+    assert sensor_mappings
+    for mapping in sensor_mappings:
+        assert not mapping.__mapper__.relationships
+        assert mapping.__table__.c.buoy_id.foreign_keys
+        assert {
+            foreign_key.target_fullname
+            for foreign_key in mapping.__table__.c.buoy_id.foreign_keys
+        } == {"buoys.id"}
 
 
 def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> None:
