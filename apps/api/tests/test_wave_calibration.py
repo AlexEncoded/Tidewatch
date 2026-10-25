@@ -123,6 +123,8 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
             "imu_max_interval_seconds": 1.0,
         }
     ]
+    assert report["calibration_metrics"]["rmse_m"] == 0
+    assert report["calibration_baseline_metrics"]["rmse_m"] > 0
     assert report["validation_selected_metrics"]["rmse_m"] == 0
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
 

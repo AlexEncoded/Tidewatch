@@ -325,6 +325,9 @@ def main() -> int:
             "baseline_factor": args.baseline_factor,
             "selected_factor": selected_factor,
             "window_coverage": window_coverage,
+            "calibration_baseline_metrics": evaluate_factor(
+                splits["calibration"], args.baseline_factor
+            ),
             "calibration_metrics": calibration_metrics,
             "validation_baseline_metrics": evaluate_factor(
                 splits["validation"], args.baseline_factor
