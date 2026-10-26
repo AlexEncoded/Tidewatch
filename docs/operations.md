@@ -64,7 +64,9 @@ one-minute resolution. The
 `TidewatchDeviceAvailabilityBelowTarget` alerts fire when the 30-day ratio is
 below 99.99% for five minutes. The separate `TidewatchBuoySilent` alert uses a
 30-minute silence threshold. Inspect the API `/metrics` output and Prometheus
-rule evaluations when investigating these alerts.
+rule evaluations when investigating these alerts. The dashboard also displays
+remaining error budget; a 99.99% objective allows approximately 4.32 minutes of
+unavailability in a 30-day window.
 
 ## Useful checks
 

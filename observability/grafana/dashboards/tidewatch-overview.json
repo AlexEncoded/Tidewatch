@@ -358,7 +358,7 @@
       "id": 40,
       "title": "Buoy availability (5m / 30d)",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 220},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 220},
       "targets": [{"expr": "tidewatch:buoy_availability_ratio5m", "legendFormat": "5m {{buoy_id}}", "refId": "A"}, {"expr": "tidewatch:buoy_availability_ratio30d", "legendFormat": "30d {{buoy_id}}", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "decimals": 4, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.9999}, {"color": "green", "value": 1}]}}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
@@ -367,9 +367,27 @@
       "id": 41,
       "title": "Physical device availability (5m / 30d)",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 228},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 220},
       "targets": [{"expr": "tidewatch:device_availability_ratio5m", "legendFormat": "5m {{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "A"}, {"expr": "tidewatch:device_availability_ratio30d", "legendFormat": "30d {{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "decimals": 4, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.9999}, {"color": "green", "value": 1}]}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 48,
+      "title": "Buoy SLO error budget remaining",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 228},
+      "targets": [{"expr": "tidewatch:buoy_error_budget_remaining_percent", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "decimals": 1, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 20}, {"color": "green", "value": 50}]}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 49,
+      "title": "Physical device SLO error budget remaining",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 228},
+      "targets": [{"expr": "tidewatch:device_error_budget_remaining_percent", "legendFormat": "{{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "decimals": 1, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 20}, {"color": "green", "value": 50}]}}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     },
     {

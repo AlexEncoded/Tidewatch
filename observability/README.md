@@ -78,6 +78,8 @@ parte de timestamp cero y cuenta como no disponible.
 `TidewatchBuoyAvailabilityBelowTarget` y
 `TidewatchDeviceAvailabilityBelowTarget` alertan cuando la proporción 30d cae
 por debajo del 99,99%. El dashboard conserva ambas ventanas, 5m y 30d. La
+disponibilidad del 99,99% equivale a un presupuesto de 4,32 minutos en 30 días;
+los paneles de error budget muestran qué porcentaje de ese margen queda. La
 correlación con RPO/RTO sigue pendiente de pruebas de despliegue.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su

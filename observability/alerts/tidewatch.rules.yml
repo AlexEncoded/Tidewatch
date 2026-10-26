@@ -80,6 +80,8 @@ groups:
           avg_over_time(tidewatch:buoy_available[5m])
       - record: tidewatch:buoy_availability_ratio30d
         expr: avg_over_time(tidewatch:buoy_available[30d])
+      - record: tidewatch:buoy_error_budget_remaining_percent
+        expr: clamp_min((tidewatch:buoy_availability_ratio30d - 0.9999) / 0.0001 * 100, 0)
       - alert: TidewatchBuoyAvailabilityBelowTarget
         expr: tidewatch:buoy_availability_ratio30d < 0.9999
         for: 5m
@@ -95,6 +97,8 @@ groups:
           avg_over_time(tidewatch:device_available[5m])
       - record: tidewatch:device_availability_ratio30d
         expr: avg_over_time(tidewatch:device_available[30d])
+      - record: tidewatch:device_error_budget_remaining_percent
+        expr: clamp_min((tidewatch:device_availability_ratio30d - 0.9999) / 0.0001 * 100, 0)
       - alert: TidewatchDeviceAvailabilityBelowTarget
         expr: tidewatch:device_availability_ratio30d < 0.9999
         for: 5m
