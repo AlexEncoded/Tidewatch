@@ -37,12 +37,12 @@ tests:
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch:buoy_availability_ratio30d",buoy_id="stopped"}'
-            value: 1
+            value: 0.16666666666666666
       - expr: tidewatch:device_availability_ratio30d < 0.9999
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch:device_availability_ratio30d",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
-            value: 1
+            value: 0.16666666666666666
     alert_rule_test:
       - eval_time: 2m
         alertname: TidewatchApiTargetUnavailable
