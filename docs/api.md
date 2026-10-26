@@ -90,6 +90,9 @@ Las unidades registradas también pueden incluir `device_runtime` en el lote,
 con `cpu_usage_percent` y `memory_usage_percent` entre 0 y 100. El reporte
 requiere `device_id`; sus valores se exponen como métricas Prometheus por unidad
 física para alertas y gráficas de operación.
+El objeto opcional `device_communications` acepta pérdida de paquetes en
+porcentaje y latencia round-trip en milisegundos; debe incluir al menos uno de
+los dos valores.
 
 En modo `queued`, el mismo `POST` responde `202 Accepted` con `job_id`, estado
 inicial `pending` y `status_url`; el encabezado `Location` contiene esa URL.

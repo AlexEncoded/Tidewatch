@@ -223,6 +223,22 @@ groups:
         annotations:
           summary: "Tidewatch device memory usage is high"
           description: "The physical device has reported memory utilization above 90 percent for five minutes."
+      - alert: TidewatchDevicePacketLoss
+        expr: tidewatch_device_packet_loss_percent > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch device is losing network packets"
+          description: "The physical device has reported packet loss above five percent for five minutes."
+      - alert: TidewatchDeviceHighNetworkLatency
+        expr: tidewatch_device_round_trip_latency_ms > 2000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch device network latency is high"
+          description: "The physical device has reported round-trip latency above two seconds for five minutes."
       - alert: TidewatchBuoyDrifting
         expr: tidewatch_buoy_movement_speed_mps > 1
         for: 10m

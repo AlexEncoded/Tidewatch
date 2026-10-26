@@ -344,6 +344,18 @@ device_memory_usage_percent = Gauge(
     ["buoy_id", "device_id", "sensor_channel"],
 )
 
+device_packet_loss_percent = Gauge(
+    "tidewatch_device_packet_loss_percent",
+    "Latest reported outbound packet loss for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
+device_round_trip_latency_ms = Gauge(
+    "tidewatch_device_round_trip_latency_ms",
+    "Latest reported round-trip network latency for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
 battery_percent = Gauge(
     "tidewatch_battery_percent",
     "Most recent battery percentage for each buoy.",

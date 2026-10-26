@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from ..domain.devices import (
     DEVICE_FIRMWARE_MAX_LENGTH,
@@ -27,6 +27,18 @@ class DeviceRuntimeTelemetry(BaseModel):
     cpu_usage_percent: float = Field(ge=0, le=100)
     memory_usage_percent: float = Field(ge=0, le=100)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DeviceCommunicationTelemetry(BaseModel):
+    packet_loss_percent: float | None = Field(default=None, ge=0, le=100)
+    round_trip_latency_ms: float | None = Field(default=None, ge=0, le=600_000)
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @model_validator(mode="after")
+    def require_a_communication_measurement(self) -> "DeviceCommunicationTelemetry":
+        if self.packet_loss_percent is None and self.round_trip_latency_ms is None:
+            raise ValueError("At least one communication measurement is required")
+        return self
 
 
 class Device(BaseModel):

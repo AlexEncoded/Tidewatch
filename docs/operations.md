@@ -80,6 +80,11 @@ CPU and memory gauges are keyed by buoy, device, and redundant channel.
 resource stays above 90% for five minutes; inspect the per-device panels before
 degrading or restarting a unit.
 
+Communication health reports may include packet loss and round-trip latency.
+`TidewatchDevicePacketLoss` warns above 5% packet loss and
+`TidewatchDeviceHighNetworkLatency` warns above 2 seconds, each sustained for
+five minutes. These starting thresholds should be tuned to the deployed link.
+
 ## Useful checks
 
 ```bash

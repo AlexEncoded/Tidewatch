@@ -442,6 +442,24 @@
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     },
     {
+      "id": 52,
+      "title": "Physical device packet loss",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 272},
+      "targets": [{"expr": "tidewatch_device_packet_loss_percent", "legendFormat": "{{buoy_id}} / {{device_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "orange", "value": 3}, {"color": "red", "value": 5}]}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 53,
+      "title": "Physical device network latency",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 272},
+      "targets": [{"expr": "tidewatch_device_round_trip_latency_ms", "legendFormat": "{{buoy_id}} / {{device_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "ms", "min": 0, "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1000}, {"color": "red", "value": 2000}]}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
       "id": 46,
       "title": "Current wave period sensor disagreement",
       "type": "timeseries",

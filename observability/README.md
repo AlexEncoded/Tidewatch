@@ -60,6 +60,10 @@ unidad. Las métricas `tidewatch_device_cpu_usage_percent` y
 `tidewatch_device_memory_usage_percent` alimentan el dashboard y las alertas
 warning `TidewatchDeviceHighCpu` y `TidewatchDeviceHighMemory` cuando el uso
 supera 90% durante cinco minutos.
+Los campos opcionales de comunicación permiten publicar pérdida de paquetes y
+latencia round-trip por unidad. `TidewatchDevicePacketLoss` alerta por encima
+del 5% y `TidewatchDeviceHighNetworkLatency` por encima de 2.000 ms durante
+cinco minutos; son umbrales iniciales que deben ajustarse al enlace desplegado.
 La cola durable publica en `/metrics` los jobs por estado,
 `tidewatch_telemetry_ingestion_oldest_pending_seconds`, leases vencidos, jobs
 reintentados y suma de intentos. Se refrescan desde PostgreSQL en cada scrape

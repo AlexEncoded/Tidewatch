@@ -417,7 +417,11 @@ def test_modularized_routes_are_owned_by_routers() -> None:
 
 def test_current_telemetry_contracts_preserve_device_provenance() -> None:
     for field_name, field in TelemetryBatchCreate.model_fields.items():
-        if field_name in {"device_id", "device_runtime"}:
+        if field_name in {
+            "device_id",
+            "device_runtime",
+            "device_communications",
+        }:
             continue
         reading_types = [
             candidate
@@ -741,6 +745,63 @@ def test_batch_telemetry_rejects_out_of_range_device_runtime_metrics() -> None:
             "temperatures": [
                 {"temperature_celsius": 18.5, "sensor_channel": "A"}
             ],
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_batch_telemetry_publishes_device_communication_metrics() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Communication Metrics Buoy"}
+    ).json()["id"]
+    device_id = "communication-device-a"
+    registered = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": device_id, "sensor_channel": "A"},
+    )
+    assert registered.status_code == 201
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": device_id,
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "A"}
+            ],
+            "device_communications": {
+                "packet_loss_percent": 7.5,
+                "round_trip_latency_ms": 2450,
+            },
+        },
+    )
+    assert response.status_code == 200
+
+    metrics = client.get("/metrics").text.splitlines()
+    for metric_name, expected in (
+        ("tidewatch_device_packet_loss_percent", 7.5),
+        ("tidewatch_device_round_trip_latency_ms", 2450),
+    ):
+        sample = next(
+            line
+            for line in metrics
+            if line.startswith(f"{metric_name}{{")
+            and f'device_id="{device_id}"' in line
+        )
+        assert float(sample.rsplit(" ", 1)[-1]) == expected
+
+
+def test_batch_telemetry_rejects_empty_device_communication_report() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Empty Communication Report Buoy"}
+    ).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "communication-device-a",
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "A"}
+            ],
+            "device_communications": {},
         },
     )
     assert response.status_code == 422

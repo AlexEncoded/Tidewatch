@@ -95,6 +95,10 @@ def _latest_measurement_time(payload: TelemetryBatchCommand) -> datetime | None:
         runtime_time = payload.device_runtime.get("measured_at")
         if isinstance(runtime_time, datetime):
             timestamps.append(runtime_time)
+    if payload.device_communications is not None:
+        communications_time = payload.device_communications.get("measured_at")
+        if isinstance(communications_time, datetime):
+            timestamps.append(communications_time)
     if not timestamps:
         return None
     normalized = [
@@ -157,18 +161,28 @@ def process_telemetry_batch(
                     device_id=device.device_id,
                     sensor_channel=device.sensor_channel,
                 ).set((latest_measurement - clock_observation_at).total_seconds())
+            runtime_labels = {
+                "buoy_id": buoy_id,
+                "device_id": device.device_id,
+                "sensor_channel": device.sensor_channel,
+            }
             if payload.device_runtime is not None:
-                runtime_labels = {
-                    "buoy_id": buoy_id,
-                    "device_id": device.device_id,
-                    "sensor_channel": device.sensor_channel,
-                }
                 metrics.metric("device_cpu_usage_percent").labels(
                     **runtime_labels
                 ).set(payload.device_runtime["cpu_usage_percent"])
                 metrics.metric("device_memory_usage_percent").labels(
                     **runtime_labels
                 ).set(payload.device_runtime["memory_usage_percent"])
+            if payload.device_communications is not None:
+                communications = payload.device_communications
+                if communications["packet_loss_percent"] is not None:
+                    metrics.metric("device_packet_loss_percent").labels(
+                        **runtime_labels
+                    ).set(communications["packet_loss_percent"])
+                if communications["round_trip_latency_ms"] is not None:
+                    metrics.metric("device_round_trip_latency_ms").labels(
+                        **runtime_labels
+                    ).set(communications["round_trip_latency_ms"])
     else:
         seen_at = None
 

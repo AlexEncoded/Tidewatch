@@ -12,6 +12,7 @@ def test_batch_command_covers_every_validated_sensor_family() -> None:
         "device_id",
         "location",
         "device_runtime",
+        "device_communications",
     }
 
     assert set(TELEMETRY_READING_FAMILIES) == schema_families
@@ -53,6 +54,11 @@ def test_batch_command_copies_readings_and_serializes_datetime_for_queue() -> No
             "memory_usage_percent": 62.0,
             "measured_at": measured_at,
         },
+        "device_communications": {
+            "packet_loss_percent": 1.5,
+            "round_trip_latency_ms": 120,
+            "measured_at": measured_at,
+        },
     }
 
     command = TelemetryBatchCommand.from_mapping(source)
@@ -65,3 +71,4 @@ def test_batch_command_copies_readings_and_serializes_datetime_for_queue() -> No
     )
     assert command.as_json_mapping()["device_id"] == "buoy-device"
     assert command.as_json_mapping()["device_runtime"]["measured_at"] == measured_at.isoformat()
+    assert command.as_json_mapping()["device_communications"]["measured_at"] == measured_at.isoformat()
