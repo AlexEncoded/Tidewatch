@@ -356,19 +356,19 @@
     },
     {
       "id": 40,
-      "title": "Buoy availability (5m)",
+      "title": "Buoy availability (5m / 30d)",
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 220},
-      "targets": [{"expr": "tidewatch:buoy_availability_ratio5m", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "targets": [{"expr": "tidewatch:buoy_availability_ratio5m", "legendFormat": "5m {{buoy_id}}", "refId": "A"}, {"expr": "tidewatch:buoy_availability_ratio30d", "legendFormat": "30d {{buoy_id}}", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "decimals": 4, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.9999}, {"color": "green", "value": 1}]}}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     },
     {
       "id": 41,
-      "title": "Physical device availability (5m)",
+      "title": "Physical device availability (5m / 30d)",
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 228},
-      "targets": [{"expr": "tidewatch:device_availability_ratio5m", "legendFormat": "{{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "A"}],
+      "targets": [{"expr": "tidewatch:device_availability_ratio5m", "legendFormat": "5m {{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "A"}, {"expr": "tidewatch:device_availability_ratio30d", "legendFormat": "30d {{buoy_id}} / {{device_id}} / {{sensor_channel}}", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "decimals": 4, "thresholds": {"steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.9999}, {"color": "green", "value": 1}]}}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     },

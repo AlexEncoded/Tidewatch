@@ -78,27 +78,37 @@ groups:
           avg_over_time(
             (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30)[5m:]
           )
+      - record: tidewatch:buoy_availability_ratio30d
+        expr: |
+          avg_over_time(
+            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30)[30d:]
+          )
       - alert: TidewatchBuoyAvailabilityBelowTarget
-        expr: tidewatch:buoy_availability_ratio5m < 0.9999
+        expr: tidewatch:buoy_availability_ratio30d < 0.9999
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "Tidewatch buoy availability is below target"
-          description: "The buoy has been available for less than 99.99% of the last five minutes."
+          description: "Observed buoy availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
       - record: tidewatch:device_availability_ratio5m
         expr: |
           avg_over_time(
             (time() - tidewatch_device_last_seen_timestamp_seconds < bool 30)[5m:]
           )
+      - record: tidewatch:device_availability_ratio30d
+        expr: |
+          avg_over_time(
+            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 30)[30d:]
+          )
       - alert: TidewatchDeviceAvailabilityBelowTarget
-        expr: tidewatch:device_availability_ratio5m < 0.9999
+        expr: tidewatch:device_availability_ratio30d < 0.9999
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "Tidewatch physical device availability is below target"
-          description: "A physical device has been available for less than 99.99% of the last five minutes."
+          description: "Observed physical-device availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
       - alert: TidewatchBuoySilent
         expr: time() - tidewatch_buoy_last_seen_timestamp_seconds > 1800
         for: 5m

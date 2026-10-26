@@ -54,11 +54,14 @@ available. On API startup, the gauges are restored from the latest timestamps
 persisted in the database; a registered unit with no telemetry starts at `0`.
 
 The `tidewatch:buoy_availability_ratio5m` and
-`tidewatch:device_availability_ratio5m` recording rules count a unit as
-available while its last receipt is less than 30 seconds old. The
+`tidewatch:device_availability_ratio5m` recording rules show recent liveness.
+Their `*_ratio30d` counterparts measure the 99.99% availability objective over
+the trailing 30 days, or over the observed period if Prometheus has collected
+the series for less than 30 days. A unit counts as available while its last
+receipt is less than 30 seconds old. The
 `TidewatchBuoyAvailabilityBelowTarget` and
-`TidewatchDeviceAvailabilityBelowTarget` alerts fire when that ratio is below
-99.99% for five minutes. The separate `TidewatchBuoySilent` alert uses a
+`TidewatchDeviceAvailabilityBelowTarget` alerts fire when the 30-day ratio is
+below 99.99% for five minutes. The separate `TidewatchBuoySilent` alert uses a
 30-minute silence threshold. Inspect the API `/metrics` output and Prometheus
 rule evaluations when investigating these alerts.
 

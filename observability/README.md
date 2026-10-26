@@ -64,19 +64,20 @@ misma serie para mantener una única definición operativa.
 el endpoint `/metrics`, un caso en el que las métricas basadas en peticiones
 dejan de estar disponibles.
 La disponibilidad objetivo del 99,99% por boya y unidad física sigue pendiente
-de validación completa en un entorno desplegado. La recording rule
-`tidewatch:buoy_availability_ratio5m` ya mide, por `buoy_id`, la proporción de
-los últimos cinco minutos en la que el heartbeat de lecturas estuvo disponible;
-se considera disponible si el último heartbeat tiene menos de 30 segundos
-(tres intervalos esperados de telemetría de 10 segundos);
-las series se restauran desde las unidades registradas al arrancar la API y las
+de validación completa en un entorno desplegado. Las recording rules
+`tidewatch:buoy_availability_ratio5m` y
+`tidewatch:device_availability_ratio5m` sirven para investigar cortes recientes;
+las variantes `*_ratio30d` miden el objetivo de disponibilidad sobre los últimos
+30 días (o desde la primera muestra de Prometheus si la serie es más reciente).
+Se considera disponible si el último heartbeat tiene menos de 30 segundos
+(tres intervalos esperados de telemetría de 10 segundos).
+Las series se restauran desde las unidades registradas al arrancar la API y las
 unidades nuevas se publican desde su registro; una unidad sin ningún heartbeat
 parte de timestamp cero y cuenta como no disponible.
-`TidewatchBuoyAvailabilityBelowTarget` avisa por debajo del 99,99%. La
-`tidewatch:device_availability_ratio5m` y `TidewatchDeviceAvailabilityBelowTarget`
-aplican el mismo límite de frescura por unidad física, conservando las etiquetas
-`buoy_id`, `device_id` y `sensor_channel`. La correlación con RPO/RTO sigue
-pendiente de pruebas de despliegue.
+`TidewatchBuoyAvailabilityBelowTarget` y
+`TidewatchDeviceAvailabilityBelowTarget` alertan cuando la proporción 30d cae
+por debajo del 99,99%. El dashboard conserva ambas ventanas, 5m y 30d. La
+correlación con RPO/RTO sigue pendiente de pruebas de despliegue.
 
 La humedad del aire se observa con `tidewatch_current_humidity_percent` y su
 delta A/B queda registrada como `humidity_delta_percent`.

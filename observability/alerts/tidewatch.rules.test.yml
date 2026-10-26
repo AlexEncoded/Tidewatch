@@ -7,13 +7,13 @@ tests:
   - interval: 10s
     input_series:
       - series: tidewatch_buoy_last_seen_timestamp_seconds{buoy_id="active"}
-        values: "0+10x30"
+        values: "0+10x360"
       - series: tidewatch_buoy_last_seen_timestamp_seconds{buoy_id="stopped"}
-        values: "0+0x30"
+        values: "0+0x360"
       - series: tidewatch_device_last_seen_timestamp_seconds{buoy_id="active",device_id="device-a",sensor_channel="A"}
-        values: "0+10x30"
+        values: "0+10x360"
       - series: tidewatch_device_last_seen_timestamp_seconds{buoy_id="stopped",device_id="device-b",sensor_channel="B"}
-        values: "0+0x30"
+        values: "0+0x360"
       - series: up{job="tidewatch-api",instance="tidewatch-api:8000"}
         values: "1+0x30"
       - series: up{job="tidewatch-api",instance="unavailable-api:8000"}
@@ -33,6 +33,16 @@ tests:
             value: 1
           - labels: '{__name__="tidewatch:device_availability_ratio5m",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
             value: 0.16666666666666666
+      - expr: tidewatch:buoy_availability_ratio30d < 0.9999
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch:buoy_availability_ratio30d",buoy_id="stopped"}'
+            value: 1
+      - expr: tidewatch:device_availability_ratio30d < 0.9999
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="tidewatch:device_availability_ratio30d",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
+            value: 1
     alert_rule_test:
       - eval_time: 2m
         alertname: TidewatchApiTargetUnavailable
@@ -44,6 +54,26 @@ tests:
             exp_annotations:
               summary: "Tidewatch API metrics endpoint is unavailable"
               description: "Prometheus cannot scrape the Tidewatch API; request-based availability metrics may be absent."
+      - eval_time: 10m
+        alertname: TidewatchBuoyAvailabilityBelowTarget
+        exp_alerts:
+          - exp_labels:
+              buoy_id: stopped
+              severity: warning
+            exp_annotations:
+              summary: "Tidewatch buoy availability is below target"
+              description: "Observed buoy availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
+      - eval_time: 10m
+        alertname: TidewatchDeviceAvailabilityBelowTarget
+        exp_alerts:
+          - exp_labels:
+              buoy_id: stopped
+              device_id: device-b
+              sensor_channel: B
+              severity: warning
+            exp_annotations:
+              summary: "Tidewatch physical device availability is below target"
+              description: "Observed physical-device availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
   - interval: 10s
     input_series:
       - series: tidewatch_telemetry_ingestion_jobs{status="pending"}
