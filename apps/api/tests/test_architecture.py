@@ -561,7 +561,13 @@ def test_alembic_registers_context_entities_without_compatibility_facade() -> No
 
     assert "entities" not in imported_contexts
     assert imported_contexts.issuperset(
-        {"alert_entities", "fleet_entities", "sensor_entities", "telemetry_entities"}
+        {
+            "alert_entities",
+            "fleet_entities",
+            "maintenance_entities",
+            "sensor_entities",
+            "telemetry_entities",
+        }
     )
 
 

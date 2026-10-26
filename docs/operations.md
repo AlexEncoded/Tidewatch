@@ -32,6 +32,15 @@ the response never includes the stored telemetry payload. To roll back to
 synchronous ingestion, set `api.telemetryIngestionMode=sync` in Helm or the
 equivalent environment variable in Compose.
 
+The same worker delivers queued maintenance webhooks from PostgreSQL. Failed
+deliveries retry with exponential backoff; after five attempts the job becomes
+`failed` (override with `MAINTENANCE_NOTIFICATION_MAX_ATTEMPTS`). Each job has a
+lease so another worker can recover it after a crash. Webhook receivers should
+deduplicate using `notification_idempotency_key`, since a crash after the remote
+service accepts a request can cause that request to be delivered again. The
+API stores the webhook payload and delivery state, but never stores the webhook
+URL; the worker reads `MAINTENANCE_WEBHOOK_URL` from its environment.
+
 Run it from the repository root with:
 
 ```bash

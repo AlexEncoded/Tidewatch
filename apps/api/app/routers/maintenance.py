@@ -3,20 +3,30 @@
 from datetime import datetime, timezone
 import os
 
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from ..application.maintenance_evaluation import evaluate_maintenance_fleet
-from ..application.maintenance_notifications import deliver_maintenance_notification
-from ..adapter_dependencies import get_maintenance_reader
+from ..application.maintenance_notifications import (
+    build_maintenance_notification_payload,
+    maintenance_notification_idempotency_key,
+)
+from ..adapter_dependencies import (
+    get_maintenance_notification_job_store,
+    get_maintenance_reader,
+)
 from ..application.maintenance_ports import MaintenanceReader
+from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
 from ..metrics import (
     battery_delta_percent,
     battery_device_percent,
     buoy_movement_speed_mps,
     redundant_device_missing,
 )
-from ..schemas.maintenance import MaintenanceIssue, MaintenanceNotificationResult
+from ..schemas.maintenance import (
+    MaintenanceIssue,
+    MaintenanceNotificationJobStatus,
+    MaintenanceNotificationResult,
+)
 
 
 router = APIRouter()
@@ -91,7 +101,13 @@ def maintenance_issues(
 def notify_maintenance(
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
+    idempotency_key: str | None = Header(
+        default=None, alias="Idempotency-Key", min_length=1, max_length=64
+    ),
     reader: MaintenanceReader = Depends(get_maintenance_reader),
+    jobs: MaintenanceNotificationJobStore = Depends(
+        get_maintenance_notification_job_store
+    ),
 ) -> MaintenanceNotificationResult:
     webhook_url = os.getenv("MAINTENANCE_WEBHOOK_URL")
     if not webhook_url:
@@ -103,12 +119,51 @@ def notify_maintenance(
     issues = _evaluate_and_publish_maintenance_metrics(
         reader, max_age_minutes, drift_speed_mps
     )
+    payload = build_maintenance_notification_payload(issues)
+    requested_at = datetime.now(timezone.utc)
+    key = maintenance_notification_idempotency_key(
+        payload, idempotency_key, requested_at
+    )
+    # Receivers can use this stable key to suppress duplicates if a worker
+    # crashes after delivery but before it records the successful response.
+    payload["notification_idempotency_key"] = key
     try:
-        issue_count = deliver_maintenance_notification(webhook_url, issues, httpx.post)
-    except httpx.HTTPError as exc:
+        job = jobs.enqueue(key, payload, len(issues), requested_at)
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Maintenance webhook delivery failed",
-        ) from exc
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from None
+    return MaintenanceNotificationResult(
+        job_id=job.job_id,
+        status=job.status,
+        status_url=f"/api/v1/maintenance/notifications/{job.job_id}",
+        issue_count=job.issue_count,
+    )
 
-    return MaintenanceNotificationResult(status="sent", issue_count=issue_count)
+
+@router.get(
+    "/api/v1/maintenance/notifications/{job_id}",
+    response_model=MaintenanceNotificationJobStatus,
+    tags=["maintenance"],
+)
+def maintenance_notification_status(
+    job_id: str,
+    jobs: MaintenanceNotificationJobStore = Depends(
+        get_maintenance_notification_job_store
+    ),
+) -> MaintenanceNotificationJobStatus:
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Maintenance notification job not found",
+        )
+    return MaintenanceNotificationJobStatus(
+        job_id=job.job_id,
+        status=job.status,
+        issue_count=job.issue_count,
+        attempts=job.attempts,
+        created_at=job.created_at,
+        completed_at=job.completed_at,
+        error=job.last_error,
+    )

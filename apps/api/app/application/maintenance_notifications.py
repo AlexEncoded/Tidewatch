@@ -1,6 +1,9 @@
 """Application services for maintenance notifications."""
 
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
+import hashlib
+import json
 from typing import Protocol, runtime_checkable
 
 
@@ -24,6 +27,19 @@ def build_maintenance_notification_payload(issues: list) -> dict:
         "source": "tidewatch",
         "issues": [_serialize_issue(issue) for issue in issues],
     }
+
+
+def maintenance_notification_idempotency_key(
+    payload: dict,
+    requested_key: str | None,
+    now: datetime,
+) -> str:
+    """Use a client key or deduplicate identical requests within a 15-minute window."""
+    if requested_key is not None:
+        return requested_key
+    bucket = int(now.timestamp()) // (15 * 60)
+    material = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(f"{bucket}:{material}".encode("utf-8")).hexdigest()
 
 
 def deliver_maintenance_notification(

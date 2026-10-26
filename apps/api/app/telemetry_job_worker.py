@@ -17,6 +17,7 @@ from .schemas.ingestion import TelemetryBatchCreate
 from .application.telemetry_batch_ingestion import process_telemetry_batch
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from .maintenance_notification_worker import process_next_maintenance_notification_job
 
 logger = logging.getLogger(__name__)
 JOB_LEASE_SECONDS = max(1, int(os.getenv("TELEMETRY_JOB_LEASE_SECONDS", "300")))
@@ -83,7 +84,9 @@ def run_worker() -> None:
     while True:
         try:
             with SessionLocal() as db:
-                found_job = process_next_telemetry_job(db)
+                found_telemetry_job = process_next_telemetry_job(db)
+                found_notification_job = process_next_maintenance_notification_job(db)
+                found_job = found_telemetry_job or found_notification_job
         except Exception:
             logger.exception("Telemetry queue polling failed; will retry")
             found_job = False

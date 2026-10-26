@@ -12,6 +12,7 @@ from .application.analysis_ports import (
     WaveAnalysisReader,
 )
 from .application.maintenance_ports import MaintenanceReader
+from .application.maintenance_notification_ports import MaintenanceNotificationJobStore
 from .application.quality_ports import QualitySummaryReader
 from .application.sensor_health_ports import (
     SensorHealthCheckGateway,
@@ -90,6 +91,7 @@ from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository
 from .telemetry_ingestion_repository import TelemetryIngestionRepository
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
 from .maintenance_repository import MaintenanceRepository
@@ -155,6 +157,13 @@ def get_maintenance_reader(
 ) -> MaintenanceReader:
     """Compose fleet maintenance queries with the SQL repository adapter."""
     return MaintenanceRepository(db)
+
+
+def get_maintenance_notification_job_store(
+    db: Session = Depends(get_db),
+) -> MaintenanceNotificationJobStore:
+    """Compose durable notification job storage with its SQL adapter."""
+    return MaintenanceNotificationJobRepository(db)
 
 
 def get_database_health_reader(

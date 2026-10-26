@@ -11,6 +11,7 @@ from app.database import Base  # noqa: E402
 from app import (  # noqa: E402, F401
     alert_entities,
     fleet_entities,
+    maintenance_entities,
     sensor_entities,
     telemetry_entities,
 )

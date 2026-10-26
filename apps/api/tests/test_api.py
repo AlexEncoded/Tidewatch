@@ -52,6 +52,7 @@ import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.maintenance_notification_worker import process_next_maintenance_notification_job
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.telemetry import configure_telemetry
 import app.main as main_module
@@ -1550,6 +1551,7 @@ def test_sensor_health_identifies_missing_redundant_channel() -> None:
         f"/api/v1/buoys/{buoy_id}/temperatures",
         json={"temperature_celsius": 20, "sensor_channel": "A"},
     )
+    idempotency_key = f"maintenance-cycle-{buoy_id}"
 
     health = client.get(f"/api/v1/buoys/{buoy_id}/sensor-health")
 
@@ -1590,12 +1592,15 @@ def test_maintenance_notification_requires_webhook_configuration(
     assert "not configured" in response.json()["detail"]
 
 
-def test_maintenance_notification_delivers_current_issues(monkeypatch) -> None:
+def test_maintenance_notification_is_durable_idempotent_and_delivers_current_issues(
+    monkeypatch,
+) -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Webhook Buoy"}).json()["id"]
     client.post(
         f"/api/v1/buoys/{buoy_id}/temperatures",
         json={"temperature_celsius": 20, "sensor_channel": "A"},
     )
+    idempotency_key = f"maintenance-cycle-{buoy_id}"
     captured = {}
 
     class WebhookResponse:
@@ -1608,14 +1613,34 @@ def test_maintenance_notification_delivers_current_issues(monkeypatch) -> None:
         return WebhookResponse()
 
     monkeypatch.setenv("MAINTENANCE_WEBHOOK_URL", "https://hooks.example.test/tidewatch")
-    monkeypatch.setattr(maintenance_module.httpx, "post", fake_post)
-
-    response = client.post("/api/v1/maintenance/notifications")
+    response = client.post(
+        "/api/v1/maintenance/notifications",
+        headers={"Idempotency-Key": idempotency_key},
+    )
 
     assert response.status_code == 202
-    assert response.json()["status"] == "sent"
+    assert response.json()["status"] == "pending"
+    duplicate = client.post(
+        "/api/v1/maintenance/notifications",
+        headers={"Idempotency-Key": idempotency_key},
+    )
+    assert duplicate.status_code == 202
+    assert duplicate.json()["job_id"] == response.json()["job_id"]
+
+    with SessionLocal() as db:
+        assert process_next_maintenance_notification_job(
+            db,
+            transport=fake_post,
+            webhook_url="https://hooks.example.test/tidewatch",
+        ) is True
+
+    completed = client.get(response.json()["status_url"])
+    assert completed.status_code == 200
+    assert completed.json()["status"] == "sent"
+    assert completed.json()["attempts"] == 1
     assert captured["url"] == "https://hooks.example.test/tidewatch"
     assert captured["payload"]["source"] == "tidewatch"
+    assert captured["payload"]["notification_idempotency_key"] == idempotency_key
     assert any(
         issue["issue_type"] == "missing_sensor_channel"
         for issue in captured["payload"]["issues"]

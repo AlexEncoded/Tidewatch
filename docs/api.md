@@ -53,7 +53,8 @@ una incidencia `missing_sensor_channel`.
 | `GET` | `/api/v1/buoys/{id}/sensor-health/history` | Consultar histórico de salud |
 | `GET` | `/api/v1/buoys/{id}/quality-summary` | Resumir calidad acumulada |
 | `GET` | `/api/v1/maintenance/issues` | Consultar incidencias, incluida deriva |
-| `POST` | `/api/v1/maintenance/notifications` | Enviar incidencias al webhook configurado |
+| `POST` | `/api/v1/maintenance/notifications` | Encolar incidencias para el webhook configurado |
+| `GET` | `/api/v1/maintenance/notifications/{job_id}` | Consultar el estado de una notificación |
 | `GET` | `/api/v1/alerts/temperature` | Consultar anomalías de temperatura |
 | `POST` | `/api/v1/alerts/temperature/evaluate` | Persistir anomalías actuales |
 | `GET` | `/api/v1/alerts/temperature/stored` | Consultar alertas persistidas |
@@ -98,6 +99,16 @@ En modo `queued`, el mismo `POST` responde `202 Accepted` con `job_id`, estado
 inicial `pending` y `status_url`; el encabezado `Location` contiene esa URL.
 Consulta el endpoint de estado para seguir el trabajo hasta `completed` o
 `failed`. Por seguridad, la respuesta de estado no incluye el payload recibido.
+
+Las notificaciones de mantenimiento también responden `202 Accepted` y se
+guardan en PostgreSQL antes de responder. Se pueden deduplicar enviando
+`Idempotency-Key` (1–64 caracteres); reutilizar la misma clave con otro
+contenido devuelve `409 Conflict`. Sin esa cabecera, solicitudes con el mismo
+contenido se agrupan en ventanas de 15 minutos. El webhook recibe
+`notification_idempotency_key` para que el consumidor pueda reconocer un reenvío
+si el worker se interrumpe después de entregar el mensaje. Consulta
+`status_url` para conocer `pending`, `processing`, `sent` o `failed` y el número
+de intentos.
 Los clientes deberían enviar `Idempotency-Key` (hasta 64 caracteres) y
 reutilizarlo en las retransmisiones del mismo lote; la clave se limita a cada
 boya y devuelve el job original si la petición se repite.
