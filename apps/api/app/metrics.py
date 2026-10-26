@@ -332,6 +332,18 @@ device_clock_offset_seconds = Gauge(
     ["buoy_id", "device_id", "sensor_channel"],
 )
 
+device_cpu_usage_percent = Gauge(
+    "tidewatch_device_cpu_usage_percent",
+    "Latest reported CPU utilization for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
+device_memory_usage_percent = Gauge(
+    "tidewatch_device_memory_usage_percent",
+    "Latest reported memory utilization for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
 battery_percent = Gauge(
     "tidewatch_battery_percent",
     "Most recent battery percentage for each buoy.",

@@ -86,6 +86,11 @@ objeto sigue siendo compatible. Un lote no puede repetir el mismo
 Cada posición se conserva con su marca temporal para reconstruir
 desplazamientos.
 
+Las unidades registradas también pueden incluir `device_runtime` en el lote,
+con `cpu_usage_percent` y `memory_usage_percent` entre 0 y 100. El reporte
+requiere `device_id`; sus valores se exponen como métricas Prometheus por unidad
+física para alertas y gráficas de operación.
+
 En modo `queued`, el mismo `POST` responde `202 Accepted` con `job_id`, estado
 inicial `pending` y `status_url`; el encabezado `Location` contiene esa URL.
 Consulta el endpoint de estado para seguir el trabajo hasta `completed` o

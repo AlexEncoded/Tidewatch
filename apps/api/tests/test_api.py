@@ -417,7 +417,7 @@ def test_modularized_routes_are_owned_by_routers() -> None:
 
 def test_current_telemetry_contracts_preserve_device_provenance() -> None:
     for field_name, field in TelemetryBatchCreate.model_fields.items():
-        if field_name == "device_id":
+        if field_name in {"device_id", "device_runtime"}:
             continue
         reading_types = [
             candidate
@@ -687,6 +687,63 @@ def test_batch_telemetry_publishes_device_clock_offset() -> None:
     ]
     assert len(samples) == 1
     assert float(samples[0].rsplit(" ", 1)[-1]) > 175
+
+
+def test_batch_telemetry_publishes_per_device_runtime_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Runtime Metrics Buoy"}).json()["id"]
+    device_id = "runtime-device-a"
+    registered = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": device_id, "sensor_channel": "A"},
+    )
+    assert registered.status_code == 201
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": device_id,
+            "device_runtime": {
+                "cpu_usage_percent": 73.5,
+                "memory_usage_percent": 81.25,
+            },
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "A"}
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["accepted_readings"] == 1
+
+    metrics = client.get("/metrics").text.splitlines()
+    for metric_name, expected in (
+        ("tidewatch_device_cpu_usage_percent", 73.5),
+        ("tidewatch_device_memory_usage_percent", 81.25),
+    ):
+        sample = next(
+            line
+            for line in metrics
+            if line.startswith(f"{metric_name}{{")
+            and f'device_id="{device_id}"' in line
+        )
+        assert float(sample.rsplit(" ", 1)[-1]) == expected
+
+
+def test_batch_telemetry_rejects_out_of_range_device_runtime_metrics() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Invalid Runtime Buoy"}).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "runtime-device-a",
+            "device_runtime": {
+                "cpu_usage_percent": 101,
+                "memory_usage_percent": 30,
+            },
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "A"}
+            ],
+        },
+    )
+    assert response.status_code == 422
 
 
 def test_batch_telemetry_rejects_duplicate_battery_devices() -> None:

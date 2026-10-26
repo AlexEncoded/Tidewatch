@@ -74,6 +74,12 @@ the newest measurement timestamp minus its API receipt time. The
 minutes for five minutes. Delivery delay can contribute to the offset, so check
 network and queue behavior before changing the device clock.
 
+Each physical device can report `device_runtime` in its telemetry batch. The
+CPU and memory gauges are keyed by buoy, device, and redundant channel.
+`TidewatchDeviceHighCpu` and `TidewatchDeviceHighMemory` warn when either
+resource stays above 90% for five minutes; inspect the per-device panels before
+degrading or restarting a unit.
+
 ## Useful checks
 
 ```bash

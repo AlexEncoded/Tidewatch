@@ -1,6 +1,6 @@
 """HTTP contracts for buoy device management."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
@@ -21,6 +21,12 @@ class DeviceCreate(BaseModel):
 
 class DeviceStatusUpdate(BaseModel):
     status: DeviceOperationalStatus
+
+
+class DeviceRuntimeTelemetry(BaseModel):
+    cpu_usage_percent: float = Field(ge=0, le=100)
+    memory_usage_percent: float = Field(ge=0, le=100)
+    measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Device(BaseModel):

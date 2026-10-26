@@ -207,6 +207,22 @@ groups:
         annotations:
           summary: "Tidewatch device timestamp differs from API time"
           description: "The latest device measurement timestamp differs from its API receipt time by more than two minutes; inspect clock synchronization and telemetry delivery delay."
+      - alert: TidewatchDeviceHighCpu
+        expr: tidewatch_device_cpu_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch device CPU usage is high"
+          description: "The physical device has reported CPU utilization above 90 percent for five minutes."
+      - alert: TidewatchDeviceHighMemory
+        expr: tidewatch_device_memory_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch device memory usage is high"
+          description: "The physical device has reported memory utilization above 90 percent for five minutes."
       - alert: TidewatchBuoyDrifting
         expr: tidewatch_buoy_movement_speed_mps > 1
         for: 10m

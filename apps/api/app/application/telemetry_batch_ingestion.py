@@ -91,6 +91,10 @@ def _latest_measurement_time(payload: TelemetryBatchCommand) -> datetime | None:
         location_time = payload.location.get("measured_at")
         if isinstance(location_time, datetime):
             timestamps.append(location_time)
+    if payload.device_runtime is not None:
+        runtime_time = payload.device_runtime.get("measured_at")
+        if isinstance(runtime_time, datetime):
+            timestamps.append(runtime_time)
     if not timestamps:
         return None
     normalized = [
@@ -153,6 +157,18 @@ def process_telemetry_batch(
                     device_id=device.device_id,
                     sensor_channel=device.sensor_channel,
                 ).set((latest_measurement - clock_observation_at).total_seconds())
+            if payload.device_runtime is not None:
+                runtime_labels = {
+                    "buoy_id": buoy_id,
+                    "device_id": device.device_id,
+                    "sensor_channel": device.sensor_channel,
+                }
+                metrics.metric("device_cpu_usage_percent").labels(
+                    **runtime_labels
+                ).set(payload.device_runtime["cpu_usage_percent"])
+                metrics.metric("device_memory_usage_percent").labels(
+                    **runtime_labels
+                ).set(payload.device_runtime["memory_usage_percent"])
     else:
         seen_at = None
 

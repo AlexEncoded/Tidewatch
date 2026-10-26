@@ -55,6 +55,11 @@ medición de la unidad con la hora de recepción de la API. La alerta
 durante cinco minutos; una entrega retrasada también puede contribuir a esa
 diferencia, por lo que conviene revisar la conectividad junto con la
 sincronización del reloj.
+Cada lote puede incluir `device_runtime` con porcentajes de CPU y memoria por
+unidad. Las métricas `tidewatch_device_cpu_usage_percent` y
+`tidewatch_device_memory_usage_percent` alimentan el dashboard y las alertas
+warning `TidewatchDeviceHighCpu` y `TidewatchDeviceHighMemory` cuando el uso
+supera 90% durante cinco minutos.
 La cola durable publica en `/metrics` los jobs por estado,
 `tidewatch_telemetry_ingestion_oldest_pending_seconds`, leases vencidos, jobs
 reintentados y suma de intentos. Se refrescan desde PostgreSQL en cada scrape

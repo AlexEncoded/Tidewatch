@@ -46,6 +46,7 @@ class TelemetryBatchCommand:
     device_id: str | None
     readings: Mapping[str, tuple[Mapping[str, Any], ...]]
     location: Mapping[str, Any] | None = None
+    device_runtime: Mapping[str, Any] | None = None
 
     @classmethod
     def from_mapping(cls, data: Mapping[str, Any]) -> "TelemetryBatchCommand":
@@ -54,10 +55,14 @@ class TelemetryBatchCommand:
             for family in TELEMETRY_READING_FAMILIES
         }
         location = data.get("location")
+        device_runtime = data.get("device_runtime")
         return cls(
             device_id=data.get("device_id"),
             readings=readings,
             location=dict(location) if location is not None else None,
+            device_runtime=(
+                dict(device_runtime) if device_runtime is not None else None
+            ),
         )
 
     def as_json_mapping(self) -> dict[str, Any]:
@@ -66,5 +71,6 @@ class TelemetryBatchCommand:
             "device_id": self.device_id,
             **{family: list(self.readings[family]) for family in TELEMETRY_READING_FAMILIES},
             "location": self.location,
+            "device_runtime": self.device_runtime,
         }
         return _json_compatible(data)

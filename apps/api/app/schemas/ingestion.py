@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ..domain.telemetry_types import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
 from .battery import BatteryReadingCreate
+from .devices import DeviceRuntimeTelemetry
 from .fleet import BuoyLocationReadingCreate
 from .telemetry import (
     AcousticAltimeterReadingCreate,
@@ -53,6 +54,7 @@ class TelemetryBatchCreate(BaseModel):
     underwater_acoustic: list[UnderwaterAcousticReadingCreate] = Field(default_factory=list, max_length=100)
     battery: list[BatteryReadingCreate] = Field(default_factory=list, max_length=2)
     location: BuoyLocationReadingCreate | None = None
+    device_runtime: DeviceRuntimeTelemetry | None = None
 
     @field_validator("battery", mode="before")
     @classmethod
@@ -86,6 +88,8 @@ class TelemetryBatchCreate(BaseModel):
             or self.location
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
+        if self.device_runtime is not None and self.device_id is None:
+            raise ValueError("Device runtime telemetry requires a physical device_id")
         battery_devices = [reading.device_id for reading in self.battery]
         if len(battery_devices) != len(set(battery_devices)):
             raise ValueError("Telemetry batch cannot contain duplicate battery devices")
