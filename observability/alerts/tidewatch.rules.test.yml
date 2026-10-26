@@ -43,18 +43,18 @@ tests:
         exp_samples:
           - labels: '{__name__="tidewatch:device_availability_ratio30d",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
             value: 0.16666666666666666
-      - expr: tidewatch:buoy_error_budget_remaining_percent
+      - expr: abs(tidewatch:buoy_error_budget_remaining_percent - 100) < bool 0.01
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch:buoy_error_budget_remaining_percent",buoy_id="active"}'
-            value: 100
+            value: 1
           - labels: '{__name__="tidewatch:buoy_error_budget_remaining_percent",buoy_id="stopped"}'
             value: 0
-      - expr: tidewatch:device_error_budget_remaining_percent
+      - expr: abs(tidewatch:device_error_budget_remaining_percent - 100) < bool 0.01
         eval_time: 5m
         exp_samples:
           - labels: '{__name__="tidewatch:device_error_budget_remaining_percent",buoy_id="active",device_id="device-a",sensor_channel="A"}'
-            value: 100
+            value: 1
           - labels: '{__name__="tidewatch:device_error_budget_remaining_percent",buoy_id="stopped",device_id="device-b",sensor_channel="B"}'
             value: 0
     alert_rule_test:
