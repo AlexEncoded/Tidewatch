@@ -37,6 +37,11 @@ FastAPI ingestion API
         └── Prometheus metrics
 ```
 
+Per-device telemetry also reports CPU and memory utilization, optional network
+packet loss and round-trip latency, and measurement-time offset. Prometheus
+exposes these signals with buoy, device, and redundant-channel labels; Grafana
+charts them and alert rules flag sustained resource, link, or clock problems.
+
 The frontend consumes the API, displays fleet locations, recent tracks, ocean
 conditions, battery health and the maintenance queue. It also links to a CSV
 snapshot export for offline analysis. Pressure-based wave height, movement and
@@ -65,11 +70,11 @@ coordinates the per-buoy issue snapshot. HTTP boundaries and persistence
 adapters are isolated so use cases can be evolved and validated by the API and
 worker test suites.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
-`application/telemetry_ports.py`; `application/ports.py` re-exports them for
-backward compatibility while other contexts are separated incrementally.
-The composite telemetry-ingestion gateway is defined in the same module.
+`application/telemetry_ports.py`. The composite telemetry-ingestion gateway is
+defined in the same module. Context-specific modules are the canonical port
+definitions; the former generic `ports.py` re-export has been removed.
 Fleet registration, status, location, and summary contracts are grouped in
-`application/fleet_ports.py` with the same compatibility re-export strategy.
+`application/fleet_ports.py`.
 Redundant sensor-health read and write contracts are grouped in
 `application/sensor_ports.py`, as are core temperature, pressure, salinity,
 IMU, ambient-light, wind, current, and water-chemistry gateways (turbidity,
@@ -104,9 +109,9 @@ Fleet identity, physical-device, and location-history ORM entities are grouped i
 `apps/api/app/fleet_entities.py`. Sensor reading, health, and battery mappings
 are grouped in `apps/api/app/sensor_entities.py`; alert and telemetry-ingestion
 job mappings are grouped in `apps/api/app/alert_entities.py` and
-`apps/api/app/telemetry_entities.py`, respectively. `entities.py` remains a
-compatibility facade for Alembic registration; production adapters import
-entities directly from their context modules.
+`apps/api/app/telemetry_entities.py`, respectively. The compatibility
+`entities.py` module has been removed; Alembic imports each context mapping
+module directly, as do production adapters.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
 turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
 air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-

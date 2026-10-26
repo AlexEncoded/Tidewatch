@@ -13,7 +13,8 @@ HTTP/API adapters -> application services -> domain services
                  persistence input ports
 ```
 
-Application services must not import SQLAlchemy sessions or FastAPI objects.
+Application services must not import SQLAlchemy sessions, FastAPI objects, or
+Pydantic HTTP contracts.
 Repository implementations satisfy the protocols structurally, so the use
 cases remain testable without PostgreSQL.
 
@@ -36,8 +37,8 @@ The composite read contract for maintenance evaluation lives in
 Cross-context pressure, temperature, and wave analysis contracts, including
 wave analysis combining sensor and fleet reads, live in `analysis_ports.py`.
 The database liveness/readiness contract lives in `system_ports.py`.
-The shared `ports.py` remains a compatibility facade during incremental
-migration.
+The old generic `ports.py` facade has been removed; each context-specific port
+module is now the canonical contract.
 
 Sensor-health reads and persisted-check writes, plus core temperature,
 pressure, salinity, IMU, ambient-light, wind, and current gateway contracts use
