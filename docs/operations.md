@@ -68,6 +68,12 @@ rule evaluations when investigating these alerts. The dashboard also displays
 remaining error budget; a 99.99% objective allows approximately 4.32 minutes of
 unavailability in a 30-day window.
 
+For device clock diagnostics, `tidewatch_device_clock_offset_seconds` reports
+the newest measurement timestamp minus its API receipt time. The
+`TidewatchDeviceClockSkew` alert fires when the absolute offset exceeds two
+minutes for five minutes. Delivery delay can contribute to the offset, so check
+network and queue behavior before changing the device clock.
+
 ## Useful checks
 
 ```bash

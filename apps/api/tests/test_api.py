@@ -654,6 +654,41 @@ def test_batch_telemetry_accepts_redundant_batteries() -> None:
     assert summary["latest_battery_b"]["battery_percent"] == 88
 
 
+def test_batch_telemetry_publishes_device_clock_offset() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Clock Offset Buoy"}).json()["id"]
+    device_id = "clock-device-a"
+    registered = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": device_id, "sensor_channel": "A"},
+    )
+    assert registered.status_code == 201
+
+    measured_at = datetime.now(timezone.utc) + timedelta(minutes=3)
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": device_id,
+            "temperatures": [
+                {
+                    "temperature_celsius": 18.5,
+                    "sensor_channel": "A",
+                    "measured_at": measured_at.isoformat(),
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    samples = [
+        line
+        for line in client.get("/metrics").text.splitlines()
+        if line.startswith("tidewatch_device_clock_offset_seconds{")
+        and f'device_id="{device_id}"' in line
+    ]
+    assert len(samples) == 1
+    assert float(samples[0].rsplit(" ", 1)[-1]) > 175
+
+
 def test_batch_telemetry_rejects_duplicate_battery_devices() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Duplicate Battery Buoy"}).json()["id"]
 

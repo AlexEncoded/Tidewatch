@@ -199,6 +199,14 @@ groups:
         annotations:
           summary: "Tidewatch redundant buoy device is missing"
           description: "One physical buoy device has stopped sending battery telemetry and requires inspection."
+      - alert: TidewatchDeviceClockSkew
+        expr: abs(tidewatch_device_clock_offset_seconds) > 120
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tidewatch device timestamp differs from API time"
+          description: "The latest device measurement timestamp differs from its API receipt time by more than two minutes; inspect clock synchronization and telemetry delivery delay."
       - alert: TidewatchBuoyDrifting
         expr: tidewatch_buoy_movement_speed_mps > 1
         for: 10m

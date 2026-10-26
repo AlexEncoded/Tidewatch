@@ -1,6 +1,7 @@
 """HTTP route for batch telemetry ingestion."""
 
 import os
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
@@ -56,6 +57,7 @@ def ingest_telemetry(
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
     queued_mode = os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
     command = TelemetryBatchCommand.from_mapping(payload.model_dump())
+    received_at = datetime.now(timezone.utc)
     try:
         outcome = process_telemetry_batch(
             buoy_id,
@@ -66,6 +68,7 @@ def ingest_telemetry(
             jobs=jobs,
             idempotency_key=idempotency_key,
             queued_mode=queued_mode,
+            clock_observation_at=received_at,
         )
     except TelemetryBuoyNotFound as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None

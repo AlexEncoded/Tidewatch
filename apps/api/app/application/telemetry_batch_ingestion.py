@@ -80,6 +80,26 @@ def record_quality_metric(
     ).inc()
 
 
+def _latest_measurement_time(payload: TelemetryBatchCommand) -> datetime | None:
+    timestamps = [
+        reading.get("measured_at")
+        for family in payload.readings.values()
+        for reading in family
+        if isinstance(reading.get("measured_at"), datetime)
+    ]
+    if payload.location is not None:
+        location_time = payload.location.get("measured_at")
+        if isinstance(location_time, datetime):
+            timestamps.append(location_time)
+    if not timestamps:
+        return None
+    normalized = [
+        value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+        for value in timestamps
+    ]
+    return max(normalized, key=lambda value: value.timestamp())
+
+
 @atomic_telemetry_batch
 def process_telemetry_batch(
     buoy_id: str,
@@ -91,6 +111,7 @@ def process_telemetry_batch(
     jobs: TelemetryIngestionJobStore | None = None,
     idempotency_key: str | None = None,
     queued_mode: bool = False,
+    clock_observation_at: datetime | None = None,
 ) -> TelemetryIngestOutcome | TelemetryQueuedOutcome:
     if not gateway.buoy_exists(buoy_id):
         raise TelemetryBuoyNotFound("Buoy not found")
@@ -124,6 +145,14 @@ def process_telemetry_batch(
         metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
             seen_at.timestamp()
         )
+        if clock_observation_at is not None:
+            latest_measurement = _latest_measurement_time(payload)
+            if latest_measurement is not None:
+                metrics.metric("device_clock_offset_seconds").labels(
+                    buoy_id=buoy_id,
+                    device_id=device.device_id,
+                    sensor_channel=device.sensor_channel,
+                ).set((latest_measurement - clock_observation_at).total_seconds())
     else:
         seen_at = None
 

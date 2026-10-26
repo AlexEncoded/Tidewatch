@@ -108,8 +108,21 @@ tests:
             exp_annotations:
               summary: "Tidewatch physical device is rapidly consuming its availability error budget"
               description: "Device availability has fallen below 99.85% in both the last five minutes and the last hour; inspect the affected device and its buoy redundancy."
+      - eval_time: 10m
+        alertname: TidewatchDeviceClockSkew
+        exp_alerts:
+          - exp_labels:
+              buoy_id: clock-skew
+              device_id: device-c
+              sensor_channel: A
+              severity: warning
+            exp_annotations:
+              summary: "Tidewatch device timestamp differs from API time"
+              description: "The latest device measurement timestamp differs from its API receipt time by more than two minutes; inspect clock synchronization and telemetry delivery delay."
   - interval: 10s
     input_series:
+      - series: tidewatch_device_clock_offset_seconds{buoy_id="clock-skew",device_id="device-c",sensor_channel="A"}
+        values: "121+0x90"
       - series: tidewatch_telemetry_ingestion_jobs{status="pending"}
         values: "125+0x30"
       - series: tidewatch_telemetry_ingestion_jobs{status="failed"}

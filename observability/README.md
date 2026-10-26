@@ -49,6 +49,12 @@ la alerta de incumplimiento del objetivo mensual; los umbrales deben revisarse
 con datos de operación reales.
 La ausencia de una unidad se publica como `tidewatch_redundant_device_missing`
 y dispara una alerta crítica tras cinco minutos.
+`tidewatch_device_clock_offset_seconds` compara la marca de tiempo de la última
+medición de la unidad con la hora de recepción de la API. La alerta
+`TidewatchDeviceClockSkew` avisa si la diferencia absoluta supera dos minutos
+durante cinco minutos; una entrega retrasada también puede contribuir a esa
+diferencia, por lo que conviene revisar la conectividad junto con la
+sincronización del reloj.
 La cola durable publica en `/metrics` los jobs por estado,
 `tidewatch_telemetry_ingestion_oldest_pending_seconds`, leases vencidos, jobs
 reintentados y suma de intentos. Se refrescan desde PostgreSQL en cada scrape
