@@ -183,6 +183,14 @@ def process_telemetry_batch(
                     metrics.metric("device_round_trip_latency_ms").labels(
                         **runtime_labels
                     ).set(communications["round_trip_latency_ms"])
+                if communications["signal_strength_dbm"] is not None:
+                    metrics.metric("device_signal_strength_dbm").labels(
+                        **runtime_labels
+                    ).set(communications["signal_strength_dbm"])
+                if communications["signal_to_noise_ratio_db"] is not None:
+                    metrics.metric("device_signal_to_noise_ratio_db").labels(
+                        **runtime_labels
+                    ).set(communications["signal_to_noise_ratio_db"])
     else:
         seen_at = None
 

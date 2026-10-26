@@ -32,11 +32,21 @@ class DeviceRuntimeTelemetry(BaseModel):
 class DeviceCommunicationTelemetry(BaseModel):
     packet_loss_percent: float | None = Field(default=None, ge=0, le=100)
     round_trip_latency_ms: float | None = Field(default=None, ge=0, le=600_000)
+    signal_strength_dbm: float | None = Field(default=None, ge=-150, le=0)
+    signal_to_noise_ratio_db: float | None = Field(default=None, ge=-30, le=100)
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @model_validator(mode="after")
     def require_a_communication_measurement(self) -> "DeviceCommunicationTelemetry":
-        if self.packet_loss_percent is None and self.round_trip_latency_ms is None:
+        if all(
+            measurement is None
+            for measurement in (
+                self.packet_loss_percent,
+                self.round_trip_latency_ms,
+                self.signal_strength_dbm,
+                self.signal_to_noise_ratio_db,
+            )
+        ):
             raise ValueError("At least one communication measurement is required")
         return self
 

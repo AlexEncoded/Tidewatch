@@ -64,6 +64,10 @@ Los campos opcionales de comunicación permiten publicar pérdida de paquetes y
 latencia round-trip por unidad. `TidewatchDevicePacketLoss` alerta por encima
 del 5% y `TidewatchDeviceHighNetworkLatency` por encima de 2.000 ms durante
 cinco minutos; son umbrales iniciales que deben ajustarse al enlace desplegado.
+También se aceptan RSSI (`tidewatch_device_signal_strength_dbm`) y relación
+señal/ruido (`tidewatch_device_signal_to_noise_ratio_db`) por unidad física.
+Se publican para diagnóstico; los umbrales dependen de la tecnología y el
+enlace desplegado.
 La cola durable publica en `/metrics` los jobs por estado,
 `tidewatch_telemetry_ingestion_oldest_pending_seconds`, leases vencidos, jobs
 reintentados y suma de intentos. Se refrescan desde PostgreSQL en cada scrape

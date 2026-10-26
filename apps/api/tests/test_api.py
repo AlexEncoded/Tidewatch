@@ -772,6 +772,8 @@ def test_batch_telemetry_publishes_device_communication_metrics() -> None:
             "device_communications": {
                 "packet_loss_percent": 7.5,
                 "round_trip_latency_ms": 2450,
+                "signal_strength_dbm": -83.5,
+                "signal_to_noise_ratio_db": 12.25,
             },
         },
     )
@@ -781,6 +783,8 @@ def test_batch_telemetry_publishes_device_communication_metrics() -> None:
     for metric_name, expected in (
         ("tidewatch_device_packet_loss_percent", 7.5),
         ("tidewatch_device_round_trip_latency_ms", 2450),
+        ("tidewatch_device_signal_strength_dbm", -83.5),
+        ("tidewatch_device_signal_to_noise_ratio_db", 12.25),
     ):
         sample = next(
             line
@@ -803,6 +807,23 @@ def test_batch_telemetry_rejects_empty_device_communication_report() -> None:
                 {"temperature_celsius": 18.5, "sensor_channel": "A"}
             ],
             "device_communications": {},
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_batch_telemetry_rejects_out_of_range_radio_signal_measurements() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Invalid Radio Signal Buoy"}
+    ).json()["id"]
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={
+            "device_id": "radio-device-a",
+            "temperatures": [
+                {"temperature_celsius": 18.5, "sensor_channel": "A"}
+            ],
+            "device_communications": {"signal_strength_dbm": 1},
         },
     )
     assert response.status_code == 422

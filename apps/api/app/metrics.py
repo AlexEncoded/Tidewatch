@@ -356,6 +356,18 @@ device_round_trip_latency_ms = Gauge(
     ["buoy_id", "device_id", "sensor_channel"],
 )
 
+device_signal_strength_dbm = Gauge(
+    "tidewatch_device_signal_strength_dbm",
+    "Latest radio signal strength indicator for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
+device_signal_to_noise_ratio_db = Gauge(
+    "tidewatch_device_signal_to_noise_ratio_db",
+    "Latest radio signal-to-noise ratio for each physical buoy device.",
+    ["buoy_id", "device_id", "sensor_channel"],
+)
+
 battery_percent = Gauge(
     "tidewatch_battery_percent",
     "Most recent battery percentage for each buoy.",
