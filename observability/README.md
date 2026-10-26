@@ -40,6 +40,13 @@ También publica `tidewatch_buoy_movement_speed_mps` para observar deriva y
 alertar cuando supera el umbral experimental configurado.
 La salud energética dual se expone con `tidewatch_battery_device_percent` y
 `tidewatch_battery_delta_percent`.
+
+Las reglas de disponibilidad mantienen el SLO mensual del 99,99% y también
+evalúan burn rate rápido: una boya o dispositivo dispara una alerta warning
+cuando su disponibilidad cae por debajo de 99,85% tanto en cinco minutos como
+en una hora, sostenida durante dos minutos. Esta alerta temprana complementa
+la alerta de incumplimiento del objetivo mensual; los umbrales deben revisarse
+con datos de operación reales.
 La ausencia de una unidad se publica como `tidewatch_redundant_device_missing`
 y dispara una alerta crítica tras cinco minutos.
 La cola durable publica en `/metrics` los jobs por estado,

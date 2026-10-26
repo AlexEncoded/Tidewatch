@@ -88,6 +88,26 @@ tests:
             exp_annotations:
               summary: "Tidewatch physical device availability is below target"
               description: "Observed physical-device availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
+      - eval_time: 10m
+        alertname: TidewatchBuoyAvailabilityFastBurn
+        exp_alerts:
+          - exp_labels:
+              buoy_id: stopped
+              severity: warning
+            exp_annotations:
+              summary: "Tidewatch buoy is rapidly consuming its availability error budget"
+              description: "Availability has fallen below 99.85% in both the last five minutes and the last hour; inspect buoy connectivity and device health."
+      - eval_time: 10m
+        alertname: TidewatchDeviceAvailabilityFastBurn
+        exp_alerts:
+          - exp_labels:
+              buoy_id: stopped
+              device_id: device-b
+              sensor_channel: B
+              severity: warning
+            exp_annotations:
+              summary: "Tidewatch physical device is rapidly consuming its availability error budget"
+              description: "Device availability has fallen below 99.85% in both the last five minutes and the last hour; inspect the affected device and its buoy redundancy."
   - interval: 10s
     input_series:
       - series: tidewatch_telemetry_ingestion_jobs{status="pending"}
