@@ -69,6 +69,7 @@ de validación completa en un entorno desplegado. Las recording rules
 `tidewatch:device_availability_ratio5m` sirven para investigar cortes recientes;
 las variantes `*_ratio30d` miden el objetivo de disponibilidad sobre los últimos
 30 días (o desde la primera muestra de Prometheus si la serie es más reciente).
+La ventana de 30 días se evalúa con una resolución de un minuto.
 Se considera disponible si el último heartbeat tiene menos de 30 segundos
 (tres intervalos esperados de telemetría de 10 segundos).
 Las series se restauran desde las unidades registradas al arrancar la API y las

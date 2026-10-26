@@ -58,7 +58,8 @@ The `tidewatch:buoy_availability_ratio5m` and
 Their `*_ratio30d` counterparts measure the 99.99% availability objective over
 the trailing 30 days, or over the observed period if Prometheus has collected
 the series for less than 30 days. A unit counts as available while its last
-receipt is less than 30 seconds old. The
+receipt is less than 30 seconds old; the 30-day query samples availability at
+one-minute resolution. The
 `TidewatchBuoyAvailabilityBelowTarget` and
 `TidewatchDeviceAvailabilityBelowTarget` alerts fire when the 30-day ratio is
 below 99.99% for five minutes. The separate `TidewatchBuoySilent` alert uses a
