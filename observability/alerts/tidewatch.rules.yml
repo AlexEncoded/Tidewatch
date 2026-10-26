@@ -73,16 +73,13 @@ groups:
         annotations:
           summary: "Tidewatch queue metrics could not be refreshed"
           description: "The API could not query PostgreSQL for telemetry queue metrics."
+      - record: tidewatch:buoy_available
+        expr: time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30
       - record: tidewatch:buoy_availability_ratio5m
         expr: |
-          avg_over_time(
-            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30)[5m:]
-          )
+          avg_over_time(tidewatch:buoy_available[5m])
       - record: tidewatch:buoy_availability_ratio30d
-        expr: |
-          avg_over_time(
-            (time() - tidewatch_buoy_last_seen_timestamp_seconds < bool 30)[30d:1m]
-          )
+        expr: avg_over_time(tidewatch:buoy_available[30d])
       - alert: TidewatchBuoyAvailabilityBelowTarget
         expr: tidewatch:buoy_availability_ratio30d < 0.9999
         for: 5m
@@ -91,16 +88,13 @@ groups:
         annotations:
           summary: "Tidewatch buoy availability is below target"
           description: "Observed buoy availability is below 99.99% over the trailing 30 days, or since its first Prometheus sample if newer."
+      - record: tidewatch:device_available
+        expr: time() - tidewatch_device_last_seen_timestamp_seconds < bool 30
       - record: tidewatch:device_availability_ratio5m
         expr: |
-          avg_over_time(
-            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 30)[5m:]
-          )
+          avg_over_time(tidewatch:device_available[5m])
       - record: tidewatch:device_availability_ratio30d
-        expr: |
-          avg_over_time(
-            (time() - tidewatch_device_last_seen_timestamp_seconds < bool 30)[30d:1m]
-          )
+        expr: avg_over_time(tidewatch:device_available[30d])
       - alert: TidewatchDeviceAvailabilityBelowTarget
         expr: tidewatch:device_availability_ratio30d < 0.9999
         for: 5m
