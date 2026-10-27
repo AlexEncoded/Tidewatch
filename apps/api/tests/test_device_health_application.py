@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from types import SimpleNamespace
 
 from app.application.device_health import (
     summarize_device_health,
@@ -11,18 +10,20 @@ from app.domain.devices import DeviceSnapshot
 def test_device_health_marks_missing_and_old_active_heartbeats_stale() -> None:
     now = datetime(2026, 1, 1, tzinfo=timezone.utc)
     devices = [
-        SimpleNamespace(
+        DeviceSnapshot(
             buoy_id="buoy-1",
             device_id="unit-a",
             sensor_channel="A",
             status="active",
+            registered_at=now - timedelta(days=1),
             last_seen_at=now - timedelta(minutes=31),
         ),
-        SimpleNamespace(
+        DeviceSnapshot(
             buoy_id="buoy-1",
             device_id="unit-b",
             sensor_channel="B",
             status="active",
+            registered_at=now - timedelta(days=1),
             last_seen_at=None,
         ),
     ]
@@ -36,11 +37,12 @@ def test_device_health_marks_missing_and_old_active_heartbeats_stale() -> None:
 
 def test_device_health_does_not_mark_maintenance_device_stale() -> None:
     now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-    device = SimpleNamespace(
+    device = DeviceSnapshot(
         buoy_id="buoy-1",
         device_id="unit-a",
         sensor_channel="A",
         status="maintenance",
+        registered_at=now - timedelta(days=1),
         last_seen_at=None,
     )
 

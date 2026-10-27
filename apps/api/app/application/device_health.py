@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from ..domain.device_health import DeviceHealthSnapshot, assess_device_liveness
+from ..domain.devices import DeviceSnapshot
 from .device_ports import DeviceHealthReader
 
 
@@ -20,7 +21,7 @@ def summarize_device_health_for_buoy(
 
 
 def summarize_device_health(
-    devices: Sequence[object],
+    devices: Sequence[DeviceSnapshot],
     now: datetime,
     max_age_seconds: float,
 ) -> list[DeviceHealthSnapshot]:
@@ -30,7 +31,7 @@ def summarize_device_health(
         status = device.status
         liveness = assess_device_liveness(
             status,
-            getattr(device, "last_seen_at", None),
+            device.last_seen_at,
             now,
             max_age_seconds,
         )
