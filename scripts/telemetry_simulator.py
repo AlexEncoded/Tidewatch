@@ -98,6 +98,18 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                 "sensor_channel": channel,
                 "measured_at": measured_at,
             }],
+            "imu": [{
+                "acceleration_x_mps2": round(random.uniform(-0.3, 0.3), 3),
+                "acceleration_y_mps2": round(random.uniform(-0.3, 0.3), 3),
+                "acceleration_z_mps2": round(
+                    9.81 + random.uniform(-0.05, 0.05), 3
+                ),
+                "angular_velocity_x_dps": round(random.uniform(-2.0, 2.0), 2),
+                "angular_velocity_y_dps": round(random.uniform(-2.0, 2.0), 2),
+                "angular_velocity_z_dps": round(random.uniform(-2.0, 2.0), 2),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
             "battery": [{
                 "battery_percent": round(random.uniform(70.0, 95.0), 1),
                 "device_id": channel,

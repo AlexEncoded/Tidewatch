@@ -29,9 +29,12 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert payload["temperatures"][0]["sensor_channel"] == channel
         assert payload["pressures"][0]["sensor_channel"] == channel
         assert payload["salinity"][0]["sensor_channel"] == channel
+        assert payload["imu"][0]["sensor_channel"] == channel
+        assert payload["imu"][0]["measured_at"] == payload["temperatures"][0]["measured_at"]
         assert payload["battery"][0]["device_id"] == channel
         assert payload["battery"][0]["physical_device_id"] == devices[channel]["device_id"]
         assert payload["device_runtime"]["cpu_usage_percent"] <= 100
+        assert -200 <= payload["imu"][0]["acceleration_z_mps2"] <= 200
         assert -150 <= payload["device_communications"]["signal_strength_dbm"] <= 0
         assert payload["device_communications"]["signal_to_noise_ratio_db"] >= -30
 
