@@ -29,6 +29,8 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert payload["temperatures"][0]["sensor_channel"] == channel
         assert payload["pressures"][0]["sensor_channel"] == channel
         assert payload["salinity"][0]["sensor_channel"] == channel
+        assert payload["ambient_light"][0]["sensor_channel"] == channel
+        assert 0 <= payload["ambient_light"][0]["illuminance_lux"] <= 150_000
         assert payload["imu"][0]["sensor_channel"] == channel
         assert payload["imu"][0]["measured_at"] == payload["temperatures"][0]["measured_at"]
         assert payload["battery"][0]["device_id"] == channel

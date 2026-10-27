@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import time
 from datetime import datetime, timezone
@@ -67,10 +68,14 @@ def ensure_simulator_devices(api_url: str, buoy_id: str) -> dict[str, dict]:
 
 def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     """Build synchronized redundant readings and per-device diagnostics."""
-    measured_at = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(timezone.utc)
+    measured_at = now.isoformat()
     temperature = random.uniform(17.0, 24.0)
     pressure = random.uniform(100.8, 102.2)
     salinity = random.uniform(34.5, 38.0)
+    utc_hour = now.hour + now.minute / 60
+    daylight = max(0.0, math.sin(math.pi * (utc_hour - 6) / 12))
+    illuminance = 300 + 80_000 * daylight
     offsets = {"A": 0, "B": 1}
     payloads = {}
     for channel, device in devices.items():
@@ -94,6 +99,13 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
             "salinity": [{
                 "salinity_psu": round(
                     salinity + (random.uniform(-0.05, 0.05) if is_b else 0), 2
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "ambient_light": [{
+                "illuminance_lux": round(
+                    illuminance + (random.uniform(-150, 150) if is_b else 0), 1
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
