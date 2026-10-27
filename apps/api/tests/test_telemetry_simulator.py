@@ -39,6 +39,8 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert 0 <= payload["marine_current"][0]["current_direction_degrees"] < 360
         assert payload["turbidity"][0]["sensor_channel"] == channel
         assert 0 <= payload["turbidity"][0]["turbidity_ntu"] <= 5000
+        assert payload["dissolved_oxygen"][0]["sensor_channel"] == channel
+        assert 0 <= payload["dissolved_oxygen"][0]["dissolved_oxygen_mg_l"] <= 20
         assert payload["imu"][0]["sensor_channel"] == channel
         assert payload["imu"][0]["measured_at"] == payload["temperatures"][0]["measured_at"]
         assert payload["battery"][0]["device_id"] == channel

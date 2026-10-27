@@ -17,12 +17,13 @@ Endpoints locales:
 
 The simulator creates the configured buoy, registers one physical unit for
 each channel A/B, then sends synchronized temperature, pressure, salinity,
-ambient-light, wind, marine-current, turbidity and IMU readings plus battery,
-CPU, memory, packet-loss, latency, RSSI and SNR measurements for each unit
-every ten seconds. Ambient light follows a simple UTC day/night curve; wind and
-current direction and speed vary slightly between redundant units. It uses the
-batch telemetry endpoint and works with both synchronous and queued ingestion;
-in queued mode it prints each returned job ID.
+ambient-light, wind, marine-current, turbidity, dissolved-oxygen and IMU
+readings plus battery, CPU, memory, packet-loss, latency, RSSI and SNR
+measurements for each unit every ten seconds. Ambient light follows a simple
+UTC day/night curve; wind and current direction and speed vary slightly between
+redundant units. It uses the batch telemetry endpoint and works with both
+synchronous and queued ingestion; in queued mode it prints each returned job
+ID.
 
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with

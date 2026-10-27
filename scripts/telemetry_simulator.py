@@ -78,6 +78,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     current_speed = random.uniform(0.0, 3.0)
     current_direction = random.uniform(0.0, 360.0)
     turbidity = random.uniform(1.0, 400.0)
+    dissolved_oxygen = random.uniform(6.0, 11.0)
     utc_hour = now.hour + now.minute / 60
     daylight = max(0.0, math.sin(math.pi * (utc_hour - 6) / 12))
     illuminance = 300 + 80_000 * daylight
@@ -142,6 +143,15 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
             "turbidity": [{
                 "turbidity_ntu": round(
                     turbidity + (random.uniform(-2.0, 2.0) if is_b else 0), 2
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "dissolved_oxygen": [{
+                "dissolved_oxygen_mg_l": round(
+                    dissolved_oxygen
+                    + (random.uniform(-0.15, 0.15) if is_b else 0),
+                    2,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
