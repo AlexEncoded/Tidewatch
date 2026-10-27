@@ -15,13 +15,12 @@ Endpoints locales:
 - Swagger: <http://localhost:8000/docs>
 - Metrics: <http://localhost:8000/metrics>
 
-The simulator creates the configured buoy and emits channels A/B for the
-environmental sensors plus battery readings for devices A and B every ten seconds
-using the batch telemetry endpoint. The API also accepts direct battery
-readings for device B, as well as two battery readings in the same batch, and
-compares both units through `battery-health`. The
-simulator sends a small position change so the fleet map and recent track can
-be exercised with moving coordinates.
+The simulator creates the configured buoy, registers one physical unit for
+each channel A/B, then sends synchronized environmental and battery readings
+plus CPU, memory, packet-loss, latency, RSSI, and SNR measurements for each
+unit every ten seconds. It uses the batch telemetry endpoint and works with
+both synchronous and queued ingestion; in queued mode it prints each returned
+job ID.
 
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with

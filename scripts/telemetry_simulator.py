@@ -1,4 +1,4 @@
-"""Small dependency-free simulator for a single Tidewatch buoy."""
+"""Dependency-free simulator for a Tidewatch buoy with physical units A/B."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-def request_json(url: str, method: str, payload: dict) -> dict:
-    body = json.dumps(payload).encode("utf-8")
+def request_json(url: str, method: str, payload: dict | None = None) -> dict | list:
+    body = json.dumps(payload).encode("utf-8") if payload is not None else None
     request = Request(
         url,
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json"} if body is not None else {},
         method=method,
     )
     with urlopen(request, timeout=10) as response:
@@ -25,29 +25,99 @@ def request_json(url: str, method: str, payload: dict) -> dict:
 
 def create_buoy(api_url: str, name: str) -> str:
     response = request_json(f"{api_url}/api/v1/buoys", "POST", {"name": name})
+    assert isinstance(response, dict)
     return response["id"]
 
 
-def build_payload() -> dict:
+def ensure_simulator_devices(api_url: str, buoy_id: str) -> dict[str, dict]:
+    """Ensure one registered physical unit exists for each redundant channel."""
+    url = f"{api_url}/api/v1/buoys/{buoy_id}/devices"
+    registered = request_json(url, "GET")
+    if not isinstance(registered, list):
+        raise ValueError("Device listing response must be a list")
+    by_channel = {device["sensor_channel"]: device for device in registered}
+
+    for channel in ("A", "B"):
+        if channel in by_channel:
+            continue
+        try:
+            created = request_json(
+                url,
+                "POST",
+                {
+                    "device_id": f"sim-{buoy_id}-{channel}",
+                    "sensor_channel": channel,
+                },
+            )
+            if not isinstance(created, dict):
+                raise ValueError("Device registration response must be an object")
+            by_channel[channel] = created
+        except HTTPError as error:
+            if error.code != 409:
+                raise
+            # Another simulator may have registered this channel concurrently.
+            registered = request_json(url, "GET")
+            if not isinstance(registered, list):
+                raise ValueError("Device listing response must be a list") from None
+            by_channel = {device["sensor_channel"]: device for device in registered}
+            if channel not in by_channel:
+                raise
+    return {channel: by_channel[channel] for channel in ("A", "B")}
+
+
+def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
+    """Build synchronized redundant readings and per-device diagnostics."""
     measured_at = datetime.now(timezone.utc).isoformat()
     temperature = random.uniform(17.0, 24.0)
     pressure = random.uniform(100.8, 102.2)
     salinity = random.uniform(34.5, 38.0)
-    return {
-        "temperatures": [
-            {"temperature_celsius": round(temperature, 2), "sensor_channel": "A", "measured_at": measured_at},
-            {"temperature_celsius": round(temperature + random.uniform(-0.15, 0.15), 2), "sensor_channel": "B", "measured_at": measured_at},
-        ],
-        "pressures": [
-            {"pressure_kpa": round(pressure, 3), "sensor_channel": "A", "measured_at": measured_at},
-            {"pressure_kpa": round(pressure + random.uniform(-0.08, 0.08), 3), "sensor_channel": "B", "measured_at": measured_at},
-        ],
-        "salinity": [
-            {"salinity_psu": round(salinity, 2), "sensor_channel": "A", "measured_at": measured_at},
-            {"salinity_psu": round(salinity + random.uniform(-0.05, 0.05), 2), "sensor_channel": "B", "measured_at": measured_at},
-        ],
-        "battery": {"battery_percent": round(random.uniform(70.0, 95.0), 1), "measured_at": measured_at},
-    }
+    offsets = {"A": 0, "B": 1}
+    payloads = {}
+    for channel, device in devices.items():
+        is_b = offsets[channel] == 1
+        payloads[channel] = {
+            "device_id": device["device_id"],
+            "temperatures": [{
+                "temperature_celsius": round(
+                    temperature + (random.uniform(-0.15, 0.15) if is_b else 0), 2
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "pressures": [{
+                "pressure_kpa": round(
+                    pressure + (random.uniform(-0.08, 0.08) if is_b else 0), 3
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "salinity": [{
+                "salinity_psu": round(
+                    salinity + (random.uniform(-0.05, 0.05) if is_b else 0), 2
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "battery": [{
+                "battery_percent": round(random.uniform(70.0, 95.0), 1),
+                "device_id": channel,
+                "physical_device_id": device["device_id"],
+                "measured_at": measured_at,
+            }],
+            "device_runtime": {
+                "cpu_usage_percent": round(random.uniform(10.0, 75.0), 1),
+                "memory_usage_percent": round(random.uniform(20.0, 85.0), 1),
+                "measured_at": measured_at,
+            },
+            "device_communications": {
+                "packet_loss_percent": round(random.uniform(0.0, 3.0), 2),
+                "round_trip_latency_ms": round(random.uniform(40.0, 800.0), 1),
+                "signal_strength_dbm": round(random.uniform(-100.0, -55.0), 1),
+                "signal_to_noise_ratio_db": round(random.uniform(2.0, 30.0), 1),
+                "measured_at": measured_at,
+            },
+        }
+    return payloads
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,18 +137,28 @@ def main() -> None:
 
     buoy_id = args.buoy_id or create_buoy(args.api_url.rstrip("/"), args.name)
     api_url = args.api_url.rstrip("/")
+    devices = ensure_simulator_devices(api_url, buoy_id)
     print(f"Simulating {buoy_id} against {api_url}")
 
     while True:
-        try:
-            result = request_json(
-                f"{api_url}/api/v1/buoys/{buoy_id}/telemetry",
-                "POST",
-                build_payload(),
-            )
-            print(f"Accepted {result['accepted_readings']} readings")
-        except (HTTPError, URLError, TimeoutError) as error:
-            print(f"Telemetry send failed: {error}")
+        payloads = build_payloads(devices)
+        for channel, payload in payloads.items():
+            try:
+                result = request_json(
+                    f"{api_url}/api/v1/buoys/{buoy_id}/telemetry",
+                    "POST",
+                    payload,
+                )
+                if not isinstance(result, dict):
+                    raise ValueError("Telemetry response must be an object")
+                if "accepted_readings" in result:
+                    print(
+                        f"Device {channel}: accepted {result['accepted_readings']} readings"
+                    )
+                else:
+                    print(f"Device {channel}: queued job {result['job_id']}")
+            except (HTTPError, URLError, TimeoutError, ValueError, KeyError) as error:
+                print(f"Device {channel} telemetry send failed: {error}")
 
         if args.once:
             return
