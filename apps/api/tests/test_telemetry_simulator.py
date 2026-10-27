@@ -31,6 +31,9 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert payload["salinity"][0]["sensor_channel"] == channel
         assert payload["ambient_light"][0]["sensor_channel"] == channel
         assert 0 <= payload["ambient_light"][0]["illuminance_lux"] <= 150_000
+        assert payload["wind"][0]["sensor_channel"] == channel
+        assert 0 <= payload["wind"][0]["wind_speed_mps"] <= 100
+        assert 0 <= payload["wind"][0]["wind_direction_degrees"] < 360
         assert payload["imu"][0]["sensor_channel"] == channel
         assert payload["imu"][0]["measured_at"] == payload["temperatures"][0]["measured_at"]
         assert payload["battery"][0]["device_id"] == channel
