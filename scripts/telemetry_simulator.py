@@ -75,6 +75,8 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     salinity = random.uniform(34.5, 38.0)
     wind_speed = random.uniform(0.0, 15.0)
     wind_direction = random.uniform(0.0, 360.0)
+    current_speed = random.uniform(0.0, 3.0)
+    current_direction = random.uniform(0.0, 360.0)
     utc_hour = now.hour + now.minute / 60
     daylight = max(0.0, math.sin(math.pi * (utc_hour - 6) / 12))
     illuminance = 300 + 80_000 * daylight
@@ -118,6 +120,18 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                 ),
                 "wind_direction_degrees": round(
                     (wind_direction + (random.uniform(-3.0, 3.0) if is_b else 0))
+                    % 360,
+                    1,
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "marine_current": [{
+                "current_speed_mps": round(
+                    current_speed + (random.uniform(-0.05, 0.05) if is_b else 0), 3
+                ),
+                "current_direction_degrees": round(
+                    (current_direction + (random.uniform(-3.0, 3.0) if is_b else 0))
                     % 360,
                     1,
                 ),
