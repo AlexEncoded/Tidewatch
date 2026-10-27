@@ -460,6 +460,26 @@
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     },
     {
+      "id": 54,
+      "title": "Physical device radio signal strength (RSSI)",
+      "description": "Latest receiver signal strength per physical device. Interpret against the deployed radio technology and its vendor guidance.",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 280},
+      "targets": [{"expr": "tidewatch_device_signal_strength_dbm", "legendFormat": "{{buoy_id}} / {{device_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "dBm"}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 55,
+      "title": "Physical device signal-to-noise ratio",
+      "description": "Latest reported signal-to-noise ratio per physical device. Interpret against the deployed radio technology and its vendor guidance.",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 280},
+      "targets": [{"expr": "tidewatch_device_signal_to_noise_ratio_db", "legendFormat": "{{buoy_id}} / {{device_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "dB"}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
       "id": 46,
       "title": "Current wave period sensor disagreement",
       "type": "timeseries",
@@ -486,5 +506,5 @@
   "time": {"from": "now-6h", "to": "now"},
   "title": "Tidewatch overview",
   "uid": "tidewatch-overview",
-  "version": 6
+  "version": 7
 }
