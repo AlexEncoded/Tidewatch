@@ -67,10 +67,10 @@ class DeviceSnapshot:
 
     buoy_id: str
     device_id: str
-    sensor_channel: str
+    sensor_channel: DeviceSensorChannel
     registered_at: datetime
     firmware_version: str | None = None
-    status: str = "active"
+    status: DeviceOperationalStatus = "active"
     last_seen_at: datetime | None = None
 
 

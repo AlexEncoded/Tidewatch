@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Literal
-
+from .devices import DeviceOperationalStatus, DeviceSensorChannel
 from .time_rules import require_positive_finite_seconds
 
 
@@ -11,8 +10,8 @@ from .time_rules import require_positive_finite_seconds
 class DeviceHealthSnapshot:
     buoy_id: str
     device_id: str
-    sensor_channel: Literal["A", "B"]
-    status: Literal["active", "maintenance", "inactive"]
+    sensor_channel: DeviceSensorChannel
+    status: DeviceOperationalStatus
     is_stale: bool
     last_seen_at: datetime | None = None
     age_seconds: float | None = None
@@ -28,7 +27,7 @@ class DeviceLivenessAssessment:
 
 
 def assess_device_liveness(
-    status: str,
+    status: DeviceOperationalStatus,
     last_seen_at: datetime | None,
     now: datetime,
     max_age_seconds: float,
