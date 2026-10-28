@@ -14,6 +14,9 @@ from urllib.request import Request, urlopen
 
 SIMULATED_LATITUDE = 36.0
 SIMULATED_LONGITUDE = -5.0
+SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS = 2.0
+SIMULATED_WAVE_AMPLITUDE_METERS = 0.2
+SIMULATED_WAVE_PERIOD_SECONDS = 30.0
 
 
 def request_json(url: str, method: str, payload: dict | None = None) -> dict | list:
@@ -78,10 +81,20 @@ def ensure_simulator_devices(api_url: str, buoy_id: str) -> dict[str, dict]:
     return {channel: by_channel[channel] for channel in ("A", "B")}
 
 
-def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
+def build_payloads(
+    devices: dict[str, dict], now: datetime | None = None
+) -> dict[str, dict]:
     """Build synchronized redundant readings and per-device diagnostics."""
-    now = datetime.now(timezone.utc)
+    now = now or datetime.now(timezone.utc)
     measured_at = now.isoformat()
+    wave_angular_frequency = 2 * math.pi / SIMULATED_WAVE_PERIOD_SECONDS
+    wave_phase = wave_angular_frequency * now.timestamp()
+    wave_displacement = SIMULATED_WAVE_AMPLITUDE_METERS * math.sin(wave_phase)
+    wave_vertical_acceleration = (
+        -SIMULATED_WAVE_AMPLITUDE_METERS
+        * wave_angular_frequency**2
+        * math.sin(wave_phase)
+    )
     temperature = random.uniform(17.0, 24.0)
     air_temperature = temperature + random.uniform(-3.0, 3.0)
     pressure = random.uniform(100.8, 102.2)
@@ -114,7 +127,9 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
             "location": {
                 "latitude": round(gnss_latitude, 6),
                 "longitude": round(gnss_longitude, 6),
-                "altitude_meters": round(random.uniform(0.5, 3.0), 2),
+                "altitude_meters": round(
+                    SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS + wave_displacement, 3
+                ),
                 "speed_mps": round(random.uniform(0.0, 0.2), 3),
                 "hdop": round(random.uniform(0.6, 1.5), 2),
                 "satellites": random.randint(8, 14),
@@ -265,7 +280,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                 "acceleration_x_mps2": round(random.uniform(-0.3, 0.3), 3),
                 "acceleration_y_mps2": round(random.uniform(-0.3, 0.3), 3),
                 "acceleration_z_mps2": round(
-                    9.81 + random.uniform(-0.05, 0.05), 3
+                    9.81 + wave_vertical_acceleration, 4
                 ),
                 "angular_velocity_x_dps": round(random.uniform(-2.0, 2.0), 2),
                 "angular_velocity_y_dps": round(random.uniform(-2.0, 2.0), 2),

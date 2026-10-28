@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta, timezone
 import importlib.util
 from pathlib import Path
 
+from app.domain.wave import estimate_fused_wave_period
 from app.schemas.ingestion import TelemetryBatchCreate
 
 
@@ -78,6 +80,44 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         payload["temperatures"][0]["measured_at"] for payload in payloads.values()
     }
     assert len(timestamps) == 1
+
+
+def test_simulator_wave_altitude_and_imu_share_a_reproducible_period() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+    offsets = (0.0, 7.5, 15.0, 22.5, 30.0)
+
+    payloads = [
+        SIMULATOR.build_payloads(devices, origin + timedelta(seconds=offset))["A"]
+        for offset in offsets
+    ]
+    altitudes = [payload["location"]["altitude_meters"] for payload in payloads]
+    vertical_accelerations = [
+        payload["imu"][0]["acceleration_z_mps2"] for payload in payloads
+    ]
+
+    assert altitudes == [2.0, 2.2, 2.0, 1.8, 2.0]
+    assert vertical_accelerations[1] < 9.81 < vertical_accelerations[3]
+    assert vertical_accelerations[0] == vertical_accelerations[2] == 9.81
+    assert round(vertical_accelerations[1] + vertical_accelerations[3], 4) == 19.62
+
+
+def test_simulated_gnss_and_imu_fuse_to_the_configured_wave_period() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+    gnss_samples = []
+    imu_samples = []
+
+    for offset in range(0, 151, 10):
+        measured_at = origin + timedelta(seconds=offset)
+        payload = SIMULATOR.build_payloads(devices, measured_at)["A"]
+        gnss_samples.append((measured_at, payload["location"]["altitude_meters"]))
+        imu_samples.append((measured_at, payload["imu"][0]["acceleration_z_mps2"]))
+
+    estimate = estimate_fused_wave_period(gnss_samples, imu_samples)
+
+    assert estimate.estimated_period_seconds == SIMULATOR.SIMULATED_WAVE_PERIOD_SECONDS
+    assert estimate.confidence == "experimental"
 
 
 def test_simulator_registers_missing_redundant_devices(monkeypatch) -> None:
