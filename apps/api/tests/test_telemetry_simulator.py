@@ -34,6 +34,8 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert 80 <= payload["atmospheric_pressure"][0]["atmospheric_pressure_kpa"] <= 120
         assert payload["acoustic_altimeter"][0]["sensor_channel"] == channel
         assert 0 <= payload["acoustic_altimeter"][0]["depth_meters"] <= 20_000
+        assert payload["underwater_acoustic"][0]["sensor_channel"] == channel
+        assert -200 <= payload["underwater_acoustic"][0]["echo_intensity_db"] <= 100
         assert payload["salinity"][0]["sensor_channel"] == channel
         assert payload["ambient_light"][0]["sensor_channel"] == channel
         assert 0 <= payload["ambient_light"][0]["illuminance_lux"] <= 150_000
