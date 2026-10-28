@@ -81,6 +81,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     dissolved_oxygen = random.uniform(6.0, 11.0)
     ph = random.uniform(7.8, 8.3)
     conductivity = random.uniform(48_000.0, 58_000.0)
+    chlorophyll_a = random.uniform(0.5, 15.0)
     utc_hour = now.hour + now.minute / 60
     daylight = max(0.0, math.sin(math.pi * (utc_hour - 6) / 12))
     illuminance = 300 + 80_000 * daylight
@@ -167,6 +168,14 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                 "conductivity_us_cm": round(
                     conductivity + (random.uniform(-100.0, 100.0) if is_b else 0),
                     1,
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "chlorophyll_a": [{
+                "chlorophyll_a_ug_l": round(
+                    chlorophyll_a + (random.uniform(-0.1, 0.1) if is_b else 0),
+                    2,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,

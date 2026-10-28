@@ -18,7 +18,7 @@ Endpoints locales:
 The simulator creates the configured buoy, registers one physical unit for
 each channel A/B, then sends synchronized temperature, pressure, salinity,
 ambient-light, wind, marine-current, turbidity, dissolved-oxygen, pH,
-conductivity and IMU
+conductivity, chlorophyll-a and IMU
 readings plus battery, CPU, memory, packet-loss, latency, RSSI and SNR
 measurements for each unit every ten seconds. Ambient light follows a simple
 UTC day/night curve; wind and current direction and speed vary slightly between
