@@ -74,6 +74,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     air_temperature = temperature + random.uniform(-3.0, 3.0)
     pressure = random.uniform(100.8, 102.2)
     atmospheric_pressure = random.uniform(99.0, 103.5)
+    acoustic_altimeter_depth = random.uniform(20.0, 200.0)
     salinity = random.uniform(34.5, 38.0)
     wind_speed = random.uniform(0.0, 15.0)
     wind_direction = random.uniform(0.0, 360.0)
@@ -122,6 +123,15 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                     atmospheric_pressure
                     + (random.uniform(-0.08, 0.08) if is_b else 0),
                     3,
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "acoustic_altimeter": [{
+                "depth_meters": round(
+                    acoustic_altimeter_depth
+                    + (random.uniform(-0.25, 0.25) if is_b else 0),
+                    2,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
