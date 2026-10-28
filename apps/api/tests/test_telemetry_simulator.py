@@ -26,6 +26,12 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
     for channel, payload in payloads.items():
         batch = TelemetryBatchCreate.model_validate(payload)
         assert batch.device_id == devices[channel]["device_id"]
+        assert batch.location is not None
+        assert batch.location.device_id == devices[channel]["device_id"]
+        assert batch.location.measured_at == batch.temperatures[0].measured_at
+        assert -90 <= batch.location.latitude <= 90
+        assert -180 <= batch.location.longitude <= 180
+        assert batch.location.satellites >= 4
         assert payload["temperatures"][0]["sensor_channel"] == channel
         assert payload["air_temperature"][0]["sensor_channel"] == channel
         assert -60 <= payload["air_temperature"][0]["air_temperature_celsius"] <= 60
@@ -92,6 +98,25 @@ def test_simulator_registers_missing_redundant_devices(monkeypatch) -> None:
     assert devices["A"]["device_id"] == "sim-buoy-1-A"
     assert devices["B"]["device_id"] == "sim-buoy-1-B"
     assert [method for method, _ in calls] == ["GET", "POST", "POST"]
+
+
+def test_simulator_creates_buoy_at_simulated_gnss_origin(monkeypatch) -> None:
+    requests = []
+
+    def fake_request_json(url, method, payload=None):
+        requests.append((url, method, payload))
+        return {"id": "buoy-1"}
+
+    monkeypatch.setattr(SIMULATOR, "request_json", fake_request_json)
+
+    buoy_id = SIMULATOR.create_buoy("http://api", "Test Buoy")
+
+    assert buoy_id == "buoy-1"
+    assert requests[0][2] == {
+        "name": "Test Buoy",
+        "latitude": SIMULATOR.SIMULATED_LATITUDE,
+        "longitude": SIMULATOR.SIMULATED_LONGITUDE,
+    }
 
 
 def test_simulator_reuses_devices_already_registered(monkeypatch) -> None:

@@ -19,11 +19,13 @@ The simulator creates the configured buoy, registers one physical unit for
 each channel A/B, then sends synchronized water and air temperature, water and atmospheric
 pressure, acoustic-altimeter depth, underwater acoustic echo intensity, salinity,
 ambient-light, wind, marine-current, turbidity, dissolved-oxygen, pH,
-conductivity, chlorophyll-a, rainfall, humidity and IMU
-readings plus battery, CPU, memory, packet-loss, latency, RSSI and SNR
+conductivity, chlorophyll-a, rainfall, humidity, IMU and GNSS position,
+altitude, speed, HDOP and satellite count, plus battery, CPU, memory,
+packet-loss, latency, RSSI and SNR
 measurements for each unit every ten seconds. Ambient light follows a simple
 UTC day/night curve; wind and current direction and speed vary slightly between
-redundant units. It uses the batch telemetry endpoint and works with both
+redundant units. New simulator buoys start near latitude 36, longitude -5;
+GNSS fixes remain close to that simulated origin. It uses the batch telemetry endpoint and works with both
 synchronous and queued ingestion; in queued mode it prints each returned job
 ID.
 

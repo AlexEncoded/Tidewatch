@@ -12,6 +12,10 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
+SIMULATED_LATITUDE = 36.0
+SIMULATED_LONGITUDE = -5.0
+
+
 def request_json(url: str, method: str, payload: dict | None = None) -> dict | list:
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
     request = Request(
@@ -25,7 +29,15 @@ def request_json(url: str, method: str, payload: dict | None = None) -> dict | l
 
 
 def create_buoy(api_url: str, name: str) -> str:
-    response = request_json(f"{api_url}/api/v1/buoys", "POST", {"name": name})
+    response = request_json(
+        f"{api_url}/api/v1/buoys",
+        "POST",
+        {
+            "name": name,
+            "latitude": SIMULATED_LATITUDE,
+            "longitude": SIMULATED_LONGITUDE,
+        },
+    )
     assert isinstance(response, dict)
     return response["id"]
 
@@ -76,6 +88,8 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     atmospheric_pressure = random.uniform(99.0, 103.5)
     acoustic_altimeter_depth = random.uniform(20.0, 200.0)
     underwater_echo_intensity = random.uniform(-70.0, -35.0)
+    gnss_latitude = SIMULATED_LATITUDE + random.uniform(-0.00002, 0.00002)
+    gnss_longitude = SIMULATED_LONGITUDE + random.uniform(-0.00002, 0.00002)
     salinity = random.uniform(34.5, 38.0)
     wind_speed = random.uniform(0.0, 15.0)
     wind_direction = random.uniform(0.0, 360.0)
@@ -97,6 +111,16 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
         is_b = offsets[channel] == 1
         payloads[channel] = {
             "device_id": device["device_id"],
+            "location": {
+                "latitude": round(gnss_latitude, 6),
+                "longitude": round(gnss_longitude, 6),
+                "altitude_meters": round(random.uniform(0.5, 3.0), 2),
+                "speed_mps": round(random.uniform(0.0, 0.2), 3),
+                "hdop": round(random.uniform(0.6, 1.5), 2),
+                "satellites": random.randint(8, 14),
+                "device_id": device["device_id"],
+                "measured_at": measured_at,
+            },
             "temperatures": [{
                 "temperature_celsius": round(
                     temperature + (random.uniform(-0.15, 0.15) if is_b else 0), 2
