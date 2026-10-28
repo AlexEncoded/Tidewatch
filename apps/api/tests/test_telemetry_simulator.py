@@ -27,6 +27,8 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         batch = TelemetryBatchCreate.model_validate(payload)
         assert batch.device_id == devices[channel]["device_id"]
         assert payload["temperatures"][0]["sensor_channel"] == channel
+        assert payload["air_temperature"][0]["sensor_channel"] == channel
+        assert -60 <= payload["air_temperature"][0]["air_temperature_celsius"] <= 60
         assert payload["pressures"][0]["sensor_channel"] == channel
         assert payload["salinity"][0]["sensor_channel"] == channel
         assert payload["ambient_light"][0]["sensor_channel"] == channel

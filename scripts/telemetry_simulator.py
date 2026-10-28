@@ -71,6 +71,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     now = datetime.now(timezone.utc)
     measured_at = now.isoformat()
     temperature = random.uniform(17.0, 24.0)
+    air_temperature = temperature + random.uniform(-3.0, 3.0)
     pressure = random.uniform(100.8, 102.2)
     salinity = random.uniform(34.5, 38.0)
     wind_speed = random.uniform(0.0, 15.0)
@@ -96,6 +97,14 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
             "temperatures": [{
                 "temperature_celsius": round(
                     temperature + (random.uniform(-0.15, 0.15) if is_b else 0), 2
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "air_temperature": [{
+                "air_temperature_celsius": round(
+                    air_temperature + (random.uniform(-0.2, 0.2) if is_b else 0),
+                    2,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
