@@ -16,7 +16,8 @@ Endpoints locales:
 - Metrics: <http://localhost:8000/metrics>
 
 The simulator creates the configured buoy, registers one physical unit for
-each channel A/B, then sends synchronized water and air temperature, pressure, salinity,
+each channel A/B, then sends synchronized water and air temperature, water and atmospheric
+pressure, salinity,
 ambient-light, wind, marine-current, turbidity, dissolved-oxygen, pH,
 conductivity, chlorophyll-a, rainfall, humidity and IMU
 readings plus battery, CPU, memory, packet-loss, latency, RSSI and SNR
