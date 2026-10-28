@@ -83,6 +83,7 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
     conductivity = random.uniform(48_000.0, 58_000.0)
     chlorophyll_a = random.uniform(0.5, 15.0)
     rainfall = 0.0 if random.random() < 0.75 else random.uniform(1.0, 25.0)
+    humidity = random.uniform(60.0, 85.0)
     utc_hour = now.hour + now.minute / 60
     daylight = max(0.0, math.sin(math.pi * (utc_hour - 6) / 12))
     illuminance = 300 + 80_000 * daylight
@@ -185,6 +186,14 @@ def build_payloads(devices: dict[str, dict]) -> dict[str, dict]:
                 "rainfall_mm_h": round(
                     rainfall + (random.uniform(-0.2, 0.2) if is_b and rainfall else 0),
                     2,
+                ),
+                "sensor_channel": channel,
+                "measured_at": measured_at,
+            }],
+            "humidity": [{
+                "humidity_percent": round(
+                    min(100.0, max(0.0, humidity + (random.uniform(-2.0, 2.0) if is_b else 0))),
+                    1,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,

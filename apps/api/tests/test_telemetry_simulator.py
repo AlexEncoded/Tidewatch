@@ -49,6 +49,8 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert 0 <= payload["chlorophyll_a"][0]["chlorophyll_a_ug_l"] <= 1000
         assert payload["rainfall"][0]["sensor_channel"] == channel
         assert 0 <= payload["rainfall"][0]["rainfall_mm_h"] <= 500
+        assert payload["humidity"][0]["sensor_channel"] == channel
+        assert 0 <= payload["humidity"][0]["humidity_percent"] <= 100
         assert payload["imu"][0]["sensor_channel"] == channel
         assert payload["imu"][0]["measured_at"] == payload["temperatures"][0]["measured_at"]
         assert payload["battery"][0]["device_id"] == channel
