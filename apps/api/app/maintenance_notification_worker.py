@@ -1,7 +1,6 @@
 """Durable worker for delivery of maintenance webhooks."""
 
 import logging
-import os
 from datetime import datetime, timezone
 
 import httpx
@@ -9,10 +8,13 @@ from sqlalchemy.orm import Session
 
 from .application.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
+from .settings import (
+    configured_maintenance_webhook_url,
+    maintenance_notification_lease_seconds,
+    maintenance_notification_max_attempts,
+)
 
 logger = logging.getLogger(__name__)
-JOB_LEASE_SECONDS = max(10, int(os.getenv("MAINTENANCE_NOTIFICATION_LEASE_SECONDS", "30")))
-JOB_MAX_ATTEMPTS = max(1, int(os.getenv("MAINTENANCE_NOTIFICATION_MAX_ATTEMPTS", "5")))
 
 
 def process_next_maintenance_notification_job(
@@ -25,11 +27,13 @@ def process_next_maintenance_notification_job(
     """Deliver one job, retrying failures with a durable lease and backoff."""
     repository = MaintenanceNotificationJobRepository(db)
     claimed_at = now or datetime.now(timezone.utc)
-    job = repository.claim_next(claimed_at, JOB_LEASE_SECONDS, JOB_MAX_ATTEMPTS)
+    lease_seconds = maintenance_notification_lease_seconds()
+    max_attempts = maintenance_notification_max_attempts()
+    job = repository.claim_next(claimed_at, lease_seconds, max_attempts)
     if job is None:
         return False
 
-    destination = webhook_url or os.getenv("MAINTENANCE_WEBHOOK_URL")
+    destination = webhook_url or configured_maintenance_webhook_url()
     try:
         if not destination:
             raise RuntimeError("webhook_not_configured")
@@ -51,7 +55,7 @@ def process_next_maintenance_notification_job(
             job.attempts,
             error_code,
             datetime.now(timezone.utc),
-            JOB_MAX_ATTEMPTS,
+            max_attempts,
             telemetry_job_retry_delay_seconds(job.attempts),
         )
         logger.warning(

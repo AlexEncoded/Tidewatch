@@ -35,3 +35,25 @@ def configured_maintenance_webhook_url() -> str | None:
     """Return the configured maintenance notification endpoint, if any."""
     value = os.getenv("MAINTENANCE_WEBHOOK_URL")
     return value if value else None
+
+
+def maintenance_notification_lease_seconds() -> int:
+    """Return a valid maintenance-job lease, defaulting to 30 seconds."""
+    return _configured_positive_integer(
+        "MAINTENANCE_NOTIFICATION_LEASE_SECONDS", default=30, minimum=10
+    )
+
+
+def maintenance_notification_max_attempts() -> int:
+    """Return a valid delivery-attempt limit, defaulting to five attempts."""
+    return _configured_positive_integer(
+        "MAINTENANCE_NOTIFICATION_MAX_ATTEMPTS", default=5, minimum=1
+    )
+
+
+def _configured_positive_integer(name: str, *, default: int, minimum: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        return default
+    return max(minimum, value)

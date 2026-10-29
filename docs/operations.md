@@ -44,7 +44,9 @@ equivalent environment variable in Compose.
 The same worker delivers queued maintenance webhooks from PostgreSQL. Failed
 deliveries retry with exponential backoff; after five attempts the job becomes
 `failed` (override with `MAINTENANCE_NOTIFICATION_MAX_ATTEMPTS`). Each job has a
-lease so another worker can recover it after a crash. Webhook receivers should
+lease of 30 seconds by default (override with
+`MAINTENANCE_NOTIFICATION_LEASE_SECONDS`, minimum 10 seconds) so another worker
+can recover it after a crash. Webhook receivers should
 deduplicate using `notification_idempotency_key`, since a crash after the remote
 service accepts a request can cause that request to be delivered again. The
 API stores the webhook payload and delivery state, but never stores the webhook
