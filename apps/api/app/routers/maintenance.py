@@ -1,7 +1,6 @@
 """HTTP routes for maintenance operations."""
 
 from datetime import datetime, timezone
-import os
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
@@ -27,6 +26,7 @@ from ..schemas.maintenance import (
     MaintenanceNotificationJobStatus,
     MaintenanceNotificationResult,
 )
+from ..settings import configured_maintenance_webhook_url
 
 
 router = APIRouter()
@@ -109,7 +109,7 @@ def notify_maintenance(
         get_maintenance_notification_job_store
     ),
 ) -> MaintenanceNotificationResult:
-    webhook_url = os.getenv("MAINTENANCE_WEBHOOK_URL")
+    webhook_url = configured_maintenance_webhook_url()
     if not webhook_url:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

@@ -1,4 +1,7 @@
-from app.settings import telemetry_ingestion_is_queued
+from app.settings import (
+    configured_maintenance_webhook_url,
+    telemetry_ingestion_is_queued,
+)
 
 
 def test_telemetry_ingestion_defaults_to_synchronous_mode(monkeypatch) -> None:
@@ -17,3 +20,15 @@ def test_unknown_telemetry_ingestion_mode_remains_synchronous(monkeypatch) -> No
     monkeypatch.setenv("TELEMETRY_INGESTION_MODE", "unknown")
 
     assert telemetry_ingestion_is_queued() is False
+
+
+def test_maintenance_webhook_url_is_optional(monkeypatch) -> None:
+    monkeypatch.delenv("MAINTENANCE_WEBHOOK_URL", raising=False)
+
+    assert configured_maintenance_webhook_url() is None
+
+
+def test_maintenance_webhook_url_returns_configured_value(monkeypatch) -> None:
+    monkeypatch.setenv("MAINTENANCE_WEBHOOK_URL", "https://hooks.example.test/tidewatch")
+
+    assert configured_maintenance_webhook_url() == "https://hooks.example.test/tidewatch"

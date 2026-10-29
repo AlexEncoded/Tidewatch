@@ -29,3 +29,9 @@ def configured_wave_imu_factor() -> float:
 def telemetry_ingestion_is_queued() -> bool:
     """Return whether telemetry ingestion is configured to use the queue."""
     return os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+
+
+def configured_maintenance_webhook_url() -> str | None:
+    """Return the configured maintenance notification endpoint, if any."""
+    value = os.getenv("MAINTENANCE_WEBHOOK_URL")
+    return value if value else None
