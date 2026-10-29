@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.telemetry_job_retry import telemetry_job_retry_delay_seconds
+from app.domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
 
 
 @pytest.mark.parametrize(
