@@ -275,6 +275,24 @@ def test_http_routers_do_not_import_orm_entities_or_sqlalchemy() -> None:
         ), path
 
 
+def test_http_routers_do_not_read_process_environment_directly() -> None:
+    for path in (API_APP / "routers").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported_roots = {
+            alias.name.split(".", maxsplit=1)[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+        imported_roots.update(
+            node.module.split(".", maxsplit=1)[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        )
+
+        assert "os" not in imported_roots, path
+
+
 def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
     for module_name in (
         "temperature_repository.py",
