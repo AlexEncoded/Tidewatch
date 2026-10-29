@@ -10,7 +10,6 @@ from .availability_metrics import initialize_availability_metrics
 from .database import SessionLocal
 from .telemetry import configure_telemetry
 from .metrics import http_request_duration_seconds, http_requests_total
-from .settings import configured_wave_imu_factor
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
 from .routers.telemetry import router as telemetry_router

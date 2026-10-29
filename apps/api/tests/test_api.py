@@ -35,7 +35,8 @@ from app.fleet_entities import (
     BuoyLocationReadingEntity,
 )
 from app.telemetry_entities import TelemetryIngestionJobEntity
-from app.main import app, configured_wave_imu_factor
+from app.main import app
+from app.settings import configured_wave_imu_factor
 from app.schemas.ingestion import TelemetryBatchCreate
 from app.schemas.fleet_summary import BuoySummary
 from app.application.telemetry_ingestion import TELEMETRY_FAMILIES
