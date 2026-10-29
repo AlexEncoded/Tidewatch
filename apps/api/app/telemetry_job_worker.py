@@ -18,18 +18,21 @@ from .application.telemetry_batch_ingestion import process_telemetry_batch
 from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from .maintenance_notification_worker import process_next_maintenance_notification_job
+from .settings import (
+    telemetry_job_lease_seconds,
+    telemetry_job_max_attempts,
+    telemetry_job_poll_seconds,
+)
 
 logger = logging.getLogger(__name__)
-JOB_LEASE_SECONDS = max(1, int(os.getenv("TELEMETRY_JOB_LEASE_SECONDS", "300")))
-JOB_MAX_ATTEMPTS = max(1, int(os.getenv("TELEMETRY_JOB_MAX_ATTEMPTS", "5")))
-JOB_POLL_SECONDS = max(0.1, float(os.getenv("TELEMETRY_JOB_POLL_SECONDS", "2")))
 
 
 def process_next_telemetry_job(db: Session) -> bool:
     """Process one queued batch; its sensor writes and completion commit together."""
     jobs = TelemetryIngestionJobRepository(db)
     now = datetime.now(timezone.utc)
-    job = jobs.claim_next(now, JOB_LEASE_SECONDS, JOB_MAX_ATTEMPTS)
+    max_attempts = telemetry_job_max_attempts()
+    job = jobs.claim_next(now, telemetry_job_lease_seconds(), max_attempts)
     if job is None:
         return False
 
@@ -62,7 +65,7 @@ def process_next_telemetry_job(db: Session) -> bool:
             job.attempts,
             str(exc),
             datetime.now(timezone.utc),
-            JOB_MAX_ATTEMPTS,
+            max_attempts,
             retry_delay_seconds=telemetry_job_retry_delay_seconds(job.attempts),
         )
         if failed is None:
@@ -91,7 +94,7 @@ def run_worker() -> None:
             logger.exception("Telemetry queue polling failed; will retry")
             found_job = False
         if not found_job:
-            time.sleep(JOB_POLL_SECONDS)
+            time.sleep(telemetry_job_poll_seconds())
 
 
 if __name__ == "__main__":

@@ -57,3 +57,28 @@ def _configured_positive_integer(name: str, *, default: int, minimum: int) -> in
     except ValueError:
         return default
     return max(minimum, value)
+
+
+def telemetry_job_lease_seconds() -> int:
+    """Return the telemetry-job lease in seconds (default 300, minimum 1)."""
+    return _configured_positive_integer(
+        "TELEMETRY_JOB_LEASE_SECONDS", default=300, minimum=1
+    )
+
+
+def telemetry_job_max_attempts() -> int:
+    """Return the maximum telemetry-job attempts (default 5, minimum 1)."""
+    return _configured_positive_integer(
+        "TELEMETRY_JOB_MAX_ATTEMPTS", default=5, minimum=1
+    )
+
+
+def telemetry_job_poll_seconds() -> float:
+    """Return a finite worker poll interval in seconds (default 2, minimum 0.1)."""
+    try:
+        value = float(os.getenv("TELEMETRY_JOB_POLL_SECONDS", "2"))
+    except ValueError:
+        return 2.0
+    if not isfinite(value):
+        return 2.0
+    return max(0.1, value)

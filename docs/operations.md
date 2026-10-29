@@ -39,7 +39,10 @@ when `TELEMETRY_INGESTION_MODE=sync`; Compose and Helm enable queued mode, which
 returns `202 Accepted` with a `Location` header. Poll that URL for job status;
 the response never includes the stored telemetry payload. To roll back to
 synchronous ingestion, set `api.telemetryIngestionMode=sync` in Helm or the
-equivalent environment variable in Compose.
+equivalent environment variable in Compose. Worker timing and retry settings
+default to a 300-second lease, five attempts and a two-second poll interval;
+configure them with `TELEMETRY_JOB_LEASE_SECONDS`,
+`TELEMETRY_JOB_MAX_ATTEMPTS` and `TELEMETRY_JOB_POLL_SECONDS`.
 
 The same worker delivers queued maintenance webhooks from PostgreSQL. Failed
 deliveries retry with exponential backoff; after five attempts the job becomes

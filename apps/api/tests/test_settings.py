@@ -2,6 +2,9 @@ from app.settings import (
     configured_maintenance_webhook_url,
     maintenance_notification_lease_seconds,
     maintenance_notification_max_attempts,
+    telemetry_job_lease_seconds,
+    telemetry_job_max_attempts,
+    telemetry_job_poll_seconds,
     telemetry_ingestion_is_queued,
 )
 
@@ -50,3 +53,25 @@ def test_maintenance_worker_settings_enforce_minimums(monkeypatch) -> None:
 
     assert maintenance_notification_lease_seconds() == 10
     assert maintenance_notification_max_attempts() == 1
+
+
+def test_telemetry_worker_settings_default_and_validate_values(monkeypatch) -> None:
+    monkeypatch.delenv("TELEMETRY_JOB_LEASE_SECONDS", raising=False)
+    monkeypatch.delenv("TELEMETRY_JOB_MAX_ATTEMPTS", raising=False)
+    monkeypatch.delenv("TELEMETRY_JOB_POLL_SECONDS", raising=False)
+    assert telemetry_job_lease_seconds() == 300
+    assert telemetry_job_max_attempts() == 5
+    assert telemetry_job_poll_seconds() == 2.0
+
+    monkeypatch.setenv("TELEMETRY_JOB_LEASE_SECONDS", "invalid")
+    monkeypatch.setenv("TELEMETRY_JOB_MAX_ATTEMPTS", "0")
+    monkeypatch.setenv("TELEMETRY_JOB_POLL_SECONDS", "nan")
+    assert telemetry_job_lease_seconds() == 300
+    assert telemetry_job_max_attempts() == 1
+    assert telemetry_job_poll_seconds() == 2.0
+
+
+def test_telemetry_worker_poll_interval_enforces_minimum(monkeypatch) -> None:
+    monkeypatch.setenv("TELEMETRY_JOB_POLL_SECONDS", "0")
+
+    assert telemetry_job_poll_seconds() == 0.1
