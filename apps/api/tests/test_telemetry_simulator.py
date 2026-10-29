@@ -82,6 +82,30 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
     assert len(timestamps) == 1
 
 
+def test_simulator_populates_and_synchronizes_every_batch_field() -> None:
+    devices = {
+        "A": {"device_id": "physical-unit-a", "sensor_channel": "A"},
+        "B": {"device_id": "physical-unit-b", "sensor_channel": "B"},
+    }
+    payloads = SIMULATOR.build_payloads(devices)
+    expected_fields = set(TelemetryBatchCreate.model_fields)
+
+    for channel, payload in payloads.items():
+        assert set(payload) == expected_fields
+        measured_at = payload["location"]["measured_at"]
+        for field, value in payload.items():
+            if isinstance(value, list):
+                assert value
+                for reading in value:
+                    assert reading["measured_at"] == measured_at
+                    if "sensor_channel" in reading:
+                        assert reading["sensor_channel"] == channel
+                    elif field == "battery":
+                        assert reading["device_id"] == channel
+            elif isinstance(value, dict):
+                assert value["measured_at"] == measured_at
+
+
 def test_simulator_wave_altitude_and_imu_share_a_reproducible_period() -> None:
     devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
     origin = datetime.fromtimestamp(0, timezone.utc)
