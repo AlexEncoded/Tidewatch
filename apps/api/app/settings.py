@@ -24,3 +24,8 @@ def configured_wave_imu_factor() -> float:
     if not isfinite(value):
         return DEFAULT_IMU_WAVE_HEIGHT_FACTOR
     return max(MIN_IMU_WAVE_HEIGHT_FACTOR, min(MAX_IMU_WAVE_HEIGHT_FACTOR, value))
+
+
+def telemetry_ingestion_is_queued() -> bool:
+    """Return whether telemetry ingestion is configured to use the queue."""
+    return os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"

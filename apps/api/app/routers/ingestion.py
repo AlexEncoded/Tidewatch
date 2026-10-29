@@ -1,6 +1,5 @@
 """HTTP route for batch telemetry ingestion."""
 
-import os
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
@@ -32,6 +31,7 @@ from ..schemas.telemetry_job import (
     TelemetryJobAcceptedResponse,
     TelemetryJobStatusResponse,
 )
+from ..settings import telemetry_ingestion_is_queued
 
 
 router = APIRouter()
@@ -55,7 +55,7 @@ def ingest_telemetry(
     ),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> TelemetryIngestResponse | TelemetryJobAcceptedResponse:
-    queued_mode = os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"
+    queued_mode = telemetry_ingestion_is_queued()
     command = TelemetryBatchCommand.from_mapping(payload.model_dump())
     received_at = datetime.now(timezone.utc)
     try:
