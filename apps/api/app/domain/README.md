@@ -13,6 +13,7 @@ Current rules include:
   every delta produced by the sensor-health application service;
 - usable telemetry selection and reading quality classification;
 - durable queue retry timing and bounds;
+- maintenance issue classification from buoy, sensor and device snapshots;
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates.
 

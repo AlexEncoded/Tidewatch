@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.application.maintenance_issues import (
+from app.domain.maintenance_issues import (
     build_battery_maintenance_issues,
     build_device_maintenance_issues,
     build_maintenance_issues_for_buoy,

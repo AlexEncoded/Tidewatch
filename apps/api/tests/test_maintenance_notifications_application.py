@@ -3,7 +3,7 @@ from app.application.maintenance_notifications import (
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
 )
-from app.application.maintenance_issues import build_reading_quality_issues
+from app.domain.maintenance_issues import build_reading_quality_issues
 from app.schemas.maintenance import MaintenanceIssue
 
 
