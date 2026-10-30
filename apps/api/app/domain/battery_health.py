@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from math import isfinite
+
+from .telemetry_types import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,21 @@ def estimate_battery_health(
     threshold: float,
 ) -> BatteryHealthEstimate:
     """Evaluate redundant battery percentages without persistence dependencies."""
+    if not isfinite(threshold) or threshold < 0:
+        raise ValueError("Battery health threshold must be a non-negative finite number")
+    for label, percentage in (
+        ("Device A", device_a_percent),
+        ("Device B", device_b_percent),
+    ):
+        if percentage is not None and (
+            not isfinite(percentage)
+            or not BATTERY_MIN_PERCENT <= percentage <= BATTERY_MAX_PERCENT
+        ):
+            raise ValueError(
+                f"{label} battery percentage must be between "
+                f"{BATTERY_MIN_PERCENT} and {BATTERY_MAX_PERCENT}"
+            )
+
     if device_a_percent is None or device_b_percent is None:
         return BatteryHealthEstimate(
             status="insufficient_data",

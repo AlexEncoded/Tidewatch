@@ -623,6 +623,24 @@ def test_battery_health_domain_service_requires_both_devices() -> None:
     assert estimate.delta_percent is None
 
 
+@pytest.mark.parametrize("threshold", [-1.0, float("nan"), float("inf")])
+def test_battery_health_domain_service_rejects_invalid_threshold(
+    threshold: float,
+) -> None:
+    with pytest.raises(ValueError, match="non-negative finite number"):
+        estimate_battery_health(72.0, 85.0, threshold)
+
+
+@pytest.mark.parametrize(
+    "percentage", [-0.1, 100.1, float("nan"), float("inf")]
+)
+def test_battery_health_domain_service_rejects_invalid_battery_percentages(
+    percentage: float,
+) -> None:
+    with pytest.raises(ValueError, match="battery percentage must be between 0 and 100"):
+        estimate_battery_health(percentage, 85.0, threshold=5.0)
+
+
 def test_battery_analysis_domain_service_estimates_discharge() -> None:
     readings = [
         BatterySample(80.0, datetime(2024, 1, 1, 2, 0)),
