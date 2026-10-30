@@ -605,7 +605,7 @@ def test_battery_health_domain_service_detects_lower_degraded_device() -> None:
 
     assert estimate.status == "degraded"
     assert estimate.delta_percent == 13.0
-    assert estimate.degraded_devices == ["A"]
+    assert estimate.degraded_devices == ("A",)
 
 
 def test_battery_health_domain_service_accepts_exact_threshold() -> None:
@@ -613,7 +613,7 @@ def test_battery_health_domain_service_accepts_exact_threshold() -> None:
 
     assert estimate.status == "consistent"
     assert estimate.delta_percent == 5.0
-    assert estimate.degraded_devices == []
+    assert estimate.degraded_devices == ()
 
 
 def test_battery_health_domain_service_requires_both_devices() -> None:
@@ -639,6 +639,43 @@ def test_battery_health_domain_service_rejects_invalid_battery_percentages(
 ) -> None:
     with pytest.raises(ValueError, match="battery percentage must be between 0 and 100"):
         estimate_battery_health(percentage, 85.0, threshold=5.0)
+
+
+def test_battery_health_snapshot_freezes_degraded_devices() -> None:
+    snapshot = BatteryHealthSnapshot(
+        buoy_id="buoy-1",
+        status="degraded",
+        device_a_percent=70.0,
+        device_b_percent=85.0,
+        checked_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        delta_percent=15.0,
+        degraded_devices=["A"],
+    )
+
+    assert snapshot.degraded_devices == ("A",)
+    assert not hasattr(snapshot.degraded_devices, "append")
+
+
+@pytest.mark.parametrize(
+    "snapshot_values",
+    [
+        {"status": "degraded", "device_a_percent": 70.0, "device_b_percent": 85.0,
+         "delta_percent": 15.0, "degraded_devices": ()},
+        {"status": "consistent", "device_a_percent": 70.0, "device_b_percent": 85.0,
+         "delta_percent": 15.0, "degraded_devices": ("A",)},
+        {"status": "degraded", "device_a_percent": 70.0, "device_b_percent": 85.0,
+         "delta_percent": 15.0, "degraded_devices": ("B",)},
+        {"status": "insufficient_data", "device_a_percent": 70.0, "device_b_percent": None,
+         "delta_percent": 0.0, "degraded_devices": ()},
+    ],
+)
+def test_battery_health_snapshot_rejects_inconsistent_results(snapshot_values) -> None:
+    with pytest.raises(ValueError):
+        BatteryHealthSnapshot(
+            buoy_id="buoy-1",
+            checked_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            **snapshot_values,
+        )
 
 
 def test_battery_analysis_domain_service_estimates_discharge() -> None:
@@ -701,7 +738,7 @@ def test_battery_health_application_service_reads_both_devices() -> None:
 
     assert isinstance(health, BatteryHealthSnapshot)
     assert health.status == "degraded"
-    assert health.degraded_devices == ["A"]
+    assert health.degraded_devices == ("A",)
 
 
 def test_temperature_domain_service_detects_rising_anomaly() -> None:

@@ -27,6 +27,6 @@ def analyze_battery_health_for_buoy(
         device_a_percent=estimate.device_a_percent,
         device_b_percent=estimate.device_b_percent,
         delta_percent=estimate.delta_percent,
-        degraded_devices=estimate.degraded_devices or [],
+        degraded_devices=estimate.degraded_devices,
         checked_at=datetime.now(timezone.utc),
     )

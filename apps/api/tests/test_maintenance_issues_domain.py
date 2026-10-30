@@ -16,11 +16,11 @@ def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
     battery_a = type("Battery", (), {"battery_percent": 8.0})()
     health = BatteryHealthSnapshot(
         buoy_id="buoy-1",
-        status="healthy",
+        status="insufficient_data",
         device_a_percent=8.0,
         device_b_percent=None,
         delta_percent=None,
-        degraded_devices=[],
+        degraded_devices=(),
         checked_at=datetime.now(timezone.utc),
     )
 
@@ -106,10 +106,11 @@ def test_maintenance_issue_service_composes_buoy_snapshot() -> None:
     )
     battery_health = BatteryHealthSnapshot(
         buoy_id="buoy-1",
-        status="healthy",
+        status="consistent",
         device_a_percent=80,
         device_b_percent=80,
         checked_at=now,
+        delta_percent=0,
     )
 
     issues = build_maintenance_issues_for_buoy(

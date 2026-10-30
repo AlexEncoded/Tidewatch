@@ -13,7 +13,8 @@ Current rules include:
   every delta produced by the sensor-health application service;
 - device heartbeat freshness and operational health summaries;
 - redundant battery health with finite, non-negative thresholds and bounded
-  battery percentages;
+  battery percentages; health snapshots are immutable and validate the status,
+  delta, and lower-charge device together;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;
