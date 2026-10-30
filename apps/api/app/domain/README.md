@@ -11,6 +11,7 @@ Current rules include:
 - sensor health thresholds and aggregate status. The
   `SENSOR_DEGRADATION_THRESHOLDS` map is the explicit margin contract for
   every delta produced by the sensor-health application service;
+- device heartbeat freshness and operational health summaries;
 - usable telemetry selection and reading quality classification;
 - durable queue retry timing and bounds;
 - maintenance issue classification from buoy, sensor and device snapshots;

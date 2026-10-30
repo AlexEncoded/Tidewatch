@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from app.application.device_health import (
-    summarize_device_health,
-    summarize_device_health_for_buoy,
-)
+from app.application.device_health import summarize_device_health_for_buoy
+from app.domain.device_health import summarize_device_health
 from app.domain.devices import DeviceSnapshot
 
 

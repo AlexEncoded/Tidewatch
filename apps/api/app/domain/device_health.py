@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from .devices import DeviceOperationalStatus, DeviceSensorChannel
+from collections.abc import Sequence
+
+from .devices import DeviceOperationalStatus, DeviceSensorChannel, DeviceSnapshot
 from .time_rules import require_positive_finite_seconds
 
 
@@ -53,3 +55,31 @@ def assess_device_liveness(
             and (age_seconds is None or age_seconds > max_age_seconds)
         ),
     )
+
+
+def summarize_device_health(
+    devices: Sequence[DeviceSnapshot],
+    now: datetime,
+    max_age_seconds: float,
+) -> list[DeviceHealthSnapshot]:
+    """Assess each device heartbeat and map it to its health snapshot."""
+    summaries: list[DeviceHealthSnapshot] = []
+    for device in devices:
+        liveness = assess_device_liveness(
+            device.status,
+            device.last_seen_at,
+            now,
+            max_age_seconds,
+        )
+        summaries.append(
+            DeviceHealthSnapshot(
+                buoy_id=device.buoy_id,
+                device_id=device.device_id,
+                sensor_channel=device.sensor_channel,
+                status=device.status,
+                last_seen_at=liveness.last_seen_at,
+                age_seconds=liveness.age_seconds,
+                is_stale=liveness.is_stale,
+            )
+        )
+    return summaries
