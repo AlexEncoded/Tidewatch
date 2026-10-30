@@ -1,11 +1,29 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
+from math import isfinite
+
+from .telemetry_types import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
 
 
 @dataclass(frozen=True)
 class BatterySample:
     battery_percent: float
     measured_at: datetime
+
+    def __post_init__(self) -> None:
+        if (
+            not isfinite(self.battery_percent)
+            or not BATTERY_MIN_PERCENT <= self.battery_percent <= BATTERY_MAX_PERCENT
+        ):
+            raise ValueError(
+                f"Battery percentage must be between {BATTERY_MIN_PERCENT} "
+                f"and {BATTERY_MAX_PERCENT}"
+            )
+        if self.measured_at.tzinfo is None:
+            object.__setattr__(
+                self, "measured_at", self.measured_at.replace(tzinfo=timezone.utc)
+            )
 
 
 @dataclass(frozen=True)
@@ -35,14 +53,15 @@ class BatteryAnalysisSnapshot:
 
 
 def estimate_battery_discharge(
-    readings: list[BatterySample],
+    readings: Sequence[BatterySample],
 ) -> BatteryDischargeEstimate:
-    """Estimate discharge rate from newest-first battery samples."""
+    """Estimate discharge from battery samples, regardless of input order."""
     if not readings:
         return BatteryDischargeEstimate(sample_count=0)
 
-    latest = readings[0]
-    oldest = readings[-1]
+    ordered = sorted(readings, key=lambda reading: reading.measured_at, reverse=True)
+    latest = ordered[0]
+    oldest = ordered[-1]
     change = round(latest.battery_percent - oldest.battery_percent, 2)
     elapsed_hours = (latest.measured_at - oldest.measured_at).total_seconds() / 3600
     discharge_rate = None

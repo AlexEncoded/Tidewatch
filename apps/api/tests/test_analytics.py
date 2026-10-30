@@ -655,6 +655,25 @@ def test_battery_analysis_domain_service_estimates_discharge() -> None:
     assert estimate.confidence == "experimental"
 
 
+def test_battery_analysis_orders_samples_by_measurement_time() -> None:
+    readings = [
+        BatterySample(90.0, datetime(2024, 1, 1, 0, 0)),
+        BatterySample(80.0, datetime(2024, 1, 1, 2, 0, tzinfo=timezone.utc)),
+    ]
+
+    estimate = estimate_battery_discharge(readings)
+
+    assert estimate.latest_percent == 80.0
+    assert estimate.oldest_percent == 90.0
+    assert estimate.discharge_rate_percent_per_hour == 5.0
+
+
+@pytest.mark.parametrize("percentage", [-0.1, 100.1, float("nan"), float("inf")])
+def test_battery_sample_rejects_out_of_range_percentage(percentage: float) -> None:
+    with pytest.raises(ValueError, match="Battery percentage must be between 0 and 100"):
+        BatterySample(percentage, datetime(2024, 1, 1))
+
+
 def test_battery_application_service_uses_device_port() -> None:
     class FakeReader:
         def list_batteries(self, buoy_id, limit, device_id=None):

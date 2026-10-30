@@ -14,6 +14,8 @@ Current rules include:
 - device heartbeat freshness and operational health summaries;
 - redundant battery health with finite, non-negative thresholds and bounded
   battery percentages;
+- historical battery discharge estimation orders samples by measurement time
+  and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;
 - durable queue retry timing and bounds;
 - maintenance issue classification from buoy, sensor and device snapshots;
