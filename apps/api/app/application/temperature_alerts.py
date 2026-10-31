@@ -3,6 +3,7 @@
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
+    build_temperature_anomaly,
 )
 from .alert_ports import TemperatureAlertsReader, TemperatureAlertStore
 from .temperature_analysis import analyze_temperature_readings, list_valid_temperature_readings
@@ -18,18 +19,15 @@ def find_temperature_anomalies(
     for buoy in reader.list_buoy_identities():
         readings = list_valid_temperature_readings(reader, buoy.buoy_id, window)
         analysis = analyze_temperature_readings(buoy.buoy_id, readings, threshold)
-        if analysis.is_anomaly and analysis.latest_temperature is not None:
-            alerts.append(
-                TemperatureAnomalySnapshot(
-                    buoy_id=buoy.buoy_id,
-                    buoy_name=buoy.name,
-                    severity="warning",
-                    temperature_celsius=analysis.latest_temperature,
-                    average_temperature=analysis.average_temperature or 0,
-                    created_at=readings[0].measured_at,
-                    message=analysis.anomaly_reason or "Temperature anomaly detected",
-                )
+        if readings:
+            anomaly = build_temperature_anomaly(
+                buoy.buoy_id,
+                buoy.name,
+                analysis,
+                readings[0].measured_at,
             )
+            if anomaly is not None:
+                alerts.append(anomaly)
     return alerts
 
 

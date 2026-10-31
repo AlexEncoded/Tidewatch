@@ -28,6 +28,8 @@ Current rules include:
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates; temperature
   analyses exclude invalid-quality readings and enforce the physical range;
+- temperature-anomaly classification builds alert snapshots only from complete
+  anomalous results;
 - GNSS/IMU synchronization filters quality and restricts fused estimates to
   the shared timestamp window, then the domain service assembles the final wave
   snapshot.
