@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from dataclasses import dataclass
+from math import isfinite
 from typing import Literal
 
 from .telemetry_types import validate_battery_percentage
+from .time_rules import require_positive_finite_seconds
 
 
 BatterySeverity = Literal["warning", "critical"]
@@ -37,6 +39,11 @@ def missing_redundant_battery_device(
 
 def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
     """Return whether observed movement exceeds the configured drift limit."""
+    require_positive_finite_seconds(limit_mps, "Drift speed limit")
+    if average_speed_mps is not None and (
+        not isfinite(average_speed_mps) or average_speed_mps < 0
+    ):
+        raise ValueError("Average speed must be a non-negative finite number")
     return average_speed_mps is not None and average_speed_mps > limit_mps
 
 
@@ -57,6 +64,7 @@ def is_buoy_silent(
     max_age_seconds: float,
 ) -> bool:
     """Return whether an active buoy has exceeded its telemetry age limit."""
+    require_positive_finite_seconds(max_age_seconds, "Maximum buoy age")
     if status != "active" or last_seen_at is None:
         return False
     if last_seen_at.tzinfo is None:

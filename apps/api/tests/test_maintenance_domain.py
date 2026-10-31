@@ -43,6 +43,29 @@ def test_buoy_drifting_uses_strict_limit(average_speed_mps, limit_mps, expected)
     assert is_buoy_drifting(average_speed_mps, limit_mps) is expected
 
 
+@pytest.mark.parametrize("limit_mps", [0, -1, float("nan"), float("inf")])
+def test_buoy_drifting_rejects_invalid_limit(limit_mps) -> None:
+    with pytest.raises(ValueError, match="Drift speed limit must be a positive finite number"):
+        is_buoy_drifting(1.0, limit_mps)
+
+
+@pytest.mark.parametrize("average_speed_mps", [-0.1, float("nan"), float("inf")])
+def test_buoy_drifting_rejects_invalid_average_speed(average_speed_mps) -> None:
+    with pytest.raises(ValueError, match="Average speed must be a non-negative finite number"):
+        is_buoy_drifting(average_speed_mps, 1.0)
+
+
+@pytest.mark.parametrize("max_age_seconds", [0, -1, float("nan"), float("inf")])
+def test_buoy_silence_rejects_invalid_age_limit(max_age_seconds) -> None:
+    with pytest.raises(ValueError, match="Maximum buoy age must be a positive finite number"):
+        is_buoy_silent(
+            "active",
+            datetime(2026, 1, 1, tzinfo=timezone.utc),
+            datetime(2026, 1, 1, 0, 1, tzinfo=timezone.utc),
+            max_age_seconds,
+        )
+
+
 @pytest.mark.parametrize(
     ("battery_percent", "expected"),
     [(5, "critical"), (9.99, "critical"), (10, "warning"), (19.99, "warning"), (20, None)],

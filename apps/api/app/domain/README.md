@@ -20,6 +20,8 @@ Current rules include:
 - usable telemetry selection and reading quality classification;
 - durable queue retry timing and bounds;
 - maintenance issue classification from buoy, sensor and device snapshots;
+- buoy silence and drift classification with finite, positive thresholds and
+  physically valid speed inputs;
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates.
 
