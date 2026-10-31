@@ -4,7 +4,12 @@ from datetime import datetime, timezone
 from collections.abc import Iterable
 from typing import Protocol
 
-from ..domain.devices import DeviceSnapshot, DeviceOwnershipError, validate_device_ownership
+from ..domain.devices import (
+    DeviceSnapshot,
+    DeviceOwnershipError,
+    validate_device_ownership,
+    validate_telemetry_device_channel,
+)
 
 
 class DeviceHeartbeatRegistry(Protocol):
@@ -27,11 +32,7 @@ def record_device_heartbeat(
     """Validate device ownership and channels before persisting its heartbeat."""
     device = registry.get_device_snapshot(device_id)
     validate_device_ownership(device, buoy_id)
-    if any(channel != device.sensor_channel for channel in sensor_channels):
-        raise ValueError(
-            f"Telemetry channel must match physical device channel "
-            f"{device.sensor_channel}"
-        )
+    validate_telemetry_device_channel(device, sensor_channels)
     timestamp = seen_at or datetime.now(timezone.utc)
     updated = registry.mark_device_seen_by_id(device_id, timestamp)
     if updated is None:

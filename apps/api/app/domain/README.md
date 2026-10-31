@@ -15,6 +15,7 @@ Current rules include:
   domain delta; deltas must be finite, non-negative, and use a registered
   sensor name;
 - device heartbeat freshness and operational health summaries;
+- physical-device ownership and telemetry-channel consistency;
 - redundant battery health with finite, non-negative thresholds and bounded
   battery percentages; health snapshots are immutable and validate the status,
   delta, and lower-charge device together;

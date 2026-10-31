@@ -80,6 +80,19 @@ def validate_device_ownership(device: object | None, buoy_id: str) -> None:
         raise DeviceOwnershipError("Device not found")
 
 
+def validate_telemetry_device_channel(
+    device: DeviceSnapshot,
+    channels: Iterable[str],
+    telemetry_name: str = "Telemetry",
+) -> None:
+    """Ensure all telemetry channels match their registered physical device."""
+    if any(channel != device.sensor_channel for channel in channels):
+        raise ValueError(
+            f"{telemetry_name} channel must match physical device channel "
+            f"{device.sensor_channel}"
+        )
+
+
 def validate_device_registration(
     device_id: str,
     sensor_channel: str,

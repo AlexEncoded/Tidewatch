@@ -11,6 +11,7 @@ from app.domain.devices import (
     DeviceRegistrationConflict,
     validate_device_ownership,
     validate_device_registration,
+    validate_telemetry_device_channel,
 )
 from app.domain.staleness import stale_age_seconds
 from app.application.device_registration import register_device
@@ -130,6 +131,29 @@ def test_device_ownership_accepts_device_from_target_buoy() -> None:
 def test_device_ownership_rejects_unknown_or_foreign_device(device) -> None:
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
         validate_device_ownership(device, "buoy-1")
+
+
+def test_physical_device_channel_accepts_matching_telemetry_channel() -> None:
+    device = DeviceSnapshot(
+        buoy_id="buoy-1",
+        device_id="unit-a",
+        sensor_channel="A",
+        registered_at=datetime(2026, 10, 31, tzinfo=timezone.utc),
+    )
+
+    validate_telemetry_device_channel(device, ("A", "A"))
+
+
+def test_physical_device_channel_rejects_mismatched_telemetry_channel() -> None:
+    device = DeviceSnapshot(
+        buoy_id="buoy-1",
+        device_id="unit-a",
+        sensor_channel="A",
+        registered_at=datetime(2026, 10, 31, tzinfo=timezone.utc),
+    )
+
+    with pytest.raises(ValueError, match="Battery channel must match physical device channel A"):
+        validate_telemetry_device_channel(device, ("B",), "Battery")
 
 
 @pytest.mark.parametrize(
