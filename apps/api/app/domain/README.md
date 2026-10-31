@@ -28,7 +28,7 @@ Current rules include:
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates; GNSS/IMU
   synchronization filters quality and restricts fused estimates to the shared
-  timestamp window.
+  timestamp window, then the domain service assembles the final wave snapshot.
 
 Adapters in the application layer map these results to API response models.
 Domain code should remain deterministic and independently testable.

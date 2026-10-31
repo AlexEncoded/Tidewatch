@@ -63,3 +63,6 @@ This keeps maintenance orchestration independent from FastAPI and SQLAlchemy.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
+
+Wave analysis loads IMU and location snapshots through its read port, then
+delegates synchronization, estimation, and snapshot construction to the domain.

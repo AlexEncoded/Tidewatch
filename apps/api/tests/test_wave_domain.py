@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.domain.wave import (
+    analyze_wave_samples,
     estimate_fused_wave_period,
     estimate_wave,
     estimate_wave_period,
@@ -66,6 +67,33 @@ def test_wave_synchronization_keeps_single_modality_for_partial_estimation() -> 
 
     assert synchronized_imu == [imu[0]]
     assert locations == []
+
+
+def test_wave_domain_analysis_builds_snapshot_from_synchronized_samples() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        SimpleNamespace(
+            measured_at=start + timedelta(minutes=index),
+            acceleration_z_mps2=value,
+        )
+        for index, value in enumerate((9.7, 10.2))
+    ]
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(minutes=index),
+            altitude_meters=value,
+        )
+        for index, value in enumerate((2.0, 2.4))
+    ]
+
+    analysis = analyze_wave_samples("buoy-1", imu, locations)
+
+    assert analysis.buoy_id == "buoy-1"
+    assert analysis.sample_count == 2
+    assert analysis.gnss_vertical_range_m == 0.4
+    assert analysis.imu_vertical_acceleration_range_mps2 == 0.5
+    assert analysis.estimated_wave_height_m == 0.225
+    assert analysis.confidence == "experimental"
 
 
 def test_estimate_wave_uses_injected_imu_calibration_factor() -> None:
