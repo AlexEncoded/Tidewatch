@@ -1,6 +1,10 @@
 """Application service for historical temperature analysis."""
 
-from ..domain.temperature import TemperatureAnalysisSnapshot, estimate_temperature
+from ..domain.temperature import (
+    TemperatureAnalysisSnapshot,
+    analyze_temperature_samples,
+    valid_temperature_readings,
+)
 from .sensor_ports import TemperatureTelemetryReader
 
 
@@ -10,11 +14,7 @@ def list_valid_temperature_readings(
     window: int,
 ) -> list:
     """Read a temperature window while excluding invalid telemetry."""
-    return [
-        reading
-        for reading in reader.list_temperatures(buoy_id, window)
-        if reading.quality != "invalid"
-    ]
+    return valid_temperature_readings(reader.list_temperatures(buoy_id, window))
 
 
 def analyze_temperature_readings(
@@ -23,21 +23,7 @@ def analyze_temperature_readings(
     threshold: float,
 ) -> TemperatureAnalysisSnapshot:
     """Map valid temperature readings into the public analysis contract."""
-    estimate = estimate_temperature(
-        [reading.temperature_celsius for reading in readings], threshold
-    )
-    return TemperatureAnalysisSnapshot(
-        buoy_id=buoy_id,
-        sample_count=estimate.sample_count,
-        latest_temperature=estimate.latest_temperature,
-        average_temperature=estimate.average_temperature,
-        minimum_temperature=estimate.minimum_temperature,
-        maximum_temperature=estimate.maximum_temperature,
-        change_celsius=estimate.change_celsius,
-        trend=estimate.trend,
-        is_anomaly=estimate.is_anomaly,
-        anomaly_reason=estimate.anomaly_reason,
-    )
+    return analyze_temperature_samples(buoy_id, readings, threshold)
 
 
 def analyze_temperature_for_buoy(

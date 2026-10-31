@@ -1,5 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from math import isfinite
 from statistics import fmean
 
 from .telemetry import SensorTelemetrySnapshot
@@ -65,6 +67,20 @@ def estimate_temperature(
     threshold: float,
 ) -> TemperatureEstimate:
     """Calculate trend and outlier status from newest-first temperatures."""
+    if not isfinite(threshold) or threshold <= 0:
+        raise ValueError("Temperature anomaly threshold must be a positive finite number")
+    for value in values:
+        if (
+            not isfinite(value)
+            or not SEA_TEMPERATURE_MIN_CELSIUS
+            <= value
+            <= SEA_TEMPERATURE_MAX_CELSIUS
+        ):
+            raise ValueError(
+                "Sea temperature must be between "
+                f"{SEA_TEMPERATURE_MIN_CELSIUS} and "
+                f"{SEA_TEMPERATURE_MAX_CELSIUS} °C"
+            )
     if not values:
         return TemperatureEstimate(sample_count=0)
 
@@ -96,4 +112,35 @@ def estimate_temperature(
             if is_anomaly
             else None
         ),
+    )
+
+
+def valid_temperature_readings(
+    readings: Sequence[TemperatureTelemetrySnapshot],
+) -> list[TemperatureTelemetrySnapshot]:
+    """Exclude invalid-quality readings while retaining good and suspect data."""
+    return [reading for reading in readings if reading.quality != "invalid"]
+
+
+def analyze_temperature_samples(
+    buoy_id: str,
+    readings: Sequence[TemperatureTelemetrySnapshot],
+    threshold: float,
+) -> TemperatureAnalysisSnapshot:
+    """Filter invalid samples and build the public domain analysis snapshot."""
+    usable_readings = valid_temperature_readings(readings)
+    estimate = estimate_temperature(
+        [reading.temperature_celsius for reading in usable_readings], threshold
+    )
+    return TemperatureAnalysisSnapshot(
+        buoy_id=buoy_id,
+        sample_count=estimate.sample_count,
+        latest_temperature=estimate.latest_temperature,
+        average_temperature=estimate.average_temperature,
+        minimum_temperature=estimate.minimum_temperature,
+        maximum_temperature=estimate.maximum_temperature,
+        change_celsius=estimate.change_celsius,
+        trend=estimate.trend,
+        is_anomaly=estimate.is_anomaly,
+        anomaly_reason=estimate.anomaly_reason,
     )
