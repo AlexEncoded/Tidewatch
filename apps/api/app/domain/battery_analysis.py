@@ -1,9 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from math import isfinite
 
-from .telemetry_types import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
+from .telemetry_types import validate_battery_percentage
 
 
 @dataclass(frozen=True)
@@ -12,14 +11,7 @@ class BatterySample:
     measured_at: datetime
 
     def __post_init__(self) -> None:
-        if (
-            not isfinite(self.battery_percent)
-            or not BATTERY_MIN_PERCENT <= self.battery_percent <= BATTERY_MAX_PERCENT
-        ):
-            raise ValueError(
-                f"Battery percentage must be between {BATTERY_MIN_PERCENT} "
-                f"and {BATTERY_MAX_PERCENT}"
-            )
+        validate_battery_percentage(self.battery_percent)
         if self.measured_at.tzinfo is None:
             object.__setattr__(
                 self, "measured_at", self.measured_at.replace(tzinfo=timezone.utc)

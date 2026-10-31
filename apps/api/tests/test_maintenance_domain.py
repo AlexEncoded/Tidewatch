@@ -49,3 +49,20 @@ def test_buoy_drifting_uses_strict_limit(average_speed_mps, limit_mps, expected)
 )
 def test_low_battery_severity_boundaries(battery_percent, expected) -> None:
     assert low_battery_severity(battery_percent) == expected
+
+
+@pytest.mark.parametrize("battery_percent", [-0.1, 100.1, float("nan"), float("inf")])
+def test_low_battery_severity_rejects_invalid_percentages(battery_percent) -> None:
+    with pytest.raises(ValueError, match="Battery percentage must be between 0 and 100"):
+        low_battery_severity(battery_percent)
+
+
+@pytest.mark.parametrize(
+    ("device_a_percent", "device_b_percent"),
+    [(-1.0, None), (None, 101.0), (float("nan"), 90.0)],
+)
+def test_missing_redundant_battery_device_rejects_invalid_percentages(
+    device_a_percent, device_b_percent
+) -> None:
+    with pytest.raises(ValueError, match="battery percentage must be between 0 and 100"):
+        missing_redundant_battery_device(device_a_percent, device_b_percent)

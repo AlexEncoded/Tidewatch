@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Literal
 
+from .telemetry_types import validate_battery_percentage
+
 
 BatterySeverity = Literal["warning", "critical"]
 
@@ -22,6 +24,10 @@ def missing_redundant_battery_device(
     device_b_percent: float | None,
 ) -> Literal["A", "B"] | None:
     """Return the missing redundant unit when exactly one unit has telemetry."""
+    if device_a_percent is not None:
+        validate_battery_percentage(device_a_percent, "Device A battery percentage")
+    if device_b_percent is not None:
+        validate_battery_percentage(device_b_percent, "Device B battery percentage")
     if device_a_percent is not None and device_b_percent is None:
         return "B"
     if device_b_percent is not None and device_a_percent is None:
@@ -36,6 +42,7 @@ def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
 
 def low_battery_severity(battery_percent: float) -> BatterySeverity | None:
     """Return the maintenance severity for a battery reading, if it is low."""
+    validate_battery_percentage(battery_percent)
     if battery_percent < 10:
         return "critical"
     if battery_percent < 20:

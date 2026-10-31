@@ -1,5 +1,6 @@
 """Shared value types used by telemetry domain objects and API schemas."""
 
+from math import isfinite
 from typing import Literal, get_args
 
 SensorChannel = Literal["A", "B"]
@@ -56,3 +57,14 @@ SENSOR_ID_MAX_LENGTH = 100
 FIRMWARE_VERSION_MAX_LENGTH = 50
 BATTERY_MIN_PERCENT = 0
 BATTERY_MAX_PERCENT = 100
+
+
+def validate_battery_percentage(value: float, label: str = "Battery percentage") -> None:
+    """Reject battery readings outside the finite physical percentage range."""
+    if (
+        not isfinite(value)
+        or not BATTERY_MIN_PERCENT <= value <= BATTERY_MAX_PERCENT
+    ):
+        raise ValueError(
+            f"{label} must be between {BATTERY_MIN_PERCENT} and {BATTERY_MAX_PERCENT}"
+        )

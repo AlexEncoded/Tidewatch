@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
-
-from .telemetry_types import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
+from .telemetry_types import validate_battery_percentage
 
 
 @dataclass(frozen=True)
@@ -100,11 +99,5 @@ def estimate_battery_health(
 
 
 def _validate_battery_percentage(label: str, percentage: float | None) -> None:
-    if percentage is not None and (
-        not isfinite(percentage)
-        or not BATTERY_MIN_PERCENT <= percentage <= BATTERY_MAX_PERCENT
-    ):
-        raise ValueError(
-            f"{label} battery percentage must be between "
-            f"{BATTERY_MIN_PERCENT} and {BATTERY_MAX_PERCENT}"
-        )
+    if percentage is not None:
+        validate_battery_percentage(percentage, f"{label} battery percentage")
