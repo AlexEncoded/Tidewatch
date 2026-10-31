@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from math import inf, nan, pi, sin
+from types import SimpleNamespace
 
 import pytest
 
@@ -7,6 +8,7 @@ from app.domain.wave import (
     estimate_fused_wave_period,
     estimate_wave,
     estimate_wave_period,
+    synchronize_wave_readings,
 )
 
 
@@ -17,6 +19,53 @@ def test_estimate_wave_requires_two_samples_per_signal() -> None:
     assert estimate.imu_vertical_acceleration_range_mps2 is None
     assert estimate.estimated_wave_height_m is None
     assert estimate.confidence == "insufficient_data"
+
+
+def test_wave_synchronization_filters_quality_and_keeps_shared_time_window() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        SimpleNamespace(measured_at=start + timedelta(seconds=offset), quality=quality)
+        for offset, quality in ((0, "good"), (10, "good"), (20, "good"), (30, "suspect"))
+    ]
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=offset), quality=quality
+        )
+        for offset, quality in ((10, "good"), (20, "good"), (30, "good"), (40, "invalid"))
+    ]
+
+    synchronized_imu, synchronized_locations = synchronize_wave_readings(imu, locations)
+
+    assert [reading.measured_at for reading in synchronized_imu] == [
+        start + timedelta(seconds=10),
+        start + timedelta(seconds=20),
+    ]
+    assert [reading.measured_at for reading in synchronized_locations] == [
+        start + timedelta(seconds=10),
+        start + timedelta(seconds=20),
+    ]
+
+
+def test_wave_synchronization_rejects_unmatchable_and_disjoint_streams() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [SimpleNamespace(measured_at=start + timedelta(seconds=offset)) for offset in (0, 1)]
+    disjoint_locations = [
+        SimpleNamespace(measured_at=start + timedelta(seconds=offset))
+        for offset in (2, 3)
+    ]
+    untimed_locations = [SimpleNamespace()]
+
+    assert synchronize_wave_readings(imu, disjoint_locations) == ([], [])
+    assert synchronize_wave_readings(imu, untimed_locations) == ([], [])
+
+
+def test_wave_synchronization_keeps_single_modality_for_partial_estimation() -> None:
+    imu = [SimpleNamespace(quality="good"), SimpleNamespace(quality="suspect")]
+
+    synchronized_imu, locations = synchronize_wave_readings(imu, [])
+
+    assert synchronized_imu == [imu[0]]
+    assert locations == []
 
 
 def test_estimate_wave_uses_injected_imu_calibration_factor() -> None:

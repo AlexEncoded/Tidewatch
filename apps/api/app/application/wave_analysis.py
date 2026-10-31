@@ -1,11 +1,10 @@
 """Application service for the experimental wave-analysis use case."""
 
-from datetime import datetime, timezone
-
 from ..domain.wave import (
     WaveAnalysisSnapshot,
     estimate_fused_wave_period,
     estimate_wave,
+    synchronize_wave_readings,
 )
 from .analysis_ports import WaveAnalysisReader
 
@@ -17,56 +16,10 @@ def analyze_wave_for_buoy(
     imu_wave_height_factor: float,
 ) -> WaveAnalysisSnapshot:
     """Run wave analysis without coupling the use case to a database adapter."""
-    imu_readings = [
-        reading
-        for reading in reader.list_imu(buoy_id, window, None)
-        if getattr(reading, "quality", "good") == "good"
-    ]
-    locations = [
-        reading
-        for reading in reader.list_locations(buoy_id, window)
-        if getattr(reading, "quality", "good") == "good"
-    ]
-    timed_imu = [
-        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
-        for reading in imu_readings
-    ]
-    timed_locations = [
-        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
-        for reading in locations
-    ]
-    if not timed_imu or not timed_locations:
-        # A single available modality can still produce an explicitly partial estimate.
-        pass
-    elif all(
-        timestamp is not None for _, timestamp in (*timed_imu, *timed_locations)
-    ):
-        start_at = max(
-            min(timestamp for _, timestamp in timed_imu if timestamp is not None),
-            min(timestamp for _, timestamp in timed_locations if timestamp is not None),
-        )
-        end_at = min(
-            max(timestamp for _, timestamp in timed_imu if timestamp is not None),
-            max(timestamp for _, timestamp in timed_locations if timestamp is not None),
-        )
-        if start_at <= end_at:
-            imu_readings = [
-                reading
-                for reading, timestamp in timed_imu
-                if timestamp is not None and start_at <= timestamp <= end_at
-            ]
-            locations = [
-                reading
-                for reading, timestamp in timed_locations
-                if timestamp is not None and start_at <= timestamp <= end_at
-            ]
-        else:
-            imu_readings = []
-            locations = []
-    else:
-        # Without timestamps there is no safe basis for fusing separate streams.
-        imu_readings = []
-        locations = []
+    imu_readings, locations = synchronize_wave_readings(
+        reader.list_imu(buoy_id, window, None),
+        reader.list_locations(buoy_id, window),
+    )
     estimate = estimate_wave(
         [
             reading.altitude_meters
@@ -115,11 +68,3 @@ def analyze_wave_for_buoy(
         period_confidence=period_estimate.confidence,
         confidence=estimate.confidence,
     )
-
-
-def _utc_timestamp(value: datetime | None) -> datetime | None:
-    if value is None:
-        return None
-    if value.tzinfo is None or value.utcoffset() is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)

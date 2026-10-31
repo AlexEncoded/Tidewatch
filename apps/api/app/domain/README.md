@@ -26,7 +26,9 @@ Current rules include:
 - buoy silence and drift classification with finite, positive thresholds and
   physically valid speed inputs;
 - scalar, vector, and circular direction differences;
-- movement, pressure, temperature, battery, and wave estimates.
+- movement, pressure, temperature, battery, and wave estimates; GNSS/IMU
+  synchronization filters quality and restricts fused estimates to the shared
+  timestamp window.
 
 Adapters in the application layer map these results to API response models.
 Domain code should remain deterministic and independently testable.

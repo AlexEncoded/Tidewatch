@@ -1,10 +1,10 @@
 """Domain calculations for experimental wave estimation."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from math import isfinite
 from statistics import fmean, median
-from typing import Sequence
 
 
 DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
@@ -42,6 +42,77 @@ class WaveAnalysisSnapshot:
     estimated_period_seconds: float | None = None
     period_confidence: str = "insufficient_data"
     confidence: str = "insufficient_data"
+
+
+def synchronize_wave_readings(
+    imu_readings: Sequence[object],
+    locations: Sequence[object],
+) -> tuple[list[object], list[object]]:
+    """Filter unusable readings and align both streams to their shared time span.
+
+    A single available modality remains usable as a partial estimate. When both
+    modalities are present, timestamps are required and disjoint ranges yield
+    no synchronized readings.
+    """
+    usable_imu = [
+        reading
+        for reading in imu_readings
+        if getattr(reading, "quality", "good") == "good"
+    ]
+    usable_locations = [
+        reading
+        for reading in locations
+        if getattr(reading, "quality", "good") == "good"
+    ]
+    if not usable_imu or not usable_locations:
+        return usable_imu, usable_locations
+
+    timed_imu = [
+        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
+        for reading in usable_imu
+    ]
+    timed_locations = [
+        (reading, _utc_timestamp(getattr(reading, "measured_at", None)))
+        for reading in usable_locations
+    ]
+    all_timestamps = [
+        timestamp
+        for _, timestamp in (*timed_imu, *timed_locations)
+    ]
+    if any(timestamp is None for timestamp in all_timestamps):
+        return [], []
+
+    start_at = max(
+        min(timestamp for _, timestamp in timed_imu if timestamp is not None),
+        min(timestamp for _, timestamp in timed_locations if timestamp is not None),
+    )
+    end_at = min(
+        max(timestamp for _, timestamp in timed_imu if timestamp is not None),
+        max(timestamp for _, timestamp in timed_locations if timestamp is not None),
+    )
+    if start_at > end_at:
+        return [], []
+
+    return (
+        [
+            reading
+            for reading, timestamp in timed_imu
+            if timestamp is not None and start_at <= timestamp <= end_at
+        ],
+        [
+            reading
+            for reading, timestamp in timed_locations
+            if timestamp is not None and start_at <= timestamp <= end_at
+        ],
+    )
+
+
+def _utc_timestamp(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
 
 
 def estimate_wave_period(
