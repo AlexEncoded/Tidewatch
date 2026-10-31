@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from math import isfinite
 from types import MappingProxyType
 
 
@@ -28,6 +29,17 @@ SENSOR_DEGRADATION_THRESHOLDS: Mapping[str, float] = MappingProxyType({
 
 def degraded_sensor_names(deltas: Mapping[str, float | None]) -> list[str]:
     """Return degraded sensors and aggregate wind/current families."""
+    unknown_sensors = set(deltas).difference(SENSOR_DEGRADATION_THRESHOLDS)
+    if unknown_sensors:
+        raise ValueError(
+            f"Unsupported sensor health deltas: {', '.join(sorted(unknown_sensors))}"
+        )
+    for sensor, value in deltas.items():
+        if value is not None and (not isfinite(value) or value < 0):
+            raise ValueError(
+                f"Sensor health delta for {sensor} must be a non-negative finite number"
+            )
+
     degraded = [
         sensor
         for sensor, value in deltas.items()

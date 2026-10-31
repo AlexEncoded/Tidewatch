@@ -10,7 +10,8 @@ Current rules include:
 - redundant sensor channel decisions and completeness;
 - sensor health thresholds and aggregate status. The
   `SENSOR_DEGRADATION_THRESHOLDS` map is the explicit margin contract for
-  every delta produced by the sensor-health application service;
+  every delta produced by the sensor-health application service; deltas must
+  be finite, non-negative, and use a registered sensor name;
 - device heartbeat freshness and operational health summaries;
 - redundant battery health with finite, non-negative thresholds and bounded
   battery percentages; health snapshots are immutable and validate the status,
