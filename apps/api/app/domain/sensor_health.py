@@ -83,8 +83,8 @@ def evaluate_sensor_health(
     degraded_sensors = degraded_sensor_names(deltas)
     decisions = {
         sensor: decide_channel(
-            bool(channels["A"]),
-            bool(channels["B"]),
+            bool(channels.get("A")),
+            bool(channels.get("B")),
             sensor in degraded_sensors,
         )
         for sensor, channels in sensor_readings.items()

@@ -8,6 +8,8 @@ or decisions.
 Current rules include:
 
 - redundant sensor channel decisions and completeness;
+- missing-channel evaluation handles omitted A/B keys and rejects unknown
+  physical channels;
 - sensor health thresholds and aggregate status. The
   `SENSOR_DEGRADATION_THRESHOLDS` map is the explicit margin contract for
   every delta produced by the sensor-health application service; deltas must

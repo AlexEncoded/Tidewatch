@@ -548,6 +548,27 @@ def test_sensor_completeness_domain_lists_partial_redundancy() -> None:
     assert missing == ["temperature:B"]
 
 
+def test_sensor_completeness_treats_an_omitted_channel_as_missing() -> None:
+    assert missing_sensor_channels({"temperature": {"A": object()}}) == [
+        "temperature:B"
+    ]
+
+
+def test_sensor_health_evaluation_accepts_an_omitted_redundant_channel() -> None:
+    evaluation = evaluate_sensor_health(
+        {"temperature": None}, {"temperature": {"A": object()}}
+    )
+
+    assert evaluation.status == "degraded"
+    assert evaluation.missing_sensors == ["temperature:B"]
+    assert evaluation.decisions == {"temperature": "fallback_a"}
+
+
+def test_sensor_completeness_rejects_unknown_channels() -> None:
+    with pytest.raises(ValueError, match="Unsupported sensor channels for temperature: C"):
+        missing_sensor_channels({"temperature": {"C": object()}})
+
+
 def test_telemetry_domain_skips_invalid_and_stale_readings() -> None:
     now = datetime(2024, 1, 1, 1, 0)
     readings = [
