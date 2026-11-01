@@ -7,11 +7,36 @@ from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, TidewatchSession
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
-from app.fleet_entities import BuoyEntity
+from app.fleet_entities import BuoyEntity, DeviceEntity
 from app.sensor_entities import TemperatureReadingEntity
 from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from app.telemetry_job_worker import process_next_telemetry_job
+
+
+class CapturingMetric:
+    def __init__(self, metrics, name):
+        self.metrics = metrics
+        self.name = name
+
+    def labels(self, **labels):
+        self.metrics.labels[self.name] = labels
+        return self
+
+    def set(self, value):
+        self.metrics.values[self.name] = value
+
+    def inc(self):
+        return None
+
+
+class CapturingMetrics:
+    def __init__(self):
+        self.labels = {}
+        self.values = {}
+
+    def metric(self, name):
+        return CapturingMetric(self, name)
 
 
 @pytest.fixture
@@ -167,6 +192,77 @@ def test_worker_processes_job_and_commits_readings_with_completion(job_repositor
     assert completed is not None
     assert completed.status == "completed"
     assert job_repository.db.query(TemperatureReadingEntity).count() == 1
+
+
+def test_worker_publishes_device_runtime_metrics_without_clock_observation(
+    job_repository, monkeypatch
+) -> None:
+    metrics = CapturingMetrics()
+    monkeypatch.setattr(
+        "app.telemetry_job_worker.get_telemetry_metrics", lambda: metrics
+    )
+    job_repository.db.add(
+        DeviceEntity(
+            device_id="runtime-unit-a",
+            buoy_id="TW-JOB",
+            sensor_channel="A",
+            status="active",
+            registered_at=datetime(2026, 10, 1, tzinfo=timezone.utc),
+        )
+    )
+    job_repository.db.commit()
+    job = job_repository.enqueue(
+        "TW-JOB",
+        {
+            "device_id": "runtime-unit-a",
+            "temperatures": [
+                {"temperature_celsius": 19.5, "sensor_channel": "A"}
+            ],
+            "device_runtime": {
+                "cpu_usage_percent": 73.5,
+                "memory_usage_percent": 81.25,
+            },
+            "device_communications": {
+                "packet_loss_percent": 7.5,
+                "round_trip_latency_ms": 2450,
+                "signal_strength_dbm": -83.5,
+                "signal_to_noise_ratio_db": 12.25,
+            },
+        },
+    )
+
+    assert process_next_telemetry_job(job_repository.db) is True
+
+    completed = job_repository.get(job.job_id)
+    assert completed is not None and completed.status == "completed"
+    assert {
+        name: metrics.values[name]
+        for name in (
+            "device_cpu_usage_percent",
+            "device_memory_usage_percent",
+            "device_packet_loss_percent",
+            "device_round_trip_latency_ms",
+            "device_signal_strength_dbm",
+            "device_signal_to_noise_ratio_db",
+        )
+    } == {
+        "device_cpu_usage_percent": 73.5,
+        "device_memory_usage_percent": 81.25,
+        "device_packet_loss_percent": 7.5,
+        "device_round_trip_latency_ms": 2450,
+        "device_signal_strength_dbm": -83.5,
+        "device_signal_to_noise_ratio_db": 12.25,
+    }
+    assert all(
+        metrics.labels[name] == {
+            "buoy_id": "TW-JOB",
+            "device_id": "runtime-unit-a",
+            "sensor_channel": "A",
+        }
+        for name in metrics.values
+        if name.startswith("device_")
+        and name not in {"device_last_seen_timestamp_seconds"}
+    )
 
 
 def test_worker_retries_invalid_batch_without_persisting_readings(job_repository) -> None:

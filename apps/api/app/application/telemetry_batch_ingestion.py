@@ -161,36 +161,36 @@ def process_telemetry_batch(
                     device_id=device.device_id,
                     sensor_channel=device.sensor_channel,
                 ).set((latest_measurement - clock_observation_at).total_seconds())
-            runtime_labels = {
-                "buoy_id": buoy_id,
-                "device_id": device.device_id,
-                "sensor_channel": device.sensor_channel,
-            }
-            if payload.device_runtime is not None:
-                metrics.metric("device_cpu_usage_percent").labels(
+        runtime_labels = {
+            "buoy_id": buoy_id,
+            "device_id": device.device_id,
+            "sensor_channel": device.sensor_channel,
+        }
+        if payload.device_runtime is not None:
+            metrics.metric("device_cpu_usage_percent").labels(
+                **runtime_labels
+            ).set(payload.device_runtime["cpu_usage_percent"])
+            metrics.metric("device_memory_usage_percent").labels(
+                **runtime_labels
+            ).set(payload.device_runtime["memory_usage_percent"])
+        if payload.device_communications is not None:
+            communications = payload.device_communications
+            if communications["packet_loss_percent"] is not None:
+                metrics.metric("device_packet_loss_percent").labels(
                     **runtime_labels
-                ).set(payload.device_runtime["cpu_usage_percent"])
-                metrics.metric("device_memory_usage_percent").labels(
+                ).set(communications["packet_loss_percent"])
+            if communications["round_trip_latency_ms"] is not None:
+                metrics.metric("device_round_trip_latency_ms").labels(
                     **runtime_labels
-                ).set(payload.device_runtime["memory_usage_percent"])
-            if payload.device_communications is not None:
-                communications = payload.device_communications
-                if communications["packet_loss_percent"] is not None:
-                    metrics.metric("device_packet_loss_percent").labels(
-                        **runtime_labels
-                    ).set(communications["packet_loss_percent"])
-                if communications["round_trip_latency_ms"] is not None:
-                    metrics.metric("device_round_trip_latency_ms").labels(
-                        **runtime_labels
-                    ).set(communications["round_trip_latency_ms"])
-                if communications["signal_strength_dbm"] is not None:
-                    metrics.metric("device_signal_strength_dbm").labels(
-                        **runtime_labels
-                    ).set(communications["signal_strength_dbm"])
-                if communications["signal_to_noise_ratio_db"] is not None:
-                    metrics.metric("device_signal_to_noise_ratio_db").labels(
-                        **runtime_labels
-                    ).set(communications["signal_to_noise_ratio_db"])
+                ).set(communications["round_trip_latency_ms"])
+            if communications["signal_strength_dbm"] is not None:
+                metrics.metric("device_signal_strength_dbm").labels(
+                    **runtime_labels
+                ).set(communications["signal_strength_dbm"])
+            if communications["signal_to_noise_ratio_db"] is not None:
+                metrics.metric("device_signal_to_noise_ratio_db").labels(
+                    **runtime_labels
+                ).set(communications["signal_to_noise_ratio_db"])
     else:
         seen_at = None
 
