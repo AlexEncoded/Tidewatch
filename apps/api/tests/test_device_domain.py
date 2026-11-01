@@ -172,6 +172,15 @@ def test_device_registration_rejects_conflicts(device_id: str, sensor_channel: s
         )
 
 
+def test_device_registration_rejects_id_registered_to_another_buoy() -> None:
+    registered_elsewhere = SimpleNamespace(device_id="device-a", buoy_id="buoy-2")
+
+    with pytest.raises(DeviceRegistrationConflict, match="Device already registered"):
+        validate_device_registration(
+            "device-a", "B", [], existing_registered_device=registered_elsewhere
+        )
+
+
 def test_register_device_application_service_uses_registry() -> None:
     class Registry:
         def __init__(self):

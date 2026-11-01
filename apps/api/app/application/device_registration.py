@@ -2,7 +2,6 @@
 
 from ..domain.devices import (
     DeviceRegistrationCommand,
-    DeviceRegistrationConflict,
     DeviceSnapshot,
     validate_device_registration,
 )
@@ -13,11 +12,11 @@ def register_device(
     registry: DeviceRegistry, buoy_id: str, device: DeviceRegistrationCommand
 ) -> DeviceSnapshot:
     """Register a device after enforcing domain uniqueness rules."""
-    if registry.get_device_snapshot(device.device_id) is not None:
-        raise DeviceRegistrationConflict("Device already registered")
+    registered_device = registry.get_device_snapshot(device.device_id)
     validate_device_registration(
         device.device_id,
         device.sensor_channel,
         registry.list_device_snapshots(buoy_id),
+        existing_registered_device=registered_device,
     )
     return registry.create_device_snapshot(buoy_id, device)

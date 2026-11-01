@@ -97,8 +97,11 @@ def validate_device_registration(
     device_id: str,
     sensor_channel: str,
     existing_devices: Iterable[object],
+    existing_registered_device: object | None = None,
 ) -> None:
     """Validate uniqueness of a device and its redundant sensor channel."""
+    if getattr(existing_registered_device, "device_id", None) == device_id:
+        raise DeviceRegistrationConflict("Device already registered")
     devices = list(existing_devices)
     if any(getattr(device, "device_id", None) == device_id for device in devices):
         raise DeviceRegistrationConflict("Device already registered")
