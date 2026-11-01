@@ -204,6 +204,7 @@ def process_telemetry_batch(
         job = jobs.enqueue(
             buoy_id,
             payload.as_json_mapping(),
+            now=clock_observation_at,
             idempotency_key=idempotency_key,
         )
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"

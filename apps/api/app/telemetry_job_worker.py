@@ -51,6 +51,11 @@ def process_next_telemetry_job(db: Session) -> bool:
                 unit_of_work=unit_of_work,
                 metrics=metrics,
                 jobs=None,
+                clock_observation_at=(
+                    job.created_at.replace(tzinfo=timezone.utc)
+                    if job.created_at.tzinfo is None
+                    else job.created_at
+                ),
             )
             completed = jobs.complete(
                 job.job_id, job.attempts, datetime.now(timezone.utc)

@@ -194,7 +194,7 @@ def test_worker_processes_job_and_commits_readings_with_completion(job_repositor
     assert job_repository.db.query(TemperatureReadingEntity).count() == 1
 
 
-def test_worker_publishes_device_runtime_metrics_without_clock_observation(
+def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset(
     job_repository, monkeypatch
 ) -> None:
     metrics = CapturingMetrics()
@@ -211,24 +211,36 @@ def test_worker_publishes_device_runtime_metrics_without_clock_observation(
         )
     )
     job_repository.db.commit()
+    received_at = datetime(2026, 10, 15, 10, tzinfo=timezone.utc)
     job = job_repository.enqueue(
         "TW-JOB",
         {
             "device_id": "runtime-unit-a",
             "temperatures": [
-                {"temperature_celsius": 19.5, "sensor_channel": "A"}
+                {
+                    "temperature_celsius": 19.5,
+                    "sensor_channel": "A",
+                    "measured_at": (received_at + timedelta(seconds=7)).isoformat(),
+                }
             ],
             "device_runtime": {
                 "cpu_usage_percent": 73.5,
                 "memory_usage_percent": 81.25,
+                    "measured_at": (received_at + timedelta(seconds=7)).isoformat(),
             },
             "device_communications": {
+                    "measured_at": (received_at + timedelta(seconds=7)).isoformat(),
                 "packet_loss_percent": 7.5,
                 "round_trip_latency_ms": 2450,
                 "signal_strength_dbm": -83.5,
                 "signal_to_noise_ratio_db": 12.25,
             },
         },
+        now=received_at,
+    )
+    assert job.created_at.replace(tzinfo=timezone.utc) == received_at
+    assert job.payload["temperatures"][0]["measured_at"].startswith(
+        "2026-10-15T10:00:07"
     )
 
     assert process_next_telemetry_job(job_repository.db) is True
@@ -253,6 +265,7 @@ def test_worker_publishes_device_runtime_metrics_without_clock_observation(
         "device_signal_strength_dbm": -83.5,
         "device_signal_to_noise_ratio_db": 12.25,
     }
+    assert metrics.values["device_clock_offset_seconds"] == 7
     assert all(
         metrics.labels[name] == {
             "buoy_id": "TW-JOB",
