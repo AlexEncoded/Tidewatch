@@ -101,6 +101,8 @@ class BuoyRegistrationCommand:
     longitude: float | None = None
 
     def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("Buoy name must not be blank")
         if not BUOY_NAME_MIN_LENGTH <= len(self.name) <= BUOY_NAME_MAX_LENGTH:
             raise ValueError(
                 f"Buoy name must contain between {BUOY_NAME_MIN_LENGTH} "

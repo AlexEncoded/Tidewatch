@@ -34,6 +34,7 @@ def test_registration_assigns_generated_identity_and_persists_domain_snapshot():
     "name, latitude, longitude",
     [
         ("", None, None),
+        ("   ", None, None),
         ("x" * 101, None, None),
         ("Buoy", 90.01, None),
         ("Buoy", None, -180.01),
