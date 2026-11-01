@@ -139,6 +139,7 @@ def process_telemetry_batch(
                 gateway,
                 buoy_id,
                 payload.device_id,
+                seen_at=clock_observation_at,
                 sensor_channels=sensor_channels,
             )
         except DeviceOwnershipError as exc:
@@ -549,8 +550,9 @@ def process_telemetry_batch(
         accepted += 1
 
     if payload.device_id is None and accepted:
+        buoy_seen_at = clock_observation_at or datetime.now(timezone.utc)
         metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
-            datetime.now(timezone.utc).timestamp()
+            buoy_seen_at.timestamp()
         )
 
     return TelemetryIngestOutcome(

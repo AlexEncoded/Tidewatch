@@ -247,6 +247,9 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
 
     completed = job_repository.get(job.job_id)
     assert completed is not None and completed.status == "completed"
+    device = job_repository.db.get(DeviceEntity, "runtime-unit-a")
+    assert device is not None
+    assert device.last_seen_at.replace(tzinfo=timezone.utc) == received_at
     assert {
         name: metrics.values[name]
         for name in (
@@ -266,6 +269,8 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
         "device_signal_to_noise_ratio_db": 12.25,
     }
     assert metrics.values["device_clock_offset_seconds"] == 7
+    assert metrics.values["device_last_seen_timestamp_seconds"] == received_at.timestamp()
+    assert metrics.values["buoy_last_seen_timestamp_seconds"] == received_at.timestamp()
     assert all(
         metrics.labels[name] == {
             "buoy_id": "TW-JOB",
