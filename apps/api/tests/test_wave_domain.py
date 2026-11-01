@@ -180,6 +180,22 @@ def test_estimate_wave_period_does_not_bridge_telemetry_gaps() -> None:
     assert estimate_wave_period(samples) == 20.0
 
 
+def test_estimate_wave_period_does_not_learn_sampling_cadence_from_long_gaps() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    samples = [
+        (start + timedelta(seconds=seconds), value)
+        for seconds, value in (
+            (0, -1.0),
+            (10, 1.0),
+            (1010, -1.0),
+            (2010, 1.0),
+            (2020, -1.0),
+        )
+    ]
+
+    assert estimate_wave_period(samples) is None
+
+
 def test_estimate_wave_period_interpolates_mean_crossings() -> None:
     start = datetime(2026, 1, 1, tzinfo=timezone.utc)
     samples = [

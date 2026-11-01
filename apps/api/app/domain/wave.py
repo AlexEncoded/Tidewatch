@@ -212,7 +212,10 @@ def estimate_wave_period(
         (current[0] - previous[0]).total_seconds()
         for previous, current in zip(normalized_samples, normalized_samples[1:])
     ]
-    nominal_interval = median(intervals)
+    ordered_intervals = sorted(intervals)
+    nominal_interval = median(
+        ordered_intervals[: max(1, len(ordered_intervals) // 2)]
+    )
     segments: list[list[tuple[datetime, float]]] = [[normalized_samples[0]]]
     for sample, interval in zip(normalized_samples[1:], intervals):
         if interval > nominal_interval * 3:
