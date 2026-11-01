@@ -24,6 +24,19 @@ from app.domain.telemetry import (
 )
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.telemetry_types import resolve_telemetry_device_id
+
+
+def test_telemetry_device_resolution_uses_batch_device_as_fallback() -> None:
+    assert resolve_telemetry_device_id(None, "unit-a") == "unit-a"
+
+
+def test_telemetry_device_resolution_preserves_explicit_reading_owner() -> None:
+    assert resolve_telemetry_device_id("unit-b", "unit-a") == "unit-b"
+
+
+def test_telemetry_device_resolution_keeps_unowned_reading_without_batch_owner() -> None:
+    assert resolve_telemetry_device_id(None, None) is None
 
 
 @pytest.mark.parametrize(

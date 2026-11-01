@@ -59,6 +59,14 @@ BATTERY_MIN_PERCENT = 0
 BATTERY_MAX_PERCENT = 100
 
 
+def resolve_telemetry_device_id(
+    reading_device_id: str | None,
+    batch_device_id: str | None,
+) -> str | None:
+    """Prefer an explicit reading owner, falling back to the batch device."""
+    return reading_device_id if reading_device_id is not None else batch_device_id
+
+
 def validate_battery_percentage(value: float, label: str = "Battery percentage") -> None:
     """Reject battery readings outside the finite physical percentage range."""
     if (

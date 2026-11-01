@@ -27,6 +27,7 @@ from ..domain.telemetry import (
 )
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
+from ..domain.telemetry_types import resolve_telemetry_device_id
 
 F = TypeVar("F", bound=Callable)
 
@@ -77,8 +78,9 @@ def with_device_provenance(
 ) -> dict:
     """Return a copy with the batch device when no owner is explicit."""
     normalized = dict(reading_data)
-    if batch_device_id is not None and normalized.get("device_id") is None:
-        normalized["device_id"] = batch_device_id
+    normalized["device_id"] = resolve_telemetry_device_id(
+        normalized.get("device_id"), batch_device_id
+    )
     return normalized
 
 
