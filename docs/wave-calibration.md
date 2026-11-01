@@ -9,6 +9,18 @@ The live estimate combines GNSS and IMU samples only within the time interval
 covered by both streams. If their windows do not overlap, the API reports
 insufficient data instead of combining unrelated sensor ranges.
 
+For the experimental period estimate, each sensor is analyzed independently
+using interpolated upward crossings of its detrended mean. Duplicate timestamps
+are consolidated. Long outages split the samples into separate segments: the
+nominal cadence is estimated from the shorter half of observed intervals, and
+an interval over three times that cadence starts a new segment. This keeps
+outages from being mistaken for normal sampling when most intervals are long.
+Periods from GNSS and IMU are averaged only when both are available and differ
+by no more than 25% relative to the shorter estimate. Larger disagreement
+withholds the fused period and reports `sensor_disagreement`; one usable source
+can still provide a partial estimate. Period and height confidence remain
+experimental until validated against independent field measurements.
+
 Prepare a CSV with one row per synchronized sensor sample and these columns:
 
 | Column | Meaning |
