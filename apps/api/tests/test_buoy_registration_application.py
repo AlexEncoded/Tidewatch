@@ -37,6 +37,8 @@ def test_registration_assigns_generated_identity_and_persists_domain_snapshot():
         ("x" * 101, None, None),
         ("Buoy", 90.01, None),
         ("Buoy", None, -180.01),
+        ("Buoy", 36.7, None),
+        ("Buoy", None, 3.1),
     ],
 )
 def test_registration_command_rejects_values_outside_domain_bounds(

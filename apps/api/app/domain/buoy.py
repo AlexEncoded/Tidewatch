@@ -106,6 +106,8 @@ class BuoyRegistrationCommand:
                 f"Buoy name must contain between {BUOY_NAME_MIN_LENGTH} "
                 f"and {BUOY_NAME_MAX_LENGTH} characters"
             )
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("Latitude and longitude must be provided together")
         if self.latitude is not None and not LATITUDE_MIN <= self.latitude <= LATITUDE_MAX:
             raise ValueError(f"Latitude must be between {LATITUDE_MIN} and {LATITUDE_MAX} degrees")
         if self.longitude is not None and not LONGITUDE_MIN <= self.longitude <= LONGITUDE_MAX:
