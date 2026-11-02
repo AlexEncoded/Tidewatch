@@ -76,10 +76,66 @@ def test_simulator_builds_synchronized_per_device_payloads() -> None:
         assert -150 <= payload["device_communications"]["signal_strength_dbm"] <= 0
         assert payload["device_communications"]["signal_to_noise_ratio_db"] >= -30
 
-    timestamps = {
-        payload["temperatures"][0]["measured_at"] for payload in payloads.values()
+    timestamp_a = datetime.fromisoformat(
+        payloads["A"]["temperatures"][0]["measured_at"]
+    )
+    timestamp_b = datetime.fromisoformat(
+        payloads["B"]["temperatures"][0]["measured_at"]
+    )
+    assert timestamp_b - timestamp_a == timedelta(
+        seconds=SIMULATOR.SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS
+    )
+
+
+def test_simulator_clock_offset_is_configurable_and_keeps_batch_synchronized() -> None:
+    devices = {
+        "A": {"device_id": "physical-unit-a", "sensor_channel": "A"},
+        "B": {"device_id": "physical-unit-b", "sensor_channel": "B"},
     }
-    assert len(timestamps) == 1
+    origin = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    payloads = SIMULATOR.build_payloads(
+        devices, origin, device_b_clock_offset_seconds=125
+    )
+
+    time_a = datetime.fromisoformat(payloads["A"]["location"]["measured_at"])
+    time_b = datetime.fromisoformat(payloads["B"]["location"]["measured_at"])
+    assert time_b - time_a == timedelta(seconds=125)
+    for payload in payloads.values():
+        measured_at = payload["location"]["measured_at"]
+        assert payload["imu"][0]["measured_at"] == measured_at
+        assert payload["device_runtime"]["measured_at"] == measured_at
+        assert payload["device_communications"]["measured_at"] == measured_at
+
+
+def test_simulator_noise_does_not_create_negative_wind_or_current(monkeypatch) -> None:
+    devices = {
+        "A": {"device_id": "physical-unit-a", "sensor_channel": "A"},
+        "B": {"device_id": "physical-unit-b", "sensor_channel": "B"},
+    }
+    monkeypatch.setattr(SIMULATOR.random, "uniform", lambda lower, upper: lower)
+
+    payloads = SIMULATOR.build_payloads(devices)
+
+    for payload in payloads.values():
+        TelemetryBatchCreate.model_validate(payload)
+        assert payload["wind"][0]["wind_speed_mps"] >= 0
+        assert payload["marine_current"][0]["current_speed_mps"] >= 0
+        assert payload["turbidity"][0]["turbidity_ntu"] >= 0
+
+
+def test_simulator_direction_rounding_stays_below_360_degrees(monkeypatch) -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+
+    def near_full_circle(lower, upper):
+        return 359.99 if (lower, upper) == (0.0, 360.0) else 0.0
+
+    monkeypatch.setattr(SIMULATOR.random, "uniform", near_full_circle)
+
+    payload = SIMULATOR.build_payloads(devices)["A"]
+
+    assert payload["wind"][0]["wind_direction_degrees"] == 0.0
+    assert payload["marine_current"][0]["current_direction_degrees"] == 0.0
 
 
 def test_simulator_populates_and_synchronizes_every_batch_field() -> None:

@@ -7,7 +7,7 @@ import json
 import math
 import random
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -17,6 +17,7 @@ SIMULATED_LONGITUDE = -5.0
 SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS = 2.0
 SIMULATED_WAVE_AMPLITUDE_METERS = 0.2
 SIMULATED_WAVE_PERIOD_SECONDS = 30.0
+SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS = 1.5
 
 
 def request_json(url: str, method: str, payload: dict | None = None) -> dict | list:
@@ -29,6 +30,11 @@ def request_json(url: str, method: str, payload: dict | None = None) -> dict | l
     )
     with urlopen(request, timeout=10) as response:
         return json.load(response)
+
+
+def _direction_degrees(value: float) -> float:
+    """Round a circular direction while keeping it in the half-open range."""
+    return round(value % 360, 1) % 360
 
 
 def create_buoy(api_url: str, name: str) -> str:
@@ -82,11 +88,12 @@ def ensure_simulator_devices(api_url: str, buoy_id: str) -> dict[str, dict]:
 
 
 def build_payloads(
-    devices: dict[str, dict], now: datetime | None = None
+    devices: dict[str, dict],
+    now: datetime | None = None,
+    device_b_clock_offset_seconds: float = SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS,
 ) -> dict[str, dict]:
     """Build synchronized redundant readings and per-device diagnostics."""
     now = now or datetime.now(timezone.utc)
-    measured_at = now.isoformat()
     wave_angular_frequency = 2 * math.pi / SIMULATED_WAVE_PERIOD_SECONDS
     wave_phase = wave_angular_frequency * now.timestamp()
     wave_displacement = SIMULATED_WAVE_AMPLITUDE_METERS * math.sin(wave_phase)
@@ -122,6 +129,8 @@ def build_payloads(
     payloads = {}
     for channel, device in devices.items():
         is_b = offsets[channel] == 1
+        device_time_offset = device_b_clock_offset_seconds if is_b else 0.0
+        measured_at = (now + timedelta(seconds=device_time_offset)).isoformat()
         payloads[channel] = {
             "device_id": device["device_id"],
             "location": {
@@ -201,31 +210,40 @@ def build_payloads(
             }],
             "wind": [{
                 "wind_speed_mps": round(
-                    wind_speed + (random.uniform(-0.1, 0.1) if is_b else 0), 2
+                    max(
+                        0.0,
+                        wind_speed + (random.uniform(-0.1, 0.1) if is_b else 0),
+                    ),
+                    2,
                 ),
-                "wind_direction_degrees": round(
-                    (wind_direction + (random.uniform(-3.0, 3.0) if is_b else 0))
-                    % 360,
-                    1,
+                "wind_direction_degrees": _direction_degrees(
+                    wind_direction + (random.uniform(-3.0, 3.0) if is_b else 0)
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
             }],
             "marine_current": [{
                 "current_speed_mps": round(
-                    current_speed + (random.uniform(-0.05, 0.05) if is_b else 0), 3
+                    max(
+                        0.0,
+                        current_speed
+                        + (random.uniform(-0.05, 0.05) if is_b else 0),
+                    ),
+                    3,
                 ),
-                "current_direction_degrees": round(
-                    (current_direction + (random.uniform(-3.0, 3.0) if is_b else 0))
-                    % 360,
-                    1,
+                "current_direction_degrees": _direction_degrees(
+                    current_direction + (random.uniform(-3.0, 3.0) if is_b else 0)
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
             }],
             "turbidity": [{
                 "turbidity_ntu": round(
-                    turbidity + (random.uniform(-2.0, 2.0) if is_b else 0), 2
+                    max(
+                        0.0,
+                        turbidity + (random.uniform(-2.0, 2.0) if is_b else 0),
+                    ),
+                    2,
                 ),
                 "sensor_channel": channel,
                 "measured_at": measured_at,
@@ -316,6 +334,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--buoy-id", help="Existing buoy ID; otherwise a buoy is created")
     parser.add_argument("--name", default="Local Test Buoy")
     parser.add_argument("--interval", type=float, default=10.0)
+    parser.add_argument(
+        "--device-b-clock-offset-seconds",
+        type=float,
+        default=SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS,
+        help="Simulated clock offset for redundant device B (default: 1.5 seconds)",
+    )
     parser.add_argument("--once", action="store_true", help="Send one batch and exit")
     return parser.parse_args()
 
@@ -324,6 +348,8 @@ def main() -> None:
     args = parse_args()
     if args.interval <= 0:
         raise SystemExit("--interval must be greater than zero")
+    if not math.isfinite(args.device_b_clock_offset_seconds):
+        raise SystemExit("--device-b-clock-offset-seconds must be finite")
 
     buoy_id = args.buoy_id or create_buoy(args.api_url.rstrip("/"), args.name)
     api_url = args.api_url.rstrip("/")
@@ -331,7 +357,10 @@ def main() -> None:
     print(f"Simulating {buoy_id} against {api_url}")
 
     while True:
-        payloads = build_payloads(devices)
+        payloads = build_payloads(
+            devices,
+            device_b_clock_offset_seconds=args.device_b_clock_offset_seconds,
+        )
         for channel, payload in payloads.items():
             try:
                 result = request_json(
