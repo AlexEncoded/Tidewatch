@@ -38,6 +38,7 @@ from .telemetry_ingestion import (
     empty_accepted_reading_counts,
 )
 from ..domain.devices import DeviceOwnershipError
+from ..domain.telemetry_job import TelemetryJobStatus
 
 
 class TelemetryBuoyNotFound(LookupError):
@@ -62,7 +63,7 @@ class TelemetryIngestOutcome:
 @dataclass(frozen=True)
 class TelemetryQueuedOutcome:
     job_id: str
-    status: str
+    status: TelemetryJobStatus
     status_url: str
 
 

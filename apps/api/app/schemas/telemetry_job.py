@@ -5,17 +5,19 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from ..domain.telemetry_job import TelemetryJobStatus
+
 
 class TelemetryJobAcceptedResponse(BaseModel):
     job_id: str
-    status: Literal["pending", "processing", "completed", "failed"]
+    status: TelemetryJobStatus
     status_url: str
 
 
 class TelemetryJobStatusResponse(BaseModel):
     job_id: str
     buoy_id: str
-    status: Literal["pending", "processing", "completed", "failed"]
+    status: TelemetryJobStatus
     attempts: int
     available_at: datetime
     created_at: datetime
