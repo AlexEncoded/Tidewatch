@@ -1,7 +1,5 @@
 """HTTP routes for buoy analytics."""
 
-from time import time
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.movement_analysis import analyze_movement_for_buoy
@@ -15,6 +13,7 @@ from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
     get_wave_analysis_reader,
+    get_wave_analysis_metrics,
     get_temperature_analysis_reader,
     get_temperature_alerts_reader,
 )
@@ -22,15 +21,10 @@ from ..application.fleet_ports import MovementAnalysisReader
 from ..application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
+    WaveAnalysisMetrics,
     WaveAnalysisReader,
 )
 from ..application.alert_ports import TemperatureAlertsReader
-from ..metrics import (
-    current_estimated_wave_height_m,
-    current_estimated_wave_period_seconds,
-    wave_period_sensor_disagreement,
-    wave_analysis_last_run_timestamp_seconds,
-)
 from ..schemas.analytics import (
     MovementAnalysis,
     PressureAnalysis,
@@ -71,28 +65,12 @@ def buoy_wave_analysis(
     buoy_id: str,
     window: int = Query(default=100, ge=2, le=500),
     reader: WaveAnalysisReader = Depends(get_wave_analysis_reader),
+    metrics: WaveAnalysisMetrics = Depends(get_wave_analysis_metrics),
 ) -> WaveAnalysis:
     if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     result = analyze_wave_for_buoy(reader, buoy_id, window, configured_wave_imu_factor())
-    wave_analysis_last_run_timestamp_seconds.labels(buoy_id=buoy_id).set(time())
-    if result.estimated_wave_height_m is not None:
-        current_estimated_wave_height_m.labels(buoy_id=buoy_id).set(result.estimated_wave_height_m)
-    else:
-        try:
-            current_estimated_wave_height_m.remove(buoy_id)
-        except KeyError:
-            pass
-    if result.estimated_period_seconds is not None:
-        current_estimated_wave_period_seconds.labels(buoy_id=buoy_id).set(result.estimated_period_seconds)
-    else:
-        try:
-            current_estimated_wave_period_seconds.remove(buoy_id)
-        except KeyError:
-            pass
-    wave_period_sensor_disagreement.labels(buoy_id=buoy_id).set(
-        int(result.period_confidence == "sensor_disagreement")
-    )
+    metrics.record_analysis(result)
     return WaveAnalysis.model_validate(result, from_attributes=True)
 
 

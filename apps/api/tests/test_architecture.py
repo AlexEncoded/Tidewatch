@@ -492,9 +492,33 @@ def test_maintenance_reader_is_grouped_with_maintenance_ports() -> None:
 
 
 def test_wave_analysis_reader_is_grouped_with_cross_context_analysis_ports() -> None:
-    from app.application.analysis_ports import WaveAnalysisReader
+    from app.application.analysis_ports import WaveAnalysisMetrics, WaveAnalysisReader
 
     assert WaveAnalysisReader.__module__ == "app.application.analysis_ports"
+    assert WaveAnalysisMetrics.__module__ == "app.application.analysis_ports"
+
+
+def test_wave_analysis_route_uses_injected_metrics_port() -> None:
+    tree = ast.parse((API_APP / "routers" / "analytics.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "buoy_wave_analysis"
+    )
+    calls = {
+        node.func.attr
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+    assert "record_analysis" in calls
+    assert "labels" not in calls
+
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "..metrics" not in imported_modules
 
 
 def test_database_health_reader_is_grouped_with_system_ports() -> None:

@@ -36,6 +36,8 @@ The composite read contract for maintenance evaluation lives in
 `maintenance_ports.py` and explicitly composes those contexts.
 Cross-context pressure, temperature, and wave analysis contracts, including
 wave analysis combining sensor and fleet reads, live in `analysis_ports.py`.
+`WaveAnalysisMetrics` is the output port for publishing analysis results; the
+Prometheus adapter implements it outside the HTTP route.
 The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.

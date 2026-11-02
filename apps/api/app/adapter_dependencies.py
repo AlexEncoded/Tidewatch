@@ -9,6 +9,7 @@ from .application.battery_ports import BatteryTelemetryReader
 from .application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
+    WaveAnalysisMetrics,
     WaveAnalysisReader,
 )
 from .application.maintenance_ports import MaintenanceReader
@@ -94,6 +95,7 @@ from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
 from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
+from .prometheus_wave_analysis_metrics import PrometheusWaveAnalysisMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -374,6 +376,11 @@ def get_wave_analysis_reader(
 ) -> WaveAnalysisReader:
     """Compose wave analysis through the compatibility telemetry facade."""
     return WaveAnalysisRepository(db)
+
+
+def get_wave_analysis_metrics() -> WaveAnalysisMetrics:
+    """Compose wave-analysis metrics with the Prometheus adapter."""
+    return PrometheusWaveAnalysisMetrics()
 
 
 def get_temperature_analysis_reader(
