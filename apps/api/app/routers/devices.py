@@ -9,6 +9,7 @@ from ..adapter_dependencies import (
     get_device_listing_reader,
     get_device_registry,
     get_device_status_registry,
+    get_fleet_metrics,
 )
 from ..application.device_registration import register_device as register_device_use_case
 from ..application.device_listing import list_devices_for_buoy
@@ -27,7 +28,7 @@ from ..application.device_ports import (
     DeviceRegistry,
     DeviceStatusRegistry,
 )
-from ..metrics import device_last_seen_timestamp_seconds
+from ..application.fleet_ports import FleetMetrics
 
 
 router = APIRouter()
@@ -43,6 +44,7 @@ def register_device(
     buoy_id: str,
     payload: DeviceCreate,
     registry: DeviceRegistry = Depends(get_device_registry),
+    metrics: FleetMetrics = Depends(get_fleet_metrics),
 ) -> Device:
     if not registry.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
@@ -53,11 +55,9 @@ def register_device(
             firmware_version=payload.firmware_version,
         )
         result = register_device_use_case(registry, buoy_id, command)
-        device_last_seen_timestamp_seconds.labels(
-            buoy_id=buoy_id,
-            device_id=result.device_id,
-            sensor_channel=result.sensor_channel,
-        ).set(result.last_seen_at.timestamp() if result.last_seen_at is not None else 0)
+        metrics.record_device_heartbeat(
+            buoy_id, result.device_id, result.sensor_channel, result.last_seen_at
+        )
         return Device.model_validate(result, from_attributes=True)
     except DeviceRegistrationConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None

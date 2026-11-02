@@ -1467,6 +1467,20 @@ def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
         raise AssertionError("Unknown metrics must fail clearly")
 
 
+def test_fleet_routers_use_metrics_port_instead_of_prometheus() -> None:
+    for router_name in ("buoys.py", "devices.py"):
+        tree = ast.parse(
+            (API_APP / "routers" / router_name).read_text(encoding="utf-8")
+        )
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module
+        }
+        assert "metrics" not in imported_modules
+        assert "application.fleet_ports" in imported_modules
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {

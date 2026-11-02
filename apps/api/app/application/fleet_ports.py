@@ -47,6 +47,25 @@ class BuoyRegistrar(Protocol):
         ...
 
 
+class FleetMetrics(Protocol):
+    def record_buoy_heartbeat(
+        self, buoy_id: str, last_seen_at: datetime | None
+    ) -> None:
+        ...
+
+    def record_device_heartbeat(
+        self,
+        buoy_id: str,
+        device_id: str,
+        sensor_channel: str,
+        last_seen_at: datetime | None,
+    ) -> None:
+        ...
+
+    def record_buoy_movement(self, buoy_id: str, speed_mps: float) -> None:
+        ...
+
+
 @runtime_checkable
 class BuoySummaryReader(Protocol):
     def list_buoy_summaries(self) -> list[BuoySummarySnapshot]:

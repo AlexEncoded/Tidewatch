@@ -20,6 +20,7 @@ from ..application.fleet_ports import (
     StaleBuoyReader,
     MovementAnalysisReader,
     BuoyRegistrar,
+    FleetMetrics,
 )
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..adapter_dependencies import get_buoy_status_registry
@@ -27,11 +28,11 @@ from ..adapter_dependencies import (
     get_buoy_location_updater,
     get_buoy_registrar,
     get_movement_analysis_reader,
+    get_fleet_metrics,
 )
 from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
-from ..metrics import buoy_last_seen_timestamp_seconds, buoy_movement_speed_mps
 from ..schemas.fleet_summary import BuoySummary
 from ..schemas.fleet import (
     Buoy,
@@ -50,6 +51,7 @@ router = APIRouter()
 def create_buoy(
     payload: BuoyCreate,
     registrar: BuoyRegistrar = Depends(get_buoy_registrar),
+    metrics: FleetMetrics = Depends(get_fleet_metrics),
 ) -> Buoy:
     buoy = create_buoy_use_case(
         registrar,
@@ -59,9 +61,7 @@ def create_buoy(
             longitude=payload.longitude,
         ),
     )
-    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy.buoy_id).set(
-        buoy.last_seen_at.timestamp() if buoy.last_seen_at is not None else 0
-    )
+    metrics.record_buoy_heartbeat(buoy.buoy_id, buoy.last_seen_at)
     return Buoy(
         id=buoy.buoy_id,
         name=buoy.name,
@@ -101,6 +101,7 @@ def update_buoy_location(
     payload: BuoyLocationUpdate,
     updater: BuoyLocationUpdater = Depends(get_buoy_location_updater),
     movement_reader: MovementAnalysisReader = Depends(get_movement_analysis_reader),
+    metrics: FleetMetrics = Depends(get_fleet_metrics),
 ) -> Buoy:
     result = record_buoy_location(
         updater,
@@ -111,7 +112,7 @@ def update_buoy_location(
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     if result.movement.average_speed_mps is not None:
-        buoy_movement_speed_mps.labels(buoy_id=buoy_id).set(result.movement.average_speed_mps)
+        metrics.record_buoy_movement(buoy_id, result.movement.average_speed_mps)
     buoy = result.buoy
     return Buoy(
         id=buoy.buoy_id,

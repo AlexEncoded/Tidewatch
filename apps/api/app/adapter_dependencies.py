@@ -26,6 +26,7 @@ from .application.fleet_ports import (
     BuoyStatusRegistry,
     BuoySummaryReader,
     FleetLocationReader,
+    FleetMetrics,
     MovementAnalysisReader,
     StaleBuoyReader,
 )
@@ -97,6 +98,7 @@ from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWor
 from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
 from .prometheus_wave_analysis_metrics import PrometheusWaveAnalysisMetrics
 from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
+from .prometheus_fleet_metrics import PrometheusFleetMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -235,6 +237,11 @@ def get_buoy_registrar(
 ) -> BuoyRegistrar:
     """Compose buoy registration with the fleet registry adapter."""
     return BuoyRegistryRepository(db)
+
+
+def get_fleet_metrics() -> FleetMetrics:
+    """Compose fleet observability with its Prometheus adapter."""
+    return PrometheusFleetMetrics()
 
 
 def get_battery_telemetry_reader(
