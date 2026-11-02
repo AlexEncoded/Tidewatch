@@ -25,6 +25,7 @@ class TelemetryIngestionJobEntity(Base):
         ForeignKey("buoys.id", ondelete="CASCADE"), nullable=False
     )
     idempotency_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    idempotency_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     attempts: Mapped[int] = mapped_column(nullable=False, default=0)

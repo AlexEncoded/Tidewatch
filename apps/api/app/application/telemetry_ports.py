@@ -50,6 +50,7 @@ class TelemetryIngestionJobStore(Protocol):
         payload: dict,
         now: datetime | None = None,
         idempotency_key: str | None = None,
+        idempotency_fingerprint: str | None = None,
     ) -> TelemetryIngestionJobSnapshot:
         ...
 

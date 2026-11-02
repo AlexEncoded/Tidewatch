@@ -7,6 +7,10 @@ from typing import Literal
 TelemetryJobStatus = Literal["pending", "processing", "completed", "failed"]
 
 
+class TelemetryJobIdempotencyConflict(ValueError):
+    """An idempotency key was reused for a different telemetry request."""
+
+
 @dataclass(frozen=True)
 class TelemetryIngestionJobSnapshot:
     """Queue state returned by the persistence adapter."""

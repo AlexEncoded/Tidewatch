@@ -113,7 +113,9 @@ si el worker se interrumpe después de entregar el mensaje. Consulta
 de intentos.
 Los clientes deberían enviar `Idempotency-Key` (hasta 64 caracteres) y
 reutilizarlo en las retransmisiones del mismo lote; la clave se limita a cada
-boya y devuelve el job original si la petición se repite.
+boya y devuelve el job original si la petición se repite. Reutilizarla con un
+lote distinto devuelve `409 Conflict`. Los valores `measured_at` generados por
+defecto no hacen que un reintento del mismo cuerpo se considere distinto.
 
 `/api/v1/maintenance/issues` acepta `drift_speed_mps` para configurar el límite
 de velocidad media que dispara la incidencia `drift_detected`.

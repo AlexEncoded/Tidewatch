@@ -1,5 +1,7 @@
 """HTTP route for batch telemetry ingestion."""
 
+import hashlib
+import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
@@ -25,6 +27,7 @@ from ..application.telemetry_batch_ingestion import (
     TelemetryQueuedOutcome,
     process_telemetry_batch,
 )
+from ..domain.telemetry_job import TelemetryJobIdempotencyConflict
 from ..schemas.ingestion import TelemetryBatchCreate
 from ..schemas.telemetry import TelemetryIngestResponse
 from ..schemas.telemetry_job import (
@@ -58,6 +61,15 @@ def ingest_telemetry(
     queued_mode = telemetry_ingestion_is_queued()
     command = TelemetryBatchCommand.from_mapping(payload.model_dump())
     received_at = datetime.now(timezone.utc)
+    idempotency_fingerprint = None
+    if idempotency_key is not None:
+        explicit_payload = payload.model_dump(mode="json", exclude_unset=True)
+        canonical_payload = json.dumps(
+            explicit_payload, sort_keys=True, separators=(",", ":")
+        )
+        idempotency_fingerprint = hashlib.sha256(
+            canonical_payload.encode("utf-8")
+        ).hexdigest()
     try:
         outcome = process_telemetry_batch(
             buoy_id,
@@ -69,6 +81,7 @@ def ingest_telemetry(
             idempotency_key=idempotency_key,
             queued_mode=queued_mode,
             clock_observation_at=received_at,
+            idempotency_fingerprint=idempotency_fingerprint,
         )
     except TelemetryBuoyNotFound as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
@@ -78,6 +91,8 @@ def ingest_telemetry(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
         ) from None
+    except TelemetryJobIdempotencyConflict as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
 
     if isinstance(outcome, TelemetryQueuedOutcome):
         response.status_code = (

@@ -212,7 +212,9 @@ PostgreSQL is the queue source of truth, so no separate broker is required at
 the current scale. The queue worker claims jobs with row-level locking and
 leases, retries transient failures with bounded backoff, and records terminal
 failures for inspection. An optional idempotency key makes repeated submissions
-safe. A job's telemetry writes and completion are committed atomically, so a
+safe; each key is bound to a fingerprint of the explicitly submitted batch, and
+reuse with different content is rejected. A job's telemetry writes and
+completion are committed atomically, so a
 retry cannot leave a partially persisted batch. Docker Compose and Helm include
 the queue worker deployment; production use still requires validating the
 deployment and database capacity in the target environment.

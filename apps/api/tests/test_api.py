@@ -148,11 +148,17 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     assert accepted.json()["status"] == "pending"
     retried = client.post(
         f"/api/v1/buoys/{buoy_id}/telemetry",
-        json={"temperatures": [{"temperature_celsius": 20.5}]},
+        json={"temperatures": [{"temperature_celsius": 19.5}]},
         headers=headers,
     )
     assert retried.status_code == 202
     assert retried.json()["job_id"] == accepted.json()["job_id"]
+    conflicting_retry = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"temperatures": [{"temperature_celsius": 20.5}]},
+        headers=headers,
+    )
+    assert conflicting_retry.status_code == 409
     status_response = client.get(accepted.json()["status_url"])
     assert status_response.status_code == 200
     assert status_response.json()["job_id"] == accepted.json()["job_id"]
@@ -165,7 +171,7 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
         db.commit()
     completed_retry = client.post(
         f"/api/v1/buoys/{buoy_id}/telemetry",
-        json={"temperatures": [{"temperature_celsius": 20.5}]},
+        json={"temperatures": [{"temperature_celsius": 19.5}]},
         headers=headers,
     )
     assert completed_retry.status_code == 200

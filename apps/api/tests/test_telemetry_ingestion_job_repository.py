@@ -11,6 +11,7 @@ from app.fleet_entities import BuoyEntity, DeviceEntity
 from app.sensor_entities import TemperatureReadingEntity
 from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
 from app.telemetry_job_worker import process_next_telemetry_job
 
 
@@ -84,6 +85,37 @@ def test_enqueue_returns_existing_job_for_repeated_idempotency_key(job_repositor
     assert repeated.job_id == first.job_id
     assert repeated.payload == first.payload
     assert repeated.idempotency_key == "simulator-cycle-1"
+
+
+def test_idempotency_key_rejects_a_different_request_fingerprint(job_repository) -> None:
+    job_repository.enqueue(
+        "TW-JOB",
+        {"temperatures": [{"temperature_celsius": 19.5}]},
+        idempotency_key="cycle-with-fingerprint",
+        idempotency_fingerprint="a" * 64,
+    )
+
+    with pytest.raises(TelemetryJobIdempotencyConflict):
+        job_repository.enqueue(
+            "TW-JOB",
+            {"temperatures": [{"temperature_celsius": 20.5}]},
+            idempotency_key="cycle-with-fingerprint",
+            idempotency_fingerprint="b" * 64,
+        )
+
+
+def test_same_request_fingerprint_returns_the_existing_job(job_repository) -> None:
+    original = job_repository.enqueue(
+        "TW-JOB", {"temperatures": []}, idempotency_key="same-request",
+        idempotency_fingerprint="c" * 64,
+    )
+
+    repeated = job_repository.enqueue(
+        "TW-JOB", {"temperatures": []}, idempotency_key="same-request",
+        idempotency_fingerprint="c" * 64,
+    )
+
+    assert repeated.job_id == original.job_id
 
 
 def test_idempotency_key_is_scoped_to_its_buoy(job_repository) -> None:

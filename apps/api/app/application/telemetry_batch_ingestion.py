@@ -121,6 +121,7 @@ def process_telemetry_batch(
     idempotency_key: str | None = None,
     queued_mode: bool = False,
     clock_observation_at: datetime | None = None,
+    idempotency_fingerprint: str | None = None,
 ) -> TelemetryIngestOutcome | TelemetryQueuedOutcome:
     if not gateway.buoy_exists(buoy_id):
         raise TelemetryBuoyNotFound("Buoy not found")
@@ -208,6 +209,7 @@ def process_telemetry_batch(
             payload.as_json_mapping(),
             now=clock_observation_at,
             idempotency_key=idempotency_key,
+            idempotency_fingerprint=idempotency_fingerprint,
         )
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
         return TelemetryQueuedOutcome(

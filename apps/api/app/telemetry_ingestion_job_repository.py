@@ -7,7 +7,10 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .domain.telemetry_job import TelemetryIngestionJobSnapshot
+from .domain.telemetry_job import (
+    TelemetryIngestionJobSnapshot,
+    TelemetryJobIdempotencyConflict,
+)
 from .telemetry_entities import TelemetryIngestionJobEntity
 from .application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 
@@ -24,16 +27,19 @@ class TelemetryIngestionJobRepository:
         payload: dict,
         now: datetime | None = None,
         idempotency_key: str | None = None,
+        idempotency_fingerprint: str | None = None,
     ) -> TelemetryIngestionJobSnapshot:
         created_at = now or datetime.now(timezone.utc)
         if idempotency_key is not None:
             existing = self._by_idempotency_key(buoy_id, idempotency_key)
             if existing is not None:
+                self._assert_same_request(existing, idempotency_fingerprint)
                 return self._snapshot(existing)
         entity = TelemetryIngestionJobEntity(
             id=uuid4().hex,
             buoy_id=buoy_id,
             idempotency_key=idempotency_key,
+            idempotency_fingerprint=idempotency_fingerprint,
             payload=payload,
             status="pending",
             attempts=0,
@@ -52,9 +58,22 @@ class TelemetryIngestionJobRepository:
             )
             if existing is None:
                 raise
+            self._assert_same_request(existing, idempotency_fingerprint)
             return self._snapshot(existing)
         self.db.refresh(entity)
         return self._snapshot(entity)
+
+    @staticmethod
+    def _assert_same_request(
+        entity: TelemetryIngestionJobEntity, fingerprint: str | None
+    ) -> None:
+        if (
+            entity.idempotency_fingerprint is not None
+            and entity.idempotency_fingerprint != fingerprint
+        ):
+            raise TelemetryJobIdempotencyConflict(
+                "Idempotency-Key was already used with a different telemetry batch"
+            )
 
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
         entity = self.db.get(TelemetryIngestionJobEntity, job_id)

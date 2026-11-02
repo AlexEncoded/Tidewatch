@@ -76,6 +76,9 @@ def test_telemetry_job_idempotency_migration_upgrades_existing_queue(tmp_path, m
     assert "idempotency_key" in {
         column["name"] for column in inspector.get_columns("telemetry_ingestion_jobs")
     }
+    assert "idempotency_fingerprint" in {
+        column["name"] for column in inspector.get_columns("telemetry_ingestion_jobs")
+    }
     assert any(
         constraint["name"] == "uq_telemetry_job_buoy_idempotency"
         for constraint in inspector.get_unique_constraints("telemetry_ingestion_jobs")
