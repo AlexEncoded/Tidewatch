@@ -10,17 +10,12 @@ from ..application.maintenance_notifications import (
     maintenance_notification_idempotency_key,
 )
 from ..adapter_dependencies import (
+    get_maintenance_metrics,
     get_maintenance_notification_job_store,
     get_maintenance_reader,
 )
-from ..application.maintenance_ports import MaintenanceReader
+from ..application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
-from ..metrics import (
-    battery_delta_percent,
-    battery_device_percent,
-    buoy_movement_speed_mps,
-    redundant_device_missing,
-)
 from ..schemas.maintenance import (
     MaintenanceIssue,
     MaintenanceNotificationJobStatus,
@@ -34,6 +29,7 @@ router = APIRouter()
 
 def _evaluate_and_publish_maintenance_metrics(
     reader: MaintenanceReader,
+    metrics: MaintenanceMetrics,
     max_age_minutes: float,
     drift_speed_mps: float,
 ) -> list[MaintenanceIssue]:
@@ -41,35 +37,9 @@ def _evaluate_and_publish_maintenance_metrics(
     for buoy, evaluation in evaluate_maintenance_fleet(
         reader, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
     ):
-        for device_id, percentage in (
-            ("A", evaluation.battery_health.device_a_percent),
-            ("B", evaluation.battery_health.device_b_percent),
-        ):
-            if percentage is not None:
-                battery_device_percent.labels(
-                    buoy_id=buoy.buoy_id, device_id=device_id
-                ).set(percentage)
-        if evaluation.battery_health.delta_percent is not None:
-            battery_delta_percent.labels(buoy_id=buoy.buoy_id).set(
-                evaluation.battery_health.delta_percent
-            )
-        available_battery_devices = [
-            device_id
-            for device_id, percentage in (
-                ("A", evaluation.battery_health.device_a_percent),
-                ("B", evaluation.battery_health.device_b_percent),
-            )
-            if percentage is not None
-        ]
-        for device_id in ("A", "B"):
-            redundant_device_missing.labels(
-                buoy_id=buoy.buoy_id, device_id=device_id
-            ).set(0 if device_id in available_battery_devices else 1)
-
-        if evaluation.average_speed_mps is not None:
-            buoy_movement_speed_mps.labels(buoy_id=buoy.buoy_id).set(
-                evaluation.average_speed_mps
-            )
+        metrics.record_evaluation(
+            buoy.buoy_id, evaluation.battery_health, evaluation.average_speed_mps
+        )
         issues.extend(
             MaintenanceIssue.model_validate(issue, from_attributes=True)
             for issue in evaluation.issues
@@ -86,9 +56,10 @@ def maintenance_issues(
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     drift_speed_mps: float = Query(default=1.0, gt=0, le=100),
     reader: MaintenanceReader = Depends(get_maintenance_reader),
+    metrics: MaintenanceMetrics = Depends(get_maintenance_metrics),
 ) -> list[MaintenanceIssue]:
     return _evaluate_and_publish_maintenance_metrics(
-        reader, max_age_minutes, drift_speed_mps
+        reader, metrics, max_age_minutes, drift_speed_mps
     )
 
 
@@ -105,6 +76,7 @@ def notify_maintenance(
         default=None, alias="Idempotency-Key", min_length=1, max_length=64
     ),
     reader: MaintenanceReader = Depends(get_maintenance_reader),
+    metrics: MaintenanceMetrics = Depends(get_maintenance_metrics),
     jobs: MaintenanceNotificationJobStore = Depends(
         get_maintenance_notification_job_store
     ),
@@ -117,7 +89,7 @@ def notify_maintenance(
         )
 
     issues = _evaluate_and_publish_maintenance_metrics(
-        reader, max_age_minutes, drift_speed_mps
+        reader, metrics, max_age_minutes, drift_speed_mps
     )
     payload = build_maintenance_notification_payload(issues)
     requested_at = datetime.now(timezone.utc)

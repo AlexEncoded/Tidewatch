@@ -12,7 +12,7 @@ from .application.analysis_ports import (
     WaveAnalysisMetrics,
     WaveAnalysisReader,
 )
-from .application.maintenance_ports import MaintenanceReader
+from .application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from .application.maintenance_notification_ports import MaintenanceNotificationJobStore
 from .application.quality_ports import QualitySummaryReader
 from .application.sensor_health_ports import (
@@ -96,6 +96,7 @@ from .maintenance_notification_job_repository import MaintenanceNotificationJobR
 from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
 from .prometheus_wave_analysis_metrics import PrometheusWaveAnalysisMetrics
+from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -159,6 +160,11 @@ def get_maintenance_reader(
 ) -> MaintenanceReader:
     """Compose fleet maintenance queries with the SQL repository adapter."""
     return MaintenanceRepository(db)
+
+
+def get_maintenance_metrics() -> MaintenanceMetrics:
+    """Compose maintenance metrics with the Prometheus adapter."""
+    return PrometheusMaintenanceMetrics()
 
 
 def get_maintenance_notification_job_store(

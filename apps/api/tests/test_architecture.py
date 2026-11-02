@@ -486,9 +486,33 @@ def test_device_ports_are_grouped_by_context() -> None:
 
 
 def test_maintenance_reader_is_grouped_with_maintenance_ports() -> None:
-    from app.application.maintenance_ports import MaintenanceReader
+    from app.application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
 
     assert MaintenanceReader.__module__ == "app.application.maintenance_ports"
+    assert MaintenanceMetrics.__module__ == "app.application.maintenance_ports"
+
+
+def test_maintenance_router_uses_metrics_port_not_prometheus() -> None:
+    tree = ast.parse((API_APP / "routers" / "maintenance.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+    }
+    assert "..metrics" not in imported_modules
+
+    helper = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "_evaluate_and_publish_maintenance_metrics"
+    )
+    calls = {
+        node.func.attr
+        for node in ast.walk(helper)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+    assert "record_evaluation" in calls
 
 
 def test_wave_analysis_reader_is_grouped_with_cross_context_analysis_ports() -> None:
