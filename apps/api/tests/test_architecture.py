@@ -1493,6 +1493,18 @@ def test_system_router_uses_queue_metrics_publisher_port() -> None:
     assert "application.telemetry_ports" in imported_modules
 
 
+def test_battery_router_uses_metrics_port_instead_of_prometheus() -> None:
+    tree = ast.parse((API_APP / "routers" / "battery.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "metrics" not in imported_modules
+    assert "application.battery_ports" in imported_modules
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {

@@ -40,3 +40,26 @@ class BatteryTelemetryReader(Protocol):
         physical_device_id: str | None = None,
     ) -> BatteryTelemetrySnapshot | None:
         ...
+
+
+class BatteryMetrics(Protocol):
+    """Publish battery readings, associated heartbeats, and health summaries."""
+
+    def record_reading(
+        self,
+        buoy_id: str,
+        battery_percent: float,
+        physical_device_id: str | None,
+        sensor_channel: str,
+        received_at: datetime,
+    ) -> None:
+        ...
+
+    def record_health(
+        self,
+        buoy_id: str,
+        device_a_percent: float | None,
+        device_b_percent: float | None,
+        delta_percent: float | None,
+    ) -> None:
+        ...

@@ -10,15 +10,8 @@ from ..application.battery_health import analyze_battery_health_for_buoy
 from ..application.telemetry_ingestion import build_battery_snapshot
 from ..domain.devices import DeviceOwnershipError
 from ..domain.devices import validate_device_ownership
-from ..adapter_dependencies import get_battery_telemetry_reader
-from ..application.battery_ports import BatteryTelemetryReader
-from ..metrics import (
-    battery_delta_percent,
-    battery_device_percent,
-    battery_percent,
-    buoy_last_seen_timestamp_seconds,
-    device_last_seen_timestamp_seconds,
-)
+from ..adapter_dependencies import get_battery_metrics, get_battery_telemetry_reader
+from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from ..schemas.battery import (
     BatteryAnalysis,
     BatteryHealth,
@@ -39,6 +32,7 @@ def record_battery(
     buoy_id: str,
     payload: BatteryReadingCreate,
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
+    metrics: BatteryMetrics = Depends(get_battery_metrics),
 ) -> BatteryReading:
     ensure_buoy_exists(reader, buoy_id)
     battery = build_battery_snapshot(buoy_id, payload.model_dump())
@@ -49,15 +43,12 @@ def record_battery(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
-    battery_percent.labels(buoy_id=buoy_id).set(battery.battery_percent)
-    if saved_battery.physical_device_id is not None:
-        device_last_seen_timestamp_seconds.labels(
-            buoy_id=buoy_id,
-            device_id=saved_battery.physical_device_id,
-            sensor_channel=saved_battery.device_id,
-        ).set(received_at.timestamp())
-    buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-        received_at.timestamp()
+    metrics.record_reading(
+        buoy_id,
+        battery.battery_percent,
+        saved_battery.physical_device_id,
+        saved_battery.device_id,
+        received_at,
     )
     return saved_battery
 
@@ -118,12 +109,14 @@ def battery_health(
     buoy_id: str,
     threshold: float = Query(default=10, gt=0, le=100),
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
+    metrics: BatteryMetrics = Depends(get_battery_metrics),
 ) -> BatteryHealth:
     ensure_buoy_exists(reader, buoy_id)
     result = analyze_battery_health_for_buoy(reader, buoy_id, threshold)
-    for device_id, percentage in (("A", result.device_a_percent), ("B", result.device_b_percent)):
-        if percentage is not None:
-            battery_device_percent.labels(buoy_id=buoy_id, device_id=device_id).set(percentage)
-    if result.delta_percent is not None:
-        battery_delta_percent.labels(buoy_id=buoy_id).set(result.delta_percent)
+    metrics.record_health(
+        buoy_id,
+        result.device_a_percent,
+        result.device_b_percent,
+        result.delta_percent,
+    )
     return BatteryHealth.model_validate(result, from_attributes=True)

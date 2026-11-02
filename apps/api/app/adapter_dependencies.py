@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .application.system_ports import DatabaseHealthReader
 from .application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
-from .application.battery_ports import BatteryTelemetryReader
+from .application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from .application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
@@ -101,6 +101,7 @@ from .prometheus_wave_analysis_metrics import PrometheusWaveAnalysisMetrics
 from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
 from .prometheus_fleet_metrics import PrometheusFleetMetrics
 from .prometheus_telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
+from .prometheus_battery_metrics import PrometheusBatteryMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -256,6 +257,11 @@ def get_battery_telemetry_reader(
 ) -> BatteryTelemetryReader:
     """Compose battery telemetry operations with the SQL repository adapter."""
     return BatteryRepository(db)
+
+
+def get_battery_metrics() -> BatteryMetrics:
+    """Compose battery observability with its Prometheus adapter."""
+    return PrometheusBatteryMetrics()
 
 
 def get_temperature_telemetry_gateway(
