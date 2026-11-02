@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import importlib.util
 from pathlib import Path
+import sys
 
 from app.domain.wave import estimate_fused_wave_period
 from app.schemas.ingestion import TelemetryBatchCreate
@@ -237,6 +238,35 @@ def test_simulator_creates_buoy_at_simulated_gnss_origin(monkeypatch) -> None:
         "latitude": SIMULATOR.SIMULATED_LATITUDE,
         "longitude": SIMULATOR.SIMULATED_LONGITUDE,
     }
+
+
+def test_simulator_keeps_the_other_unit_reporting_during_outage(
+    monkeypatch, capsys
+) -> None:
+    devices = {
+        "A": {"device_id": "physical-unit-a", "sensor_channel": "A"},
+        "B": {"device_id": "physical-unit-b", "sensor_channel": "B"},
+    }
+    requests = []
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["telemetry_simulator.py", "--buoy-id", "buoy-1", "--once", "--offline-device", "B"],
+    )
+    monkeypatch.setattr(SIMULATOR, "ensure_simulator_devices", lambda *_: devices)
+
+    def fake_request_json(url, method, payload=None):
+        requests.append((url, method, payload))
+        return {"accepted_readings": 1}
+
+    monkeypatch.setattr(SIMULATOR, "request_json", fake_request_json)
+
+    SIMULATOR.main()
+
+    telemetry_requests = [request for request in requests if request[1] == "POST"]
+    assert len(telemetry_requests) == 1
+    assert telemetry_requests[0][2]["device_id"] == "physical-unit-a"
+    assert "Device B: simulated offline" in capsys.readouterr().out
 
 
 def test_simulator_reuses_devices_already_registered(monkeypatch) -> None:

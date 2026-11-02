@@ -340,6 +340,13 @@ def parse_args() -> argparse.Namespace:
         default=SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS,
         help="Simulated clock offset for redundant device B (default: 1.5 seconds)",
     )
+    parser.add_argument(
+        "--offline-device",
+        choices=("A", "B"),
+        action="append",
+        default=[],
+        help="Simulate a physical unit outage; may be specified more than once",
+    )
     parser.add_argument("--once", action="store_true", help="Send one batch and exit")
     return parser.parse_args()
 
@@ -362,6 +369,9 @@ def main() -> None:
             device_b_clock_offset_seconds=args.device_b_clock_offset_seconds,
         )
         for channel, payload in payloads.items():
+            if channel in args.offline_device:
+                print(f"Device {channel}: simulated offline; telemetry not sent")
+                continue
             try:
                 result = request_json(
                     f"{api_url}/api/v1/buoys/{buoy_id}/telemetry",

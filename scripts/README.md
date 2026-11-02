@@ -27,11 +27,14 @@ Para enviar un único lote o reutilizar una boya existente:
 python scripts/telemetry_simulator.py --once
 python scripts/telemetry_simulator.py --buoy-id TW-XXXXXXXX --interval 5
 python scripts/telemetry_simulator.py --buoy-id TW-XXXXXXXX --device-b-clock-offset-seconds 125
+python scripts/telemetry_simulator.py --buoy-id TW-XXXXXXXX --once --offline-device B
 ```
 
 El simulador mantiene cada lote sincronizado internamente y aplica por defecto
 un desfase de reloj de 1,5 segundos a la unidad B. Usa la opción para explorar
 desfases mayores y validar las métricas y alertas de reloj sin hardware real.
+Usa `--offline-device A` o `--offline-device B` para simular una unidad caída y
+comprobar que la unidad redundante sigue reportando.
 
 ## Evaluación experimental del oleaje
 
