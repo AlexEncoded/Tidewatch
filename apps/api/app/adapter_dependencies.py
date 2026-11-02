@@ -34,6 +34,7 @@ from .application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryMetrics,
+    TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
 )
 from .application.sensor_ports import (
@@ -99,6 +100,7 @@ from .prometheus_telemetry_metrics import PrometheusTelemetryMetrics
 from .prometheus_wave_analysis_metrics import PrometheusWaveAnalysisMetrics
 from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
 from .prometheus_fleet_metrics import PrometheusFleetMetrics
+from .prometheus_telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -155,6 +157,11 @@ def get_telemetry_queue_metrics_reader(
 ) -> TelemetryQueueMetricsReader:
     """Provide queue state as a read-only observability port."""
     return TelemetryIngestionJobRepository(db)
+
+
+def get_telemetry_queue_metrics_publisher() -> TelemetryQueueMetricsPublisher:
+    """Compose telemetry queue observability with its Prometheus adapter."""
+    return PrometheusTelemetryQueueMetrics()
 
 
 def get_maintenance_reader(

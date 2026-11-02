@@ -40,6 +40,16 @@ class TelemetryQueueMetricsReader(Protocol):
         ...
 
 
+class TelemetryQueueMetricsPublisher(Protocol):
+    """Publish a queue snapshot and the outcome of its collection."""
+
+    def publish_snapshot(self, snapshot: dict[str, int | float]) -> None:
+        ...
+
+    def record_collection_failure(self) -> None:
+        ...
+
+
 @runtime_checkable
 class TelemetryIngestionJobStore(Protocol):
     """Enqueue and read durable telemetry jobs without exposing a SQL adapter."""
