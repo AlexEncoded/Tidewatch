@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 class TelemetryJobAcceptedResponse(BaseModel):
     job_id: str
-    status: Literal["pending"]
+    status: Literal["pending", "processing", "completed", "failed"]
     status_url: str
 
 

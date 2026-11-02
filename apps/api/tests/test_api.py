@@ -158,9 +158,22 @@ def test_queued_telemetry_returns_job_location_and_hides_payload(monkeypatch) ->
     assert status_response.json()["job_id"] == accepted.json()["job_id"]
     assert status_response.json()["status"] == "pending"
     assert "payload" not in status_response.json()
+    with SessionLocal() as db:
+        job = db.get(TelemetryIngestionJobEntity, accepted.json()["job_id"])
+        job.status = "completed"
+        job.completed_at = datetime.now(timezone.utc)
+        db.commit()
+    completed_retry = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"temperatures": [{"temperature_celsius": 20.5}]},
+        headers=headers,
+    )
+    assert completed_retry.status_code == 200
+    assert completed_retry.json()["job_id"] == accepted.json()["job_id"]
+    assert completed_retry.json()["status"] == "completed"
     metrics = client.get("/metrics")
     assert metrics.status_code == 200
-    assert 'tidewatch_telemetry_ingestion_jobs{status="pending"} 1.0' in metrics.text
+    assert 'tidewatch_telemetry_ingestion_jobs{status="completed"} 1.0' in metrics.text
     assert "tidewatch_telemetry_ingestion_oldest_pending_seconds" in metrics.text
 
 

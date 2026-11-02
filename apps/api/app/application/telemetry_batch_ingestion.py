@@ -62,6 +62,7 @@ class TelemetryIngestOutcome:
 @dataclass(frozen=True)
 class TelemetryQueuedOutcome:
     job_id: str
+    status: str
     status_url: str
 
 
@@ -209,7 +210,9 @@ def process_telemetry_batch(
             idempotency_key=idempotency_key,
         )
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
-        return TelemetryQueuedOutcome(job_id=job.job_id, status_url=status_url)
+        return TelemetryQueuedOutcome(
+            job_id=job.job_id, status=job.status, status_url=status_url
+        )
 
     if payload.location is not None:
         location = build_location_snapshot(

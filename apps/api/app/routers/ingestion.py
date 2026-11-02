@@ -80,10 +80,14 @@ def ingest_telemetry(
         ) from None
 
     if isinstance(outcome, TelemetryQueuedOutcome):
-        response.status_code = status.HTTP_202_ACCEPTED
+        response.status_code = (
+            status.HTTP_200_OK
+            if outcome.status in {"completed", "failed"}
+            else status.HTTP_202_ACCEPTED
+        )
         response.headers["Location"] = outcome.status_url
         return TelemetryJobAcceptedResponse(
-            job_id=outcome.job_id, status="pending", status_url=outcome.status_url
+            job_id=outcome.job_id, status=outcome.status, status_url=outcome.status_url
         )
     assert isinstance(outcome, TelemetryIngestOutcome)
     return TelemetryIngestResponse(
