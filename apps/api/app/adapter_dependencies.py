@@ -3,7 +3,7 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from .application.system_ports import DatabaseHealthReader
+from .application.system_ports import DatabaseHealthReader, MetricsScraper
 from .application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
 from .application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from .application.analysis_ports import (
@@ -103,6 +103,7 @@ from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
 from .prometheus_fleet_metrics import PrometheusFleetMetrics
 from .prometheus_telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
 from .prometheus_battery_metrics import PrometheusBatteryMetrics
+from .prometheus_metrics_scraper import PrometheusMetricsScraper
 from .prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
@@ -196,6 +197,11 @@ def get_database_health_reader(
 ) -> DatabaseHealthReader:
     """Compose database-health checks with the SQL adapter."""
     return SQLDatabaseHealthReader(db)
+
+
+def get_metrics_scraper() -> MetricsScraper:
+    """Compose process-metric export with the Prometheus adapter."""
+    return PrometheusMetricsScraper()
 
 
 def get_buoy_summary_reader(

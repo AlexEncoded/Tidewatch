@@ -4,13 +4,13 @@ import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from ..adapter_dependencies import (
     get_database_health_reader,
+    get_metrics_scraper,
     get_telemetry_queue_metrics_reader,
     get_telemetry_queue_metrics_publisher,
 )
-from ..application.system_ports import DatabaseHealthReader
+from ..application.system_ports import DatabaseHealthReader, MetricsScraper
 from ..application.telemetry_ports import (
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
@@ -36,6 +36,7 @@ def metrics(
     publisher: TelemetryQueueMetricsPublisher = Depends(
         get_telemetry_queue_metrics_publisher
     ),
+    scraper: MetricsScraper = Depends(get_metrics_scraper),
 ) -> Response:
     try:
         snapshot = reader.observability_snapshot()
@@ -43,4 +44,7 @@ def metrics(
     except TelemetryQueueMetricsUnavailable:
         publisher.record_collection_failure()
         logger.exception("telemetry_queue_metrics_refresh_failed")
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    return Response(
+        content=scraper.render(),
+        headers={"Content-Type": scraper.content_type},
+    )

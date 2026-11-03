@@ -37,3 +37,14 @@ class HttpRequestMetrics(Protocol):
         self, method: str, status_code: int, duration_seconds: float
     ) -> None:
         ...
+
+
+class MetricsScraper(Protocol):
+    """Render the process metrics payload and its media type."""
+
+    def render(self) -> bytes:
+        ...
+
+    @property
+    def content_type(self) -> str:
+        ...
