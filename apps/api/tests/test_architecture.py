@@ -1535,6 +1535,22 @@ def test_sensor_router_uses_telemetry_metrics_port_not_prometheus() -> None:
     assert "application.telemetry_ports" in imported_modules
 
 
+def test_batch_ingestion_reuses_sensor_reading_metrics_publisher() -> None:
+    tree = ast.parse(
+        (API_APP / "application" / "telemetry_batch_ingestion.py").read_text(
+            encoding="utf-8"
+        )
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "record_sensor_reading_metrics" in calls
+    assert "record_quality_metric" not in calls
+
+
 def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
     tree = ast.parse((API_APP / "availability_metrics.py").read_text(encoding="utf-8"))
     imported_modules = {
