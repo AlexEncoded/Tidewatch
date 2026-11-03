@@ -87,6 +87,8 @@ class TelemetryBatchCreate(BaseModel):
             or self.underwater_acoustic
             or self.battery
             or self.location
+            or self.device_runtime
+            or self.device_communications
         ):
             raise ValueError("Telemetry batch must contain at least one reading")
         if self.device_runtime is not None and self.device_id is None:

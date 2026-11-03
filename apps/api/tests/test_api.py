@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 from typing import get_args
 
+import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from sqlalchemy import delete
@@ -751,6 +752,36 @@ def test_batch_telemetry_publishes_per_device_runtime_metrics() -> None:
             and f'device_id="{device_id}"' in line
         )
         assert float(sample.rsplit(" ", 1)[-1]) == expected
+
+
+@pytest.mark.parametrize(
+    ("field", "report"),
+    (
+        (
+            "device_runtime",
+            {"cpu_usage_percent": 73.5, "memory_usage_percent": 81.25},
+        ),
+        ("device_communications", {"packet_loss_percent": 7.5}),
+    ),
+)
+def test_device_health_only_batch_is_accepted(field: str, report: dict) -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": f"Health Only {field} Buoy"}
+    ).json()["id"]
+    device_id = f"health-only-{field}"
+    registered = client.post(
+        f"/api/v1/buoys/{buoy_id}/devices",
+        json={"device_id": device_id, "sensor_channel": "A"},
+    )
+    assert registered.status_code == 201
+
+    response = client.post(
+        f"/api/v1/buoys/{buoy_id}/telemetry",
+        json={"device_id": device_id, field: report},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["accepted_readings"] == 0
 
 
 def test_batch_telemetry_rejects_out_of_range_device_runtime_metrics() -> None:
