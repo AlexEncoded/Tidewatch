@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
 from .availability_metrics import initialize_availability_metrics
+from .prometheus_availability_metrics import PrometheusAvailabilityMetrics
 from .database import SessionLocal
 from .telemetry import configure_telemetry
 from .metrics import http_request_duration_seconds, http_requests_total
@@ -30,7 +31,7 @@ logger = logging.getLogger("tidewatch.api")
 async def lifespan(_: FastAPI):
     try:
         with SessionLocal() as session:
-            initialize_availability_metrics(session)
+            initialize_availability_metrics(session, PrometheusAvailabilityMetrics())
     except SQLAlchemyError:
         logger.exception("availability_metrics_initialization_failed")
     yield

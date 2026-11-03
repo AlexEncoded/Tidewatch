@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .fleet_entities import BuoyEntity, DeviceEntity
-from .metrics import buoy_last_seen_timestamp_seconds, device_last_seen_timestamp_seconds
+from .application.system_ports import AvailabilityMetrics
 
 
 def _timestamp(value: datetime | None) -> float:
@@ -17,7 +17,9 @@ def _timestamp(value: datetime | None) -> float:
     return value.timestamp()
 
 
-def initialize_availability_metrics(session: Session) -> None:
+def initialize_availability_metrics(
+    session: Session, metrics: AvailabilityMetrics
+) -> None:
     """Restore all registered buoy and device heartbeat series after startup."""
     buoys = session.execute(select(BuoyEntity.id, BuoyEntity.last_seen_at)).all()
     devices = session.execute(
@@ -32,19 +34,14 @@ def initialize_availability_metrics(session: Session) -> None:
     buoy_timestamps = {
         buoy_id: _timestamp(last_seen_at) for buoy_id, last_seen_at in buoys
     }
-    buoy_last_seen_timestamp_seconds.clear()
-    device_last_seen_timestamp_seconds.clear()
+    metrics.clear()
     for buoy_id, device_id, sensor_channel, last_seen_at in devices:
         device_timestamp = _timestamp(last_seen_at)
-        device_last_seen_timestamp_seconds.labels(
-            buoy_id=buoy_id,
-            device_id=device_id,
-            sensor_channel=sensor_channel,
-        ).set(device_timestamp)
+        metrics.record_device_heartbeat(
+            buoy_id, device_id, sensor_channel, device_timestamp
+        )
         buoy_timestamps[buoy_id] = max(
             buoy_timestamps.get(buoy_id, 0.0), device_timestamp
         )
     for buoy_id, last_seen_timestamp in buoy_timestamps.items():
-        buoy_last_seen_timestamp_seconds.labels(buoy_id=buoy_id).set(
-            last_seen_timestamp
-        )
+        metrics.record_buoy_heartbeat(buoy_id, last_seen_timestamp)

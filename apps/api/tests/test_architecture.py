@@ -1535,6 +1535,18 @@ def test_sensor_router_uses_telemetry_metrics_port_not_prometheus() -> None:
     assert "application.telemetry_ports" in imported_modules
 
 
+def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
+    tree = ast.parse((API_APP / "availability_metrics.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "metrics" not in imported_modules
+    assert "application.system_ports" in imported_modules
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {

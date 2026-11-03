@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.availability_metrics import initialize_availability_metrics
 from app.database import Base
 from app.fleet_entities import BuoyEntity, DeviceEntity
+from app.prometheus_availability_metrics import PrometheusAvailabilityMetrics
 
 
 def test_initialize_availability_metrics_includes_unseen_registered_entities() -> None:
@@ -61,7 +62,7 @@ def test_initialize_availability_metrics_includes_unseen_registered_entities() -
         )
         session.commit()
 
-        initialize_availability_metrics(session)
+        initialize_availability_metrics(session, PrometheusAvailabilityMetrics())
 
     metrics = generate_latest().decode("utf-8")
     assert (
