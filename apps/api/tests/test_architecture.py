@@ -1587,6 +1587,29 @@ def test_system_router_uses_metrics_scraper_instead_of_prometheus_client() -> No
     assert "application.system_ports" in imported_modules
 
 
+def test_http_routers_do_not_import_prometheus_or_metric_instruments() -> None:
+    for router_path in (API_APP / "routers").glob("*.py"):
+        tree = ast.parse(router_path.read_text(encoding="utf-8"))
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module
+        }
+        imported_names = {
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+
+        assert "metrics" not in imported_modules, router_path.name
+        assert "app.metrics" not in imported_modules, router_path.name
+        assert not any(
+            module.startswith("prometheus_client") for module in imported_modules
+        ), router_path.name
+        assert "prometheus_client" not in imported_names, router_path.name
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {
