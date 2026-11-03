@@ -1505,6 +1505,24 @@ def test_battery_router_uses_metrics_port_instead_of_prometheus() -> None:
     assert "application.battery_ports" in imported_modules
 
 
+def test_sensor_health_publication_uses_metrics_port() -> None:
+    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    helper = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "_evaluate_and_publish_sensor_health"
+    )
+    metric_calls = {
+        node.func.attr
+        for node in ast.walk(helper)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+
+    assert "record_evaluation" in metric_calls
+    assert "labels" not in metric_calls
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {

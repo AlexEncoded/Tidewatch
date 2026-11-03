@@ -17,6 +17,7 @@ from .application.maintenance_notification_ports import MaintenanceNotificationJ
 from .application.quality_ports import QualitySummaryReader
 from .application.sensor_health_ports import (
     SensorHealthCheckGateway,
+    SensorHealthMetrics,
     SensorHealthReader,
 )
 from .application.fleet_ports import (
@@ -102,6 +103,7 @@ from .prometheus_maintenance_metrics import PrometheusMaintenanceMetrics
 from .prometheus_fleet_metrics import PrometheusFleetMetrics
 from .prometheus_telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
 from .prometheus_battery_metrics import PrometheusBatteryMetrics
+from .prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
 from .maintenance_repository import MaintenanceRepository
 from .wave_analysis_repository import WaveAnalysisRepository
 
@@ -118,6 +120,11 @@ def get_sensor_health_reader(
 ) -> SensorHealthReader:
     """Compose redundant sensor-health queries with the SQL adapter."""
     return SensorHealthRepository(db)
+
+
+def get_sensor_health_metrics() -> SensorHealthMetrics:
+    """Compose sensor-health observability with its Prometheus adapter."""
+    return PrometheusSensorHealthMetrics()
 
 
 def get_sensor_health_check_gateway(

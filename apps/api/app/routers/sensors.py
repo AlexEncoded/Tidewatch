@@ -24,6 +24,7 @@ from ..adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
 from ..adapter_dependencies import get_underwater_acoustic_telemetry_gateway
 from ..adapter_dependencies import get_sensor_health_reader
 from ..adapter_dependencies import get_sensor_health_check_gateway
+from ..adapter_dependencies import get_sensor_health_metrics
 from ..application.sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     AirTemperatureTelemetryGateway,
@@ -46,6 +47,7 @@ from ..application.sensor_ports import (
 )
 from ..application.sensor_health_ports import (
     SensorHealthCheckGateway,
+    SensorHealthMetrics,
     SensorHealthReader,
 )
 from ..application.sensor_health import (
@@ -99,9 +101,6 @@ from ..metrics import (
     current_ambient_light_lux,
     current_wind_speed_mps,
     current_wind_direction_degrees,
-    sensor_channel_missing,
-    sensor_degraded,
-    sensor_health_decision,
     current_ph,
     current_chlorophyll_a_ug_l,
     current_conductivity_us_cm,
@@ -169,7 +168,10 @@ def record_buoy_heartbeat(buoy_id: str) -> None:
 
 
 def _evaluate_and_publish_sensor_health(
-    reader: SensorHealthReader, buoy_id: str, max_age_minutes: float
+    reader: SensorHealthReader,
+    metrics: SensorHealthMetrics,
+    buoy_id: str,
+    max_age_minutes: float,
 ) -> SensorHealthEvaluationSnapshot:
     snapshot = evaluate_sensor_health_snapshot(
         reader,
@@ -177,28 +179,13 @@ def _evaluate_and_publish_sensor_health(
         max_age_minutes * 60,
         datetime.now(timezone.utc),
     )
-    degraded_sensors = snapshot.evaluation.degraded_sensors
-    missing_sensors = snapshot.evaluation.missing_sensors
-
-    for sensor, channels in snapshot.readings.items():
-        has_reading = any(channels.values())
-        for channel, reading in channels.items():
-            sensor_channel_missing.labels(
-                buoy_id=buoy_id, sensor=sensor, sensor_channel=channel
-            ).set(1 if has_reading and not reading else 0)
-        sensor_degraded.labels(buoy_id=buoy_id, sensor=sensor).set(
-            1 if sensor in degraded_sensors or any(
-                missing.startswith(f"{sensor}:") for missing in missing_sensors
-            ) else 0
-        )
-
-    for sensor in snapshot.readings:
-        for decision in ("average", "fallback_a", "fallback_b", "invalid"):
-            sensor_health_decision.labels(
-                buoy_id=buoy_id, sensor=sensor, decision=decision
-            ).set(
-                1 if snapshot.evaluation.decisions[sensor] == decision else 0
-            )
+    metrics.record_evaluation(
+        buoy_id,
+        snapshot.readings,
+        snapshot.evaluation.degraded_sensors,
+        snapshot.evaluation.missing_sensors,
+        snapshot.evaluation.decisions,
+    )
     return snapshot
 
 
@@ -748,12 +735,13 @@ def sensor_health(
     buoy_id: str,
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     reader: SensorHealthReader = Depends(get_sensor_health_reader),
+    metrics: SensorHealthMetrics = Depends(get_sensor_health_metrics),
 ) -> SensorHealth:
     if not reader.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
     snapshot = _evaluate_and_publish_sensor_health(
-        reader, buoy_id, max_age_minutes
+        reader, metrics, buoy_id, max_age_minutes
     )
     return SensorHealth.model_validate(snapshot.health, from_attributes=True)
 
@@ -768,11 +756,12 @@ def record_sensor_health_check(
     buoy_id: str,
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     gateway: SensorHealthCheckGateway = Depends(get_sensor_health_check_gateway),
+    metrics: SensorHealthMetrics = Depends(get_sensor_health_metrics),
 ) -> SensorHealthCheck:
     if not gateway.buoy_exists(buoy_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     snapshot = _evaluate_and_publish_sensor_health(
-        gateway, buoy_id, max_age_minutes
+        gateway, metrics, buoy_id, max_age_minutes
     )
     stored = persist_sensor_health_check(gateway, snapshot.health)
     return SensorHealthCheck.model_validate(stored, from_attributes=True)

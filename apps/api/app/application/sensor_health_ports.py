@@ -1,6 +1,7 @@
 """Application ports for redundant-sensor health evaluation and history."""
 
 from typing import Protocol, runtime_checkable
+from collections.abc import Mapping
 
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
@@ -23,6 +24,20 @@ from ..domain.telemetry import (
     WindTelemetrySnapshot,
 )
 from ..domain.temperature import TemperatureTelemetrySnapshot
+
+
+class SensorHealthMetrics(Protocol):
+    """Publish channel completeness and redundant sensor decisions."""
+
+    def record_evaluation(
+        self,
+        buoy_id: str,
+        readings: Mapping[str, Mapping[str, object | None]],
+        degraded_sensors: list[str],
+        missing_sensors: list[str],
+        decisions: Mapping[str, str],
+    ) -> None:
+        ...
 
 
 @runtime_checkable
