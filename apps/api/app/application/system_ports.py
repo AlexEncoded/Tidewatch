@@ -17,7 +17,7 @@ class AvailabilityMetrics(Protocol):
     def clear(self) -> None:
         ...
 
-    def record_device_heartbeat(
+    def restore_device_heartbeat(
         self,
         buoy_id: str,
         device_id: str,
@@ -26,7 +26,7 @@ class AvailabilityMetrics(Protocol):
     ) -> None:
         ...
 
-    def record_buoy_heartbeat(self, buoy_id: str, timestamp_seconds: float) -> None:
+    def restore_buoy_heartbeat(self, buoy_id: str, timestamp_seconds: float) -> None:
         ...
 
 

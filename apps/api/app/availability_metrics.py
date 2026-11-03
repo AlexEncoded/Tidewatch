@@ -37,11 +37,11 @@ def initialize_availability_metrics(
     metrics.clear()
     for buoy_id, device_id, sensor_channel, last_seen_at in devices:
         device_timestamp = _timestamp(last_seen_at)
-        metrics.record_device_heartbeat(
+        metrics.restore_device_heartbeat(
             buoy_id, device_id, sensor_channel, device_timestamp
         )
         buoy_timestamps[buoy_id] = max(
             buoy_timestamps.get(buoy_id, 0.0), device_timestamp
         )
     for buoy_id, last_seen_timestamp in buoy_timestamps.items():
-        metrics.record_buoy_heartbeat(buoy_id, last_seen_timestamp)
+        metrics.restore_buoy_heartbeat(buoy_id, last_seen_timestamp)

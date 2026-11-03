@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
 from .availability_metrics import initialize_availability_metrics
-from .prometheus_availability_metrics import PrometheusAvailabilityMetrics
+from .prometheus_fleet_metrics import PrometheusFleetMetrics
 from .prometheus_http_request_metrics import PrometheusHttpRequestMetrics
 from .database import SessionLocal
 from .telemetry import configure_telemetry
@@ -32,7 +32,7 @@ http_request_metrics = PrometheusHttpRequestMetrics()
 async def lifespan(_: FastAPI):
     try:
         with SessionLocal() as session:
-            initialize_availability_metrics(session, PrometheusAvailabilityMetrics())
+            initialize_availability_metrics(session, PrometheusFleetMetrics())
     except SQLAlchemyError:
         logger.exception("availability_metrics_initialization_failed")
     yield
