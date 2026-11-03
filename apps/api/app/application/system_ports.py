@@ -28,3 +28,12 @@ class AvailabilityMetrics(Protocol):
 
     def record_buoy_heartbeat(self, buoy_id: str, timestamp_seconds: float) -> None:
         ...
+
+
+class HttpRequestMetrics(Protocol):
+    """Record request volume and elapsed time for the API process."""
+
+    def record_request(
+        self, method: str, status_code: int, duration_seconds: float
+    ) -> None:
+        ...

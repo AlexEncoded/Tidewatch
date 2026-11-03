@@ -8,9 +8,9 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .availability_metrics import initialize_availability_metrics
 from .prometheus_availability_metrics import PrometheusAvailabilityMetrics
+from .prometheus_http_request_metrics import PrometheusHttpRequestMetrics
 from .database import SessionLocal
 from .telemetry import configure_telemetry
-from .metrics import http_request_duration_seconds, http_requests_total
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
 from .routers.telemetry import router as telemetry_router
@@ -25,6 +25,7 @@ from .routers.system import router as system_router
 
 
 logger = logging.getLogger("tidewatch.api")
+http_request_metrics = PrometheusHttpRequestMetrics()
 
 
 @asynccontextmanager
@@ -62,10 +63,9 @@ async def request_logging_middleware(request, call_next):
     started_at = time.perf_counter()
     response = await call_next(request)
     duration_ms = round((time.perf_counter() - started_at) * 1000, 2)
-    http_requests_total.labels(
-        method=request.method, status_code=str(response.status_code)
-    ).inc()
-    http_request_duration_seconds.labels(method=request.method).observe(duration_ms / 1000)
+    http_request_metrics.record_request(
+        request.method, response.status_code, duration_ms / 1000
+    )
     logger.info(
         "http_request method=%s path=%s status_code=%s duration_ms=%s",
         request.method,
