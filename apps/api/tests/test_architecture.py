@@ -1523,6 +1523,18 @@ def test_sensor_health_publication_uses_metrics_port() -> None:
     assert "labels" not in metric_calls
 
 
+def test_sensor_router_uses_telemetry_metrics_port_not_prometheus() -> None:
+    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+
+    assert "metrics" not in imported_modules
+    assert "application.telemetry_ports" in imported_modules
+
+
 def test_quality_router_depends_on_sensor_port_not_repository_adapter() -> None:
     tree = ast.parse((API_APP / "routers" / "quality.py").read_text(encoding="utf-8"))
     imported_modules = {
