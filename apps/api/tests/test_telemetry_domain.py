@@ -10,7 +10,6 @@ from app.domain.telemetry import (
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
@@ -20,6 +19,7 @@ from app.domain.telemetry import (
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.marine_current import MarineCurrentTelemetrySnapshot
 from app.domain.wind import WindTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot

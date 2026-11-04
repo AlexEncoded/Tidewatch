@@ -9,6 +9,7 @@ from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.wind import WindTelemetrySnapshot
+from app.domain.marine_current import MarineCurrentTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1016,6 +1017,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert ImuTelemetrySnapshot.__module__ == "app.domain.imu"
     assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.ambient_light"
     assert WindTelemetrySnapshot.__module__ == "app.domain.wind"
+    assert MarineCurrentTelemetrySnapshot.__module__ == "app.domain.marine_current"
 
     domain_snapshots = [
         model

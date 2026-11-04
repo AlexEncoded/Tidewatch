@@ -4,8 +4,6 @@ from datetime import datetime, timezone
 from .telemetry_types import (
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
-    DIRECTION_MAX_DEGREES,
-    DIRECTION_MIN_DEGREES,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     FIRMWARE_VERSION_MAX_LENGTH,
@@ -19,8 +17,6 @@ from .telemetry_types import (
     DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
-    MARINE_CURRENT_SPEED_MAX_MPS,
-    MARINE_CURRENT_SPEED_MIN_MPS,
     PH_MAX,
     PH_MIN,
     RAINFALL_MAX_MM_H,
@@ -90,35 +86,6 @@ class SalinityTelemetrySnapshot(SensorTelemetrySnapshot):
             raise ValueError(
                 f"Salinity must be between {SALINITY_MIN_PSU} and "
                 f"{SALINITY_MAX_PSU} PSU"
-            )
-
-
-@dataclass(frozen=True)
-class MarineCurrentTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one marine-current sample."""
-
-    buoy_id: str
-    current_speed_mps: float
-    current_direction_degrees: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not MARINE_CURRENT_SPEED_MIN_MPS <= self.current_speed_mps <= MARINE_CURRENT_SPEED_MAX_MPS:
-            raise ValueError(
-                "Marine-current speed must be between "
-                f"{MARINE_CURRENT_SPEED_MIN_MPS} and "
-                f"{MARINE_CURRENT_SPEED_MAX_MPS} m/s"
-            )
-        if not DIRECTION_MIN_DEGREES <= self.current_direction_degrees < DIRECTION_MAX_DEGREES:
-            raise ValueError(
-                "Marine-current direction must be greater than or equal to "
-                f"{DIRECTION_MIN_DEGREES} and less than {DIRECTION_MAX_DEGREES} degrees"
             )
 
 
