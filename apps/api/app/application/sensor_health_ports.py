@@ -7,6 +7,7 @@ from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.wind import WindTelemetrySnapshot
 from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
@@ -21,7 +22,6 @@ from ..domain.telemetry import (
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
-    WindTelemetrySnapshot,
 )
 from ..domain.temperature import TemperatureTelemetrySnapshot
 

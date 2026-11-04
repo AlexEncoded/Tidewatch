@@ -16,11 +16,11 @@ from app.domain.telemetry import (
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
-    WindTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.wind import WindTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot

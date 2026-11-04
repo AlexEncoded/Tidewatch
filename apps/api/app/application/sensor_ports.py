@@ -18,9 +18,9 @@ from ..domain.telemetry import (
     SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
-    WindTelemetrySnapshot,
 )
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.wind import WindTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
 
 

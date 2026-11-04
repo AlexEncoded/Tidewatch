@@ -26,6 +26,7 @@ Current rules include:
 - IMU samples validate acceleration and angular velocity in their dedicated
   domain module while sharing channel and quality invariants;
 - ambient-light samples enforce the lux range in their dedicated sensor module;
+- wind samples enforce speed and direction bounds in their dedicated sensor module;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;
