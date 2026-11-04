@@ -18,10 +18,10 @@ from .domain.sensor_health import (
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.imu import ImuTelemetrySnapshot
+from .domain.ambient_light import AmbientLightTelemetrySnapshot
 from .domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
-    AmbientLightTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,

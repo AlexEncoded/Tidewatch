@@ -8,8 +8,8 @@ from .telemetry_ports import TelemetryBatchUnitOfWork
 from ..domain.battery import BatteryTelemetrySnapshot
 from ..domain.location import LocationTelemetrySnapshot
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.telemetry import (
-    AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     RainfallTelemetrySnapshot,

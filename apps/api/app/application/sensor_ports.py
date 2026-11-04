@@ -3,10 +3,10 @@
 from typing import Protocol
 
 from ..domain.pressure import PressureTelemetrySnapshot
+from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
-    AmbientLightTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,

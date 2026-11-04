@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from .telemetry_types import (
-    AMBIENT_LIGHT_MAX_LUX,
-    AMBIENT_LIGHT_MIN_LUX,
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     DIRECTION_MAX_DEGREES,
@@ -94,28 +92,6 @@ class SalinityTelemetrySnapshot(SensorTelemetrySnapshot):
             raise ValueError(
                 f"Salinity must be between {SALINITY_MIN_PSU} and "
                 f"{SALINITY_MAX_PSU} PSU"
-            )
-
-
-@dataclass(frozen=True)
-class AmbientLightTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one ambient-light sample."""
-
-    buoy_id: str
-    illuminance_lux: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not AMBIENT_LIGHT_MIN_LUX <= self.illuminance_lux <= AMBIENT_LIGHT_MAX_LUX:
-            raise ValueError(
-                f"Ambient light must be between {AMBIENT_LIGHT_MIN_LUX} and "
-                f"{AMBIENT_LIGHT_MAX_LUX} lux"
             )
 
 

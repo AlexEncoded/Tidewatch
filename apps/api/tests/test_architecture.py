@@ -7,6 +7,7 @@ from app.domain import telemetry as domain_telemetry
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1012,6 +1013,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert BatteryTelemetrySnapshot.__module__ == "app.domain.battery"
     assert LocationTelemetrySnapshot.__module__ == "app.domain.location"
     assert ImuTelemetrySnapshot.__module__ == "app.domain.imu"
+    assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.ambient_light"
 
     domain_snapshots = [
         model
