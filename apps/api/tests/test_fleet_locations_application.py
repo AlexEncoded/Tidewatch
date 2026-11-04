@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.fleet_locations import list_fleet_locations
-from app.domain.telemetry import LocationTelemetrySnapshot
+from app.domain.location import LocationTelemetrySnapshot
 
 
 class FakeFleetLocationReader:

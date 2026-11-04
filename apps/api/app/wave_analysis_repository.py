@@ -5,7 +5,8 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from .buoy_location_repository import BuoyLocationRepository
-from .domain.telemetry import ImuTelemetrySnapshot, LocationTelemetrySnapshot
+from .domain.location import LocationTelemetrySnapshot
+from .domain.telemetry import ImuTelemetrySnapshot
 from .imu_repository import ImuRepository
 
 

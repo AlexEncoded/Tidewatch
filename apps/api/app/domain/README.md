@@ -21,6 +21,8 @@ Current rules include:
   delta, and lower-charge device together;
 - battery telemetry snapshots validate the A/B owner channel, optional physical
   device identity, and battery percentage in the battery domain module;
+- GNSS position snapshots own coordinate and fix metadata validation in the
+  fleet location domain module;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;

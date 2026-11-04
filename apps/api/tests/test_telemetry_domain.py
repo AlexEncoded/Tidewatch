@@ -16,12 +16,12 @@ from app.domain.telemetry import (
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     SalinityTelemetrySnapshot,
-    LocationTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
+from app.domain.location import LocationTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.telemetry_types import resolve_telemetry_device_id

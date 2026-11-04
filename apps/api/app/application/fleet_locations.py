@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from ..domain.telemetry import LocationTelemetrySnapshot
+from ..domain.location import LocationTelemetrySnapshot
 from .fleet_ports import FleetLocationReader
 
 

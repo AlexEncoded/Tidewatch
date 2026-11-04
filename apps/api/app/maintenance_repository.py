@@ -10,7 +10,7 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.buoy import BuoySnapshot
 from .domain.devices import DeviceSnapshot
 from .domain.battery import BatteryTelemetrySnapshot
-from .domain.telemetry import LocationTelemetrySnapshot
+from .domain.location import LocationTelemetrySnapshot
 from .sensor_health_repository import SensorHealthRepository
 
 

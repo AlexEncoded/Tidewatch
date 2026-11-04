@@ -5,7 +5,7 @@ from typing import Callable, Protocol, TypeVar, runtime_checkable
 
 from ..domain.buoy import BuoySnapshot
 from ..domain.devices import DeviceSnapshot
-from ..domain.telemetry import LocationTelemetrySnapshot
+from ..domain.location import LocationTelemetrySnapshot
 from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
 from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader

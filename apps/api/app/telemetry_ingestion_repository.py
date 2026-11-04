@@ -8,6 +8,7 @@ from .buoy_location_repository import BuoyLocationRepository
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.battery import BatteryTelemetrySnapshot
+from .domain.location import LocationTelemetrySnapshot
 from .domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
@@ -18,7 +19,6 @@ from .domain.telemetry import (
     DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     ImuTelemetrySnapshot,
-    LocationTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,

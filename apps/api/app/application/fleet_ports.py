@@ -10,7 +10,7 @@ from ..domain.buoy import (
     BuoyStatusCommand,
     BuoySummarySnapshot,
 )
-from ..domain.telemetry import LocationTelemetrySnapshot
+from ..domain.location import LocationTelemetrySnapshot
 
 
 class FleetLocationReader(Protocol):

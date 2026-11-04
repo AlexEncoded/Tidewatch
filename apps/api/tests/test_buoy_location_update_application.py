@@ -4,7 +4,7 @@ import pytest
 
 from app.application.buoy_location_update import update_buoy_location
 from app.domain.buoy import BuoyLocationCommand, BuoySnapshot
-from app.domain.telemetry import LocationTelemetrySnapshot
+from app.domain.location import LocationTelemetrySnapshot
 
 
 class FakeBuoyLocationUpdater:
