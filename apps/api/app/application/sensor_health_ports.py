@@ -5,6 +5,7 @@ from collections.abc import Mapping
 
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
+from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
@@ -14,7 +15,6 @@ from ..domain.telemetry import (
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    ImuTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,

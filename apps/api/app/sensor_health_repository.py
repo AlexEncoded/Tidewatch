@@ -17,6 +17,7 @@ from .domain.sensor_health import (
 )
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
+from .domain.imu import ImuTelemetrySnapshot
 from .domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
@@ -26,7 +27,6 @@ from .domain.telemetry import (
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    ImuTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,

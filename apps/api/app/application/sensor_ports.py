@@ -12,7 +12,6 @@ from ..domain.telemetry import (
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    ImuTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
@@ -21,6 +20,7 @@ from ..domain.telemetry import (
     UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
+from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
 
 

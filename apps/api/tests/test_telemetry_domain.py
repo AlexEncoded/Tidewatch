@@ -10,7 +10,6 @@ from app.domain.telemetry import (
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
-    ImuTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     MarineCurrentTelemetrySnapshot,
     PHTelemetrySnapshot,
@@ -22,6 +21,7 @@ from app.domain.telemetry import (
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
+from app.domain.imu import ImuTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.telemetry_types import resolve_telemetry_device_id

@@ -23,6 +23,8 @@ Current rules include:
   device identity, and battery percentage in the battery domain module;
 - GNSS position snapshots own coordinate and fix metadata validation in the
   fleet location domain module;
+- IMU samples validate acceleration and angular velocity in their dedicated
+  domain module while sharing channel and quality invariants;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;
