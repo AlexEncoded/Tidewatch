@@ -14,10 +14,10 @@ from ..domain.telemetry import (
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
-    TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.turbidity import TurbidityTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.marine_current import MarineCurrentTelemetrySnapshot
 from ..domain.wind import WindTelemetrySnapshot

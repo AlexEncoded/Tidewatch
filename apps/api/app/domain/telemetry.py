@@ -23,8 +23,6 @@ from .telemetry_types import (
     RAINFALL_MIN_MM_H,
     ReadingQuality,
     SENSOR_ID_MAX_LENGTH,
-    TURBIDITY_MAX_NTU,
-    TURBIDITY_MIN_NTU,
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
     SensorChannel,
@@ -63,28 +61,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class TurbidityTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one turbidity sample."""
-
-    buoy_id: str
-    turbidity_ntu: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not TURBIDITY_MIN_NTU <= self.turbidity_ntu <= TURBIDITY_MAX_NTU:
-            raise ValueError(
-                f"Turbidity must be between {TURBIDITY_MIN_NTU} and "
-                f"{TURBIDITY_MAX_NTU} NTU"
-            )
 
 
 @dataclass(frozen=True)

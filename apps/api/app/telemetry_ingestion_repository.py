@@ -10,6 +10,7 @@ from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.battery import BatteryTelemetrySnapshot
 from .domain.location import LocationTelemetrySnapshot
 from .domain.imu import ImuTelemetrySnapshot
+from .domain.turbidity import TurbidityTelemetrySnapshot
 from .domain.salinity import SalinityTelemetrySnapshot
 from .domain.marine_current import MarineCurrentTelemetrySnapshot
 from .domain.wind import WindTelemetrySnapshot
@@ -24,7 +25,6 @@ from .domain.telemetry import (
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
-    TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from .domain.devices import DeviceSnapshot

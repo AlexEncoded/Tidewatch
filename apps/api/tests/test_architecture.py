@@ -11,6 +11,7 @@ from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.wind import WindTelemetrySnapshot
 from app.domain.marine_current import MarineCurrentTelemetrySnapshot
 from app.domain.salinity import SalinityTelemetrySnapshot
+from app.domain.turbidity import TurbidityTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1020,6 +1021,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert WindTelemetrySnapshot.__module__ == "app.domain.wind"
     assert MarineCurrentTelemetrySnapshot.__module__ == "app.domain.marine_current"
     assert SalinityTelemetrySnapshot.__module__ == "app.domain.salinity"
+    assert TurbidityTelemetrySnapshot.__module__ == "app.domain.turbidity"
 
     domain_snapshots = [
         model

@@ -12,12 +12,12 @@ from app.domain.telemetry import (
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
-    TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.turbidity import TurbidityTelemetrySnapshot
 from app.domain.salinity import SalinityTelemetrySnapshot
 from app.domain.marine_current import MarineCurrentTelemetrySnapshot
 from app.domain.wind import WindTelemetrySnapshot
