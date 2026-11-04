@@ -22,8 +22,6 @@ from .telemetry_types import (
     RAINFALL_MAX_MM_H,
     RAINFALL_MIN_MM_H,
     ReadingQuality,
-    SALINITY_MAX_PSU,
-    SALINITY_MIN_PSU,
     SENSOR_ID_MAX_LENGTH,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
@@ -65,28 +63,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class SalinityTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one salinity sample."""
-
-    buoy_id: str
-    salinity_psu: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not SALINITY_MIN_PSU <= self.salinity_psu <= SALINITY_MAX_PSU:
-            raise ValueError(
-                f"Salinity must be between {SALINITY_MIN_PSU} and "
-                f"{SALINITY_MAX_PSU} PSU"
-            )
 
 
 @dataclass(frozen=True)

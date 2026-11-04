@@ -18,6 +18,7 @@ from .domain.sensor_health import (
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.imu import ImuTelemetrySnapshot
+from .domain.salinity import SalinityTelemetrySnapshot
 from .domain.marine_current import MarineCurrentTelemetrySnapshot
 from .domain.wind import WindTelemetrySnapshot
 from .domain.ambient_light import AmbientLightTelemetrySnapshot
@@ -31,7 +32,6 @@ from .domain.telemetry import (
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
-    SalinityTelemetrySnapshot,
     TurbidityTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
