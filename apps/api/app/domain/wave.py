@@ -11,6 +11,7 @@ DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
 MIN_IMU_WAVE_HEIGHT_FACTOR = 0.0
 MAX_IMU_WAVE_HEIGHT_FACTOR = 10.0
 MAX_WAVE_PERIOD_RELATIVE_DISAGREEMENT = 0.25
+MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS = 4
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,10 @@ def synchronize_wave_readings(
         reading
         for reading in locations
         if getattr(reading, "quality", "good") == "good"
+        and (
+            getattr(reading, "satellites", None) is None
+            or reading.satellites >= MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+        )
     ]
     if not usable_imu or not usable_locations:
         return usable_imu, usable_locations

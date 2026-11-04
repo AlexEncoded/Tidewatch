@@ -69,6 +69,53 @@ def test_wave_synchronization_keeps_single_modality_for_partial_estimation() -> 
     assert locations == []
 
 
+def test_wave_synchronization_excludes_gnss_fixes_with_too_few_satellites() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        SimpleNamespace(measured_at=start + timedelta(seconds=index), quality="good")
+        for index in (0, 1)
+    ]
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=index),
+            quality="good",
+            satellites=satellites,
+        )
+        for index, satellites in ((0, 3), (1, 4))
+    ]
+
+    _, synchronized_locations = synchronize_wave_readings(imu, locations)
+
+    assert [reading.satellites for reading in synchronized_locations] == [4]
+
+
+def test_wave_analysis_uses_imu_when_all_gnss_fixes_have_too_few_satellites() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=index),
+            acceleration_z_mps2=value,
+            quality="good",
+        )
+        for index, value in enumerate((9.7, 10.2))
+    ]
+    locations = [
+        SimpleNamespace(
+            measured_at=start + timedelta(seconds=index),
+            altitude_meters=value,
+            satellites=3,
+            quality="good",
+        )
+        for index, value in enumerate((2.0, 8.0))
+    ]
+
+    analysis = analyze_wave_samples("buoy-1", imu, locations)
+
+    assert analysis.gnss_vertical_range_m is None
+    assert analysis.estimated_wave_height_m == 0.05
+    assert analysis.confidence == "partial"
+
+
 def test_wave_domain_analysis_builds_snapshot_from_synchronized_samples() -> None:
     start = datetime(2026, 1, 1, tzinfo=timezone.utc)
     imu = [
