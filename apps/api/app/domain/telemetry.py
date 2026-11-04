@@ -53,7 +53,6 @@ from .telemetry_types import (
     AIR_TEMPERATURE_MIN_CELSIUS,
     VALID_READING_QUALITIES,
     VALID_SENSOR_CHANNELS,
-    validate_battery_percentage,
     WIND_SPEED_MAX_MPS,
     WIND_SPEED_MIN_MPS,
 )
@@ -526,23 +525,6 @@ class UnderwaterAcousticTelemetrySnapshot(SensorTelemetrySnapshot):
                 f"{UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB} and "
                 f"{UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB} dB"
             )
-
-
-@dataclass(frozen=True)
-class BatteryTelemetrySnapshot:
-    """Domain representation of one device-battery sample."""
-
-    buoy_id: str
-    battery_percent: float
-    device_id: SensorChannel
-    measured_at: datetime
-    physical_device_id: str | None = None
-
-    def __post_init__(self) -> None:
-        _validate_device_id(self.physical_device_id)
-        if self.device_id not in VALID_SENSOR_CHANNELS:
-            raise ValueError(f"Unsupported battery device channel {self.device_id!r}")
-        validate_battery_percentage(self.battery_percent)
 
 
 def latest_usable_reading(

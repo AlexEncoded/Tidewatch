@@ -5,6 +5,7 @@ from inspect import signature
 from typing import Callable, TypeVar, cast
 
 from .telemetry_ports import TelemetryBatchUnitOfWork
+from ..domain.battery import BatteryTelemetrySnapshot
 from ..domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     ConductivityTelemetrySnapshot,
@@ -15,7 +16,6 @@ from ..domain.telemetry import (
     AtmosphericPressureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
-    BatteryTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
     ImuTelemetrySnapshot,
     LocationTelemetrySnapshot,

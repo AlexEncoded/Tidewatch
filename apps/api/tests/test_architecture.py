@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import get_type_hints
 
 from app.domain import telemetry as domain_telemetry
+from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1006,6 +1007,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
         assert model.model_fields["quality"].annotation is ReadingQuality
 
     assert BatteryReadingCreate.model_fields["device_id"].annotation is SensorChannel
+    assert BatteryTelemetrySnapshot.__module__ == "app.domain.battery"
 
     domain_snapshots = [
         model

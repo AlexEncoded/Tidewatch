@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from ..domain.devices import DeviceSnapshot
-from ..domain.telemetry import BatteryTelemetrySnapshot
+from ..domain.battery import BatteryTelemetrySnapshot
 
 
 class BatteryTelemetryReader(Protocol):

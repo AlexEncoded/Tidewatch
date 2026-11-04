@@ -7,12 +7,12 @@ from sqlalchemy.orm import Session
 from .buoy_location_repository import BuoyLocationRepository
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
+from .domain.battery import BatteryTelemetrySnapshot
 from .domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
     AmbientLightTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
-    BatteryTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,

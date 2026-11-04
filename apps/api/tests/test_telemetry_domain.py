@@ -7,7 +7,6 @@ from app.domain.telemetry import (
     AmbientLightTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
-    BatteryTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,
     DissolvedOxygenTelemetrySnapshot,
@@ -22,6 +21,7 @@ from app.domain.telemetry import (
     UnderwaterAcousticTelemetrySnapshot,
     WindTelemetrySnapshot,
 )
+from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.telemetry_types import resolve_telemetry_device_id

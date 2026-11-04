@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from .device_repository import DeviceRepository
 from .domain.devices import DeviceSnapshot
-from .domain.telemetry import BatteryTelemetrySnapshot
+from .domain.battery import BatteryTelemetrySnapshot
 from .fleet_entities import BatteryReadingEntity
 
 

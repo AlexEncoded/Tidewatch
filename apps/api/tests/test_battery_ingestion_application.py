@@ -5,7 +5,7 @@ import pytest
 
 from app.application.battery_ingestion import record_battery_reading
 from app.domain.devices import DeviceOwnershipError, DeviceSnapshot
-from app.domain.telemetry import BatteryTelemetrySnapshot
+from app.domain.battery import BatteryTelemetrySnapshot
 
 
 MEASURED_AT = datetime(2026, 10, 9, 12, tzinfo=timezone.utc)
