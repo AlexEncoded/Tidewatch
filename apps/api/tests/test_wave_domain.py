@@ -112,6 +112,7 @@ def test_wave_analysis_uses_imu_when_all_gnss_fixes_have_too_few_satellites() ->
     analysis = analyze_wave_samples("buoy-1", imu, locations)
 
     assert analysis.gnss_vertical_range_m is None
+    assert analysis.rejected_gnss_sample_count == 2
     assert analysis.estimated_wave_height_m == 0.05
     assert analysis.confidence == "partial"
 

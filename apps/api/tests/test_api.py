@@ -1469,6 +1469,32 @@ def test_wave_analysis_endpoint_handles_insufficient_samples() -> None:
     assert analysis.json()["estimated_wave_height_m"] is None
     assert analysis.json()["estimated_period_seconds"] is None
     assert analysis.json()["period_confidence"] == "insufficient_data"
+    assert analysis.json()["rejected_gnss_sample_count"] == 0
+
+
+def test_wave_analysis_reports_gnss_samples_rejected_for_satellite_count() -> None:
+    buoy_id = client.post("/api/v1/buoys", json={"name": "Weak GNSS Wave Buoy"}).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+    for index, (altitude, satellites) in enumerate(((0.0, 3), (8.0, 3))):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "location": {
+                    "latitude": 36.7,
+                    "longitude": 3.1,
+                    "altitude_meters": altitude,
+                    "satellites": satellites,
+                    "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+                },
+            },
+        )
+        assert response.status_code == 200
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["rejected_gnss_sample_count"] == 2
+    assert analysis.json()["estimated_wave_height_m"] is None
 
 
 def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:

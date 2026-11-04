@@ -37,6 +37,7 @@ class WaveAnalysisSnapshot:
 
     buoy_id: str
     sample_count: int
+    rejected_gnss_sample_count: int = 0
     gnss_vertical_range_m: float | None = None
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None
@@ -127,6 +128,13 @@ def analyze_wave_samples(
     imu_wave_height_factor: float = DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
 ) -> WaveAnalysisSnapshot:
     """Apply synchronization, height, and period rules to a buoy's samples."""
+    rejected_gnss_sample_count = sum(
+        1
+        for reading in locations
+        if getattr(reading, "quality", "good") == "good"
+        and getattr(reading, "satellites", None) is not None
+        and reading.satellites < MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+    )
     synchronized_imu, synchronized_locations = synchronize_wave_readings(
         imu_readings, locations
     )
@@ -158,12 +166,14 @@ def analyze_wave_samples(
         return WaveAnalysisSnapshot(
             buoy_id=buoy_id,
             sample_count=sample_count,
+            rejected_gnss_sample_count=rejected_gnss_sample_count,
             estimated_period_seconds=period_estimate.estimated_period_seconds,
             period_confidence=period_estimate.confidence,
         )
     return WaveAnalysisSnapshot(
         buoy_id=buoy_id,
         sample_count=sample_count,
+        rejected_gnss_sample_count=rejected_gnss_sample_count,
         gnss_vertical_range_m=(
             round(estimate.gnss_vertical_range_m, 3)
             if estimate.gnss_vertical_range_m is not None
