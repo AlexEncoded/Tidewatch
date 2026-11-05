@@ -14,6 +14,7 @@ from app.domain.salinity import SalinityTelemetrySnapshot
 from app.domain.turbidity import TurbidityTelemetrySnapshot
 from app.domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from app.domain.ph import PHTelemetrySnapshot
+from app.domain.conductivity import ConductivityTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1026,6 +1027,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert TurbidityTelemetrySnapshot.__module__ == "app.domain.turbidity"
     assert DissolvedOxygenTelemetrySnapshot.__module__ == "app.domain.dissolved_oxygen"
     assert PHTelemetrySnapshot.__module__ == "app.domain.ph"
+    assert ConductivityTelemetrySnapshot.__module__ == "app.domain.conductivity"
 
     domain_snapshots = [
         model

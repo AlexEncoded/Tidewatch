@@ -11,8 +11,6 @@ from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     CHLOROPHYLL_A_MAX_UG_L,
     CHLOROPHYLL_A_MIN_UG_L,
-    CONDUCTIVITY_MAX_US_CM,
-    CONDUCTIVITY_MIN_US_CM,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     RAINFALL_MAX_MM_H,
@@ -57,28 +55,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class ConductivityTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one conductivity sample."""
-
-    buoy_id: str
-    conductivity_us_cm: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not CONDUCTIVITY_MIN_US_CM <= self.conductivity_us_cm <= CONDUCTIVITY_MAX_US_CM:
-            raise ValueError(
-                f"Conductivity must be between {CONDUCTIVITY_MIN_US_CM} and "
-                f"{CONDUCTIVITY_MAX_US_CM} µS/cm"
-            )
 
 
 @dataclass(frozen=True)
