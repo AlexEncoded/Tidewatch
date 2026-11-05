@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 import pytest
 
 from app.domain.telemetry import (
-    AirTemperatureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
@@ -11,6 +10,7 @@ from app.domain.telemetry import (
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.humidity import HumidityTelemetrySnapshot
 from app.domain.rainfall import RainfallTelemetrySnapshot
 from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot

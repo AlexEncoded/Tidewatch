@@ -8,6 +8,7 @@ from .telemetry_ports import TelemetryBatchUnitOfWork
 from ..domain.battery import BatteryTelemetrySnapshot
 from ..domain.location import LocationTelemetrySnapshot
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
 from ..domain.humidity import HumidityTelemetrySnapshot
 from ..domain.rainfall import RainfallTelemetrySnapshot
 from ..domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
@@ -20,7 +21,6 @@ from ..domain.marine_current import MarineCurrentTelemetrySnapshot
 from ..domain.wind import WindTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.telemetry import (
-    AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
