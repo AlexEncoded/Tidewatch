@@ -11,8 +11,6 @@ from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
-    RAINFALL_MAX_MM_H,
-    RAINFALL_MIN_MM_H,
     ReadingQuality,
     SENSOR_ID_MAX_LENGTH,
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
@@ -53,28 +51,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class RainfallTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one rainfall sample."""
-
-    buoy_id: str
-    rainfall_mm_h: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not RAINFALL_MIN_MM_H <= self.rainfall_mm_h <= RAINFALL_MAX_MM_H:
-            raise ValueError(
-                f"Rainfall must be between {RAINFALL_MIN_MM_H} and "
-                f"{RAINFALL_MAX_MM_H} mm/h"
-            )
 
 
 @dataclass(frozen=True)

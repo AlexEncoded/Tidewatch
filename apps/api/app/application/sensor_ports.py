@@ -9,10 +9,10 @@ from ..domain.telemetry import (
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    RainfallTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.rainfall import RainfallTelemetrySnapshot
 from ..domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from ..domain.conductivity import ConductivityTelemetrySnapshot
 from ..domain.ph import PHTelemetrySnapshot

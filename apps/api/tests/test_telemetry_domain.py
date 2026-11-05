@@ -7,12 +7,12 @@ from app.domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
     HumidityTelemetrySnapshot,
-    RainfallTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.rainfall import RainfallTelemetrySnapshot
 from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from app.domain.conductivity import ConductivityTelemetrySnapshot
 from app.domain.ph import PHTelemetrySnapshot
