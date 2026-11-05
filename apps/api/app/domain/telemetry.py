@@ -7,8 +7,6 @@ from .telemetry_types import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     FIRMWARE_VERSION_MAX_LENGTH,
-    ATMOSPHERIC_PRESSURE_MAX_KPA,
-    ATMOSPHERIC_PRESSURE_MIN_KPA,
     ReadingQuality,
     SENSOR_ID_MAX_LENGTH,
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
@@ -47,29 +45,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class AtmosphericPressureTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one atmospheric-pressure sample."""
-
-    buoy_id: str
-    atmospheric_pressure_kpa: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not ATMOSPHERIC_PRESSURE_MIN_KPA <= self.atmospheric_pressure_kpa <= ATMOSPHERIC_PRESSURE_MAX_KPA:
-            raise ValueError(
-                "Atmospheric pressure must be between "
-                f"{ATMOSPHERIC_PRESSURE_MIN_KPA} and "
-                f"{ATMOSPHERIC_PRESSURE_MAX_KPA} kPa"
-            )
 
 
 @dataclass(frozen=True)

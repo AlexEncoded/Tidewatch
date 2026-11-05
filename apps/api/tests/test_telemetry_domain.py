@@ -4,12 +4,12 @@ import pytest
 
 from app.domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
-    AtmosphericPressureTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.humidity import HumidityTelemetrySnapshot
 from app.domain.rainfall import RainfallTelemetrySnapshot

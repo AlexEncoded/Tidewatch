@@ -18,6 +18,7 @@ from .domain.sensor_health import (
 from .domain.pressure import PressureTelemetrySnapshot
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.imu import ImuTelemetrySnapshot
+from .domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from .domain.air_temperature import AirTemperatureTelemetrySnapshot
 from .domain.humidity import HumidityTelemetrySnapshot
 from .domain.rainfall import RainfallTelemetrySnapshot
@@ -32,7 +33,6 @@ from .domain.wind import WindTelemetrySnapshot
 from .domain.ambient_light import AmbientLightTelemetrySnapshot
 from .domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
-    AtmosphericPressureTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from .sensor_entities import SensorHealthCheckEntity

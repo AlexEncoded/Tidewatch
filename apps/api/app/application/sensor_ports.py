@@ -6,10 +6,10 @@ from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
-    AtmosphericPressureTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
 from ..domain.humidity import HumidityTelemetrySnapshot
 from ..domain.rainfall import RainfallTelemetrySnapshot
