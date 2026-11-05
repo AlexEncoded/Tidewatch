@@ -7,6 +7,7 @@ from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from ..domain.conductivity import ConductivityTelemetrySnapshot
 from ..domain.ph import PHTelemetrySnapshot
 from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
@@ -18,7 +19,6 @@ from ..domain.telemetry import (
     AcousticAltimeterTelemetrySnapshot,
     AirTemperatureTelemetrySnapshot,
     AtmosphericPressureTelemetrySnapshot,
-    ChlorophyllATelemetrySnapshot,
     HumidityTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,

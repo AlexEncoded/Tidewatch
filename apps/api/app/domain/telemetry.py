@@ -9,8 +9,6 @@ from .telemetry_types import (
     FIRMWARE_VERSION_MAX_LENGTH,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
-    CHLOROPHYLL_A_MAX_UG_L,
-    CHLOROPHYLL_A_MIN_UG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     RAINFALL_MAX_MM_H,
@@ -55,28 +53,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class ChlorophyllATelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one chlorophyll-a sample."""
-
-    buoy_id: str
-    chlorophyll_a_ug_l: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not CHLOROPHYLL_A_MIN_UG_L <= self.chlorophyll_a_ug_l <= CHLOROPHYLL_A_MAX_UG_L:
-            raise ValueError(
-                f"Chlorophyll-a must be between {CHLOROPHYLL_A_MIN_UG_L} and "
-                f"{CHLOROPHYLL_A_MAX_UG_L} µg/L"
-            )
 
 
 @dataclass(frozen=True)

@@ -33,6 +33,7 @@ Current rules include:
 - dissolved-oxygen samples enforce mg/L bounds in their dedicated sensor module;
 - pH samples enforce the domain range in their dedicated sensor module;
 - conductivity samples enforce µS/cm bounds in their dedicated sensor module;
+- chlorophyll-a samples enforce µg/L bounds in their dedicated sensor module;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;
