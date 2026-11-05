@@ -38,6 +38,7 @@ Current rules include:
 - humidity samples enforce percentage bounds in their dedicated sensor module;
 - air-temperature samples enforce Celsius bounds in their dedicated sensor module;
 - atmospheric-pressure samples enforce kPa bounds in their dedicated sensor module;
+- acoustic-altimeter samples enforce depth bounds in their dedicated sensor module;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;

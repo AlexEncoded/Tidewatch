@@ -3,12 +3,12 @@ from datetime import datetime, timezone
 import pytest
 
 from app.domain.telemetry import (
-    AcousticAltimeterTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.humidity import HumidityTelemetrySnapshot
