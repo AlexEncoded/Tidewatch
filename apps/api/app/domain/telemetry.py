@@ -15,8 +15,6 @@ from .telemetry_types import (
     CONDUCTIVITY_MIN_US_CM,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
-    PH_MAX,
-    PH_MIN,
     RAINFALL_MAX_MM_H,
     RAINFALL_MIN_MM_H,
     ReadingQuality,
@@ -59,25 +57,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class PHTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one pH sample."""
-
-    buoy_id: str
-    ph: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not PH_MIN <= self.ph <= PH_MAX:
-            raise ValueError(f"pH must be between {PH_MIN} and {PH_MAX}")
 
 
 @dataclass(frozen=True)
