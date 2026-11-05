@@ -17,6 +17,7 @@ from app.domain.ph import PHTelemetrySnapshot
 from app.domain.conductivity import ConductivityTelemetrySnapshot
 from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from app.domain.rainfall import RainfallTelemetrySnapshot
+from app.domain.humidity import HumidityTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1032,6 +1033,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert ConductivityTelemetrySnapshot.__module__ == "app.domain.conductivity"
     assert ChlorophyllATelemetrySnapshot.__module__ == "app.domain.chlorophyll_a"
     assert RainfallTelemetrySnapshot.__module__ == "app.domain.rainfall"
+    assert HumidityTelemetrySnapshot.__module__ == "app.domain.humidity"
 
     domain_snapshots = [
         model

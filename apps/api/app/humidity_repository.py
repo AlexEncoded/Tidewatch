@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.telemetry import HumidityTelemetrySnapshot
+from .domain.humidity import HumidityTelemetrySnapshot
 from .sensor_entities import HumidityReadingEntity
 
 
