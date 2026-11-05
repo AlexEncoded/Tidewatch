@@ -21,6 +21,7 @@ from app.domain.humidity import HumidityTelemetrySnapshot
 from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from app.domain.telemetry_types import ReadingQuality, SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -1040,6 +1041,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert AirTemperatureTelemetrySnapshot.__module__ == "app.domain.air_temperature"
     assert AtmosphericPressureTelemetrySnapshot.__module__ == "app.domain.atmospheric_pressure"
     assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.acoustic_altimeter"
+    assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.underwater_acoustic"
 
     domain_snapshots = [
         model

@@ -4,10 +4,9 @@ from typing import Protocol
 
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
-from ..domain.telemetry import (
-    UnderwaterAcousticTelemetrySnapshot,
-)
+
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from ..domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
