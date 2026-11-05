@@ -10,13 +10,13 @@ from ..domain.telemetry import (
     AtmosphericPressureTelemetrySnapshot,
     ChlorophyllATelemetrySnapshot,
     ConductivityTelemetrySnapshot,
-    DissolvedOxygenTelemetrySnapshot,
     HumidityTelemetrySnapshot,
     PHTelemetrySnapshot,
     RainfallTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
 )
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from ..domain.turbidity import TurbidityTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.marine_current import MarineCurrentTelemetrySnapshot

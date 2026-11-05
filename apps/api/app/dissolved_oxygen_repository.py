@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.telemetry import DissolvedOxygenTelemetrySnapshot
+from .domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from .sensor_entities import DissolvedOxygenReadingEntity
 
 

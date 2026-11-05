@@ -30,6 +30,7 @@ Current rules include:
 - marine-current samples enforce speed and direction bounds in their dedicated sensor module;
 - salinity samples enforce PSU bounds in their dedicated sensor module;
 - turbidity samples enforce NTU bounds in their dedicated sensor module;
+- dissolved-oxygen samples enforce mg/L bounds in their dedicated sensor module;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;

@@ -8,6 +8,7 @@ from .telemetry_ports import TelemetryBatchUnitOfWork
 from ..domain.battery import BatteryTelemetrySnapshot
 from ..domain.location import LocationTelemetrySnapshot
 from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from ..domain.turbidity import TurbidityTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.marine_current import MarineCurrentTelemetrySnapshot
@@ -22,7 +23,6 @@ from ..domain.telemetry import (
     AtmosphericPressureTelemetrySnapshot,
     AcousticAltimeterTelemetrySnapshot,
     UnderwaterAcousticTelemetrySnapshot,
-    DissolvedOxygenTelemetrySnapshot,
     PHTelemetrySnapshot,
 )
 from ..domain.pressure import PressureTelemetrySnapshot

@@ -13,8 +13,6 @@ from .telemetry_types import (
     CHLOROPHYLL_A_MIN_UG_L,
     CONDUCTIVITY_MAX_US_CM,
     CONDUCTIVITY_MIN_US_CM,
-    DISSOLVED_OXYGEN_MAX_MG_L,
-    DISSOLVED_OXYGEN_MIN_MG_L,
     HUMIDITY_MAX_PERCENT,
     HUMIDITY_MIN_PERCENT,
     PH_MAX,
@@ -61,29 +59,6 @@ def _validate_device_id(device_id: str | None) -> None:
             f"Device ID must contain between {DEVICE_ID_MIN_LENGTH} "
             f"and {DEVICE_ID_MAX_LENGTH} characters"
         )
-
-
-@dataclass(frozen=True)
-class DissolvedOxygenTelemetrySnapshot(SensorTelemetrySnapshot):
-    """Domain representation of one dissolved-oxygen sample."""
-
-    buoy_id: str
-    dissolved_oxygen_mg_l: float
-    measured_at: datetime
-    sensor_channel: SensorChannel = "A"
-    device_id: str | None = None
-    sensor_id: str | None = None
-    firmware_version: str | None = None
-    quality: ReadingQuality = "good"
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not DISSOLVED_OXYGEN_MIN_MG_L <= self.dissolved_oxygen_mg_l <= DISSOLVED_OXYGEN_MAX_MG_L:
-            raise ValueError(
-                "Dissolved oxygen must be between "
-                f"{DISSOLVED_OXYGEN_MIN_MG_L} and "
-                f"{DISSOLVED_OXYGEN_MAX_MG_L} mg/L"
-            )
 
 
 @dataclass(frozen=True)
