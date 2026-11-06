@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    CONDUCTIVITY_MAX_US_CM,
-    CONDUCTIVITY_MIN_US_CM,
-    ReadingQuality,
-    SensorChannel,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+CONDUCTIVITY_MIN_US_CM = 0
+CONDUCTIVITY_MAX_US_CM = 200000
 
 
 @dataclass(frozen=True)
