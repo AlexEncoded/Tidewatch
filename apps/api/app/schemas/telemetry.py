@@ -38,8 +38,6 @@ from ..domain.telemetry_types import (
     SENSOR_ID_MAX_LENGTH,
     TURBIDITY_MAX_NTU,
     TURBIDITY_MIN_NTU,
-    UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
-    UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
     WIND_SPEED_MAX_MPS,
     WIND_SPEED_MIN_MPS,
 )
@@ -51,6 +49,10 @@ from ..domain.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
 from ..domain.acoustic_altimeter import (
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
+)
+from ..domain.underwater_acoustic import (
+    UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
+    UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
 )
 
 from pydantic import BaseModel, Field

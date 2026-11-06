@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
-    UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
-    ReadingQuality,
-    SensorChannel,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB = -200
+UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB = 100
 
 
 @dataclass(frozen=True)
