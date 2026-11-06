@@ -78,6 +78,10 @@ def test_legacy_models_facade_module_is_removed() -> None:
     assert not (API_APP / "models.py").exists()
 
 
+def test_empty_legacy_telemetry_domain_module_is_removed() -> None:
+    assert not (API_APP / "domain" / "telemetry.py").exists()
+
+
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     from app.fleet_entities import BuoyEntity
     from app.fleet_entities import (
