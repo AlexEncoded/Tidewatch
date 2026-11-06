@@ -2,8 +2,6 @@
 
 from datetime import datetime, timezone
 from ..domain.telemetry_types import (
-    AIR_TEMPERATURE_MAX_CELSIUS,
-    AIR_TEMPERATURE_MIN_CELSIUS,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     FIRMWARE_VERSION_MAX_LENGTH,
@@ -53,6 +51,10 @@ from ..domain.acoustic_altimeter import (
 from ..domain.underwater_acoustic import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
+)
+from ..domain.air_temperature import (
+    AIR_TEMPERATURE_MAX_CELSIUS,
+    AIR_TEMPERATURE_MIN_CELSIUS,
 )
 
 from pydantic import BaseModel, Field

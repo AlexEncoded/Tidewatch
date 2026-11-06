@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    AIR_TEMPERATURE_MAX_CELSIUS,
-    AIR_TEMPERATURE_MIN_CELSIUS,
-    ReadingQuality,
-    SensorChannel,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+AIR_TEMPERATURE_MIN_CELSIUS = -60
+AIR_TEMPERATURE_MAX_CELSIUS = 60
 
 
 @dataclass(frozen=True)
