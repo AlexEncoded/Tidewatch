@@ -5,11 +5,12 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
-    ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     ReadingQuality,
     SensorChannel,
 )
+
+ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS = 0
+ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS = 20000
 
 
 @dataclass(frozen=True)

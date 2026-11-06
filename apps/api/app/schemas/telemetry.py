@@ -9,8 +9,6 @@ from ..domain.telemetry_types import (
     FIRMWARE_VERSION_MAX_LENGTH,
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
-    ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
-    ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
     CHLOROPHYLL_A_MAX_UG_L,
@@ -50,6 +48,10 @@ from ..domain.temperature import (
     SEA_TEMPERATURE_MIN_CELSIUS,
 )
 from ..domain.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
+from ..domain.acoustic_altimeter import (
+    ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
+    ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
+)
 
 from pydantic import BaseModel, Field
 
