@@ -7,8 +7,6 @@ from ..domain.telemetry_types import (
     FIRMWARE_VERSION_MAX_LENGTH,
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
-    CHLOROPHYLL_A_MAX_UG_L,
-    CHLOROPHYLL_A_MIN_UG_L,
     CONDUCTIVITY_MAX_US_CM,
     CONDUCTIVITY_MIN_US_CM,
     DISSOLVED_OXYGEN_MAX_MG_L,
@@ -57,6 +55,10 @@ from ..domain.air_temperature import (
 from ..domain.atmospheric_pressure import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
+)
+from ..domain.chlorophyll_a import (
+    CHLOROPHYLL_A_MAX_UG_L,
+    CHLOROPHYLL_A_MIN_UG_L,
 )
 
 from pydantic import BaseModel, Field

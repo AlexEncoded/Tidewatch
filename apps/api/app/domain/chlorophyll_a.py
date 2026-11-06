@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    CHLOROPHYLL_A_MAX_UG_L,
-    CHLOROPHYLL_A_MIN_UG_L,
-    ReadingQuality,
-    SensorChannel,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+CHLOROPHYLL_A_MIN_UG_L = 0
+CHLOROPHYLL_A_MAX_UG_L = 1000
 
 
 @dataclass(frozen=True)
