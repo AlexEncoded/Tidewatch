@@ -10,7 +10,7 @@ from ..domain.sensor_health import (
     SensorHealthSnapshot as DomainSensorHealthSnapshot,
     evaluate_sensor_health,
 )
-from ..domain.telemetry import latest_usable_reading
+from ..domain.reading_quality import latest_usable_reading
 from ..domain.sensor_health_analysis import calculate_sensor_health_deltas
 from .sensor_health_ports import SensorHealthCheckWriter, SensorHealthReader
 

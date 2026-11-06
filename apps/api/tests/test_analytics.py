@@ -34,7 +34,7 @@ from app.domain.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
 from app.domain.sensor_completeness import missing_sensor_channels
-from app.domain.telemetry import latest_usable_reading
+from app.domain.reading_quality import latest_usable_reading
 from app.domain.directions import circular_difference_degrees
 from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference

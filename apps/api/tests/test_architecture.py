@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import get_type_hints
 
 from app.domain.sensor_telemetry import SensorTelemetrySnapshot
+from app.domain.reading_quality import latest_usable_reading
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.battery import BatteryTelemetrySnapshot
@@ -1044,6 +1045,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.acoustic_altimeter"
     assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.underwater_acoustic"
     assert SensorTelemetrySnapshot.__module__ == "app.domain.sensor_telemetry"
+    assert latest_usable_reading.__module__ == "app.domain.reading_quality"
 
     sensor_snapshots = (
         PressureTelemetrySnapshot,

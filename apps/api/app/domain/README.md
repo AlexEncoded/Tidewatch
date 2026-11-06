@@ -43,7 +43,7 @@ Current rules include:
 - shared A/B channel, quality, device ID, sensor ID and firmware invariants live in `sensor_telemetry.py`;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
-- usable telemetry selection and reading quality classification;
+- usable telemetry selection and reading quality classification live together in `reading_quality.py`;
 - durable queue retry timing and bounds;
 - maintenance issue classification from buoy, sensor and device snapshots;
 - buoy silence and drift classification with finite, positive thresholds and
