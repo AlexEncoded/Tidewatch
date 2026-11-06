@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
     AIR_TEMPERATURE_MAX_CELSIUS,
     AIR_TEMPERATURE_MIN_CELSIUS,

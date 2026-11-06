@@ -4,7 +4,7 @@ from datetime import datetime
 from math import isfinite
 from statistics import fmean
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import ReadingQuality, SensorChannel
 
 SEA_TEMPERATURE_MIN_CELSIUS = -5

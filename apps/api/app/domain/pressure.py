@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import ReadingQuality, SensorChannel
 
 KPA_TO_METRES_OF_WATER = 0.102

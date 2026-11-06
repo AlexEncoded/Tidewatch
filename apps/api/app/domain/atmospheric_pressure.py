@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,

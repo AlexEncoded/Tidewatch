@@ -40,6 +40,7 @@ Current rules include:
 - atmospheric-pressure samples enforce kPa bounds in their dedicated sensor module;
 - acoustic-altimeter samples enforce depth bounds in their dedicated sensor module;
 - underwater-acoustic samples enforce echo-intensity bounds in their dedicated sensor module;
+- shared A/B channel, quality, device ID, sensor ID and firmware invariants live in `sensor_telemetry.py`;
 - historical battery discharge estimation orders samples by measurement time
   and rejects percentages outside the physical range;
 - usable telemetry selection and reading quality classification;

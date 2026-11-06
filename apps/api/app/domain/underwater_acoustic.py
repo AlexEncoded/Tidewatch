@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,

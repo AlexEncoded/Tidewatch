@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .telemetry import SensorTelemetrySnapshot
+from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
     IMU_ACCELERATION_MAX_MPS2,
     IMU_ACCELERATION_MIN_MPS2,

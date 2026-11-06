@@ -1,9 +1,10 @@
 import ast
-from dataclasses import is_dataclass
 from pathlib import Path
 from typing import get_type_hints
 
-from app.domain import telemetry as domain_telemetry
+from app.domain.sensor_telemetry import SensorTelemetrySnapshot
+from app.domain.pressure import PressureTelemetrySnapshot
+from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.battery import BatteryTelemetrySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
@@ -1042,20 +1043,32 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert AtmosphericPressureTelemetrySnapshot.__module__ == "app.domain.atmospheric_pressure"
     assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.acoustic_altimeter"
     assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.underwater_acoustic"
+    assert SensorTelemetrySnapshot.__module__ == "app.domain.sensor_telemetry"
 
-    domain_snapshots = [
-        model
-        for model in vars(domain_telemetry).values()
-        if isinstance(model, type)
-        and is_dataclass(model)
-        and model.__module__ == domain_telemetry.__name__
-        and model.__name__.endswith("TelemetrySnapshot")
-    ]
-    for model in domain_snapshots:
+    sensor_snapshots = (
+        PressureTelemetrySnapshot,
+        TemperatureTelemetrySnapshot,
+        ImuTelemetrySnapshot,
+        AmbientLightTelemetrySnapshot,
+        WindTelemetrySnapshot,
+        MarineCurrentTelemetrySnapshot,
+        SalinityTelemetrySnapshot,
+        TurbidityTelemetrySnapshot,
+        DissolvedOxygenTelemetrySnapshot,
+        PHTelemetrySnapshot,
+        ConductivityTelemetrySnapshot,
+        ChlorophyllATelemetrySnapshot,
+        RainfallTelemetrySnapshot,
+        HumidityTelemetrySnapshot,
+        AirTemperatureTelemetrySnapshot,
+        AtmosphericPressureTelemetrySnapshot,
+        AcousticAltimeterTelemetrySnapshot,
+        UnderwaterAcousticTelemetrySnapshot,
+    )
+    for model in sensor_snapshots:
         annotations = get_type_hints(model)
-        if "sensor_channel" in annotations:
-            assert annotations["sensor_channel"] is SensorChannel
-            assert annotations["quality"] is ReadingQuality
+        assert annotations["sensor_channel"] is SensorChannel
+        assert annotations["quality"] is ReadingQuality
 
 
 def test_imports_package_recognizes_nested_framework_modules() -> None:
