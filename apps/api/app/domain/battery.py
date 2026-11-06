@@ -2,14 +2,25 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from math import isfinite
 
 from .telemetry_types import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     SensorChannel,
     VALID_SENSOR_CHANNELS,
-    validate_battery_percentage,
 )
+
+BATTERY_MIN_PERCENT = 0
+BATTERY_MAX_PERCENT = 100
+
+
+def validate_battery_percentage(value: float, label: str = "Battery percentage") -> None:
+    """Reject battery readings outside the finite physical percentage range."""
+    if not isfinite(value) or not BATTERY_MIN_PERCENT <= value <= BATTERY_MAX_PERCENT:
+        raise ValueError(
+            f"{label} must be between {BATTERY_MIN_PERCENT} and {BATTERY_MAX_PERCENT}"
+        )
 
 
 @dataclass(frozen=True)

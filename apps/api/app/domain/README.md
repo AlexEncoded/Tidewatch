@@ -19,6 +19,7 @@ Current rules include:
 - redundant battery health with finite, non-negative thresholds and bounded
   battery percentages; health snapshots are immutable and validate the status,
   delta, and lower-charge device together;
+- battery percentage bounds and finite-value validation are owned by `battery.py`;
 - battery telemetry snapshots validate the A/B owner channel, optional physical
   device identity, and battery percentage in the battery domain module;
 - GNSS position snapshots own coordinate and fix metadata validation in the

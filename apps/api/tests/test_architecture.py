@@ -6,7 +6,7 @@ from app.domain.sensor_telemetry import SensorTelemetrySnapshot
 from app.domain.reading_quality import latest_usable_reading
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
-from app.domain.battery import BatteryTelemetrySnapshot
+from app.domain.battery import BatteryTelemetrySnapshot, validate_battery_percentage
 from app.domain.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
@@ -1031,6 +1031,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
 
     assert BatteryReadingCreate.model_fields["device_id"].annotation is SensorChannel
     assert BatteryTelemetrySnapshot.__module__ == "app.domain.battery"
+    assert validate_battery_percentage.__module__ == "app.domain.battery"
     assert LocationTelemetrySnapshot.__module__ == "app.domain.location"
     assert ImuTelemetrySnapshot.__module__ == "app.domain.imu"
     assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.ambient_light"

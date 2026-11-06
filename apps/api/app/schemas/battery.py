@@ -1,7 +1,7 @@
 """HTTP contracts for buoy battery telemetry and health."""
 
 from datetime import datetime, timezone
-from ..domain.telemetry_types import (
+from ..domain.battery import (
     BATTERY_MAX_PERCENT,
     BATTERY_MIN_PERCENT,
     DEVICE_ID_MAX_LENGTH,

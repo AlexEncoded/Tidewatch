@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
-from .telemetry_types import validate_battery_percentage
+from .battery import validate_battery_percentage
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .telemetry_types import validate_battery_percentage
+from .battery import validate_battery_percentage
 
 
 @dataclass(frozen=True)

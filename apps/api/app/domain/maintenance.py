@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Literal
 
-from .telemetry_types import validate_battery_percentage
+from .battery import validate_battery_percentage
 from .time_rules import require_positive_finite_seconds
 
 
