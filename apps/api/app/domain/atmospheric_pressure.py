@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    ATMOSPHERIC_PRESSURE_MAX_KPA,
-    ATMOSPHERIC_PRESSURE_MIN_KPA,
-    ReadingQuality,
-    SensorChannel,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+ATMOSPHERIC_PRESSURE_MIN_KPA = 80
+ATMOSPHERIC_PRESSURE_MAX_KPA = 120
 
 
 @dataclass(frozen=True)
