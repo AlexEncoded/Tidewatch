@@ -5,11 +5,12 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    AMBIENT_LIGHT_MAX_LUX,
-    AMBIENT_LIGHT_MIN_LUX,
     ReadingQuality,
     SensorChannel,
 )
+
+AMBIENT_LIGHT_MIN_LUX = 0
+AMBIENT_LIGHT_MAX_LUX = 150000
 
 
 @dataclass(frozen=True)
