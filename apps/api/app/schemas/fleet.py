@@ -16,6 +16,8 @@ from ..domain.buoy import (
 from ..domain.telemetry_types import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
+)
+from ..domain.location import (
     GNSS_ALTITUDE_MAX_METERS,
     GNSS_ALTITUDE_MIN_METERS,
     GNSS_HDOP_MAX,
