@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import PH_MAX, PH_MIN, ReadingQuality, SensorChannel
+from .telemetry_types import ReadingQuality, SensorChannel
+
+PH_MIN = 0
+PH_MAX = 14
 
 
 @dataclass(frozen=True)
