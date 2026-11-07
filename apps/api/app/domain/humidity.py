@@ -5,11 +5,12 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    HUMIDITY_MAX_PERCENT,
-    HUMIDITY_MIN_PERCENT,
     ReadingQuality,
     SensorChannel,
 )
+
+HUMIDITY_MIN_PERCENT = 0
+HUMIDITY_MAX_PERCENT = 100
 
 
 @dataclass(frozen=True)

@@ -9,8 +9,6 @@ from ..domain.telemetry_types import (
     AMBIENT_LIGHT_MIN_LUX,
     DIRECTION_MAX_DEGREES,
     DIRECTION_MIN_DEGREES,
-    HUMIDITY_MAX_PERCENT,
-    HUMIDITY_MIN_PERCENT,
     IMU_ACCELERATION_MAX_MPS2,
     IMU_ACCELERATION_MIN_MPS2,
     IMU_ANGULAR_VELOCITY_MAX_DPS,
@@ -32,6 +30,7 @@ from ..domain.dissolved_oxygen import (
 from ..domain.ph import PH_MAX, PH_MIN
 from ..domain.rainfall import RAINFALL_MAX_MM_H, RAINFALL_MIN_MM_H
 from ..domain.salinity import SALINITY_MAX_PSU, SALINITY_MIN_PSU
+from ..domain.humidity import HUMIDITY_MAX_PERCENT, HUMIDITY_MIN_PERCENT
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
