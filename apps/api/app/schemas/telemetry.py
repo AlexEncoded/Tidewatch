@@ -18,8 +18,6 @@ from ..domain.telemetry_types import (
     ReadingQuality,
     SensorChannel,
     SENSOR_ID_MAX_LENGTH,
-    TURBIDITY_MAX_NTU,
-    TURBIDITY_MIN_NTU,
     WIND_SPEED_MAX_MPS,
     WIND_SPEED_MIN_MPS,
 )
@@ -35,6 +33,7 @@ from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
 )
+from ..domain.turbidity import TURBIDITY_MAX_NTU, TURBIDITY_MIN_NTU
 from ..domain.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
 from ..domain.acoustic_altimeter import (
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,

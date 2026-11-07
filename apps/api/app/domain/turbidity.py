@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    ReadingQuality,
-    SensorChannel,
-    TURBIDITY_MAX_NTU,
-    TURBIDITY_MIN_NTU,
-)
+from .telemetry_types import ReadingQuality, SensorChannel
+
+TURBIDITY_MIN_NTU = 0
+TURBIDITY_MAX_NTU = 5000
 
 
 @dataclass(frozen=True)
