@@ -5,8 +5,6 @@ from ..domain.telemetry_types import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     FIRMWARE_VERSION_MAX_LENGTH,
-    DIRECTION_MAX_DEGREES,
-    DIRECTION_MIN_DEGREES,
     IMU_ACCELERATION_MAX_MPS2,
     IMU_ACCELERATION_MIN_MPS2,
     IMU_ANGULAR_VELOCITY_MAX_DPS,
@@ -37,6 +35,7 @@ from ..domain.acoustic_altimeter import (
 )
 from ..domain.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
 from ..domain.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
+from ..domain.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from ..domain.underwater_acoustic import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
