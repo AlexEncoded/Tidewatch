@@ -5,11 +5,12 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    DISSOLVED_OXYGEN_MAX_MG_L,
-    DISSOLVED_OXYGEN_MIN_MG_L,
     ReadingQuality,
     SensorChannel,
 )
+
+DISSOLVED_OXYGEN_MIN_MG_L = 0
+DISSOLVED_OXYGEN_MAX_MG_L = 20
 
 
 @dataclass(frozen=True)

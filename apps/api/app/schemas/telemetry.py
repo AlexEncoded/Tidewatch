@@ -7,8 +7,6 @@ from ..domain.telemetry_types import (
     FIRMWARE_VERSION_MAX_LENGTH,
     AMBIENT_LIGHT_MAX_LUX,
     AMBIENT_LIGHT_MIN_LUX,
-    DISSOLVED_OXYGEN_MAX_MG_L,
-    DISSOLVED_OXYGEN_MIN_MG_L,
     DIRECTION_MAX_DEGREES,
     DIRECTION_MIN_DEGREES,
     HUMIDITY_MAX_PERCENT,
@@ -32,6 +30,10 @@ from ..domain.telemetry_types import (
     TURBIDITY_MIN_NTU,
     WIND_SPEED_MAX_MPS,
     WIND_SPEED_MIN_MPS,
+)
+from ..domain.dissolved_oxygen import (
+    DISSOLVED_OXYGEN_MAX_MG_L,
+    DISSOLVED_OXYGEN_MIN_MG_L,
 )
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
