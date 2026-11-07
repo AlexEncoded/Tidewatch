@@ -5,11 +5,12 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    RAINFALL_MAX_MM_H,
-    RAINFALL_MIN_MM_H,
     ReadingQuality,
     SensorChannel,
 )
+
+RAINFALL_MIN_MM_H = 0
+RAINFALL_MAX_MM_H = 500
 
 
 @dataclass(frozen=True)

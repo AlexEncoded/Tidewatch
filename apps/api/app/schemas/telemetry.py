@@ -17,8 +17,6 @@ from ..domain.telemetry_types import (
     IMU_ANGULAR_VELOCITY_MIN_DPS,
     MARINE_CURRENT_SPEED_MAX_MPS,
     MARINE_CURRENT_SPEED_MIN_MPS,
-    RAINFALL_MAX_MM_H,
-    RAINFALL_MIN_MM_H,
     ReadingQuality,
     SALINITY_MAX_PSU,
     SALINITY_MIN_PSU,
@@ -34,6 +32,7 @@ from ..domain.dissolved_oxygen import (
     DISSOLVED_OXYGEN_MIN_MG_L,
 )
 from ..domain.ph import PH_MAX, PH_MIN
+from ..domain.rainfall import RAINFALL_MAX_MM_H, RAINFALL_MIN_MM_H
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
