@@ -16,8 +16,6 @@ from ..domain.telemetry_types import (
     ReadingQuality,
     SensorChannel,
     SENSOR_ID_MAX_LENGTH,
-    WIND_SPEED_MAX_MPS,
-    WIND_SPEED_MIN_MPS,
 )
 from ..domain.dissolved_oxygen import (
     DISSOLVED_OXYGEN_MAX_MG_L,
@@ -38,6 +36,7 @@ from ..domain.acoustic_altimeter import (
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
 )
 from ..domain.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
+from ..domain.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
 from ..domain.underwater_acoustic import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,

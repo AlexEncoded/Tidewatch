@@ -9,9 +9,10 @@ from .telemetry_types import (
     DIRECTION_MIN_DEGREES,
     ReadingQuality,
     SensorChannel,
-    WIND_SPEED_MAX_MPS,
-    WIND_SPEED_MIN_MPS,
 )
+
+WIND_SPEED_MIN_MPS = 0
+WIND_SPEED_MAX_MPS = 100
 
 
 @dataclass(frozen=True)
