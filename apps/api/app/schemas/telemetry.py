@@ -9,8 +9,6 @@ from ..domain.telemetry_types import (
     IMU_ACCELERATION_MIN_MPS2,
     IMU_ANGULAR_VELOCITY_MAX_DPS,
     IMU_ANGULAR_VELOCITY_MIN_DPS,
-    MARINE_CURRENT_SPEED_MAX_MPS,
-    MARINE_CURRENT_SPEED_MIN_MPS,
     ReadingQuality,
     SensorChannel,
     SENSOR_ID_MAX_LENGTH,
@@ -36,6 +34,10 @@ from ..domain.acoustic_altimeter import (
 from ..domain.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
 from ..domain.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
 from ..domain.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
+from ..domain.marine_current import (
+    MARINE_CURRENT_SPEED_MAX_MPS,
+    MARINE_CURRENT_SPEED_MIN_MPS,
+)
 from ..domain.underwater_acoustic import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,

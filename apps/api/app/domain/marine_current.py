@@ -6,11 +6,12 @@ from datetime import datetime
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from .telemetry_types import (
-    MARINE_CURRENT_SPEED_MAX_MPS,
-    MARINE_CURRENT_SPEED_MIN_MPS,
     ReadingQuality,
     SensorChannel,
 )
+
+MARINE_CURRENT_SPEED_MIN_MPS = 0
+MARINE_CURRENT_SPEED_MAX_MPS = 20
 
 
 @dataclass(frozen=True)
