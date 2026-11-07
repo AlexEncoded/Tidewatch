@@ -5,13 +5,14 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
-    IMU_ACCELERATION_MAX_MPS2,
-    IMU_ACCELERATION_MIN_MPS2,
-    IMU_ANGULAR_VELOCITY_MAX_DPS,
-    IMU_ANGULAR_VELOCITY_MIN_DPS,
     ReadingQuality,
     SensorChannel,
 )
+
+IMU_ACCELERATION_MIN_MPS2 = -200
+IMU_ACCELERATION_MAX_MPS2 = 200
+IMU_ANGULAR_VELOCITY_MIN_DPS = -2000
+IMU_ANGULAR_VELOCITY_MAX_DPS = 2000
 
 
 @dataclass(frozen=True)
