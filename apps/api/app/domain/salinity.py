@@ -6,10 +6,11 @@ from datetime import datetime
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .telemetry_types import (
     ReadingQuality,
-    SALINITY_MAX_PSU,
-    SALINITY_MIN_PSU,
     SensorChannel,
 )
+
+SALINITY_MIN_PSU = 0
+SALINITY_MAX_PSU = 45
 
 
 @dataclass(frozen=True)

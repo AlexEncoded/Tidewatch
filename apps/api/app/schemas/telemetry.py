@@ -18,8 +18,6 @@ from ..domain.telemetry_types import (
     MARINE_CURRENT_SPEED_MAX_MPS,
     MARINE_CURRENT_SPEED_MIN_MPS,
     ReadingQuality,
-    SALINITY_MAX_PSU,
-    SALINITY_MIN_PSU,
     SensorChannel,
     SENSOR_ID_MAX_LENGTH,
     TURBIDITY_MAX_NTU,
@@ -33,6 +31,7 @@ from ..domain.dissolved_oxygen import (
 )
 from ..domain.ph import PH_MAX, PH_MIN
 from ..domain.rainfall import RAINFALL_MAX_MM_H, RAINFALL_MIN_MM_H
+from ..domain.salinity import SALINITY_MAX_PSU, SALINITY_MIN_PSU
 from ..domain.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
