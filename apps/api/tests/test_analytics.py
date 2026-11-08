@@ -190,6 +190,19 @@ def test_wave_domain_service_estimates_period_from_upward_crossings() -> None:
     assert estimate_wave_period(samples) == 120.0
 
 
+def test_wave_period_ignores_an_isolated_transient_crossing() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    samples = []
+    for index in range(257):
+        seconds = index * 0.25
+        value = sin(2 * pi * seconds / 8)
+        if seconds == 14.0:
+            value += 2.0
+        samples.append((start + timedelta(seconds=seconds), value))
+
+    assert estimate_wave_period(samples) == 8.0
+
+
 def test_wave_period_domain_normalizes_mixed_datetime_awareness() -> None:
     samples = [
         (datetime(2024, 1, 1, 0, 0), -1.0),

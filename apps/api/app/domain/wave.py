@@ -288,7 +288,7 @@ def estimate_wave_period(
             for previous, current in zip(crossings, crossings[1:])
             if (current - previous).total_seconds() > 0
         )
-    return round(fmean(periods), 3) if periods else None
+    return round(median(periods), 3) if periods else None
 
 
 def estimate_fused_wave_period(
