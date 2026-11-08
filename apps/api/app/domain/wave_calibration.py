@@ -5,7 +5,11 @@ from math import isfinite, sqrt
 from statistics import fmean
 from typing import Sequence
 
-from .wave import estimate_wave
+from .wave import (
+    MAX_IMU_WAVE_HEIGHT_FACTOR,
+    MIN_IMU_WAVE_HEIGHT_FACTOR,
+    estimate_wave,
+)
 
 
 @dataclass(frozen=True)
@@ -23,6 +27,14 @@ def evaluate_factor(
     """Return error metrics for windows that have both sensor modalities."""
     if not windows:
         raise ValueError("At least one calibration window is required")
+    if (
+        not isfinite(factor)
+        or not MIN_IMU_WAVE_HEIGHT_FACTOR <= factor <= MAX_IMU_WAVE_HEIGHT_FACTOR
+    ):
+        raise ValueError(
+            "The calibration factor must be finite and between "
+            f"{MIN_IMU_WAVE_HEIGHT_FACTOR} and {MAX_IMU_WAVE_HEIGHT_FACTOR}"
+        )
 
     errors = []
     for window in windows:

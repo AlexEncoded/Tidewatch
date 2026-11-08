@@ -15,6 +15,11 @@ from app.domain.wave import (
     estimate_wave,
     estimate_wave_period,
 )
+from app.domain.wave_calibration import (
+    WaveCalibrationWindow,
+    evaluate_factor,
+    select_factor,
+)
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.domain.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
@@ -152,6 +157,26 @@ def test_wave_domain_service_accepts_calibration_factor() -> None:
     estimate = estimate_wave((2.0, 2.4), (9.7, 10.2), imu_wave_height_factor=0.2)
 
     assert estimate.estimated_wave_height_m == 0.25
+
+
+def test_wave_calibration_selects_factor_from_reproducible_synthetic_windows() -> None:
+    windows = (
+        WaveCalibrationWindow((0.0, 1.0), (0.0, 10.0), 1.0),
+        WaveCalibrationWindow((2.0, 2.5), (9.0, 14.0), 0.5),
+    )
+
+    factor, metrics = select_factor(windows, (0.2, 0.1, float("nan"), 11.0))
+
+    assert factor == 0.1
+    assert metrics == {"mae_m": 0.0, "rmse_m": 0.0, "bias_m": 0.0}
+
+
+@pytest.mark.parametrize("factor", (-0.1, 10.1, float("nan"), float("inf")))
+def test_wave_calibration_rejects_factors_outside_supported_range(factor: float) -> None:
+    windows = (WaveCalibrationWindow((0.0, 1.0), (0.0, 10.0), 1.0),)
+
+    with pytest.raises(ValueError, match="calibration factor must be finite"):
+        evaluate_factor(windows, factor)
 
 
 def test_wave_domain_service_estimates_period_from_upward_crossings() -> None:
