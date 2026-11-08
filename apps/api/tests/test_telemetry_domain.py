@@ -23,7 +23,7 @@ from app.domain.wind import WindTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
-from app.domain.telemetry_types import resolve_telemetry_device_id
+from app.domain.devices import resolve_telemetry_device_id
 
 
 def test_telemetry_device_resolution_uses_batch_device_as_fallback() -> None:

@@ -26,7 +26,7 @@ from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.telemetry_types import resolve_telemetry_device_id
+from ..domain.devices import resolve_telemetry_device_id
 
 F = TypeVar("F", bound=Callable)
 
