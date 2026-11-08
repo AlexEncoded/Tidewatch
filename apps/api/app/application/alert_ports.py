@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from ..domain.buoy import BuoyIdentitySnapshot
+from ..domain.devices import SensorChannel
 from ..domain.temperature import TemperatureTelemetrySnapshot
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
@@ -18,7 +19,7 @@ class TemperatureAlertsReader(Protocol):
         self,
         buoy_id: str,
         limit: int,
-        sensor_channel: str | None = "A",
+        sensor_channel: SensorChannel | None = "A",
     ) -> list[TemperatureTelemetrySnapshot]:
         ...
 

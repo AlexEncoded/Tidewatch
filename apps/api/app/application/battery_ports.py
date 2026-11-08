@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Protocol
 
-from ..domain.devices import DeviceSnapshot
+from ..domain.devices import DeviceSnapshot, SensorChannel
 from ..domain.battery import BatteryTelemetrySnapshot
 
 
@@ -50,7 +50,7 @@ class BatteryMetrics(Protocol):
         buoy_id: str,
         battery_percent: float,
         physical_device_id: str | None,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         received_at: datetime,
     ) -> None:
         ...

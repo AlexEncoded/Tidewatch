@@ -2,6 +2,8 @@
 
 from typing import Protocol, runtime_checkable
 
+from ..domain.devices import SensorChannel
+
 
 @runtime_checkable
 class DatabaseHealthReader(Protocol):
@@ -21,7 +23,7 @@ class AvailabilityMetrics(Protocol):
         self,
         buoy_id: str,
         device_id: str,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         timestamp_seconds: float,
     ) -> None:
         ...

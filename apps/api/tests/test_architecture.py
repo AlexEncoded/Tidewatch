@@ -1082,8 +1082,14 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
 
 
 def test_sensor_application_ports_use_the_domain_channel_type() -> None:
+    from app.application.alert_ports import TemperatureAlertsReader
+    from app.application.battery_ports import BatteryMetrics
+    from app.application.fleet_ports import FleetMetrics
     from app.application.sensor_health_ports import SensorHealthReader
     from app.application.sensor_ports import WindTelemetryGateway
+    from app.application.system_ports import AvailabilityMetrics
+    from app.application.sensor_reading_metrics import record_sensor_reading_metrics
+    from app.domain.devices import validate_device_registration
 
     assert get_type_hints(WindTelemetryGateway.list_wind)["sensor_channel"] == (
         SensorChannel | None
@@ -1091,6 +1097,28 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     assert get_type_hints(SensorHealthReader.list_wind)["sensor_channel"] == (
         SensorChannel | None
     )
+    assert (
+        get_type_hints(TemperatureAlertsReader.list_temperatures)["sensor_channel"]
+        == SensorChannel | None
+    )
+    assert (
+        get_type_hints(BatteryMetrics.record_reading)["sensor_channel"]
+        is SensorChannel
+    )
+    assert (
+        get_type_hints(FleetMetrics.record_device_heartbeat)["sensor_channel"]
+        is SensorChannel
+    )
+    assert (
+        get_type_hints(AvailabilityMetrics.restore_device_heartbeat)["sensor_channel"]
+        is SensorChannel
+    )
+    assert (
+        get_type_hints(record_sensor_reading_metrics)["sensor_channel"]
+        is SensorChannel
+    )
+    assert get_type_hints(record_sensor_reading_metrics)["quality"] is ReadingQuality
+    assert get_type_hints(validate_device_registration)["sensor_channel"] is SensorChannel
 
 
 def test_imports_package_recognizes_nested_framework_modules() -> None:

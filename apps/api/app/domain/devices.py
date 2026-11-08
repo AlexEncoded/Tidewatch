@@ -88,7 +88,7 @@ def validate_device_ownership(device: object | None, buoy_id: str) -> None:
 
 def validate_telemetry_device_channel(
     device: DeviceSnapshot,
-    channels: Iterable[str],
+    channels: Iterable[SensorChannel],
     telemetry_name: str = "Telemetry",
 ) -> None:
     """Ensure all telemetry channels match their registered physical device."""
@@ -101,7 +101,7 @@ def validate_telemetry_device_channel(
 
 def validate_device_registration(
     device_id: str,
-    sensor_channel: str,
+    sensor_channel: SensorChannel,
     existing_devices: Iterable[object],
     existing_registered_device: object | None = None,
 ) -> None:

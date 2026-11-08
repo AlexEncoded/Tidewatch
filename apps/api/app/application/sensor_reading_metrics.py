@@ -2,6 +2,8 @@
 
 from collections.abc import Mapping
 
+from ..domain.devices import SensorChannel
+from ..domain.reading_quality import ReadingQuality
 from .telemetry_ports import TelemetryMetrics
 
 
@@ -79,8 +81,8 @@ def record_sensor_reading_metrics(
     metrics: TelemetryMetrics,
     buoy_id: str,
     sensor_family: str,
-    sensor_channel: str,
-    quality: str,
+    sensor_channel: SensorChannel,
+    quality: ReadingQuality,
     values: Mapping[str, float],
 ) -> None:
     """Record reading volume, current values, and quality for one sensor."""

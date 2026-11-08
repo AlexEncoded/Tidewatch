@@ -10,6 +10,7 @@ from ..domain.buoy import (
     BuoyStatusCommand,
     BuoySummarySnapshot,
 )
+from ..domain.devices import SensorChannel
 from ..domain.location import LocationTelemetrySnapshot
 
 
@@ -57,7 +58,7 @@ class FleetMetrics(Protocol):
         self,
         buoy_id: str,
         device_id: str,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         last_seen_at: datetime | None,
     ) -> None:
         ...
