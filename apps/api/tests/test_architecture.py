@@ -1082,8 +1082,11 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
 
 
 def test_sensor_application_ports_use_the_domain_channel_type() -> None:
+    from collections.abc import Iterable
+
     from app.application.alert_ports import TemperatureAlertsReader
     from app.application.battery_ports import BatteryMetrics
+    from app.application.device_heartbeat import record_device_heartbeat
     from app.application.fleet_ports import FleetMetrics
     from app.application.sensor_health_ports import SensorHealthReader
     from app.application.sensor_ports import WindTelemetryGateway
@@ -1116,6 +1119,10 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     assert (
         get_type_hints(record_sensor_reading_metrics)["sensor_channel"]
         is SensorChannel
+    )
+    assert (
+        get_type_hints(record_device_heartbeat)["sensor_channels"]
+        == Iterable[SensorChannel]
     )
     assert get_type_hints(record_sensor_reading_metrics)["quality"] is ReadingQuality
     assert get_type_hints(validate_device_registration)["sensor_channel"] is SensorChannel

@@ -7,6 +7,7 @@ from typing import Protocol
 from ..domain.devices import (
     DeviceSnapshot,
     DeviceOwnershipError,
+    SensorChannel,
     validate_device_ownership,
     validate_telemetry_device_channel,
 )
@@ -27,7 +28,7 @@ def record_device_heartbeat(
     buoy_id: str,
     device_id: str,
     seen_at: datetime | None = None,
-    sensor_channels: Iterable[str] = (),
+    sensor_channels: Iterable[SensorChannel] = (),
 ) -> tuple[DeviceSnapshot, datetime]:
     """Validate device ownership and channels before persisting its heartbeat."""
     device = registry.get_device_snapshot(device_id)
