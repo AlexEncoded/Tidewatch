@@ -306,6 +306,30 @@ def test_fused_wave_period_uses_the_only_available_modality() -> None:
     assert estimate.confidence == "partial"
 
 
+def test_fused_wave_period_falls_back_to_imu_when_gnss_has_only_gapped_fragments() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    gnss_times = [
+        *(4.0 + index * 0.25 for index in range(33)),
+        *(100.0 + index * 0.25 for index in range(33)),
+    ]
+    gnss = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 8))
+        for seconds in gnss_times
+    ]
+    imu = [
+        (
+            start + timedelta(seconds=index * 0.25),
+            9.81 + 0.5 * sin(2 * pi * index * 0.25 / 8),
+        )
+        for index in range(129)
+    ]
+
+    estimate = estimate_fused_wave_period(gnss, imu)
+
+    assert estimate.estimated_period_seconds == 8.0
+    assert estimate.confidence == "partial"
+
+
 def test_wave_application_service_uses_a_telemetry_port() -> None:
     class FakeReader:
         def list_imu(self, buoy_id, limit, sensor_channel):
