@@ -214,6 +214,20 @@ def test_wave_period_detrends_slow_vertical_drift() -> None:
     assert estimate_wave_period(samples) == pytest.approx(8.0, abs=0.05)
 
 
+def test_wave_period_does_not_bridge_a_long_sampling_gap() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    sample_times = [
+        *(4.0 + index * 0.25 for index in range(33)),
+        *(100.0 + index * 0.25 for index in range(33)),
+    ]
+    samples = [
+        (start + timedelta(seconds=seconds), sin(2 * pi * seconds / 8))
+        for seconds in sample_times
+    ]
+
+    assert estimate_wave_period(samples) is None
+
+
 def test_wave_period_domain_normalizes_mixed_datetime_awareness() -> None:
     samples = [
         (datetime(2024, 1, 1, 0, 0), -1.0),
