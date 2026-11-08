@@ -1,11 +1,13 @@
 """Shared invariants for physical sensor telemetry snapshots."""
 
-from .telemetry_types import (
+from .devices import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
-    FIRMWARE_VERSION_MAX_LENGTH,
-    ReadingQuality,
     SENSOR_ID_MAX_LENGTH,
+    DEVICE_FIRMWARE_MAX_LENGTH,
+)
+from .telemetry_types import (
+    ReadingQuality,
     SensorChannel,
     VALID_READING_QUALITIES,
     VALID_SENSOR_CHANNELS,
@@ -28,9 +30,9 @@ class SensorTelemetrySnapshot:
         if sensor_id is not None and len(sensor_id) > SENSOR_ID_MAX_LENGTH:
             raise ValueError(f"Sensor ID must be at most {SENSOR_ID_MAX_LENGTH} characters")
         firmware_version = getattr(self, "firmware_version", None)
-        if firmware_version is not None and len(firmware_version) > FIRMWARE_VERSION_MAX_LENGTH:
+        if firmware_version is not None and len(firmware_version) > DEVICE_FIRMWARE_MAX_LENGTH:
             raise ValueError(
-                f"Firmware version must be at most {FIRMWARE_VERSION_MAX_LENGTH} characters"
+                f"Firmware version must be at most {DEVICE_FIRMWARE_MAX_LENGTH} characters"
             )
 
 

@@ -1,12 +1,11 @@
 """HTTP contracts for core sensor telemetry and ingestion responses."""
 
 from datetime import datetime, timezone
-from ..domain.telemetry_types import (
+from ..domain.telemetry_types import ReadingQuality, SensorChannel
+from ..domain.devices import (
+    DEVICE_FIRMWARE_MAX_LENGTH,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
-    FIRMWARE_VERSION_MAX_LENGTH,
-    ReadingQuality,
-    SensorChannel,
     SENSOR_ID_MAX_LENGTH,
 )
 from ..domain.dissolved_oxygen import (
@@ -72,7 +71,7 @@ class TemperatureReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -88,7 +87,7 @@ class PressureReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -104,7 +103,7 @@ class SalinityReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -134,7 +133,7 @@ class ImuReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -153,7 +152,7 @@ class AmbientLightReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -176,7 +175,7 @@ class WindReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -199,7 +198,7 @@ class MarineCurrentReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -215,7 +214,7 @@ class TurbidityReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -234,7 +233,7 @@ class DissolvedOxygenReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -250,7 +249,7 @@ class PHReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -269,7 +268,7 @@ class ConductivityReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -288,7 +287,7 @@ class ChlorophyllAReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -307,7 +306,7 @@ class RainfallReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -326,7 +325,7 @@ class HumidityReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -345,7 +344,7 @@ class AirTemperatureReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -364,7 +363,7 @@ class AtmosphericPressureReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -383,7 +382,7 @@ class AcousticAltimeterReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -402,7 +401,7 @@ class UnderwaterAcousticReadingCreate(BaseModel):
     sensor_channel: SensorChannel = "A"
     device_id: str | None = Field(default=None, min_length=DEVICE_ID_MIN_LENGTH, max_length=DEVICE_ID_MAX_LENGTH)
     sensor_id: str | None = Field(default=None, max_length=SENSOR_ID_MAX_LENGTH)
-    firmware_version: str | None = Field(default=None, max_length=FIRMWARE_VERSION_MAX_LENGTH)
+    firmware_version: str | None = Field(default=None, max_length=DEVICE_FIRMWARE_MAX_LENGTH)
     quality: ReadingQuality = "good"
     measured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

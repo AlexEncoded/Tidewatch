@@ -5,11 +5,10 @@ from datetime import datetime
 from math import isfinite
 
 from .telemetry_types import (
-    DEVICE_ID_MAX_LENGTH,
-    DEVICE_ID_MIN_LENGTH,
     SensorChannel,
     VALID_SENSOR_CHANNELS,
 )
+from .devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
 
 BATTERY_MIN_PERCENT = 0
 BATTERY_MAX_PERCENT = 100

@@ -4,10 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .buoy import LATITUDE_MAX, LATITUDE_MIN, LONGITUDE_MAX, LONGITUDE_MIN
-from .telemetry_types import (
-    DEVICE_ID_MAX_LENGTH,
-    DEVICE_ID_MIN_LENGTH,
-)
+from .devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
 
 GNSS_ALTITUDE_MIN_METERS = -1000
 GNSS_ALTITUDE_MAX_METERS = 20000

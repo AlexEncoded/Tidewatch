@@ -6,10 +6,6 @@ SensorChannel = Literal["A", "B"]
 ReadingQuality = Literal["good", "suspect", "invalid"]
 VALID_SENSOR_CHANNELS = frozenset(get_args(SensorChannel))
 VALID_READING_QUALITIES = frozenset(get_args(ReadingQuality))
-DEVICE_ID_MIN_LENGTH = 1
-DEVICE_ID_MAX_LENGTH = 100
-SENSOR_ID_MAX_LENGTH = 100
-FIRMWARE_VERSION_MAX_LENGTH = 50
 
 
 def resolve_telemetry_device_id(
