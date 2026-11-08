@@ -2,6 +2,8 @@
 
 from typing import Protocol
 
+from ..domain.devices import SensorChannel
+
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
@@ -28,7 +30,7 @@ class TemperatureTelemetryReader(Protocol):
         self,
         buoy_id: str,
         limit: int,
-        sensor_channel: str | None = "A",
+        sensor_channel: SensorChannel | None = "A",
     ) -> list[TemperatureTelemetrySnapshot]:
         ...
 
@@ -48,7 +50,7 @@ class PressureTelemetryReader(Protocol):
         self,
         buoy_id: str,
         limit: int,
-        sensor_channel: str | None = "A",
+        sensor_channel: SensorChannel | None = "A",
     ) -> list[PressureTelemetrySnapshot]:
         ...
 
@@ -73,7 +75,7 @@ class SalinityTelemetryGateway(Protocol):
         ...
 
     def list_salinity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[SalinityTelemetrySnapshot]:
         ...
 
@@ -83,7 +85,7 @@ class ImuTelemetryReader(Protocol):
         self,
         buoy_id: str,
         limit: int,
-        sensor_channel: str | None = "A",
+        sensor_channel: SensorChannel | None = "A",
     ) -> list[ImuTelemetrySnapshot]:
         ...
 
@@ -106,7 +108,7 @@ class AmbientLightTelemetryGateway(Protocol):
         ...
 
     def list_ambient_light(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AmbientLightTelemetrySnapshot]:
         ...
 
@@ -119,7 +121,7 @@ class WindTelemetryGateway(Protocol):
         ...
 
     def list_wind(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[WindTelemetrySnapshot]:
         ...
 
@@ -134,7 +136,7 @@ class MarineCurrentTelemetryGateway(Protocol):
         ...
 
     def list_marine_current(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[MarineCurrentTelemetrySnapshot]:
         ...
 
@@ -147,7 +149,7 @@ class TurbidityTelemetryGateway(Protocol):
         ...
 
     def list_turbidity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TurbidityTelemetrySnapshot]:
         ...
 
@@ -162,7 +164,7 @@ class DissolvedOxygenTelemetryGateway(Protocol):
         ...
 
     def list_dissolved_oxygen(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[DissolvedOxygenTelemetrySnapshot]:
         ...
 
@@ -175,7 +177,7 @@ class PHTelemetryGateway(Protocol):
         ...
 
     def list_ph(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[PHTelemetrySnapshot]:
         ...
 
@@ -190,7 +192,7 @@ class ConductivityTelemetryGateway(Protocol):
         ...
 
     def list_conductivity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ConductivityTelemetrySnapshot]:
         ...
 
@@ -205,7 +207,7 @@ class ChlorophyllATelemetryGateway(Protocol):
         ...
 
     def list_chlorophyll_a(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ChlorophyllATelemetrySnapshot]:
         ...
 
@@ -218,7 +220,7 @@ class RainfallTelemetryGateway(Protocol):
         ...
 
     def list_rainfall(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[RainfallTelemetrySnapshot]:
         ...
 
@@ -231,7 +233,7 @@ class HumidityTelemetryGateway(Protocol):
         ...
 
     def list_humidity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[HumidityTelemetrySnapshot]:
         ...
 
@@ -246,7 +248,7 @@ class AirTemperatureTelemetryGateway(Protocol):
         ...
 
     def list_air_temperature(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AirTemperatureTelemetrySnapshot]:
         ...
 
@@ -261,7 +263,7 @@ class AtmosphericPressureTelemetryGateway(Protocol):
         ...
 
     def list_atmospheric_pressure(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AtmosphericPressureTelemetrySnapshot]:
         ...
 
@@ -276,7 +278,7 @@ class AcousticAltimeterTelemetryGateway(Protocol):
         ...
 
     def list_acoustic_altimeter(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AcousticAltimeterTelemetrySnapshot]:
         ...
 
@@ -291,6 +293,6 @@ class UnderwaterAcousticTelemetryGateway(Protocol):
         ...
 
     def list_underwater_acoustic(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[UnderwaterAcousticTelemetrySnapshot]:
         ...

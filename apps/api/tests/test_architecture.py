@@ -1081,6 +1081,18 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
         assert annotations["quality"] is ReadingQuality
 
 
+def test_sensor_application_ports_use_the_domain_channel_type() -> None:
+    from app.application.sensor_health_ports import SensorHealthReader
+    from app.application.sensor_ports import WindTelemetryGateway
+
+    assert get_type_hints(WindTelemetryGateway.list_wind)["sensor_channel"] == (
+        SensorChannel | None
+    )
+    assert get_type_hints(SensorHealthReader.list_wind)["sensor_channel"] == (
+        SensorChannel | None
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
