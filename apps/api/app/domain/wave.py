@@ -265,7 +265,7 @@ def estimate_wave_period(
         trend_slope = (
             candidate_trend_slope
             if len(segment) >= 8
-            and abs(candidate_trend_slope) * elapsed_span > value_range * 0.5
+            and abs(candidate_trend_slope) * elapsed_span > value_range * 0.4
             else 0.0
         )
         detrended_samples = [
