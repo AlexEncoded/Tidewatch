@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import ReadingQuality, SensorChannel
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 CONDUCTIVITY_MIN_US_CM = 0
 CONDUCTIVITY_MAX_US_CM = 200000

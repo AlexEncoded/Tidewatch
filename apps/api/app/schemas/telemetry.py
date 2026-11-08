@@ -1,13 +1,14 @@
 """HTTP contracts for core sensor telemetry and ingestion responses."""
 
 from datetime import datetime, timezone
-from ..domain.telemetry_types import ReadingQuality, SensorChannel
 from ..domain.devices import (
     DEVICE_FIRMWARE_MAX_LENGTH,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     SENSOR_ID_MAX_LENGTH,
+    SensorChannel,
 )
+from ..domain.reading_quality import ReadingQuality
 from ..domain.dissolved_oxygen import (
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,

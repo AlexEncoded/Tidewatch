@@ -4,10 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    ReadingQuality,
-    SensorChannel,
-)
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 DISSOLVED_OXYGEN_MIN_MG_L = 0
 DISSOLVED_OXYGEN_MAX_MG_L = 20

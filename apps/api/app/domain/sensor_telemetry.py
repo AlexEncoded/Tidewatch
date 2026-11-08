@@ -5,12 +5,12 @@ from .devices import (
     DEVICE_ID_MIN_LENGTH,
     SENSOR_ID_MAX_LENGTH,
     DEVICE_FIRMWARE_MAX_LENGTH,
-)
-from .telemetry_types import (
-    ReadingQuality,
     SensorChannel,
-    VALID_READING_QUALITIES,
     VALID_SENSOR_CHANNELS,
+)
+from .reading_quality import (
+    ReadingQuality,
+    VALID_READING_QUALITIES,
 )
 
 

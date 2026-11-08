@@ -3,10 +3,10 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal
+from typing import Literal, get_args
 
-from .telemetry_types import SensorChannel
-
+SensorChannel = Literal["A", "B"]
+VALID_SENSOR_CHANNELS = frozenset(get_args(SensorChannel))
 DeviceSensorChannel = SensorChannel
 DeviceOperationalStatus = Literal["active", "maintenance", "inactive"]
 DEVICE_ID_MIN_LENGTH = 1

@@ -5,7 +5,8 @@ from math import isfinite
 from statistics import fmean
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import ReadingQuality, SensorChannel
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 SEA_TEMPERATURE_MIN_CELSIUS = -5
 SEA_TEMPERATURE_MAX_CELSIUS = 45

@@ -3,7 +3,8 @@ from datetime import datetime
 from statistics import fmean
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import ReadingQuality, SensorChannel
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 KPA_TO_METRES_OF_WATER = 0.102
 WATER_PRESSURE_MIN_KPA = 80

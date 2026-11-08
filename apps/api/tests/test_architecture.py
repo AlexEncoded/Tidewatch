@@ -24,7 +24,8 @@ from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from app.domain.telemetry_types import ReadingQuality, SensorChannel
+from app.domain.reading_quality import ReadingQuality
+from app.domain.devices import SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
 
@@ -984,7 +985,9 @@ def imports_package(modules: set[str], package: str) -> bool:
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
-    assert "app.domain.telemetry_types" in modules
+    assert "app.domain.devices" in modules
+    assert "app.domain.reading_quality" in modules
+    assert "app.domain.telemetry_types" not in modules
     assert not any(
         module == "app"
         or (module.startswith("app.") and not module.startswith("app.domain."))

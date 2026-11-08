@@ -4,10 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import (
-    ReadingQuality,
-    SensorChannel,
-)
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 RAINFALL_MIN_MM_H = 0
 RAINFALL_MAX_MM_H = 500

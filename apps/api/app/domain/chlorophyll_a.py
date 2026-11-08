@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import ReadingQuality, SensorChannel
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 CHLOROPHYLL_A_MIN_UG_L = 0
 CHLOROPHYLL_A_MAX_UG_L = 1000

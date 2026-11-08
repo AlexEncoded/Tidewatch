@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from .telemetry_types import ReadingQuality, SensorChannel
+from .reading_quality import ReadingQuality
+from .devices import SensorChannel
 
 UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB = -200
 UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB = 100
