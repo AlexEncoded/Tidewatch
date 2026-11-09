@@ -1207,6 +1207,23 @@ def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
     )
 
 
+def test_buoy_status_uses_domain_operational_type() -> None:
+    from app.domain.buoy import (
+        BuoyOperationalStatus,
+        BuoySnapshot,
+        BuoyStatusCommand,
+        StaleBuoySnapshot,
+    )
+    from app.domain.maintenance import is_buoy_silent
+    from app.domain.staleness import stale_age_seconds
+
+    assert get_type_hints(BuoySnapshot)["status"] is BuoyOperationalStatus
+    assert get_type_hints(StaleBuoySnapshot)["status"] is BuoyOperationalStatus
+    assert get_type_hints(BuoyStatusCommand)["status"] is BuoyOperationalStatus
+    assert get_type_hints(stale_age_seconds)["status"] is BuoyOperationalStatus
+    assert get_type_hints(is_buoy_silent)["status"] is BuoyOperationalStatus
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

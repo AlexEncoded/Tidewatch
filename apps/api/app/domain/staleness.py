@@ -2,12 +2,12 @@
 
 from datetime import datetime, timezone
 
-from .buoy import BuoyActivitySnapshot, StaleBuoySnapshot
+from .buoy import BuoyActivitySnapshot, BuoyOperationalStatus, StaleBuoySnapshot
 from .time_rules import require_positive_finite_seconds
 
 
 def stale_age_seconds(
-    status: str,
+    status: BuoyOperationalStatus,
     last_seen_at: datetime | None,
     max_age_seconds: float,
     now: datetime,

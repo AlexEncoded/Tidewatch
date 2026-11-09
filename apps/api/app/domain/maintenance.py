@@ -4,6 +4,7 @@ from math import isfinite
 from typing import Literal
 
 from .battery import validate_battery_percentage
+from .buoy import BuoyOperationalStatus
 from .time_rules import require_positive_finite_seconds
 
 
@@ -58,7 +59,7 @@ def low_battery_severity(battery_percent: float) -> BatterySeverity | None:
 
 
 def is_buoy_silent(
-    status: str,
+    status: BuoyOperationalStatus,
     last_seen_at: datetime | None,
     now: datetime,
     max_age_seconds: float,

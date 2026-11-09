@@ -38,7 +38,7 @@ class StaleBuoySnapshot:
 
     buoy_id: str
     name: str
-    status: str
+    status: BuoyOperationalStatus
     last_seen_at: datetime
     age_seconds: float
 
@@ -51,7 +51,7 @@ class BuoySnapshot:
     name: str
     latitude: float | None
     longitude: float | None
-    status: str
+    status: BuoyOperationalStatus
     last_seen_at: datetime | None
     created_at: datetime
 
@@ -68,7 +68,7 @@ class BuoySummarySnapshot:
 class BuoyStatusCommand:
     """Requested operational status for a buoy."""
 
-    status: str
+    status: BuoyOperationalStatus
 
     def __post_init__(self) -> None:
         if self.status not in BUOY_STATUSES:
