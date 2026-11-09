@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from .analysis import AnalysisConfidence
 from .battery import validate_battery_percentage
 
 
@@ -26,7 +27,7 @@ class BatteryDischargeEstimate:
     change_percent: float | None = None
     discharge_rate_percent_per_hour: float | None = None
     estimated_hours_remaining: float | None = None
-    confidence: str = "insufficient_data"
+    confidence: AnalysisConfidence = "insufficient_data"
 
 
 @dataclass(frozen=True)
@@ -41,7 +42,7 @@ class BatteryAnalysisSnapshot:
     change_percent: float | None = None
     discharge_rate_percent_per_hour: float | None = None
     estimated_hours_remaining: float | None = None
-    confidence: str = "insufficient_data"
+    confidence: AnalysisConfidence = "insufficient_data"
 
 
 def estimate_battery_discharge(

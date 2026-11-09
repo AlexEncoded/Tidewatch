@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
+from .analysis import AnalysisConfidence, SeaState
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
 from .devices import SensorChannel
@@ -42,8 +43,8 @@ class PressureEstimate:
     maximum_pressure_kpa: float | None = None
     pressure_range_kpa: float | None = None
     estimated_wave_height_m: float | None = None
-    confidence: str = "insufficient_data"
-    sea_state: str = "unknown"
+    confidence: AnalysisConfidence = "insufficient_data"
+    sea_state: SeaState = "unknown"
 
 
 @dataclass(frozen=True)
@@ -56,8 +57,8 @@ class PressureAnalysisSnapshot:
     maximum_pressure_kpa: float | None = None
     pressure_range_kpa: float | None = None
     estimated_wave_height_m: float | None = None
-    confidence: str = "insufficient_data"
-    sea_state: str = "unknown"
+    confidence: AnalysisConfidence = "insufficient_data"
+    sea_state: SeaState = "unknown"
 
 
 def estimate_pressure(values: list[float]) -> PressureEstimate:

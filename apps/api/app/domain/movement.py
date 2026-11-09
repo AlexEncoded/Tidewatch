@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import timezone
 from math import asin, cos, radians, sin, sqrt
 
+from .analysis import AnalysisConfidence
+
 
 EARTH_RADIUS_M = 6_371_000
 
@@ -12,7 +14,7 @@ class MovementEstimate:
     distance_travelled_m: float | None = None
     displacement_m: float | None = None
     average_speed_mps: float | None = None
-    confidence: str = "insufficient_data"
+    confidence: AnalysisConfidence = "insufficient_data"
 
 
 @dataclass(frozen=True)
@@ -22,7 +24,7 @@ class MovementAnalysisSnapshot:
     distance_travelled_m: float | None = None
     displacement_m: float | None = None
     average_speed_mps: float | None = None
-    confidence: str = "insufficient_data"
+    confidence: AnalysisConfidence = "insufficient_data"
 
 
 def distance_between_points(

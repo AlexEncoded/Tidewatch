@@ -1258,6 +1258,28 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
     )
 
 
+def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
+    from app.domain.analysis import AnalysisConfidence, SeaState
+    from app.domain.battery_analysis import (
+        BatteryAnalysisSnapshot,
+        BatteryDischargeEstimate,
+    )
+    from app.domain.movement import MovementAnalysisSnapshot, MovementEstimate
+    from app.domain.pressure import PressureAnalysisSnapshot, PressureEstimate
+
+    for model in (
+        BatteryAnalysisSnapshot,
+        BatteryDischargeEstimate,
+        MovementAnalysisSnapshot,
+        MovementEstimate,
+        PressureAnalysisSnapshot,
+        PressureEstimate,
+    ):
+        assert get_type_hints(model)["confidence"] is AnalysisConfidence
+    for model in (PressureAnalysisSnapshot, PressureEstimate):
+        assert get_type_hints(model)["sea_state"] is SeaState
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
