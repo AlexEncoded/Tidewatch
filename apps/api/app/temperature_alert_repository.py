@@ -11,6 +11,7 @@ from .domain.temperature import TemperatureTelemetrySnapshot
 from .domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
+    TemperatureAlertStatus,
 )
 from .alert_entities import TemperatureAlertEntity
 from .fleet_entities import BuoyEntity
@@ -82,7 +83,9 @@ class TemperatureAlertRepository(TemperatureAlertStore):
         self.db.refresh(entity)
         return self._snapshot(entity)
 
-    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
+    def list_alerts(
+        self, status: TemperatureAlertStatus = "open"
+    ) -> list[TemperatureAlertSnapshot]:
         query = (
             select(TemperatureAlertEntity)
             .where(TemperatureAlertEntity.status == status)

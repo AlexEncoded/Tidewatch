@@ -2,8 +2,11 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal
 
 from .temperature import TemperatureAnalysisSnapshot
+
+TemperatureAlertStatus = Literal["open", "resolved"]
 
 
 @dataclass(frozen=True)
@@ -31,7 +34,7 @@ class TemperatureAlertSnapshot:
     average_temperature: float
     created_at: datetime
     message: str
-    status: str
+    status: TemperatureAlertStatus
     resolved_at: datetime | None = None
 
 

@@ -1128,6 +1128,33 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     assert get_type_hints(validate_device_registration)["sensor_channel"] is SensorChannel
 
 
+def test_temperature_alert_status_uses_domain_type() -> None:
+    from app.application.alert_ports import TemperatureAlertStore
+    from app.application.temperature_alerts import list_stored_temperature_alerts
+    from app.domain.temperature_alert import (
+        TemperatureAlertSnapshot,
+        TemperatureAlertStatus,
+    )
+    from app.temperature_alert_repository import TemperatureAlertRepository
+
+    assert (
+        get_type_hints(TemperatureAlertSnapshot)["status"]
+        is TemperatureAlertStatus
+    )
+    assert (
+        get_type_hints(TemperatureAlertStore.list_alerts)["status"]
+        is TemperatureAlertStatus
+    )
+    assert (
+        get_type_hints(list_stored_temperature_alerts)["status"]
+        is TemperatureAlertStatus
+    )
+    assert (
+        get_type_hints(TemperatureAlertRepository.list_alerts)["status"]
+        is TemperatureAlertStatus
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

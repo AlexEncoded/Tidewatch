@@ -9,6 +9,7 @@ from ..domain.temperature import TemperatureTelemetrySnapshot
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
+    TemperatureAlertStatus,
 )
 
 
@@ -42,7 +43,9 @@ class TemperatureAlertStore(TemperatureAlertsReader, Protocol):
     ) -> TemperatureAlertSnapshot:
         ...
 
-    def list_alerts(self, status: str = "open") -> list[TemperatureAlertSnapshot]:
+    def list_alerts(
+        self, status: TemperatureAlertStatus = "open"
+    ) -> list[TemperatureAlertSnapshot]:
         ...
 
     def resolve_alert(self, alert_id: int) -> TemperatureAlertSnapshot | None:

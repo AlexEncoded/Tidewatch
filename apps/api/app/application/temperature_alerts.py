@@ -2,6 +2,7 @@
 
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
+    TemperatureAlertStatus,
     TemperatureAnomalySnapshot,
     build_temperature_anomaly,
 )
@@ -50,7 +51,7 @@ def evaluate_and_store_temperature_alerts(
 
 def list_stored_temperature_alerts(
     store: TemperatureAlertStore,
-    status: str = "open",
+    status: TemperatureAlertStatus = "open",
 ) -> list[TemperatureAlertSnapshot]:
     """List persisted temperature-alert snapshots through the output port."""
     return store.list_alerts(status)
