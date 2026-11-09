@@ -1,18 +1,23 @@
 from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
+from typing import Literal
+
 from .battery import validate_battery_percentage
+from .devices import SensorChannel
+
+BatteryHealthStatus = Literal["insufficient_data", "consistent", "degraded"]
 
 
 @dataclass(frozen=True)
 class BatteryHealthSnapshot:
     buoy_id: str
-    status: str
+    status: BatteryHealthStatus
     device_a_percent: float | None
     device_b_percent: float | None
     checked_at: datetime
     delta_percent: float | None = None
-    degraded_devices: tuple[str, ...] = ()
+    degraded_devices: tuple[SensorChannel, ...] = ()
 
     def __post_init__(self) -> None:
         degraded_devices = tuple(self.degraded_devices)
@@ -56,11 +61,11 @@ class BatteryHealthSnapshot:
 
 @dataclass(frozen=True)
 class BatteryHealthEstimate:
-    status: str
+    status: BatteryHealthStatus
     device_a_percent: float | None
     device_b_percent: float | None
     delta_percent: float | None = None
-    degraded_devices: tuple[str, ...] = ()
+    degraded_devices: tuple[SensorChannel, ...] = ()
 
 
 def estimate_battery_health(
@@ -85,7 +90,7 @@ def estimate_battery_health(
         )
 
     delta = round(abs(device_a_percent - device_b_percent), 2)
-    degraded_devices: tuple[str, ...] = ()
+    degraded_devices: tuple[SensorChannel, ...] = ()
     if delta > threshold:
         degraded_devices = ("A" if device_a_percent < device_b_percent else "B",)
 

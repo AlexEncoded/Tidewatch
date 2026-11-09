@@ -1185,6 +1185,28 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     )
 
 
+def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
+    from app.domain.battery_health import (
+        BatteryHealthEstimate,
+        BatteryHealthSnapshot,
+        BatteryHealthStatus,
+        estimate_battery_health,
+    )
+    from app.domain.devices import SensorChannel
+
+    assert get_type_hints(BatteryHealthSnapshot)["status"] is BatteryHealthStatus
+    assert get_type_hints(BatteryHealthEstimate)["status"] is BatteryHealthStatus
+    assert get_type_hints(estimate_battery_health)["return"] is BatteryHealthEstimate
+    assert (
+        get_type_hints(BatteryHealthSnapshot)["degraded_devices"]
+        == tuple[SensorChannel, ...]
+    )
+    assert (
+        get_type_hints(BatteryHealthEstimate)["degraded_devices"]
+        == tuple[SensorChannel, ...]
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
