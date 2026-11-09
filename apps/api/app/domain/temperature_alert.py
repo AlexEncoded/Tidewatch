@@ -7,6 +7,7 @@ from typing import Literal
 from .temperature import TemperatureAnalysisSnapshot
 
 TemperatureAlertStatus = Literal["open", "resolved"]
+TemperatureAlertSeverity = Literal["warning"]
 
 
 @dataclass(frozen=True)
@@ -15,7 +16,7 @@ class TemperatureAnomalySnapshot:
 
     buoy_id: str
     buoy_name: str
-    severity: str
+    severity: TemperatureAlertSeverity
     temperature_celsius: float
     average_temperature: float
     created_at: datetime
@@ -29,7 +30,7 @@ class TemperatureAlertSnapshot:
     id: int
     buoy_id: str
     buoy_name: str
-    severity: str
+    severity: TemperatureAlertSeverity
     temperature_celsius: float
     average_temperature: float
     created_at: datetime

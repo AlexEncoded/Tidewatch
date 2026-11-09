@@ -1133,7 +1133,9 @@ def test_temperature_alert_status_uses_domain_type() -> None:
     from app.application.temperature_alerts import list_stored_temperature_alerts
     from app.domain.temperature_alert import (
         TemperatureAlertSnapshot,
+        TemperatureAlertSeverity,
         TemperatureAlertStatus,
+        TemperatureAnomalySnapshot,
     )
     from app.temperature_alert_repository import TemperatureAlertRepository
 
@@ -1152,6 +1154,14 @@ def test_temperature_alert_status_uses_domain_type() -> None:
     assert (
         get_type_hints(TemperatureAlertRepository.list_alerts)["status"]
         is TemperatureAlertStatus
+    )
+    assert (
+        get_type_hints(TemperatureAlertSnapshot)["severity"]
+        is TemperatureAlertSeverity
+    )
+    assert (
+        get_type_hints(TemperatureAnomalySnapshot)["severity"]
+        is TemperatureAlertSeverity
     )
 
 
