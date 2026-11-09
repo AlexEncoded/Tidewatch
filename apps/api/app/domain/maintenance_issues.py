@@ -4,6 +4,8 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime
 
 from ..domain.battery_health import BatteryHealthSnapshot
+from ..domain.buoy import BuoyOperationalStatus
+from ..domain.sensor_health import SensorHealthSnapshot
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import classify_latest_readings
@@ -114,7 +116,7 @@ def build_battery_maintenance_issues(
 def build_operational_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
-    status: str,
+    status: BuoyOperationalStatus,
     last_seen_at: datetime | None,
     now: datetime,
     max_age_minutes: float,
@@ -156,7 +158,7 @@ def build_operational_maintenance_issues(
 def build_sensor_health_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
-    health: object,
+    health: SensorHealthSnapshot,
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for degraded or missing sensor channels."""
     if health.status != "degraded":
@@ -214,12 +216,12 @@ def build_device_maintenance_issues(
 def build_maintenance_issues_for_buoy(
     buoy_id: str,
     buoy_name: str,
-    status: str,
+    status: BuoyOperationalStatus,
     last_seen_at: datetime | None,
     now: datetime,
     max_age_minutes: float,
     drift_speed_mps: float,
-    sensor_health: object,
+    sensor_health: SensorHealthSnapshot,
     latest_readings: Mapping[str, Sequence[object]],
     latest_batteries: Mapping[str, object | None],
     battery_health: BatteryHealthSnapshot,

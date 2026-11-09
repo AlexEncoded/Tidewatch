@@ -1224,6 +1224,40 @@ def test_buoy_status_uses_domain_operational_type() -> None:
     assert get_type_hints(is_buoy_silent)["status"] is BuoyOperationalStatus
 
 
+def test_maintenance_issue_contracts_use_domain_value_types() -> None:
+    from app.domain.buoy import BuoyOperationalStatus
+    from app.domain.maintenance import (
+        MaintenanceIssueSnapshot,
+        MaintenanceIssueType,
+        MaintenanceSeverity,
+    )
+    from app.domain.maintenance_issues import (
+        build_maintenance_issues_for_buoy,
+        build_operational_maintenance_issues,
+        build_sensor_health_maintenance_issues,
+    )
+    from app.domain.sensor_health import SensorHealthSnapshot
+
+    assert get_type_hints(MaintenanceIssueSnapshot)["issue_type"] is MaintenanceIssueType
+    assert get_type_hints(MaintenanceIssueSnapshot)["severity"] is MaintenanceSeverity
+    assert (
+        get_type_hints(build_operational_maintenance_issues)["status"]
+        is BuoyOperationalStatus
+    )
+    assert (
+        get_type_hints(build_maintenance_issues_for_buoy)["status"]
+        is BuoyOperationalStatus
+    )
+    assert (
+        get_type_hints(build_sensor_health_maintenance_issues)["health"]
+        is SensorHealthSnapshot
+    )
+    assert (
+        get_type_hints(build_maintenance_issues_for_buoy)["sensor_health"]
+        is SensorHealthSnapshot
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

@@ -8,7 +8,20 @@ from .buoy import BuoyOperationalStatus
 from .time_rules import require_positive_finite_seconds
 
 
-BatterySeverity = Literal["warning", "critical"]
+MaintenanceSeverity = Literal["warning", "critical"]
+BatterySeverity = MaintenanceSeverity
+MaintenanceIssueType = Literal[
+    "invalid_reading",
+    "suspect_reading",
+    "low_battery",
+    "missing_redundant_device",
+    "degraded_battery",
+    "silent_buoy",
+    "drift_detected",
+    "degraded_sensor",
+    "missing_sensor_channel",
+    "stale_device",
+]
 
 
 @dataclass(frozen=True)
@@ -17,8 +30,8 @@ class MaintenanceIssueSnapshot:
 
     buoy_id: str
     buoy_name: str
-    issue_type: str
-    severity: str
+    issue_type: MaintenanceIssueType
+    severity: MaintenanceSeverity
     message: str
 
 
@@ -48,7 +61,7 @@ def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
     return average_speed_mps is not None and average_speed_mps > limit_mps
 
 
-def low_battery_severity(battery_percent: float) -> BatterySeverity | None:
+def low_battery_severity(battery_percent: float) -> MaintenanceSeverity | None:
     """Return the maintenance severity for a battery reading, if it is low."""
     validate_battery_percentage(battery_percent)
     if battery_percent < 10:
