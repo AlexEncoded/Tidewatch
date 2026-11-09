@@ -1324,6 +1324,24 @@ def test_wave_analytics_use_the_wave_confidence_type() -> None:
     assert get_type_hints(WaveAnalysisSnapshot)["period_confidence"] is WaveConfidence
 
 
+def test_sensor_family_catalog_matches_metric_adapters() -> None:
+    from typing import get_args
+
+    from app.application.sensor_reading_metrics import (
+        _SENSOR_METRICS,
+        record_sensor_reading_metrics,
+    )
+    from app.domain.sensor_family import SensorFamily, VALID_SENSOR_FAMILIES
+
+    catalog = set(get_args(SensorFamily))
+    assert catalog == set(VALID_SENSOR_FAMILIES)
+    assert catalog == set(_SENSOR_METRICS)
+    assert (
+        get_type_hints(record_sensor_reading_metrics)["sensor_family"]
+        is SensorFamily
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

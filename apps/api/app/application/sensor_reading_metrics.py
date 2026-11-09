@@ -4,10 +4,11 @@ from collections.abc import Mapping
 
 from ..domain.devices import SensorChannel
 from ..domain.reading_quality import ReadingQuality
+from ..domain.sensor_family import SensorFamily
 from .telemetry_ports import TelemetryMetrics
 
 
-_SENSOR_METRICS: dict[str, tuple[str, dict[str, str]]] = {
+_SENSOR_METRICS: dict[SensorFamily, tuple[str, dict[str, str]]] = {
     "imu": ("imu_readings_total", {}),
     "wind": (
         "wind_readings_total",
@@ -80,7 +81,7 @@ _SENSOR_METRICS: dict[str, tuple[str, dict[str, str]]] = {
 def record_sensor_reading_metrics(
     metrics: TelemetryMetrics,
     buoy_id: str,
-    sensor_family: str,
+    sensor_family: SensorFamily,
     sensor_channel: SensorChannel,
     quality: ReadingQuality,
     values: Mapping[str, float],
