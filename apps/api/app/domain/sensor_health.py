@@ -5,7 +5,7 @@ from typing import Literal
 
 from .sensor_completeness import missing_sensor_channels
 from .sensor_health_rules import degraded_sensor_names
-from .sensor_status import sensor_health_status
+from .sensor_status import SensorHealthStatus, sensor_health_status
 
 
 ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
@@ -13,7 +13,7 @@ ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
 
 @dataclass(frozen=True)
 class SensorHealthEvaluation:
-    status: str
+    status: SensorHealthStatus
     degraded_sensors: list[str]
     missing_sensors: list[str]
     decisions: dict[str, ChannelDecision]
@@ -24,7 +24,7 @@ class SensorHealthSnapshot:
     """Domain snapshot of redundant sensor health."""
 
     buoy_id: str
-    status: str
+    status: SensorHealthStatus
     checked_at: datetime
     temperature_delta_celsius: float | None = None
     pressure_delta_kpa: float | None = None
@@ -48,7 +48,7 @@ class SensorHealthSnapshot:
     underwater_acoustic_delta_db: float | None = None
     degraded_sensors: list[str] | None = None
     missing_sensors: list[str] | None = None
-    decisions: dict[str, str] | None = None
+    decisions: dict[str, ChannelDecision] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

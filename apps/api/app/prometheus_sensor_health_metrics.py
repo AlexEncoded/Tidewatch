@@ -2,6 +2,8 @@
 
 from collections.abc import Mapping
 
+from .domain.sensor_health import ChannelDecision
+
 from .application.sensor_health_ports import SensorHealthMetrics
 from .metrics import sensor_channel_missing, sensor_degraded, sensor_health_decision
 
@@ -15,7 +17,7 @@ class PrometheusSensorHealthMetrics(SensorHealthMetrics):
         readings: Mapping[str, Mapping[str, object | None]],
         degraded_sensors: list[str],
         missing_sensors: list[str],
-        decisions: Mapping[str, str],
+        decisions: Mapping[str, ChannelDecision],
     ) -> None:
         for sensor, channels in readings.items():
             has_reading = any(channels.values())

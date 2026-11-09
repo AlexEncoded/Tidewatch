@@ -1155,6 +1155,36 @@ def test_temperature_alert_status_uses_domain_type() -> None:
     )
 
 
+def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
+    from collections.abc import Mapping
+
+    from app.domain.sensor_health import (
+        ChannelDecision,
+        SensorHealthEvaluation,
+        SensorHealthSnapshot,
+    )
+    from app.domain.sensor_status import SensorHealthStatus, sensor_health_status
+    from app.application.sensor_health_ports import SensorHealthMetrics
+    from app.prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
+
+    assert get_type_hints(sensor_health_status)["return"] is SensorHealthStatus
+    assert get_type_hints(SensorHealthEvaluation)["status"] is SensorHealthStatus
+    assert get_type_hints(SensorHealthSnapshot)["status"] is SensorHealthStatus
+    assert get_type_hints(SensorHealthEvaluation)["decisions"] == dict[str, ChannelDecision]
+    assert (
+        get_type_hints(SensorHealthSnapshot)["decisions"]
+        == dict[str, ChannelDecision] | None
+    )
+    assert (
+        get_type_hints(SensorHealthMetrics.record_evaluation)["decisions"]
+        == Mapping[str, ChannelDecision]
+    )
+    assert (
+        get_type_hints(PrometheusSensorHealthMetrics.record_evaluation)["decisions"]
+        == Mapping[str, ChannelDecision]
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

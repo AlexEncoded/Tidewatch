@@ -6,7 +6,11 @@ from collections.abc import Mapping
 from ..domain.devices import SensorChannel
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
-from ..domain.sensor_health import SensorHealthCheckSnapshot, SensorHealthSnapshot
+from ..domain.sensor_health import (
+    ChannelDecision,
+    SensorHealthCheckSnapshot,
+    SensorHealthSnapshot,
+)
 from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
@@ -35,7 +39,7 @@ class SensorHealthMetrics(Protocol):
         readings: Mapping[str, Mapping[str, object | None]],
         degraded_sensors: list[str],
         missing_sensors: list[str],
-        decisions: Mapping[str, str],
+        decisions: Mapping[str, ChannelDecision],
     ) -> None:
         ...
 
