@@ -1280,6 +1280,20 @@ def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
         assert get_type_hints(model)["sea_state"] is SeaState
 
 
+def test_wave_analytics_use_the_wave_confidence_type() -> None:
+    from app.domain.wave import (
+        WaveAnalysisSnapshot,
+        WaveConfidence,
+        WaveEstimate,
+        WavePeriodEstimate,
+    )
+
+    assert get_type_hints(WaveEstimate)["confidence"] is WaveConfidence
+    assert get_type_hints(WavePeriodEstimate)["confidence"] is WaveConfidence
+    assert get_type_hints(WaveAnalysisSnapshot)["confidence"] is WaveConfidence
+    assert get_type_hints(WaveAnalysisSnapshot)["period_confidence"] is WaveConfidence
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

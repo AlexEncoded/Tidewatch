@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from math import isfinite
 from statistics import fmean, median
+from typing import Literal
 
 
 DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
@@ -12,6 +13,12 @@ MIN_IMU_WAVE_HEIGHT_FACTOR = 0.0
 MAX_IMU_WAVE_HEIGHT_FACTOR = 10.0
 MAX_WAVE_PERIOD_RELATIVE_DISAGREEMENT = 0.25
 MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS = 4
+WaveConfidence = Literal[
+    "insufficient_data",
+    "partial",
+    "sensor_disagreement",
+    "experimental",
+]
 
 
 @dataclass(frozen=True)
@@ -19,7 +26,7 @@ class WaveEstimate:
     gnss_vertical_range_m: float | None
     imu_vertical_acceleration_range_mps2: float | None
     estimated_wave_height_m: float | None
-    confidence: str
+    confidence: WaveConfidence
     estimated_period_seconds: float | None = None
 
 
@@ -28,7 +35,7 @@ class WavePeriodEstimate:
     """Period estimate plus the availability/agreement of its source sensors."""
 
     estimated_period_seconds: float | None
-    confidence: str
+    confidence: WaveConfidence
 
 
 @dataclass(frozen=True)
@@ -42,8 +49,8 @@ class WaveAnalysisSnapshot:
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None
     estimated_period_seconds: float | None = None
-    period_confidence: str = "insufficient_data"
-    confidence: str = "insufficient_data"
+    period_confidence: WaveConfidence = "insufficient_data"
+    confidence: WaveConfidence = "insufficient_data"
 
 
 def synchronize_wave_readings(
