@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.ambient_light import AmbientLightTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import AmbientLightReadingEntity
 
 
@@ -47,7 +48,7 @@ class AmbientLightRepository:
         )
 
     def list_ambient_light(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AmbientLightTelemetrySnapshot]:
         query = (
             select(AmbientLightReadingEntity)
@@ -72,7 +73,7 @@ class AmbientLightRepository:
         ]
 
     def latest_ambient_light(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> AmbientLightTelemetrySnapshot | None:
         readings = self.list_ambient_light(
             buoy_id, limit=1, sensor_channel=sensor_channel

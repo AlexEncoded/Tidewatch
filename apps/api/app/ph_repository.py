@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.ph import PHTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import PHReadingEntity
 
 
@@ -45,7 +46,7 @@ class PHRepository:
         )
 
     def list_ph(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[PHTelemetrySnapshot]:
         query = (
             select(PHReadingEntity)
@@ -70,7 +71,7 @@ class PHRepository:
         ]
 
     def latest_ph(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> PHTelemetrySnapshot | None:
         readings = self.list_ph(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None

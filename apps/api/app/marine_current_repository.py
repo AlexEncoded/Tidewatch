@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.marine_current import MarineCurrentTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import MarineCurrentReadingEntity
 
 
@@ -49,7 +50,7 @@ class MarineCurrentRepository:
         )
 
     def list_marine_current(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[MarineCurrentTelemetrySnapshot]:
         query = (
             select(MarineCurrentReadingEntity)
@@ -75,7 +76,7 @@ class MarineCurrentRepository:
         ]
 
     def latest_marine_current(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> MarineCurrentTelemetrySnapshot | None:
         readings = self.list_marine_current(
             buoy_id, limit=1, sensor_channel=sensor_channel

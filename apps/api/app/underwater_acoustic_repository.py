@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from .sensor_entities import UnderwaterAcousticReadingEntity
+from .domain.devices import SensorChannel
 
 
 class UnderwaterAcousticRepository:
@@ -47,7 +48,7 @@ class UnderwaterAcousticRepository:
         )
 
     def list_underwater_acoustic(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[UnderwaterAcousticTelemetrySnapshot]:
         query = (
             select(UnderwaterAcousticReadingEntity)
@@ -74,7 +75,7 @@ class UnderwaterAcousticRepository:
         ]
 
     def latest_underwater_acoustic(
-        self, buoy_id: str, sensor_channel: str | None = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel | None = "A"
     ) -> UnderwaterAcousticTelemetrySnapshot | None:
         readings = self.list_underwater_acoustic(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

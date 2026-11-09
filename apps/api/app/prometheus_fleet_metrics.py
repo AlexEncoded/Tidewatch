@@ -9,6 +9,7 @@ from .metrics import (
     buoy_movement_speed_mps,
     device_last_seen_timestamp_seconds,
 )
+from .domain.devices import SensorChannel
 
 
 class PrometheusFleetMetrics(FleetMetrics, AvailabilityMetrics):
@@ -26,7 +27,7 @@ class PrometheusFleetMetrics(FleetMetrics, AvailabilityMetrics):
         self,
         buoy_id: str,
         device_id: str,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         last_seen_at: datetime | None,
     ) -> None:
         self.restore_device_heartbeat(
@@ -47,7 +48,7 @@ class PrometheusFleetMetrics(FleetMetrics, AvailabilityMetrics):
         self,
         buoy_id: str,
         device_id: str,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         timestamp_seconds: float,
     ) -> None:
         device_last_seen_timestamp_seconds.labels(

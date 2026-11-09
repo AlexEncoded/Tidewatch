@@ -16,6 +16,7 @@ from .domain.temperature_alert import (
 from .alert_entities import TemperatureAlertEntity
 from .fleet_entities import BuoyEntity
 from .temperature_repository import TemperatureRepository
+from .domain.devices import SensorChannel
 
 
 class TemperatureAlertRepository(TemperatureAlertStore):
@@ -26,7 +27,7 @@ class TemperatureAlertRepository(TemperatureAlertStore):
         self.telemetry = TemperatureRepository(db)
 
     def list_temperatures(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TemperatureTelemetrySnapshot]:
         return self.telemetry.list_temperatures(buoy_id, limit, sensor_channel)
 

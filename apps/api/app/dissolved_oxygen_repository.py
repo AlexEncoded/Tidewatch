@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import DissolvedOxygenReadingEntity
 
 
@@ -47,7 +48,7 @@ class DissolvedOxygenRepository:
         )
 
     def list_dissolved_oxygen(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[DissolvedOxygenTelemetrySnapshot]:
         query = (
             select(DissolvedOxygenReadingEntity)
@@ -72,7 +73,7 @@ class DissolvedOxygenRepository:
         ]
 
     def latest_dissolved_oxygen(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> DissolvedOxygenTelemetrySnapshot | None:
         readings = self.list_dissolved_oxygen(
             buoy_id, limit=1, sensor_channel=sensor_channel

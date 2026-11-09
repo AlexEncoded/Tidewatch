@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.imu import ImuTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import ImuReadingEntity
 
 
@@ -55,7 +56,7 @@ class ImuRepository:
         )
 
     def list_imu(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ImuTelemetrySnapshot]:
         query = (
             select(ImuReadingEntity)
@@ -85,7 +86,7 @@ class ImuRepository:
         ]
 
     def latest_imu(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> ImuTelemetrySnapshot | None:
         readings = self.list_imu(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None

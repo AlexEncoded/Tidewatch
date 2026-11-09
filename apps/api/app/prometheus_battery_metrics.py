@@ -10,6 +10,7 @@ from .metrics import (
     buoy_last_seen_timestamp_seconds,
     device_last_seen_timestamp_seconds,
 )
+from .domain.devices import SensorChannel
 
 
 class PrometheusBatteryMetrics(BatteryMetrics):
@@ -20,7 +21,7 @@ class PrometheusBatteryMetrics(BatteryMetrics):
         buoy_id: str,
         battery_percent_value: float,
         physical_device_id: str | None,
-        sensor_channel: str,
+        sensor_channel: SensorChannel,
         received_at: datetime,
     ) -> None:
         battery_percent.labels(buoy_id=buoy_id).set(battery_percent_value)

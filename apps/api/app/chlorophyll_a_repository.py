@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import ChlorophyllAReadingEntity
 
 
@@ -47,7 +48,7 @@ class ChlorophyllARepository:
         )
 
     def list_chlorophyll_a(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ChlorophyllATelemetrySnapshot]:
         query = (
             select(ChlorophyllAReadingEntity)
@@ -74,7 +75,7 @@ class ChlorophyllARepository:
         ]
 
     def latest_chlorophyll_a(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> ChlorophyllATelemetrySnapshot | None:
         readings = self.list_chlorophyll_a(
             buoy_id, limit=1, sensor_channel=sensor_channel

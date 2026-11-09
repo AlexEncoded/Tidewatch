@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.temperature import TemperatureTelemetrySnapshot
 from .sensor_entities import TemperatureReadingEntity
+from .domain.devices import SensorChannel
 
 
 class TemperatureRepository:
@@ -47,7 +48,7 @@ class TemperatureRepository:
         )
 
     def list_temperatures(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TemperatureTelemetrySnapshot]:
         query = (
             select(TemperatureReadingEntity)
@@ -72,7 +73,7 @@ class TemperatureRepository:
         ]
 
     def latest_temperature(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> TemperatureTelemetrySnapshot | None:
         readings = self.list_temperatures(
             buoy_id, limit=1, sensor_channel=sensor_channel

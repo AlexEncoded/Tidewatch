@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.rainfall import RainfallTelemetrySnapshot
 from .sensor_entities import RainfallReadingEntity
+from .domain.devices import SensorChannel
 
 
 class RainfallRepository:
@@ -47,7 +48,7 @@ class RainfallRepository:
         )
 
     def list_rainfall(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[RainfallTelemetrySnapshot]:
         query = (
             select(RainfallReadingEntity)
@@ -74,7 +75,7 @@ class RainfallRepository:
         ]
 
     def latest_rainfall(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> RainfallTelemetrySnapshot | None:
         readings = self.list_rainfall(
             buoy_id, limit=1, sensor_channel=sensor_channel

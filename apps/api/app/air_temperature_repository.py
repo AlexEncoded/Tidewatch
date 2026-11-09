@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.air_temperature import AirTemperatureTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import AirTemperatureReadingEntity
 
 
@@ -47,7 +48,7 @@ class AirTemperatureRepository:
         )
 
     def list_air_temperature(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AirTemperatureTelemetrySnapshot]:
         query = (
             select(AirTemperatureReadingEntity)
@@ -74,7 +75,7 @@ class AirTemperatureRepository:
         ]
 
     def latest_air_temperature(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> AirTemperatureTelemetrySnapshot | None:
         readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

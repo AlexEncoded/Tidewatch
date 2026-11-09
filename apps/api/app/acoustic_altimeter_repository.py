@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import AcousticAltimeterReadingEntity
 
 
@@ -47,7 +48,7 @@ class AcousticAltimeterRepository:
         )
 
     def list_acoustic_altimeter(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AcousticAltimeterTelemetrySnapshot]:
         query = (
             select(AcousticAltimeterReadingEntity)
@@ -74,7 +75,7 @@ class AcousticAltimeterRepository:
         ]
 
     def latest_acoustic_altimeter(
-        self, buoy_id: str, sensor_channel: str | None = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel | None = "A"
     ) -> AcousticAltimeterTelemetrySnapshot | None:
         readings = self.list_acoustic_altimeter(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

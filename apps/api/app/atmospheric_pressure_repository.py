@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import AtmosphericPressureReadingEntity
 
 
@@ -47,7 +48,7 @@ class AtmosphericPressureRepository:
         )
 
     def list_atmospheric_pressure(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AtmosphericPressureTelemetrySnapshot]:
         query = (
             select(AtmosphericPressureReadingEntity)
@@ -74,7 +75,7 @@ class AtmosphericPressureRepository:
         ]
 
     def latest_atmospheric_pressure(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> AtmosphericPressureTelemetrySnapshot | None:
         readings = self.list_atmospheric_pressure(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

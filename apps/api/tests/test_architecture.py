@@ -1128,6 +1128,26 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     assert get_type_hints(validate_device_registration)["sensor_channel"] is SensorChannel
 
 
+def test_sensor_channel_adapters_use_domain_type_outside_http_boundary() -> None:
+    offenders = []
+    for path in API_APP.rglob("*.py"):
+        if "routers" in path.parts or "schemas" in path.parts:
+            continue
+        module = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(module):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for argument in (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs):
+                if argument.arg != "sensor_channel" or argument.annotation is None:
+                    continue
+                if any(
+                    isinstance(annotation, ast.Name) and annotation.id == "str"
+                    for annotation in ast.walk(argument.annotation)
+                ):
+                    offenders.append(f"{path.relative_to(API_APP)}:{node.name}")
+    assert not offenders, f"Sensor channel adapters still use str: {offenders}"
+
+
 def test_temperature_alert_status_uses_domain_type() -> None:
     from app.application.alert_ports import TemperatureAlertStore
     from app.application.temperature_alerts import list_stored_temperature_alerts

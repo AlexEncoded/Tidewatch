@@ -8,6 +8,7 @@ from .buoy_location_repository import BuoyLocationRepository
 from .domain.location import LocationTelemetrySnapshot
 from .domain.imu import ImuTelemetrySnapshot
 from .imu_repository import ImuRepository
+from .domain.devices import SensorChannel
 
 
 class WaveAnalysisRepository:
@@ -21,7 +22,7 @@ class WaveAnalysisRepository:
         return self.locations.buoy_exists(buoy_id)
 
     def list_imu(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ImuTelemetrySnapshot]:
         return self.imu.list_imu(buoy_id, limit, sensor_channel)
 

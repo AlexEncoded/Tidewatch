@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.turbidity import TurbidityTelemetrySnapshot
 from .sensor_entities import TurbidityReadingEntity
+from .domain.devices import SensorChannel
 
 
 class TurbidityRepository:
@@ -47,7 +48,7 @@ class TurbidityRepository:
         )
 
     def list_turbidity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TurbidityTelemetrySnapshot]:
         query = (
             select(TurbidityReadingEntity)
@@ -72,7 +73,7 @@ class TurbidityRepository:
         ]
 
     def latest_turbidity(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> TurbidityTelemetrySnapshot | None:
         readings = self.list_turbidity(
             buoy_id, limit=1, sensor_channel=sensor_channel

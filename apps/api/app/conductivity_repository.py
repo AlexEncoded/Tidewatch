@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.conductivity import ConductivityTelemetrySnapshot
+from .domain.devices import SensorChannel
 from .sensor_entities import ConductivityReadingEntity
 
 
@@ -47,7 +48,7 @@ class ConductivityRepository:
         )
 
     def list_conductivity(
-        self, buoy_id: str, limit: int, sensor_channel: str | None = "A"
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[ConductivityTelemetrySnapshot]:
         query = (
             select(ConductivityReadingEntity)
@@ -74,7 +75,7 @@ class ConductivityRepository:
         ]
 
     def latest_conductivity(
-        self, buoy_id: str, sensor_channel: str = "A"
+        self, buoy_id: str, sensor_channel: SensorChannel = "A"
     ) -> ConductivityTelemetrySnapshot | None:
         readings = self.list_conductivity(
             buoy_id, limit=1, sensor_channel=sensor_channel
