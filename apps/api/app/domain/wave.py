@@ -205,8 +205,10 @@ def estimate_wave_period(
 
     Duplicate timestamps are consolidated. Gaps longer than three nominal
     sample intervals split the record so crossings are never interpolated over
-    missing telemetry. Detrending remains conservative to avoid fitting away
-    a wave in short records or when the linear trend is weak.
+    missing telemetry. A three-sample median filter suppresses noise-driven
+    crossing chatter only when the samples substantially oversample the period.
+    Detrending remains conservative to avoid fitting away a wave in short
+    records or when the linear trend is weak.
     """
     finite_samples = [
         (timestamp, value)
@@ -276,26 +278,55 @@ def estimate_wave_period(
             else 0.0
         )
         detrended_samples = [
-            (timestamp, value - (mean_value + trend_slope * (time - mean_time)))
+            (time, value - (mean_value + trend_slope * (time - mean_time)))
             for time, (timestamp, value) in zip(elapsed_seconds, segment)
         ]
-        crossings = []
-        for (previous_timestamp, previous_value), (timestamp, value) in zip(
-            detrended_samples, detrended_samples[1:]
-        ):
-            if previous_value >= 0 or value < 0 or value == previous_value:
-                continue
-            crossing_fraction = -previous_value / (value - previous_value)
-            crossings.append(
-                previous_timestamp
-                + (timestamp - previous_timestamp) * crossing_fraction
-            )
+        raw_crossings = _upward_crossing_times(detrended_samples)
+        raw_periods = [
+            current - previous
+            for previous, current in zip(raw_crossings, raw_crossings[1:])
+            if current > previous
+        ]
+        samples_per_period = (
+            median(raw_periods) / nominal_interval
+            if raw_periods and nominal_interval > 0
+            else 0
+        )
+        smoothed_samples = detrended_samples
+        if len(segment) >= 16 and samples_per_period > 5:
+            detrended_values = [value for _, value in detrended_samples]
+            smoothed_samples = [
+                (
+                    timestamp,
+                    median(
+                        detrended_values[
+                            max(0, index - 1) : min(len(segment), index + 2)
+                        ]
+                    ),
+                )
+                for index, (timestamp, _) in enumerate(detrended_samples)
+            ]
+        crossings = _upward_crossing_times(smoothed_samples)
         periods.extend(
-            (current - previous).total_seconds()
+            current - previous
             for previous, current in zip(crossings, crossings[1:])
-            if (current - previous).total_seconds() > 0
+            if current > previous
         )
     return round(median(periods), 3) if periods else None
+
+
+def _upward_crossing_times(samples: Sequence[tuple[float, float]]) -> list[float]:
+    crossings = []
+    for (previous_time, previous_value), (timestamp, value) in zip(
+        samples, samples[1:]
+    ):
+        if previous_value >= 0 or value < 0 or value == previous_value:
+            continue
+        crossing_fraction = -previous_value / (value - previous_value)
+        crossings.append(
+            previous_time + (timestamp - previous_time) * crossing_fraction
+        )
+    return crossings
 
 
 def estimate_fused_wave_period(

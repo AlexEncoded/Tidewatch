@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from math import inf, nan, pi, sin
+from random import Random
 from types import SimpleNamespace
 
 import pytest
@@ -226,6 +227,22 @@ def test_estimate_wave_period_does_not_bridge_telemetry_gaps() -> None:
     samples.insert(3, samples[3])  # Duplicate timestamps must not skew the period.
 
     assert estimate_wave_period(samples) == 20.0
+
+
+@pytest.mark.parametrize("noise_level", (0.15, 0.3, 0.5))
+def test_estimate_wave_period_resists_noise_across_telemetry_gaps(
+    noise_level: float,
+) -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    random = Random(403)
+    samples = []
+    for fragment_start in (0, 3600):
+        for index in range(160):
+            elapsed = fragment_start + index * 0.5
+            value = sin(2 * pi * elapsed / 8) + random.gauss(0, noise_level)
+            samples.append((start + timedelta(seconds=elapsed), value))
+
+    assert estimate_wave_period(samples) == pytest.approx(8.0, abs=0.2)
 
 
 def test_estimate_wave_period_does_not_learn_sampling_cadence_from_long_gaps() -> None:
