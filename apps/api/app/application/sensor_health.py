@@ -10,20 +10,49 @@ from ..domain.sensor_health import (
     SensorHealthSnapshot as DomainSensorHealthSnapshot,
     evaluate_sensor_health,
 )
-from ..domain.reading_quality import latest_usable_reading
 from ..domain.devices import SensorChannel
+from ..domain.reading_quality import latest_usable_reading
 from ..domain.sensor_family import SensorFamily
-from ..domain.sensor_health_rules import SensorHealthDeltaName
 from ..domain.sensor_health_analysis import calculate_sensor_health_deltas
+from ..domain.sensor_health_rules import SensorHealthDeltaName
+from ..domain.sensor_telemetry import SensorTelemetrySnapshot
+from ..domain.telemetry_family import TelemetryInputFamily
 from .sensor_health_ports import SensorHealthCheckWriter, SensorHealthReader
+
+
+SENSOR_HEALTH_READING_FAMILIES: tuple[
+    tuple[TelemetryInputFamily, SensorFamily], ...
+] = (
+    ("temperatures", "temperature"),
+    ("pressures", "pressure"),
+    ("salinity", "salinity"),
+    ("imu", "imu"),
+    ("ambient_light", "ambient_light"),
+    ("wind", "wind"),
+    ("marine_current", "marine_current"),
+    ("turbidity", "turbidity"),
+    ("dissolved_oxygen", "dissolved_oxygen"),
+    ("ph", "ph"),
+    ("conductivity", "conductivity"),
+    ("chlorophyll_a", "chlorophyll_a"),
+    ("rainfall", "rainfall"),
+    ("humidity", "humidity"),
+    ("air_temperature", "air_temperature"),
+    ("atmospheric_pressure", "atmospheric_pressure"),
+    ("acoustic_altimeter", "acoustic_altimeter"),
+    ("underwater_acoustic", "underwater_acoustic"),
+)
+SensorHealthReadings = dict[
+    SensorFamily, dict[SensorChannel, list[SensorTelemetrySnapshot]]
+]
 
 
 @dataclass(frozen=True)
 class SensorHealthSnapshot:
     """Application result shared by the HTTP and maintenance adapters."""
 
-    readings: dict[str, dict[str, object | None]]
-    deltas: dict[str, float | None]
+    readings: SensorHealthReadings
+    deltas: dict[SensorHealthDeltaName, float | None]
     evaluation: SensorHealthEvaluation
     health: DomainSensorHealthSnapshot
 
@@ -89,35 +118,16 @@ def collect_sensor_readings(
     buoy_id: str,
     max_age_seconds: float,
     now: datetime,
-) -> dict[str, dict[str, object | None]]:
+) -> SensorHealthReadings:
     """Load the latest usable A/B reading for every supported sensor family."""
-    sensor_families = (
-        "temperatures",
-        "pressures",
-        "salinity",
-        "imu",
-        "ambient_light",
-        "wind",
-        "marine_current",
-        "turbidity",
-        "dissolved_oxygen",
-        "ph",
-        "conductivity",
-        "chlorophyll_a",
-        "rainfall",
-        "humidity",
-        "air_temperature",
-        "atmospheric_pressure",
-        "acoustic_altimeter",
-        "underwater_acoustic",
-    )
-    readings = {}
-    for family in sensor_families:
-        list_readings = getattr(reader, f"list_{family}")
-        readings[family.removesuffix("s")] = {
+    readings: SensorHealthReadings = {}
+    channels: tuple[SensorChannel, ...] = ("A", "B")
+    for batch_family, sensor_family in SENSOR_HEALTH_READING_FAMILIES:
+        list_readings = getattr(reader, f"list_{batch_family}")
+        readings[sensor_family] = {
             channel: latest_usable_reading(
                 list_readings(buoy_id, 50, channel), max_age_seconds, now
             )
-            for channel in ("A", "B")
+            for channel in channels
         }
     return readings

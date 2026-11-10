@@ -1256,6 +1256,32 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
     )
 
 
+def test_sensor_health_collector_maps_batch_families_explicitly() -> None:
+    from typing import get_args
+
+    from app.application.sensor_health import (
+        SENSOR_HEALTH_READING_FAMILIES,
+        SensorHealthReadings,
+        SensorHealthSnapshot,
+        collect_sensor_readings,
+    )
+    from app.domain.sensor_family import SensorFamily
+    from app.domain.sensor_health_rules import SensorHealthDeltaName
+    from app.domain.telemetry_family import TELEMETRY_READING_FAMILIES
+
+    assert {batch for batch, _ in SENSOR_HEALTH_READING_FAMILIES} == (
+        set(TELEMETRY_READING_FAMILIES) - {"battery"}
+    )
+    assert {sensor for _, sensor in SENSOR_HEALTH_READING_FAMILIES} == set(
+        get_args(SensorFamily)
+    )
+    assert get_type_hints(collect_sensor_readings)["return"] == SensorHealthReadings
+    assert get_type_hints(SensorHealthSnapshot)["readings"] == SensorHealthReadings
+    assert get_type_hints(SensorHealthSnapshot)["deltas"] == dict[
+        SensorHealthDeltaName, float | None
+    ]
+
+
 def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
     from app.domain.battery_health import (
         BatteryHealthEstimate,
