@@ -10,7 +10,6 @@ from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
 from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
-    AcousticAltimeterTelemetryGateway,
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
@@ -18,8 +17,11 @@ from .sensor_ports import (
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
-    UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
+)
+from .acoustic_sensor_ports import (
+    AcousticAltimeterTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
 )
 from .water_chemistry_ports import (
     ChlorophyllATelemetryGateway,

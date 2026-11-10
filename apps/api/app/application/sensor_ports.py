@@ -8,8 +8,6 @@ from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from ..domain.imu import ImuTelemetrySnapshot
-from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from ..domain.turbidity import TurbidityTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.marine_current import MarineCurrentTelemetrySnapshot
@@ -143,34 +141,4 @@ class TurbidityTelemetryGateway(Protocol):
     def list_turbidity(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TurbidityTelemetrySnapshot]:
-        ...
-
-
-class AcousticAltimeterTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_acoustic_altimeter(
-        self, reading: AcousticAltimeterTelemetrySnapshot
-    ) -> AcousticAltimeterTelemetrySnapshot:
-        ...
-
-    def list_acoustic_altimeter(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[AcousticAltimeterTelemetrySnapshot]:
-        ...
-
-
-class UnderwaterAcousticTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_underwater_acoustic(
-        self, reading: UnderwaterAcousticTelemetrySnapshot
-    ) -> UnderwaterAcousticTelemetrySnapshot:
-        ...
-
-    def list_underwater_acoustic(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[UnderwaterAcousticTelemetrySnapshot]:
         ...

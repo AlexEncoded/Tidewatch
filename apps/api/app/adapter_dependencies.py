@@ -39,7 +39,6 @@ from .application.telemetry_ports import (
     TelemetryQueueMetricsReader,
 )
 from .application.sensor_ports import (
-    AcousticAltimeterTelemetryGateway,
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
@@ -47,8 +46,11 @@ from .application.sensor_ports import (
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
-    UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
+)
+from .application.acoustic_sensor_ports import (
+    AcousticAltimeterTelemetryGateway,
+    UnderwaterAcousticTelemetryGateway,
 )
 from .application.weather_ports import (
     AirTemperatureTelemetryGateway,

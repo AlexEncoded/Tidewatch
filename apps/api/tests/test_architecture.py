@@ -414,7 +414,6 @@ def test_analysis_ports_are_grouped_by_context() -> None:
 
 def test_sensor_health_ports_are_grouped_by_context() -> None:
     from app.application.sensor_ports import (
-        AcousticAltimeterTelemetryGateway,
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
@@ -425,12 +424,10 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TurbidityTelemetryGateway,
-        UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,
     )
 
     for port in (
-        AcousticAltimeterTelemetryGateway,
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
@@ -441,7 +438,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
         TurbidityTelemetryGateway,
-        UnderwaterAcousticTelemetryGateway,
         WindTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
@@ -479,6 +475,19 @@ def test_weather_ports_are_grouped_by_context() -> None:
         RainfallTelemetryGateway,
     ):
         assert port.__module__ == "app.application.weather_ports"
+
+
+def test_acoustic_sensor_ports_are_grouped_by_context() -> None:
+    from app.application.acoustic_sensor_ports import (
+        AcousticAltimeterTelemetryGateway,
+        UnderwaterAcousticTelemetryGateway,
+    )
+
+    for port in (
+        AcousticAltimeterTelemetryGateway,
+        UnderwaterAcousticTelemetryGateway,
+    ):
+        assert port.__module__ == "app.application.acoustic_sensor_ports"
 
 
 def test_battery_port_is_grouped_by_context() -> None:
