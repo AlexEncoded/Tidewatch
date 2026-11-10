@@ -1,15 +1,18 @@
 """HTTP contracts for maintenance issues and notification responses."""
 
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Literal
+
+from pydantic import BaseModel
+
+from ..domain.maintenance import MaintenanceIssueType, MaintenanceSeverity
 
 
 class MaintenanceIssue(BaseModel):
     buoy_id: str
     buoy_name: str
-    issue_type: str
-    severity: str
+    issue_type: MaintenanceIssueType
+    severity: MaintenanceSeverity
     message: str
 
 

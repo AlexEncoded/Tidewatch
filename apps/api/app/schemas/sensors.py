@@ -4,10 +4,15 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from ..domain.sensor_family import SensorFamily
+from ..domain.sensor_health import ChannelDecision
+from ..domain.sensor_health_rules import DegradedSensorName
+from ..domain.sensor_status import SensorHealthStatus
+
 
 class SensorHealth(BaseModel):
     buoy_id: str
-    status: str
+    status: SensorHealthStatus
     temperature_delta_celsius: float | None = None
     pressure_delta_kpa: float | None = None
     salinity_delta_psu: float | None = None
@@ -28,9 +33,9 @@ class SensorHealth(BaseModel):
     atmospheric_pressure_delta_kpa: float | None = None
     acoustic_altimeter_delta_meters: float | None = None
     underwater_acoustic_delta_db: float | None = None
-    degraded_sensors: list[str] = []
+    degraded_sensors: list[DegradedSensorName] = []
     missing_sensors: list[str] = []
-    decisions: dict[str, str] = Field(default_factory=dict)
+    decisions: dict[SensorFamily, ChannelDecision] = Field(default_factory=dict)
     checked_at: datetime
 
 

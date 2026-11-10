@@ -1,12 +1,10 @@
 """HTTP contracts for buoy battery telemetry and health."""
 
 from datetime import datetime, timezone
-from ..domain.battery import (
-    BATTERY_MAX_PERCENT,
-    BATTERY_MIN_PERCENT,
-    SensorChannel,
-)
-from ..domain.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
+from ..domain.analysis import AnalysisConfidence
+from ..domain.battery import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
+from ..domain.battery_health import BatteryHealthStatus
+from ..domain.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH, SensorChannel
 
 from pydantic import BaseModel, Field
 
@@ -33,11 +31,11 @@ class BatteryReading(BatteryReadingCreate):
 
 class BatteryHealth(BaseModel):
     buoy_id: str
-    status: str
+    status: BatteryHealthStatus
     device_a_percent: float | None = None
     device_b_percent: float | None = None
     delta_percent: float | None = None
-    degraded_devices: list[str] = []
+    degraded_devices: list[SensorChannel] = []
     checked_at: datetime
 
 
@@ -50,4 +48,4 @@ class BatteryAnalysis(BaseModel):
     change_percent: float | None = None
     discharge_rate_percent_per_hour: float | None = None
     estimated_hours_remaining: float | None = None
-    confidence: str = "insufficient_data"
+    confidence: AnalysisConfidence = "insufficient_data"

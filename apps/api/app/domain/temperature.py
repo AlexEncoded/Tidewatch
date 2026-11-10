@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
 from statistics import fmean
+from typing import Literal
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
@@ -10,6 +11,7 @@ from .devices import SensorChannel
 
 SEA_TEMPERATURE_MIN_CELSIUS = -5
 SEA_TEMPERATURE_MAX_CELSIUS = 45
+TemperatureTrend = Literal["insufficient_data", "rising", "falling", "stable"]
 
 
 @dataclass(frozen=True)
@@ -20,7 +22,7 @@ class TemperatureEstimate:
     minimum_temperature: float | None = None
     maximum_temperature: float | None = None
     change_celsius: float | None = None
-    trend: str = "insufficient_data"
+    trend: TemperatureTrend = "insufficient_data"
     is_anomaly: bool = False
     anomaly_reason: str | None = None
 
@@ -58,7 +60,7 @@ class TemperatureAnalysisSnapshot:
     minimum_temperature: float | None = None
     maximum_temperature: float | None = None
     change_celsius: float | None = None
-    trend: str = "insufficient_data"
+    trend: TemperatureTrend = "insufficient_data"
     is_anomaly: bool = False
     anomaly_reason: str | None = None
 

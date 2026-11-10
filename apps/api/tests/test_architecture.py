@@ -1383,6 +1383,103 @@ def test_sensor_family_catalog_matches_metric_adapters() -> None:
     )
 
 
+def test_http_schemas_preserve_domain_value_types() -> None:
+    from app.domain.analysis import AnalysisConfidence, SeaState
+    from app.domain.battery_health import BatteryHealthStatus
+    from app.domain.buoy import BuoyOperationalStatus
+    from app.domain.maintenance import MaintenanceIssueType, MaintenanceSeverity
+    from app.domain.sensor_family import SensorFamily
+    from app.domain.sensor_health import ChannelDecision
+    from app.domain.sensor_health_rules import DegradedSensorName
+    from app.domain.sensor_status import SensorHealthStatus
+    from app.domain.temperature import TemperatureTrend
+    from app.domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
+    from app.domain.wave import WaveConfidence
+    from app.schemas.analytics import (
+        MovementAnalysis,
+        PressureAnalysis,
+        StoredTemperatureAlert,
+        TemperatureAlert,
+        TemperatureAnalysis,
+        WaveAnalysis,
+    )
+    from app.schemas.battery import BatteryAnalysis, BatteryHealth
+    from app.schemas.fleet import Buoy, BuoyHealth
+    from app.schemas.maintenance import MaintenanceIssue
+    from app.schemas.sensors import SensorHealth
+
+    assert get_type_hints(PressureAnalysis)["confidence"] is AnalysisConfidence
+    assert get_type_hints(PressureAnalysis)["sea_state"] is SeaState
+    assert get_type_hints(WaveAnalysis)["confidence"] is WaveConfidence
+    assert get_type_hints(WaveAnalysis)["period_confidence"] is WaveConfidence
+    assert get_type_hints(MovementAnalysis)["confidence"] is AnalysisConfidence
+    assert get_type_hints(TemperatureAnalysis)["trend"] is TemperatureTrend
+    assert get_type_hints(TemperatureAlert)["severity"] is TemperatureAlertSeverity
+    assert get_type_hints(StoredTemperatureAlert)["status"] is TemperatureAlertStatus
+    assert get_type_hints(BatteryAnalysis)["confidence"] is AnalysisConfidence
+    assert get_type_hints(BatteryHealth)["status"] is BatteryHealthStatus
+    assert get_type_hints(Buoy)["status"] is BuoyOperationalStatus
+    assert get_type_hints(BuoyHealth)["status"] is BuoyOperationalStatus
+    assert get_type_hints(MaintenanceIssue)["issue_type"] is MaintenanceIssueType
+    assert get_type_hints(MaintenanceIssue)["severity"] is MaintenanceSeverity
+    assert get_type_hints(SensorHealth)["status"] is SensorHealthStatus
+    assert get_type_hints(SensorHealth)["degraded_sensors"] == list[DegradedSensorName]
+    assert get_type_hints(SensorHealth)["decisions"] == dict[SensorFamily, ChannelDecision]
+
+
+def test_http_schema_exports_domain_literals_as_openapi_enums() -> None:
+    from app.schemas.analytics import (
+        PressureAnalysis,
+        TemperatureAlert,
+        WaveAnalysis,
+    )
+    from app.schemas.battery import BatteryHealth
+    from app.schemas.fleet import Buoy
+    from app.schemas.maintenance import MaintenanceIssue
+    from app.schemas.sensors import SensorHealth
+
+    assert PressureAnalysis.model_json_schema()["properties"]["confidence"]["enum"] == [
+        "experimental",
+        "insufficient_data",
+    ]
+    assert WaveAnalysis.model_json_schema()["properties"]["period_confidence"]["enum"] == [
+        "insufficient_data",
+        "partial",
+        "sensor_disagreement",
+        "experimental",
+    ]
+    assert TemperatureAlert.model_json_schema()["properties"]["severity"]["const"] == "warning"
+    assert BatteryHealth.model_json_schema()["properties"]["status"]["enum"] == [
+        "insufficient_data",
+        "consistent",
+        "degraded",
+    ]
+    assert Buoy.model_json_schema()["properties"]["status"]["enum"] == [
+        "active",
+        "maintenance",
+        "inactive",
+    ]
+    assert SensorHealth.model_json_schema()["properties"]["status"]["enum"] == [
+        "consistent",
+        "degraded",
+        "insufficient_data",
+    ]
+    maintenance_schema = MaintenanceIssue.model_json_schema()["properties"]
+    assert maintenance_schema["severity"]["enum"] == ["warning", "critical"]
+    assert maintenance_schema["issue_type"]["enum"] == [
+        "invalid_reading",
+        "suspect_reading",
+        "low_battery",
+        "missing_redundant_device",
+        "degraded_battery",
+        "silent_buoy",
+        "drift_detected",
+        "degraded_sensor",
+        "missing_sensor_channel",
+        "stale_device",
+    ]
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

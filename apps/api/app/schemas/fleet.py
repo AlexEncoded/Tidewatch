@@ -77,7 +77,7 @@ class Buoy(BaseModel):
     name: str
     latitude: float | None = None
     longitude: float | None = None
-    status: str = "active"
+    status: BuoyOperationalStatus = "active"
     last_seen_at: datetime | None = None
     created_at: datetime
 
@@ -87,7 +87,7 @@ class Buoy(BaseModel):
 class BuoyHealth(BaseModel):
     buoy_id: str
     buoy_name: str
-    status: str
+    status: BuoyOperationalStatus
     last_seen_at: datetime | None = None
     age_seconds: float | None = None
     is_stale: bool
