@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from math import pi, sin
+from random import Random
 from types import SimpleNamespace
 
 import pytest
@@ -274,6 +275,38 @@ def test_fused_wave_period_averages_agreeing_gnss_and_imu_estimates() -> None:
 
     estimate = estimate_fused_wave_period(gnss, imu)
     assert estimate.estimated_period_seconds == 8.0
+    assert estimate.confidence == "experimental"
+
+
+def test_fused_wave_period_recovers_noisy_signals_across_gaps() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    gnss_random = Random(501)
+    imu_random = Random(502)
+    gnss = []
+    imu = []
+    for fragment_start in (0, 3600):
+        for index in range(320):
+            elapsed = fragment_start + index * 0.25
+            imu_value = 9.81 + 0.5 * sin(2 * pi * elapsed / 8)
+            imu.append(
+                (
+                    start + timedelta(seconds=elapsed),
+                    imu_value + imu_random.gauss(0, 0.2),
+                )
+            )
+        for index in range(160):
+            elapsed = fragment_start + index * 0.5
+            gnss_value = sin(2 * pi * elapsed / 8)
+            gnss.append(
+                (
+                    start + timedelta(seconds=elapsed),
+                    gnss_value + gnss_random.gauss(0, 0.3),
+                )
+            )
+
+    estimate = estimate_fused_wave_period(gnss, imu)
+
+    assert estimate.estimated_period_seconds == pytest.approx(8.0, abs=0.5)
     assert estimate.confidence == "experimental"
 
 
