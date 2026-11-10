@@ -39,6 +39,7 @@ from .telemetry_ingestion import (
     empty_accepted_reading_counts,
 )
 from ..domain.devices import DeviceOwnershipError
+from ..domain.telemetry_family import TelemetryResultFamily
 from ..domain.telemetry_job import TelemetryJobStatus
 
 
@@ -58,7 +59,7 @@ class TelemetryBatchInvalid(ValueError):
 class TelemetryIngestOutcome:
     buoy_id: str
     accepted_readings: int
-    accepted_by_family: dict[str, int]
+    accepted_by_family: dict[TelemetryResultFamily, int]
 
 
 @dataclass(frozen=True)

@@ -63,6 +63,8 @@ from ..domain.conductivity import (
 
 from pydantic import BaseModel, Field
 
+from ..domain.telemetry_family import TelemetryResultFamily
+
 
 class TemperatureReadingCreate(BaseModel):
     temperature_celsius: float = Field(
@@ -416,4 +418,4 @@ class UnderwaterAcousticReading(UnderwaterAcousticReadingCreate):
 class TelemetryIngestResponse(BaseModel):
     buoy_id: str
     accepted_readings: int
-    accepted_by_family: dict[str, int]
+    accepted_by_family: dict[TelemetryResultFamily, int]

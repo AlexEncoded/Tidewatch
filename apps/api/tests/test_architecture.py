@@ -1496,6 +1496,28 @@ def test_telemetry_batch_family_keys_use_domain_catalog() -> None:
     )
 
 
+def test_telemetry_ingest_result_families_use_domain_catalog() -> None:
+    from typing import get_args
+
+    from app.application.telemetry_batch_ingestion import TelemetryIngestOutcome
+    from app.application.telemetry_ingestion import (
+        TELEMETRY_FAMILIES,
+        empty_accepted_reading_counts,
+    )
+    from app.domain.telemetry_family import TELEMETRY_RESULT_FAMILIES, TelemetryResultFamily
+    from app.schemas.telemetry import TelemetryIngestResponse
+
+    assert TELEMETRY_FAMILIES == TELEMETRY_RESULT_FAMILIES
+    assert TELEMETRY_FAMILIES == get_args(TelemetryResultFamily)
+    expected_counts = dict[TelemetryResultFamily, int]
+    assert get_type_hints(TelemetryIngestOutcome)["accepted_by_family"] == expected_counts
+    assert get_type_hints(empty_accepted_reading_counts)["return"] == expected_counts
+    assert (
+        get_type_hints(TelemetryIngestResponse)["accepted_by_family"]
+        == expected_counts
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")

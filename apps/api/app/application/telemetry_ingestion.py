@@ -27,6 +27,7 @@ from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
 from ..domain.devices import resolve_telemetry_device_id
+from ..domain.telemetry_family import TELEMETRY_RESULT_FAMILIES, TelemetryResultFamily
 
 F = TypeVar("F", bound=Callable)
 
@@ -48,27 +49,7 @@ def atomic_telemetry_batch(function: F) -> F:
     return cast(F, wrapped)
 
 
-TELEMETRY_FAMILIES = (
-    "temperature",
-    "pressure",
-    "salinity",
-    "imu",
-    "ambient_light",
-    "wind",
-    "marine_current",
-    "turbidity",
-    "dissolved_oxygen",
-    "ph",
-    "conductivity",
-    "chlorophyll_a",
-    "rainfall",
-    "humidity",
-    "air_temperature",
-    "atmospheric_pressure",
-    "acoustic_altimeter",
-    "underwater_acoustic",
-    "battery",
-)
+TELEMETRY_FAMILIES = TELEMETRY_RESULT_FAMILIES
 
 
 def with_device_provenance(
@@ -281,6 +262,6 @@ def build_battery_snapshot(
     return BatteryTelemetrySnapshot(buoy_id=buoy_id, **reading_data)
 
 
-def empty_accepted_reading_counts() -> dict[str, int]:
+def empty_accepted_reading_counts() -> dict[TelemetryResultFamily, int]:
     """Return stable zero counters for every supported telemetry family."""
     return {family: 0 for family in TELEMETRY_FAMILIES}
