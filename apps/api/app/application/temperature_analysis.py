@@ -5,7 +5,7 @@ from ..domain.temperature import (
     analyze_temperature_samples,
     valid_temperature_readings,
 )
-from .sensor_ports import TemperatureTelemetryReader
+from .marine_water_ports import TemperatureTelemetryReader
 
 
 def list_valid_temperature_readings(

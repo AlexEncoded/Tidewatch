@@ -13,11 +13,13 @@ from .sensor_ports import (
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
+    TurbidityTelemetryGateway,
+    WindTelemetryGateway,
+)
+from .marine_water_ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
-    TurbidityTelemetryGateway,
-    WindTelemetryGateway,
 )
 from .acoustic_sensor_ports import (
     AcousticAltimeterTelemetryGateway,

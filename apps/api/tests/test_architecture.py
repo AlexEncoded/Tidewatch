@@ -418,11 +418,6 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         ImuTelemetryGateway,
         ImuTelemetryReader,
         MarineCurrentTelemetryGateway,
-        PressureTelemetryGateway,
-        PressureTelemetryReader,
-        SalinityTelemetryGateway,
-        TemperatureTelemetryGateway,
-        TemperatureTelemetryReader,
         TurbidityTelemetryGateway,
         WindTelemetryGateway,
     )
@@ -432,15 +427,29 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         ImuTelemetryGateway,
         ImuTelemetryReader,
         MarineCurrentTelemetryGateway,
+        TurbidityTelemetryGateway,
+        WindTelemetryGateway,
+    ):
+        assert port.__module__ == "app.application.sensor_ports"
+
+
+def test_marine_water_ports_are_grouped_by_context() -> None:
+    from app.application.marine_water_ports import (
         PressureTelemetryGateway,
         PressureTelemetryReader,
         SalinityTelemetryGateway,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
-        TurbidityTelemetryGateway,
-        WindTelemetryGateway,
+    )
+
+    for port in (
+        PressureTelemetryGateway,
+        PressureTelemetryReader,
+        SalinityTelemetryGateway,
+        TemperatureTelemetryGateway,
+        TemperatureTelemetryReader,
     ):
-        assert port.__module__ == "app.application.sensor_ports"
+        assert port.__module__ == "app.application.marine_water_ports"
 
 
 def test_water_chemistry_ports_are_grouped_by_context() -> None:

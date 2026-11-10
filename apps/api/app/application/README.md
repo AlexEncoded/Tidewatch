@@ -44,9 +44,10 @@ The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
 
-Sensor-health reads and persisted-check writes, plus temperature, pressure,
-salinity, IMU, ambient-light, wind, current, and turbidity gateway contracts use
-`sensor_ports.py`. Acoustic altimeter and underwater echo gateways live in
+Sensor-health reads and persisted-check writes, plus IMU, ambient-light, wind,
+current, and turbidity gateway contracts use `sensor_ports.py`. Water
+temperature, pressure, and salinity gateways live in `marine_water_ports.py`;
+acoustic altimeter and underwater echo gateways live in
 `acoustic_sensor_ports.py`. Dissolved oxygen, pH, conductivity, and
 chlorophyll-A gateways live in `water_chemistry_ports.py`; rainfall, humidity,
 air temperature, and atmospheric pressure gateways live in `weather_ports.py`.

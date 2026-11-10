@@ -1,7 +1,7 @@
 """Application service for the pressure-analysis use case."""
 
 from ..domain.pressure import PressureAnalysisSnapshot, estimate_pressure
-from .sensor_ports import PressureTelemetryReader
+from .marine_water_ports import PressureTelemetryReader
 
 
 def analyze_pressure_for_buoy(
