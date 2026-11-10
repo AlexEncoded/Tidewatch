@@ -4,6 +4,7 @@ from typing import Protocol, runtime_checkable
 from collections.abc import Mapping
 
 from ..domain.devices import SensorChannel
+from ..domain.sensor_family import SensorFamily
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.sensor_health import (
@@ -11,6 +12,7 @@ from ..domain.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
 )
+from ..domain.sensor_health_rules import DegradedSensorName
 from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
@@ -36,10 +38,10 @@ class SensorHealthMetrics(Protocol):
     def record_evaluation(
         self,
         buoy_id: str,
-        readings: Mapping[str, Mapping[str, object | None]],
-        degraded_sensors: list[str],
+        readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+        degraded_sensors: list[DegradedSensorName],
         missing_sensors: list[str],
-        decisions: Mapping[str, ChannelDecision],
+        decisions: Mapping[SensorFamily, ChannelDecision],
     ) -> None:
         ...
 

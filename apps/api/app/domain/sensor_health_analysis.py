@@ -4,19 +4,24 @@ from collections.abc import Mapping
 
 from .deltas import absolute_difference
 from .directions import circular_difference_degrees
+from .devices import SensorChannel
+from .sensor_family import SensorFamily
+from .sensor_health_rules import SensorHealthDeltaName
 from .vectors import euclidean_difference
 
 
 def calculate_sensor_health_deltas(
-    readings: Mapping[str, Mapping[str, list[object]]],
-) -> dict[str, float | None]:
+    readings: Mapping[SensorFamily, Mapping[SensorChannel, list[object]]],
+) -> dict[SensorHealthDeltaName, float | None]:
     """Calculate A/B sensor deltas from the latest usable channel readings."""
 
-    def value(family: str, channel: str, attribute: str):
+    def value(family: SensorFamily, channel: SensorChannel, attribute: str):
         channel_readings = readings[family][channel]
         return getattr(channel_readings[0], attribute) if channel_readings else None
 
-    def scalar(family: str, attribute: str, digits: int) -> float | None:
+    def scalar(
+        family: SensorFamily, attribute: str, digits: int
+    ) -> float | None:
         left = value(family, "A", attribute)
         right = value(family, "B", attribute)
         return (
@@ -25,7 +30,9 @@ def calculate_sensor_health_deltas(
             else None
         )
 
-    def circular(family: str, attribute: str, digits: int) -> float | None:
+    def circular(
+        family: SensorFamily, attribute: str, digits: int
+    ) -> float | None:
         left = value(family, "A", attribute)
         right = value(family, "B", attribute)
         return (

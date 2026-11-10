@@ -1,9 +1,57 @@
 from collections.abc import Mapping
 from math import isfinite
 from types import MappingProxyType
+from typing import Literal
 
 
-SENSOR_DEGRADATION_THRESHOLDS: Mapping[str, float] = MappingProxyType({
+SensorHealthDeltaName = Literal[
+    "temperature",
+    "pressure",
+    "salinity",
+    "imu",
+    "ambient_light",
+    "wind_speed",
+    "wind_direction",
+    "marine_current_speed",
+    "marine_current_direction",
+    "turbidity",
+    "dissolved_oxygen",
+    "ph",
+    "conductivity",
+    "chlorophyll_a",
+    "rainfall",
+    "humidity",
+    "air_temperature",
+    "atmospheric_pressure",
+    "acoustic_altimeter",
+    "underwater_acoustic",
+]
+DegradedSensorName = Literal[
+    "temperature",
+    "pressure",
+    "salinity",
+    "imu",
+    "ambient_light",
+    "wind_speed",
+    "wind_direction",
+    "wind",
+    "marine_current_speed",
+    "marine_current_direction",
+    "marine_current",
+    "turbidity",
+    "dissolved_oxygen",
+    "ph",
+    "conductivity",
+    "chlorophyll_a",
+    "rainfall",
+    "humidity",
+    "air_temperature",
+    "atmospheric_pressure",
+    "acoustic_altimeter",
+    "underwater_acoustic",
+]
+
+SENSOR_DEGRADATION_THRESHOLDS: Mapping[SensorHealthDeltaName, float] = MappingProxyType({
     "temperature": 0.5,
     "pressure": 0.25,
     "salinity": 0.2,
@@ -27,7 +75,9 @@ SENSOR_DEGRADATION_THRESHOLDS: Mapping[str, float] = MappingProxyType({
 })
 
 
-def degraded_sensor_names(deltas: Mapping[str, float | None]) -> list[str]:
+def degraded_sensor_names(
+    deltas: Mapping[SensorHealthDeltaName, float | None],
+) -> list[DegradedSensorName]:
     """Return degraded sensors and aggregate wind/current families."""
     unknown_sensors = set(deltas).difference(SENSOR_DEGRADATION_THRESHOLDS)
     if unknown_sensors:

@@ -2,7 +2,10 @@
 
 from collections.abc import Mapping
 
+from .domain.devices import SensorChannel
+from .domain.sensor_family import SensorFamily
 from .domain.sensor_health import ChannelDecision
+from .domain.sensor_health_rules import DegradedSensorName
 
 from .application.sensor_health_ports import SensorHealthMetrics
 from .metrics import sensor_channel_missing, sensor_degraded, sensor_health_decision
@@ -14,10 +17,10 @@ class PrometheusSensorHealthMetrics(SensorHealthMetrics):
     def record_evaluation(
         self,
         buoy_id: str,
-        readings: Mapping[str, Mapping[str, object | None]],
-        degraded_sensors: list[str],
+        readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+        degraded_sensors: list[DegradedSensorName],
         missing_sensors: list[str],
-        decisions: Mapping[str, ChannelDecision],
+        decisions: Mapping[SensorFamily, ChannelDecision],
     ) -> None:
         for sensor, channels in readings.items():
             has_reading = any(channels.values())

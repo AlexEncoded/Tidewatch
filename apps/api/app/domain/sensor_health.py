@@ -3,8 +3,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
+from .devices import SensorChannel
+from .sensor_family import SensorFamily
 from .sensor_completeness import missing_sensor_channels
-from .sensor_health_rules import degraded_sensor_names
+from .sensor_health_rules import (
+    DegradedSensorName,
+    SensorHealthDeltaName,
+    degraded_sensor_names,
+)
 from .sensor_status import SensorHealthStatus, sensor_health_status
 
 
@@ -14,9 +20,9 @@ ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
 @dataclass(frozen=True)
 class SensorHealthEvaluation:
     status: SensorHealthStatus
-    degraded_sensors: list[str]
+    degraded_sensors: list[DegradedSensorName]
     missing_sensors: list[str]
-    decisions: dict[str, ChannelDecision]
+    decisions: dict[SensorFamily, ChannelDecision]
 
 
 @dataclass(frozen=True)
@@ -46,9 +52,9 @@ class SensorHealthSnapshot:
     atmospheric_pressure_delta_kpa: float | None = None
     acoustic_altimeter_delta_meters: float | None = None
     underwater_acoustic_delta_db: float | None = None
-    degraded_sensors: list[str] | None = None
+    degraded_sensors: list[DegradedSensorName] | None = None
     missing_sensors: list[str] | None = None
-    decisions: dict[str, ChannelDecision] | None = None
+    decisions: dict[SensorFamily, ChannelDecision] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -74,8 +80,8 @@ def decide_channel(
 
 
 def evaluate_sensor_health(
-    deltas: Mapping[str, float | None],
-    sensor_readings: Mapping[str, Mapping[str, object | None]],
+    deltas: Mapping[SensorHealthDeltaName, float | None],
+    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
 ) -> SensorHealthEvaluation:
     """Compose redundant-sensor rules into one domain evaluation."""
     missing_sensors = missing_sensor_channels(sensor_readings)

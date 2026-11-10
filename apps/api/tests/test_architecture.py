@@ -1188,6 +1188,8 @@ def test_temperature_alert_status_uses_domain_type() -> None:
 def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     from collections.abc import Mapping
 
+    from app.domain.devices import SensorChannel
+    from app.domain.sensor_family import SensorFamily
     from app.domain.sensor_health import (
         ChannelDecision,
         SensorHealthEvaluation,
@@ -1200,18 +1202,57 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     assert get_type_hints(sensor_health_status)["return"] is SensorHealthStatus
     assert get_type_hints(SensorHealthEvaluation)["status"] is SensorHealthStatus
     assert get_type_hints(SensorHealthSnapshot)["status"] is SensorHealthStatus
-    assert get_type_hints(SensorHealthEvaluation)["decisions"] == dict[str, ChannelDecision]
+    assert get_type_hints(SensorHealthEvaluation)["decisions"] == dict[SensorFamily, ChannelDecision]
     assert (
         get_type_hints(SensorHealthSnapshot)["decisions"]
-        == dict[str, ChannelDecision] | None
+        == dict[SensorFamily, ChannelDecision] | None
     )
     assert (
         get_type_hints(SensorHealthMetrics.record_evaluation)["decisions"]
-        == Mapping[str, ChannelDecision]
+        == Mapping[SensorFamily, ChannelDecision]
     )
     assert (
         get_type_hints(PrometheusSensorHealthMetrics.record_evaluation)["decisions"]
-        == Mapping[str, ChannelDecision]
+        == Mapping[SensorFamily, ChannelDecision]
+    )
+    assert (
+        get_type_hints(SensorHealthMetrics.record_evaluation)["readings"]
+        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+    )
+    assert (
+        get_type_hints(PrometheusSensorHealthMetrics.record_evaluation)["readings"]
+        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+    )
+
+
+def test_sensor_health_calculations_use_explicit_key_types() -> None:
+    from collections.abc import Mapping
+
+    from app.domain.devices import SensorChannel
+    from app.domain.sensor_completeness import missing_sensor_channels
+    from app.domain.sensor_family import SensorFamily
+    from app.domain.sensor_health_analysis import calculate_sensor_health_deltas
+    from app.domain.sensor_health_rules import (
+        DegradedSensorName,
+        SensorHealthDeltaName,
+        degraded_sensor_names,
+    )
+
+    assert (
+        get_type_hints(calculate_sensor_health_deltas)["readings"]
+        == Mapping[SensorFamily, Mapping[SensorChannel, list[object]]]
+    )
+    assert (
+        get_type_hints(calculate_sensor_health_deltas)["return"]
+        == dict[SensorHealthDeltaName, float | None]
+    )
+    assert (
+        get_type_hints(missing_sensor_channels)["sensor_readings"]
+        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+    )
+    assert (
+        get_type_hints(degraded_sensor_names)["return"]
+        == list[DegradedSensorName]
     )
 
 
