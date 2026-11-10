@@ -14,13 +14,9 @@ from .sensor_ports import (
     AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
-    ChlorophyllATelemetryGateway,
-    ConductivityTelemetryGateway,
-    DissolvedOxygenTelemetryGateway,
     HumidityTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
-    PHTelemetryGateway,
     PressureTelemetryGateway,
     RainfallTelemetryGateway,
     SalinityTelemetryGateway,
@@ -28,6 +24,12 @@ from .sensor_ports import (
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
+)
+from .water_chemistry_ports import (
+    ChlorophyllATelemetryGateway,
+    ConductivityTelemetryGateway,
+    DissolvedOxygenTelemetryGateway,
+    PHTelemetryGateway,
 )
 
 T = TypeVar("T")

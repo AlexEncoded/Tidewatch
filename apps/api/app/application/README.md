@@ -44,13 +44,12 @@ The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
 
-Sensor-health reads and persisted-check writes, plus core temperature,
-pressure, salinity, IMU, ambient-light, wind, and current gateway contracts use
-`sensor_ports.py`; water-chemistry gateways for turbidity, dissolved oxygen, pH,
-conductivity, and chlorophyll-A are grouped there as well. Remaining sensor
-families, including weather and acoustic gateways, are grouped there as well.
-That module also retains the cross-sensor health, quality, and analysis
-contracts.
+Sensor-health reads and persisted-check writes, plus temperature, pressure,
+salinity, IMU, ambient-light, wind, current, turbidity, weather, and acoustic
+gateway contracts use `sensor_ports.py`. Dissolved oxygen, pH, conductivity,
+and chlorophyll-A gateways live in `water_chemistry_ports.py`. Cross-sensor
+health, quality, and analysis contracts live in their context-specific port
+modules.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
 port as well. The webhook adapter injects the transport from the router, while

@@ -418,16 +418,12 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         AirTemperatureTelemetryGateway,
         AtmosphericPressureTelemetryGateway,
-        ChlorophyllATelemetryGateway,
-        ConductivityTelemetryGateway,
-        DissolvedOxygenTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
         HumidityTelemetryGateway,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
-        PHTelemetryGateway,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         TemperatureTelemetryGateway,
@@ -442,16 +438,12 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         AirTemperatureTelemetryGateway,
         AtmosphericPressureTelemetryGateway,
-        ChlorophyllATelemetryGateway,
-        ConductivityTelemetryGateway,
-        DissolvedOxygenTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
         HumidityTelemetryGateway,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
-        PHTelemetryGateway,
         RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         TemperatureTelemetryGateway,
@@ -461,6 +453,23 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         WindTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
+
+
+def test_water_chemistry_ports_are_grouped_by_context() -> None:
+    from app.application.water_chemistry_ports import (
+        ChlorophyllATelemetryGateway,
+        ConductivityTelemetryGateway,
+        DissolvedOxygenTelemetryGateway,
+        PHTelemetryGateway,
+    )
+
+    for port in (
+        ChlorophyllATelemetryGateway,
+        ConductivityTelemetryGateway,
+        DissolvedOxygenTelemetryGateway,
+        PHTelemetryGateway,
+    ):
+        assert port.__module__ == "app.application.water_chemistry_ports"
 
 
 def test_battery_port_is_grouped_by_context() -> None:
