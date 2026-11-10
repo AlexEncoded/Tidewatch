@@ -4,28 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Mapping
 
-
-TELEMETRY_READING_FAMILIES = (
-    "temperatures",
-    "pressures",
-    "salinity",
-    "imu",
-    "ambient_light",
-    "wind",
-    "marine_current",
-    "turbidity",
-    "dissolved_oxygen",
-    "ph",
-    "conductivity",
-    "chlorophyll_a",
-    "rainfall",
-    "humidity",
-    "air_temperature",
-    "atmospheric_pressure",
-    "acoustic_altimeter",
-    "underwater_acoustic",
-    "battery",
-)
+from ..domain.telemetry_family import TELEMETRY_READING_FAMILIES, TelemetryInputFamily
 
 
 def _json_compatible(value: Any) -> Any:
@@ -44,7 +23,7 @@ class TelemetryBatchCommand:
     """Validated batch values after the transport adapter has normalized input."""
 
     device_id: str | None
-    readings: Mapping[str, tuple[Mapping[str, Any], ...]]
+    readings: Mapping[TelemetryInputFamily, tuple[Mapping[str, Any], ...]]
     location: Mapping[str, Any] | None = None
     device_runtime: Mapping[str, Any] | None = None
     device_communications: Mapping[str, Any] | None = None

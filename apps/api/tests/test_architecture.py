@@ -1480,6 +1480,22 @@ def test_http_schema_exports_domain_literals_as_openapi_enums() -> None:
     ]
 
 
+def test_telemetry_batch_family_keys_use_domain_catalog() -> None:
+    from typing import Any, Mapping, get_args
+
+    from app.application.telemetry_batch import (
+        TELEMETRY_READING_FAMILIES,
+        TelemetryBatchCommand,
+    )
+    from app.domain.telemetry_family import TelemetryInputFamily
+
+    assert TELEMETRY_READING_FAMILIES == get_args(TelemetryInputFamily)
+    assert (
+        get_type_hints(TelemetryBatchCommand)["readings"]
+        == Mapping[TelemetryInputFamily, tuple[Mapping[str, Any], ...]]
+    )
+
+
 def test_imports_package_recognizes_nested_framework_modules() -> None:
     assert imports_package({"sqlalchemy.orm", "typing"}, "sqlalchemy")
     assert not imports_package({"sqlalchemy.orm", "typing"}, "fastapi")
