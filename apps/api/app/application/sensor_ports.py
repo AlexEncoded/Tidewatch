@@ -10,10 +10,6 @@ from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from ..domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
-from ..domain.humidity import HumidityTelemetrySnapshot
-from ..domain.rainfall import RainfallTelemetrySnapshot
 from ..domain.turbidity import TurbidityTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.marine_current import MarineCurrentTelemetrySnapshot
@@ -147,62 +143,6 @@ class TurbidityTelemetryGateway(Protocol):
     def list_turbidity(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[TurbidityTelemetrySnapshot]:
-        ...
-
-
-class RainfallTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_rainfall(self, reading: RainfallTelemetrySnapshot) -> RainfallTelemetrySnapshot:
-        ...
-
-    def list_rainfall(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[RainfallTelemetrySnapshot]:
-        ...
-
-
-class HumidityTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_humidity(self, reading: HumidityTelemetrySnapshot) -> HumidityTelemetrySnapshot:
-        ...
-
-    def list_humidity(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[HumidityTelemetrySnapshot]:
-        ...
-
-
-class AirTemperatureTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_air_temperature(
-        self, reading: AirTemperatureTelemetrySnapshot
-    ) -> AirTemperatureTelemetrySnapshot:
-        ...
-
-    def list_air_temperature(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[AirTemperatureTelemetrySnapshot]:
-        ...
-
-
-class AtmosphericPressureTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_atmospheric_pressure(
-        self, reading: AtmosphericPressureTelemetrySnapshot
-    ) -> AtmosphericPressureTelemetrySnapshot:
-        ...
-
-    def list_atmospheric_pressure(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[AtmosphericPressureTelemetrySnapshot]:
         ...
 
 

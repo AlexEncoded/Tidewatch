@@ -28,19 +28,21 @@ from ..adapter_dependencies import get_sensor_health_metrics
 from ..adapter_dependencies import get_telemetry_metrics
 from ..application.sensor_ports import (
     AcousticAltimeterTelemetryGateway,
-    AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
-    AtmosphericPressureTelemetryGateway,
     ImuTelemetryGateway,
-    HumidityTelemetryGateway,
     MarineCurrentTelemetryGateway,
-    RainfallTelemetryGateway,
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
     WindTelemetryGateway,
+)
+from ..application.weather_ports import (
+    AirTemperatureTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
+    HumidityTelemetryGateway,
+    RainfallTelemetryGateway,
 )
 from ..application.water_chemistry_ports import (
     ChlorophyllATelemetryGateway,

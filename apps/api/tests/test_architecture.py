@@ -416,15 +416,11 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
     from app.application.sensor_ports import (
         AcousticAltimeterTelemetryGateway,
         AmbientLightTelemetryGateway,
-        AirTemperatureTelemetryGateway,
-        AtmosphericPressureTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        HumidityTelemetryGateway,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
-        RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
@@ -436,15 +432,11 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
     for port in (
         AcousticAltimeterTelemetryGateway,
         AmbientLightTelemetryGateway,
-        AirTemperatureTelemetryGateway,
-        AtmosphericPressureTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        HumidityTelemetryGateway,
         MarineCurrentTelemetryGateway,
         PressureTelemetryGateway,
         PressureTelemetryReader,
-        RainfallTelemetryGateway,
         SalinityTelemetryGateway,
         TemperatureTelemetryGateway,
         TemperatureTelemetryReader,
@@ -470,6 +462,23 @@ def test_water_chemistry_ports_are_grouped_by_context() -> None:
         PHTelemetryGateway,
     ):
         assert port.__module__ == "app.application.water_chemistry_ports"
+
+
+def test_weather_ports_are_grouped_by_context() -> None:
+    from app.application.weather_ports import (
+        AirTemperatureTelemetryGateway,
+        AtmosphericPressureTelemetryGateway,
+        HumidityTelemetryGateway,
+        RainfallTelemetryGateway,
+    )
+
+    for port in (
+        AirTemperatureTelemetryGateway,
+        AtmosphericPressureTelemetryGateway,
+        HumidityTelemetryGateway,
+        RainfallTelemetryGateway,
+    ):
+        assert port.__module__ == "app.application.weather_ports"
 
 
 def test_battery_port_is_grouped_by_context() -> None:

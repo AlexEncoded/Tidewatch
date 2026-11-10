@@ -11,14 +11,10 @@ from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
     AcousticAltimeterTelemetryGateway,
-    AirTemperatureTelemetryGateway,
     AmbientLightTelemetryGateway,
-    AtmosphericPressureTelemetryGateway,
-    HumidityTelemetryGateway,
     ImuTelemetryGateway,
     MarineCurrentTelemetryGateway,
     PressureTelemetryGateway,
-    RainfallTelemetryGateway,
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
     TurbidityTelemetryGateway,
@@ -30,6 +26,12 @@ from .water_chemistry_ports import (
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
+)
+from .weather_ports import (
+    AirTemperatureTelemetryGateway,
+    AtmosphericPressureTelemetryGateway,
+    HumidityTelemetryGateway,
+    RainfallTelemetryGateway,
 )
 
 T = TypeVar("T")
