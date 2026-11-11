@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from ..application.maintenance_evaluation import evaluate_maintenance_fleet
 from ..application.maintenance_notifications import (
-    build_maintenance_notification_payload,
-    maintenance_notification_idempotency_key,
+    enqueue_maintenance_notification,
 )
 from ..adapter_dependencies import (
     get_maintenance_metrics,
@@ -15,12 +14,16 @@ from ..adapter_dependencies import (
     get_maintenance_reader,
 )
 from ..application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
-from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
+from ..application.maintenance_notification_ports import (
+    MaintenanceNotificationIdempotencyConflict,
+    MaintenanceNotificationJobStore,
+)
 from ..schemas.maintenance import (
     MaintenanceIssue,
     MaintenanceNotificationJobStatus,
     MaintenanceNotificationResult,
 )
+from ..domain.maintenance import MaintenanceIssueSnapshot
 from ..settings import configured_maintenance_webhook_url
 
 
@@ -32,18 +35,15 @@ def _evaluate_and_publish_maintenance_metrics(
     metrics: MaintenanceMetrics,
     max_age_minutes: float,
     drift_speed_mps: float,
-) -> list[MaintenanceIssue]:
-    issues: list[MaintenanceIssue] = []
+) -> list[MaintenanceIssueSnapshot]:
+    issues: list[MaintenanceIssueSnapshot] = []
     for buoy, evaluation in evaluate_maintenance_fleet(
         reader, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
     ):
         metrics.record_evaluation(
             buoy.buoy_id, evaluation.battery_health, evaluation.average_speed_mps
         )
-        issues.extend(
-            MaintenanceIssue.model_validate(issue, from_attributes=True)
-            for issue in evaluation.issues
-        )
+        issues.extend(evaluation.issues)
     return issues
 
 
@@ -58,9 +58,12 @@ def maintenance_issues(
     reader: MaintenanceReader = Depends(get_maintenance_reader),
     metrics: MaintenanceMetrics = Depends(get_maintenance_metrics),
 ) -> list[MaintenanceIssue]:
-    return _evaluate_and_publish_maintenance_metrics(
+    issues = _evaluate_and_publish_maintenance_metrics(
         reader, metrics, max_age_minutes, drift_speed_mps
     )
+    return [
+        MaintenanceIssue.model_validate(issue, from_attributes=True) for issue in issues
+    ]
 
 
 @router.post(
@@ -91,17 +94,12 @@ def notify_maintenance(
     issues = _evaluate_and_publish_maintenance_metrics(
         reader, metrics, max_age_minutes, drift_speed_mps
     )
-    payload = build_maintenance_notification_payload(issues)
     requested_at = datetime.now(timezone.utc)
-    key = maintenance_notification_idempotency_key(
-        payload, idempotency_key, requested_at
-    )
-    # Receivers can use this stable key to suppress duplicates if a worker
-    # crashes after delivery but before it records the successful response.
-    payload["notification_idempotency_key"] = key
     try:
-        job = jobs.enqueue(key, payload, len(issues), requested_at)
-    except ValueError as exc:
+        job = enqueue_maintenance_notification(
+            jobs, issues, requested_at, idempotency_key
+        )
+    except MaintenanceNotificationIdempotencyConflict as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from None

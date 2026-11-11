@@ -1,16 +1,18 @@
 """Application services for maintenance notifications."""
 
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict
 from datetime import datetime
 import hashlib
 import json
-from typing import Protocol, runtime_checkable
+from typing import Protocol, Sequence, runtime_checkable
+
+from ..domain.maintenance import MaintenanceIssueSnapshot
+from ..domain.maintenance_notification_job import MaintenanceNotificationJob
+from .maintenance_notification_ports import MaintenanceNotificationJobStore
 
 
-def _serialize_issue(issue) -> dict:
-    if is_dataclass(issue):
-        return asdict(issue)
-    return issue.model_dump(mode="json")
+def _serialize_issue(issue: MaintenanceIssueSnapshot) -> dict:
+    return asdict(issue)
 
 
 @runtime_checkable
@@ -21,7 +23,9 @@ class MaintenanceNotificationTransport(Protocol):
         ...
 
 
-def build_maintenance_notification_payload(issues: list) -> dict:
+def build_maintenance_notification_payload(
+    issues: Sequence[MaintenanceIssueSnapshot],
+) -> dict:
     """Build the stable webhook payload from maintenance issue contracts."""
     return {
         "source": "tidewatch",
@@ -42,9 +46,24 @@ def maintenance_notification_idempotency_key(
     return hashlib.sha256(f"{bucket}:{material}".encode("utf-8")).hexdigest()
 
 
+def enqueue_maintenance_notification(
+    jobs: MaintenanceNotificationJobStore,
+    issues: Sequence[MaintenanceIssueSnapshot],
+    requested_at: datetime,
+    requested_key: str | None = None,
+) -> MaintenanceNotificationJob:
+    """Build and persist an idempotent notification job from domain issues."""
+    payload = build_maintenance_notification_payload(list(issues))
+    key = maintenance_notification_idempotency_key(
+        payload, requested_key, requested_at
+    )
+    payload["notification_idempotency_key"] = key
+    return jobs.enqueue(key, payload, len(issues), requested_at)
+
+
 def deliver_maintenance_notification(
     webhook_url: str,
-    issues: list,
+    issues: Sequence[MaintenanceIssueSnapshot],
     transport: MaintenanceNotificationTransport,
 ) -> int:
     """Deliver maintenance issues through the injected notification port."""

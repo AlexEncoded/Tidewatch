@@ -1,10 +1,14 @@
+from datetime import datetime, timezone
+
 from app.application.maintenance_notifications import (
     MaintenanceNotificationTransport,
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
+    enqueue_maintenance_notification,
+    maintenance_notification_idempotency_key,
 )
+from app.domain.maintenance import MaintenanceIssueSnapshot
 from app.domain.maintenance_issues import build_reading_quality_issues
-from app.schemas.maintenance import MaintenanceIssue
 
 
 def test_callable_satisfies_notification_transport_port() -> None:
@@ -15,7 +19,7 @@ def test_callable_satisfies_notification_transport_port() -> None:
 
 
 def test_maintenance_notification_payload_serializes_issue_contracts() -> None:
-    issue = MaintenanceIssue(
+    issue = MaintenanceIssueSnapshot(
         buoy_id="buoy-1",
         buoy_name="North buoy",
         issue_type="low_battery",
@@ -26,11 +30,71 @@ def test_maintenance_notification_payload_serializes_issue_contracts() -> None:
     payload = build_maintenance_notification_payload([issue])
 
     assert payload["source"] == "tidewatch"
-    assert payload["issues"] == [issue.model_dump(mode="json")]
+    assert payload["issues"] == [
+        {
+            "buoy_id": issue.buoy_id,
+            "buoy_name": issue.buoy_name,
+            "issue_type": issue.issue_type,
+            "severity": issue.severity,
+            "message": issue.message,
+        }
+    ]
+
+
+def test_enqueue_maintenance_notification_persists_domain_issue_and_key() -> None:
+    issue = MaintenanceIssueSnapshot(
+        buoy_id="buoy-1",
+        buoy_name="North buoy",
+        issue_type="low_battery",
+        severity="warning",
+        message="Battery level is low",
+    )
+    requested_at = datetime(2026, 11, 11, 12, tzinfo=timezone.utc)
+    stored = object()
+
+    class JobStore:
+        def enqueue(self, idempotency_key, payload, issue_count, now):
+            self.arguments = (idempotency_key, payload, issue_count, now)
+            return stored
+
+    jobs = JobStore()
+
+    result = enqueue_maintenance_notification(
+        jobs, [issue], requested_at, "client-request-1"
+    )
+
+    assert result is stored
+    key, payload, issue_count, enqueued_at = jobs.arguments
+    assert key == "client-request-1"
+    assert payload["source"] == "tidewatch"
+    assert payload["issues"] == [
+        {
+            "buoy_id": "buoy-1",
+            "buoy_name": "North buoy",
+            "issue_type": "low_battery",
+            "severity": "warning",
+            "message": "Battery level is low",
+        }
+    ]
+    assert payload["notification_idempotency_key"] == key
+    assert issue_count == 1
+    assert enqueued_at == requested_at
+
+
+def test_generated_notification_key_is_stable_within_its_time_bucket() -> None:
+    payload = {"source": "tidewatch", "issues": []}
+    first_time = datetime(2026, 11, 11, 12, 1, tzinfo=timezone.utc)
+    same_bucket = datetime(2026, 11, 11, 12, 14, tzinfo=timezone.utc)
+    next_bucket = datetime(2026, 11, 11, 12, 16, tzinfo=timezone.utc)
+
+    first_key = maintenance_notification_idempotency_key(payload, None, first_time)
+
+    assert maintenance_notification_idempotency_key(payload, None, same_bucket) == first_key
+    assert maintenance_notification_idempotency_key(payload, None, next_bucket) != first_key
 
 
 def test_maintenance_notification_delivery_uses_injected_transport() -> None:
-    issue = MaintenanceIssue(
+    issue = MaintenanceIssueSnapshot(
         buoy_id="buoy-1",
         buoy_name="North buoy",
         issue_type="silent_buoy",

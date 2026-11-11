@@ -58,8 +58,10 @@ Cross-sensor health, quality, and analysis contracts live in their
 context-specific port modules.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
-port as well. The webhook adapter injects the transport from the router, while
-payload construction and delivery remain testable without an HTTP client.
+port and a durable job-store port. The application service builds the stable
+payload, applies idempotency, and queues the job from domain issues; HTTP maps
+idempotency conflicts at the route boundary and the worker uses the injected
+transport to deliver notifications.
 
 Maintenance issue classification is split into application services for sensor
 health, reading quality, redundant battery health, and operational state in the

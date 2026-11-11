@@ -5,8 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, TidewatchSession
-from app.maintenance_notification_job_repository import (
+from app.application.maintenance_notification_ports import (
     MaintenanceNotificationIdempotencyConflict,
+)
+from app.maintenance_notification_job_repository import (
     MaintenanceNotificationJobRepository,
 )
 

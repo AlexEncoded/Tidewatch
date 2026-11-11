@@ -6,6 +6,10 @@ from typing import Protocol
 from ..domain.maintenance_notification_job import MaintenanceNotificationJob
 
 
+class MaintenanceNotificationIdempotencyConflict(ValueError):
+    """An idempotency key was reused for a different notification payload."""
+
+
 class MaintenanceNotificationJobStore(Protocol):
     def enqueue(
         self,
