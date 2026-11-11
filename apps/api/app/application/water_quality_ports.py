@@ -1,4 +1,4 @@
-"""Application ports for water-chemistry telemetry."""
+"""Application ports for water-quality telemetry."""
 
 from typing import Protocol
 
@@ -7,6 +7,22 @@ from ..domain.conductivity import ConductivityTelemetrySnapshot
 from ..domain.devices import SensorChannel
 from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from ..domain.ph import PHTelemetrySnapshot
+from ..domain.turbidity import TurbidityTelemetrySnapshot
+
+
+class TurbidityTelemetryGateway(Protocol):
+    def buoy_exists(self, buoy_id: str) -> bool:
+        ...
+
+    def add_turbidity(
+        self, reading: TurbidityTelemetrySnapshot
+    ) -> TurbidityTelemetrySnapshot:
+        ...
+
+    def list_turbidity(
+        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
+    ) -> list[TurbidityTelemetrySnapshot]:
+        ...
 
 
 class DissolvedOxygenTelemetryGateway(Protocol):

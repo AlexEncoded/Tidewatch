@@ -417,14 +417,12 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        TurbidityTelemetryGateway,
     )
 
     for port in (
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        TurbidityTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
 
@@ -458,12 +456,13 @@ def test_flow_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.flow_ports"
 
 
-def test_water_chemistry_ports_are_grouped_by_context() -> None:
-    from app.application.water_chemistry_ports import (
+def test_water_quality_ports_are_grouped_by_context() -> None:
+    from app.application.water_quality_ports import (
         ChlorophyllATelemetryGateway,
         ConductivityTelemetryGateway,
         DissolvedOxygenTelemetryGateway,
         PHTelemetryGateway,
+        TurbidityTelemetryGateway,
     )
 
     for port in (
@@ -471,8 +470,9 @@ def test_water_chemistry_ports_are_grouped_by_context() -> None:
         ConductivityTelemetryGateway,
         DissolvedOxygenTelemetryGateway,
         PHTelemetryGateway,
+        TurbidityTelemetryGateway,
     ):
-        assert port.__module__ == "app.application.water_chemistry_ports"
+        assert port.__module__ == "app.application.water_quality_ports"
 
 
 def test_weather_ports_are_grouped_by_context() -> None:

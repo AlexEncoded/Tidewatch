@@ -41,7 +41,6 @@ from .application.telemetry_ports import (
 from .application.sensor_ports import (
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
-    TurbidityTelemetryGateway,
 )
 from .application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .application.marine_water_ports import (
@@ -59,11 +58,12 @@ from .application.weather_ports import (
     HumidityTelemetryGateway,
     RainfallTelemetryGateway,
 )
-from .application.water_chemistry_ports import (
+from .application.water_quality_ports import (
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
+    TurbidityTelemetryGateway,
 )
 from .application.device_ports import (
     DeviceHealthReader,

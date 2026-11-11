@@ -12,7 +12,6 @@ from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
-    TurbidityTelemetryGateway,
 )
 from .flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .marine_water_ports import (
@@ -24,11 +23,12 @@ from .acoustic_sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
 )
-from .water_chemistry_ports import (
+from .water_quality_ports import (
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
+    TurbidityTelemetryGateway,
 )
 from .weather_ports import (
     AirTemperatureTelemetryGateway,

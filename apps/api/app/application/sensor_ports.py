@@ -7,7 +7,6 @@ from ..domain.devices import SensorChannel
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from ..domain.imu import ImuTelemetrySnapshot
-from ..domain.turbidity import TurbidityTelemetrySnapshot
 
 
 class ImuTelemetryReader(Protocol):
@@ -40,17 +39,4 @@ class AmbientLightTelemetryGateway(Protocol):
     def list_ambient_light(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
     ) -> list[AmbientLightTelemetrySnapshot]:
-        ...
-
-
-class TurbidityTelemetryGateway(Protocol):
-    def buoy_exists(self, buoy_id: str) -> bool:
-        ...
-
-    def add_turbidity(self, reading: TurbidityTelemetrySnapshot) -> TurbidityTelemetrySnapshot:
-        ...
-
-    def list_turbidity(
-        self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[TurbidityTelemetrySnapshot]:
         ...
