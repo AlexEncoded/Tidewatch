@@ -68,12 +68,16 @@ transport to deliver notifications.
 
 Maintenance issue classification is split into application services for sensor
 health, reading quality, redundant battery health, and operational state in the
-domain. The router coordinates repository reads and metrics, then delegates
-issue construction to the maintenance evaluation use case.
+domain. The maintenance evaluation use case coordinates repository reads,
+publishes metrics through its output port, and returns domain issues for the
+route to map to HTTP.
 
 `evaluate_maintenance_buoy` coordinates those services for one buoy and
 returns both the issue contracts and the values needed by the metrics adapter.
 This keeps maintenance orchestration independent from FastAPI and SQLAlchemy.
+
+The ambient-light ingestion use case checks buoy existence, persists the
+domain snapshot, and publishes heartbeat and sensor metrics through ports.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.

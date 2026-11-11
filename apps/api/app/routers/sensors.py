@@ -27,6 +27,7 @@ from ..adapter_dependencies import get_sensor_health_check_gateway
 from ..adapter_dependencies import get_sensor_health_metrics
 from ..adapter_dependencies import get_telemetry_metrics
 from ..application.ambient_light_ports import AmbientLightTelemetryGateway
+from ..application.ambient_light_ingestion import ingest_ambient_light_reading
 from ..application.motion_ports import ImuTelemetryGateway
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
@@ -213,19 +214,10 @@ def record_ambient_light(
     gateway: AmbientLightTelemetryGateway = Depends(get_ambient_light_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> AmbientLightReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_ambient_light_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_ambient_light(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics,
-        buoy_id,
-        "ambient_light",
-        reading.sensor_channel,
-        reading.quality,
-        {"illuminance_lux": reading.illuminance_lux},
-    )
+    saved_reading = ingest_ambient_light_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 

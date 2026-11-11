@@ -2590,6 +2590,13 @@ def test_ambient_light_routes_use_injected_telemetry_gateway():
         assert isinstance(gateway_parameter.annotation, ast.Name)
         assert gateway_parameter.annotation.id == "AmbientLightTelemetryGateway"
 
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_ambient_light"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_ambient_light_reading" in record_calls
+
     imported_dependencies = {
         alias.name
         for node in ast.walk(tree)
