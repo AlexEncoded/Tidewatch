@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from app.application.maintenance_evaluation import (
     evaluate_maintenance_buoy,
     evaluate_maintenance_fleet,
+    evaluate_maintenance_issues,
 )
 from app.domain.buoy import BuoySnapshot
 
@@ -52,3 +53,52 @@ def test_maintenance_fleet_evaluation_reads_buoys_through_the_port() -> None:
     )
 
     assert evaluations == []
+
+
+def test_maintenance_issue_evaluation_publishes_metrics_and_collects_issues() -> None:
+    now = datetime.now(timezone.utc)
+    buoy = BuoySnapshot(
+        buoy_id="buoy-1",
+        name="North buoy",
+        latitude=None,
+        longitude=None,
+        status="active",
+        last_seen_at=now,
+        created_at=now,
+    )
+
+    class Reader:
+        def list_buoy_snapshots(self):
+            return [buoy]
+
+        def latest_battery(self, buoy_id: str, device_id: str):
+            return None
+
+        def list_locations(self, buoy_id: str, limit: int):
+            return []
+
+        def list_device_snapshots(self, buoy_id: str):
+            return []
+
+        def __getattr__(self, name):
+            if name.startswith("list_"):
+                return lambda buoy_id, limit, channel=None: []
+            raise AttributeError(name)
+
+    class Metrics:
+        def __init__(self):
+            self.evaluations = []
+
+        def record_evaluation(self, buoy_id, battery_health, average_speed_mps):
+            self.evaluations.append((buoy_id, battery_health, average_speed_mps))
+
+    metrics = Metrics()
+
+    issues = evaluate_maintenance_issues(Reader(), metrics, now, 30, 1)
+
+    assert issues == []
+    assert len(metrics.evaluations) == 1
+    buoy_id, health, speed = metrics.evaluations[0]
+    assert buoy_id == "buoy-1"
+    assert health.status == "insufficient_data"
+    assert speed is None

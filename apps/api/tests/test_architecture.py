@@ -557,7 +557,7 @@ def test_maintenance_reader_is_grouped_with_maintenance_ports() -> None:
     assert MaintenanceMetrics.__module__ == "app.application.maintenance_ports"
 
 
-def test_maintenance_router_uses_metrics_port_not_prometheus() -> None:
+def test_maintenance_application_service_uses_metrics_port_not_prometheus() -> None:
     tree = ast.parse((API_APP / "routers" / "maintenance.py").read_text(encoding="utf-8"))
     imported_modules = {
         node.module
@@ -566,11 +566,16 @@ def test_maintenance_router_uses_metrics_port_not_prometheus() -> None:
     }
     assert "..metrics" not in imported_modules
 
+    service_tree = ast.parse(
+        (API_APP / "application" / "maintenance_evaluation.py").read_text(
+            encoding="utf-8"
+        )
+    )
     helper = next(
         node
-        for node in tree.body
+        for node in service_tree.body
         if isinstance(node, ast.FunctionDef)
-        and node.name == "_evaluate_and_publish_maintenance_metrics"
+        and node.name == "evaluate_maintenance_issues"
     )
     calls = {
         node.func.attr

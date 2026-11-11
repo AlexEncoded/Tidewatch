@@ -40,6 +40,9 @@ wave analysis combining sensor and fleet reads, live in `analysis_ports.py`.
 Prometheus adapter implements it outside the HTTP route.
 Maintenance evaluation exposes its battery and movement metric output through
 `MaintenanceMetrics`, also implemented by the Prometheus adapter.
+The maintenance application service evaluates the fleet, publishes those
+metrics through the port, and returns domain issues for HTTP or notification
+use cases to map independently.
 The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.

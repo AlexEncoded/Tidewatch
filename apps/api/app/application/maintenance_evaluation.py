@@ -6,7 +6,7 @@ from datetime import datetime
 from .battery_health import analyze_battery_health_for_buoy
 from .device_health import summarize_device_health_for_buoy
 from .movement_analysis import analyze_movement_for_buoy
-from .maintenance_ports import MaintenanceReader
+from .maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
 from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.buoy import BuoySnapshot
@@ -39,6 +39,25 @@ def evaluate_maintenance_fleet(
         )
         for buoy in reader.list_buoy_snapshots()
     ]
+
+
+def evaluate_maintenance_issues(
+    reader: MaintenanceReader,
+    metrics: MaintenanceMetrics,
+    now: datetime,
+    max_age_minutes: float,
+    drift_speed_mps: float,
+) -> list[MaintenanceIssueSnapshot]:
+    """Evaluate the fleet, publish operational metrics, and collect issues."""
+    issues = []
+    for buoy, evaluation in evaluate_maintenance_fleet(
+        reader, now, max_age_minutes, drift_speed_mps
+    ):
+        metrics.record_evaluation(
+            buoy.buoy_id, evaluation.battery_health, evaluation.average_speed_mps
+        )
+        issues.extend(evaluation.issues)
+    return issues
 
 
 def evaluate_maintenance_buoy(

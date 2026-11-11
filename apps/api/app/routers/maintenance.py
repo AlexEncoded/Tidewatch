@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
-from ..application.maintenance_evaluation import evaluate_maintenance_fleet
+from ..application.maintenance_evaluation import evaluate_maintenance_issues
 from ..application.maintenance_notifications import (
     enqueue_maintenance_notification,
 )
@@ -23,28 +23,10 @@ from ..schemas.maintenance import (
     MaintenanceNotificationJobStatus,
     MaintenanceNotificationResult,
 )
-from ..domain.maintenance import MaintenanceIssueSnapshot
 from ..settings import configured_maintenance_webhook_url
 
 
 router = APIRouter()
-
-
-def _evaluate_and_publish_maintenance_metrics(
-    reader: MaintenanceReader,
-    metrics: MaintenanceMetrics,
-    max_age_minutes: float,
-    drift_speed_mps: float,
-) -> list[MaintenanceIssueSnapshot]:
-    issues: list[MaintenanceIssueSnapshot] = []
-    for buoy, evaluation in evaluate_maintenance_fleet(
-        reader, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
-    ):
-        metrics.record_evaluation(
-            buoy.buoy_id, evaluation.battery_health, evaluation.average_speed_mps
-        )
-        issues.extend(evaluation.issues)
-    return issues
 
 
 @router.get(
@@ -58,8 +40,8 @@ def maintenance_issues(
     reader: MaintenanceReader = Depends(get_maintenance_reader),
     metrics: MaintenanceMetrics = Depends(get_maintenance_metrics),
 ) -> list[MaintenanceIssue]:
-    issues = _evaluate_and_publish_maintenance_metrics(
-        reader, metrics, max_age_minutes, drift_speed_mps
+    issues = evaluate_maintenance_issues(
+        reader, metrics, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
     )
     return [
         MaintenanceIssue.model_validate(issue, from_attributes=True) for issue in issues
@@ -91,8 +73,8 @@ def notify_maintenance(
             detail="MAINTENANCE_WEBHOOK_URL is not configured",
         )
 
-    issues = _evaluate_and_publish_maintenance_metrics(
-        reader, metrics, max_age_minutes, drift_speed_mps
+    issues = evaluate_maintenance_issues(
+        reader, metrics, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
     )
     requested_at = datetime.now(timezone.utc)
     try:
