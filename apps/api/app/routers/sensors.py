@@ -29,6 +29,7 @@ from ..adapter_dependencies import get_telemetry_metrics
 from ..application.ambient_light_ports import AmbientLightTelemetryGateway
 from ..application.ambient_light_ingestion import ingest_ambient_light_reading
 from ..application.motion_ports import ImuTelemetryGateway
+from ..application.motion_ingestion import ingest_imu_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -240,26 +241,10 @@ def record_imu(
     gateway: ImuTelemetryGateway = Depends(get_imu_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> ImuReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_imu_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_imu(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics,
-        buoy_id,
-        "imu",
-        reading.sensor_channel,
-        reading.quality,
-        {
-            "acceleration_x_mps2": reading.acceleration_x_mps2,
-            "acceleration_y_mps2": reading.acceleration_y_mps2,
-            "acceleration_z_mps2": reading.acceleration_z_mps2,
-            "angular_velocity_x_dps": reading.angular_velocity_x_dps,
-            "angular_velocity_y_dps": reading.angular_velocity_y_dps,
-            "angular_velocity_z_dps": reading.angular_velocity_z_dps,
-        },
-    )
+    saved_reading = ingest_imu_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 

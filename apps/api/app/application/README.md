@@ -78,6 +78,8 @@ This keeps maintenance orchestration independent from FastAPI and SQLAlchemy.
 
 The ambient-light ingestion use case checks buoy existence, persists the
 domain snapshot, and publishes heartbeat and sensor metrics through ports.
+IMU ingestion follows the same boundary and also publishes each acceleration
+and angular-velocity axis through the telemetry metrics port.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.

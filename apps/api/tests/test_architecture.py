@@ -2566,6 +2566,12 @@ def test_imu_routes_use_injected_telemetry_gateway():
         for alias in node.names
     }
     assert "get_imu_telemetry_gateway" in imported_dependencies
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_imu"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_imu_reading" in record_calls
 
 
 def test_ambient_light_routes_use_injected_telemetry_gateway():
