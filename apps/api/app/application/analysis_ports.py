@@ -4,7 +4,7 @@ from typing import Protocol
 
 from ..domain.wave import WaveAnalysisSnapshot
 from .fleet_ports import LocationTelemetryReader
-from .sensor_ports import ImuTelemetryReader
+from .motion_ports import ImuTelemetryReader
 from .marine_water_ports import (
     PressureTelemetryReader,
     TemperatureTelemetryReader,

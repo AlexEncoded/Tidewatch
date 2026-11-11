@@ -415,16 +415,19 @@ def test_analysis_ports_are_grouped_by_context() -> None:
 def test_sensor_health_ports_are_grouped_by_context() -> None:
     from app.application.sensor_ports import (
         AmbientLightTelemetryGateway,
-        ImuTelemetryGateway,
-        ImuTelemetryReader,
     )
 
     for port in (
         AmbientLightTelemetryGateway,
-        ImuTelemetryGateway,
-        ImuTelemetryReader,
     ):
         assert port.__module__ == "app.application.sensor_ports"
+
+
+def test_motion_ports_are_grouped_by_context() -> None:
+    from app.application.motion_ports import ImuTelemetryGateway, ImuTelemetryReader
+
+    for port in (ImuTelemetryGateway, ImuTelemetryReader):
+        assert port.__module__ == "app.application.motion_ports"
 
 
 def test_marine_water_ports_are_grouped_by_context() -> None:

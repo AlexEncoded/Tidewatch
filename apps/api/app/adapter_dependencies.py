@@ -40,8 +40,8 @@ from .application.telemetry_ports import (
 )
 from .application.sensor_ports import (
     AmbientLightTelemetryGateway,
-    ImuTelemetryGateway,
 )
+from .application.motion_ports import ImuTelemetryGateway
 from .application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .application.marine_water_ports import (
     PressureTelemetryGateway,

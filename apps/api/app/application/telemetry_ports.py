@@ -11,8 +11,8 @@ from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
     AmbientLightTelemetryGateway,
-    ImuTelemetryGateway,
 )
+from .motion_ports import ImuTelemetryGateway
 from .flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .marine_water_ports import (
     PressureTelemetryGateway,
