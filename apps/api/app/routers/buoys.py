@@ -9,7 +9,10 @@ from fastapi.responses import Response
 
 from ..application.buoy_location_update import update_buoy_location as record_buoy_location
 from ..application.buoy_registration import register_buoy as create_buoy_use_case
-from ..application.buoy_locations import list_buoy_locations as query_buoy_locations
+from ..application.buoy_locations import (
+    InvalidBuoyLocationTimeRange,
+    list_buoy_locations as query_buoy_locations,
+)
 from ..adapter_dependencies import get_buoy_location_history_reader
 from ..adapter_dependencies import get_buoy_summary_reader
 from ..application.fleet_ports import (
@@ -31,6 +34,7 @@ from ..adapter_dependencies import (
     get_fleet_metrics,
 )
 from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
+from ..domain.location import LocationTelemetrySnapshot
 from ..application.stale_buoys import find_stale_buoys
 from ..adapter_dependencies import get_stale_buoy_reader
 from ..schemas.fleet_summary import BuoySummary
@@ -45,6 +49,22 @@ from ..schemas.fleet import (
 
 
 router = APIRouter()
+
+
+def _read_buoy_locations(
+    reader: BuoyLocationHistoryReader,
+    buoy_id: str,
+    limit: int,
+    since: datetime | None,
+    until: datetime | None,
+) -> list[LocationTelemetrySnapshot] | None:
+    try:
+        return query_buoy_locations(reader, buoy_id, limit, since, until)
+    except InvalidBuoyLocationTimeRange as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from None
 
 
 @router.post("/api/v1/buoys", response_model=Buoy, status_code=status.HTTP_201_CREATED, tags=["buoys"])
@@ -184,12 +204,7 @@ def list_buoy_locations(
     until: datetime | None = Query(default=None),
     reader: BuoyLocationHistoryReader = Depends(get_buoy_location_history_reader),
 ) -> list[BuoyLocationReading]:
-    if since is not None and until is not None and since > until:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="since must be earlier than or equal to until",
-        )
-    locations = query_buoy_locations(reader, buoy_id, limit, since, until)
+    locations = _read_buoy_locations(reader, buoy_id, limit, since, until)
     if locations is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return locations
@@ -207,12 +222,7 @@ def export_buoy_locations(
     until: datetime | None = Query(default=None),
     reader: BuoyLocationHistoryReader = Depends(get_buoy_location_history_reader),
 ) -> Response:
-    if since is not None and until is not None and since > until:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="since must be earlier than or equal to until",
-        )
-    locations = query_buoy_locations(reader, buoy_id, limit, since, until)
+    locations = _read_buoy_locations(reader, buoy_id, limit, since, until)
     if locations is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     output = StringIO()

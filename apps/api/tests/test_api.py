@@ -1061,6 +1061,14 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
         },
     )
     assert invalid_window.status_code == 422
+    invalid_export_window = client.get(
+        f"/api/v1/buoys/{buoy_id}/locations/export",
+        params={
+            "since": (start + timedelta(hours=1)).isoformat(),
+            "until": start.isoformat(),
+        },
+    )
+    assert invalid_export_window.status_code == 422
 
 
 def test_maintenance_issues_detect_buoy_drift() -> None:

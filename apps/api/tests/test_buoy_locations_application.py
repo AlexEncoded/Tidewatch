@@ -1,6 +1,11 @@
 from datetime import datetime, timezone
 
-from app.application.buoy_locations import list_buoy_locations
+import pytest
+
+from app.application.buoy_locations import (
+    InvalidBuoyLocationTimeRange,
+    list_buoy_locations,
+)
 from app.domain.location import LocationTelemetrySnapshot
 
 
@@ -36,3 +41,17 @@ def test_buoy_location_query_returns_none_for_unknown_buoy_without_listing():
 
     assert list_buoy_locations(reader, "missing", 25) is None
     assert reader.query is None
+
+
+def test_buoy_location_query_rejects_a_reversed_time_range_before_reading():
+    reader = FakeBuoyLocationHistoryReader()
+    since = datetime(2026, 9, 27, tzinfo=timezone.utc)
+    until = datetime(2026, 9, 1, tzinfo=timezone.utc)
+
+    with pytest.raises(
+        InvalidBuoyLocationTimeRange,
+        match="since must be earlier than or equal to until",
+    ):
+        list_buoy_locations(reader, "TW-123", 25, since, until)
+
+    assert not hasattr(reader, "checked_buoy_id")

@@ -2338,8 +2338,9 @@ def test_buoy_location_routes_delegate_to_application_service():
         if isinstance(node, ast.FunctionDef)
     }
 
-    assert "query_buoy_locations" in routes["list_buoy_locations"]
-    assert "query_buoy_locations" in routes["export_buoy_locations"]
+    assert "_read_buoy_locations" in routes["list_buoy_locations"]
+    assert "_read_buoy_locations" in routes["export_buoy_locations"]
+    assert "query_buoy_locations" in routes["_read_buoy_locations"]
     assert all("BuoyRepository" not in routes[name] for name in (
         "list_buoy_locations",
         "export_buoy_locations",
