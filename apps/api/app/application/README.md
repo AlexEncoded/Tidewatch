@@ -44,8 +44,9 @@ The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
 
-Sensor-health reads and persisted-check writes, plus ambient-light gateways
-use `sensor_ports.py`. IMU gateways live in `motion_ports.py`; wind and
+Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
+Ambient-light gateways live in `ambient_light_ports.py`; IMU gateways live in
+`motion_ports.py`; wind and
 marine-current gateways live in
 `flow_ports.py`. Water temperature, pressure, and salinity gateways live in
 `marine_water_ports.py`;

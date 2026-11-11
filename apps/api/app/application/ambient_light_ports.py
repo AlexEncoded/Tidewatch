@@ -1,10 +1,10 @@
-"""Application ports for sensor diagnostics and health persistence."""
+"""Application port for ambient-light telemetry."""
 
 from typing import Protocol
 
+from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.devices import SensorChannel
 
-from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
 class AmbientLightTelemetryGateway(Protocol):
     def buoy_exists(self, buoy_id: str) -> bool:

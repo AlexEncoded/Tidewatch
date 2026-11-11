@@ -412,15 +412,10 @@ def test_analysis_ports_are_grouped_by_context() -> None:
         assert port.__module__ == "app.application.analysis_ports"
 
 
-def test_sensor_health_ports_are_grouped_by_context() -> None:
-    from app.application.sensor_ports import (
-        AmbientLightTelemetryGateway,
-    )
+def test_ambient_light_port_is_grouped_by_context() -> None:
+    from app.application.ambient_light_ports import AmbientLightTelemetryGateway
 
-    for port in (
-        AmbientLightTelemetryGateway,
-    ):
-        assert port.__module__ == "app.application.sensor_ports"
+    assert AmbientLightTelemetryGateway.__module__ == "app.application.ambient_light_ports"
 
 
 def test_motion_ports_are_grouped_by_context() -> None:

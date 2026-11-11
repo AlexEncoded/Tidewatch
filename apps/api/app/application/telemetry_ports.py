@@ -9,9 +9,7 @@ from ..domain.location import LocationTelemetrySnapshot
 from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
 from .battery_ports import BatteryTelemetryReader
 from .fleet_ports import LocationTelemetryReader
-from .sensor_ports import (
-    AmbientLightTelemetryGateway,
-)
+from .ambient_light_ports import AmbientLightTelemetryGateway
 from .motion_ports import ImuTelemetryGateway
 from .flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .marine_water_ports import (
