@@ -12,10 +12,9 @@ from .fleet_ports import LocationTelemetryReader
 from .sensor_ports import (
     AmbientLightTelemetryGateway,
     ImuTelemetryGateway,
-    MarineCurrentTelemetryGateway,
     TurbidityTelemetryGateway,
-    WindTelemetryGateway,
 )
+from .flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from .marine_water_ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,

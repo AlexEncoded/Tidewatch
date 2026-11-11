@@ -417,18 +417,14 @@ def test_sensor_health_ports_are_grouped_by_context() -> None:
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        MarineCurrentTelemetryGateway,
         TurbidityTelemetryGateway,
-        WindTelemetryGateway,
     )
 
     for port in (
         AmbientLightTelemetryGateway,
         ImuTelemetryGateway,
         ImuTelemetryReader,
-        MarineCurrentTelemetryGateway,
         TurbidityTelemetryGateway,
-        WindTelemetryGateway,
     ):
         assert port.__module__ == "app.application.sensor_ports"
 
@@ -450,6 +446,16 @@ def test_marine_water_ports_are_grouped_by_context() -> None:
         TemperatureTelemetryReader,
     ):
         assert port.__module__ == "app.application.marine_water_ports"
+
+
+def test_flow_ports_are_grouped_by_context() -> None:
+    from app.application.flow_ports import (
+        MarineCurrentTelemetryGateway,
+        WindTelemetryGateway,
+    )
+
+    for port in (MarineCurrentTelemetryGateway, WindTelemetryGateway):
+        assert port.__module__ == "app.application.flow_ports"
 
 
 def test_water_chemistry_ports_are_grouped_by_context() -> None:
@@ -1125,7 +1131,7 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     from app.application.device_heartbeat import record_device_heartbeat
     from app.application.fleet_ports import FleetMetrics
     from app.application.sensor_health_ports import SensorHealthReader
-    from app.application.sensor_ports import WindTelemetryGateway
+    from app.application.flow_ports import WindTelemetryGateway
     from app.application.system_ports import AvailabilityMetrics
     from app.application.sensor_reading_metrics import record_sensor_reading_metrics
     from app.domain.devices import validate_device_registration
