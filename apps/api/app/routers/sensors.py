@@ -39,6 +39,7 @@ from ..application.ph_ingestion import ingest_ph_reading
 from ..application.conductivity_ingestion import ingest_conductivity_reading
 from ..application.chlorophyll_a_ingestion import ingest_chlorophyll_a_reading
 from ..application.rainfall_ingestion import ingest_rainfall_reading
+from ..application.humidity_ingestion import ingest_humidity_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -540,13 +541,10 @@ def record_humidity(
     gateway: HumidityTelemetryGateway = Depends(get_humidity_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> HumidityReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_humidity_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_humidity(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(metrics, buoy_id, "humidity", reading.sensor_channel,
-                                  reading.quality, {"humidity_percent": reading.humidity_percent})
+    saved_reading = ingest_humidity_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
