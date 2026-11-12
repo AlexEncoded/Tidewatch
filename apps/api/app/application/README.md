@@ -92,6 +92,8 @@ pH ingestion also delegates buoy validation, persistence, heartbeat, and
 sensor metrics to its application use case.
 Conductivity ingestion follows this boundary as well.
 Chlorophyll-a ingestion uses the same application orchestration pattern.
+Rainfall ingestion also delegates persistence and telemetry metrics through
+its application use case.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.

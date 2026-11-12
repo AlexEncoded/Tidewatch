@@ -38,6 +38,7 @@ from ..application.dissolved_oxygen_ingestion import ingest_dissolved_oxygen_rea
 from ..application.ph_ingestion import ingest_ph_reading
 from ..application.conductivity_ingestion import ingest_conductivity_reading
 from ..application.chlorophyll_a_ingestion import ingest_chlorophyll_a_reading
+from ..application.rainfall_ingestion import ingest_rainfall_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -513,13 +514,10 @@ def record_rainfall(
     gateway: RainfallTelemetryGateway = Depends(get_rainfall_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> RainfallReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_rainfall_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_rainfall(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(metrics, buoy_id, "rainfall", reading.sensor_channel,
-                                  reading.quality, {"rainfall_mm_h": reading.rainfall_mm_h})
+    saved_reading = ingest_rainfall_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
