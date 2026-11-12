@@ -2539,6 +2539,13 @@ def test_salinity_routes_use_injected_telemetry_gateway():
         assert isinstance(gateway_parameter.annotation, ast.Name)
         assert gateway_parameter.annotation.id == "SalinityTelemetryGateway"
 
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_salinity"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_salinity_reading" in record_calls
+
     imported_dependencies = {
         alias.name
         for node in ast.walk(tree)

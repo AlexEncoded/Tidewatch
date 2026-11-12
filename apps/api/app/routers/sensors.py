@@ -32,6 +32,7 @@ from ..application.motion_ports import ImuTelemetryGateway
 from ..application.motion_ingestion import ingest_imu_reading
 from ..application.temperature_ingestion import ingest_temperature_reading
 from ..application.pressure_ingestion import ingest_pressure_reading
+from ..application.salinity_ingestion import ingest_salinity_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -321,13 +322,10 @@ def record_salinity(
     gateway: SalinityTelemetryGateway = Depends(get_salinity_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> SalinityReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_salinity_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_salinity(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(metrics, buoy_id, "salinity", reading.sensor_channel,
-                                  reading.quality, {"salinity_psu": reading.salinity_psu})
+    saved_reading = ingest_salinity_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
