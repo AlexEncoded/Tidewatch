@@ -91,6 +91,7 @@ Dissolved-oxygen ingestion now follows this same application boundary.
 pH ingestion also delegates buoy validation, persistence, heartbeat, and
 sensor metrics to its application use case.
 Conductivity ingestion follows this boundary as well.
+Chlorophyll-a ingestion uses the same application orchestration pattern.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
