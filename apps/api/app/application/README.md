@@ -82,6 +82,8 @@ IMU ingestion follows the same boundary and also publishes each acceleration
 and angular-velocity axis through the telemetry metrics port.
 Water-temperature ingestion now uses the same application boundary for buoy
 validation, persistence, heartbeat updates, and sensor metrics.
+Water-pressure ingestion follows that boundary for its validation, persistence,
+heartbeat, and sensor metrics as well.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.

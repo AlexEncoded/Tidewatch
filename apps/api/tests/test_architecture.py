@@ -2509,6 +2509,12 @@ def test_pressure_routes_use_injected_telemetry_gateway():
         for alias in node.names
     }
     assert "get_pressure_telemetry_gateway" in imported_dependencies
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_pressure"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_pressure_reading" in record_calls
 
 
 def test_salinity_routes_use_injected_telemetry_gateway():
