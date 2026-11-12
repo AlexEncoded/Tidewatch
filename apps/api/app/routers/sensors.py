@@ -30,6 +30,7 @@ from ..application.ambient_light_ports import AmbientLightTelemetryGateway
 from ..application.ambient_light_ingestion import ingest_ambient_light_reading
 from ..application.motion_ports import ImuTelemetryGateway
 from ..application.motion_ingestion import ingest_imu_reading
+from ..application.temperature_ingestion import ingest_temperature_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -267,19 +268,10 @@ def record_temperature(
     gateway: TemperatureTelemetryGateway = Depends(get_temperature_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> TemperatureReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_temperature_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_temperature(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics,
-        buoy_id,
-        "temperature",
-        reading.sensor_channel,
-        reading.quality,
-        {"temperature_celsius": reading.temperature_celsius},
-    )
+    saved_reading = ingest_temperature_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
