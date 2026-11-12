@@ -34,6 +34,7 @@ from ..application.temperature_ingestion import ingest_temperature_reading
 from ..application.pressure_ingestion import ingest_pressure_reading
 from ..application.salinity_ingestion import ingest_salinity_reading
 from ..application.turbidity_ingestion import ingest_turbidity_reading
+from ..application.dissolved_oxygen_ingestion import ingest_dissolved_oxygen_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -407,15 +408,10 @@ def record_dissolved_oxygen(
     gateway: DissolvedOxygenTelemetryGateway = Depends(get_dissolved_oxygen_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> DissolvedOxygenReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_dissolved_oxygen_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_dissolved_oxygen(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics, buoy_id, "dissolved_oxygen", reading.sensor_channel,
-        reading.quality, {"dissolved_oxygen_mg_l": reading.dissolved_oxygen_mg_l},
-    )
+    saved_reading = ingest_dissolved_oxygen_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 

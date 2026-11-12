@@ -87,6 +87,7 @@ heartbeat, and sensor metrics as well.
 Salinity ingestion follows the same application boundary and telemetry ports.
 Turbidity ingestion also coordinates buoy validation, persistence, heartbeat,
 and sensor metrics through the application layer.
+Dissolved-oxygen ingestion now follows this same application boundary.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
