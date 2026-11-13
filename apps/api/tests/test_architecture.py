@@ -2655,6 +2655,13 @@ def test_wind_routes_use_injected_telemetry_gateway():
         assert isinstance(gateway_parameter.annotation, ast.Name)
         assert gateway_parameter.annotation.id == "WindTelemetryGateway"
 
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_wind"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_wind_reading" in record_calls
+
     imported_dependencies = {
         alias.name
         for node in ast.walk(tree)

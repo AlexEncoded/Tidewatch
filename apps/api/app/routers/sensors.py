@@ -42,6 +42,7 @@ from ..application.rainfall_ingestion import ingest_rainfall_reading
 from ..application.humidity_ingestion import ingest_humidity_reading
 from ..application.air_temperature_ingestion import ingest_air_temperature_reading
 from ..application.atmospheric_pressure_ingestion import ingest_atmospheric_pressure_reading
+from ..application.wind_ingestion import ingest_wind_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -189,22 +190,10 @@ def record_wind(
     gateway: WindTelemetryGateway = Depends(get_wind_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> WindReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_wind_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_wind(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics,
-        buoy_id,
-        "wind",
-        reading.sensor_channel,
-        reading.quality,
-        {
-            "wind_speed_mps": reading.wind_speed_mps,
-            "wind_direction_degrees": reading.wind_direction_degrees,
-        },
-    )
+    saved_reading = ingest_wind_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
