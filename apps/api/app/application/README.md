@@ -96,6 +96,7 @@ Rainfall ingestion also delegates persistence and telemetry metrics through
 its application use case.
 Humidity ingestion uses the same application boundary.
 Air-temperature ingestion follows the same pattern through the weather port.
+Atmospheric-pressure ingestion also uses its weather application gateway.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
