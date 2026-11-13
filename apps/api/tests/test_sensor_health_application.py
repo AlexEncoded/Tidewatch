@@ -7,6 +7,7 @@ from app.application.sensor_health import (
     assess_sensor_health,
     collect_sensor_readings,
     evaluate_and_persist_sensor_health_check,
+    evaluate_and_publish_sensor_health,
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
@@ -128,6 +129,37 @@ def test_sensor_health_check_stops_when_buoy_is_unknown() -> None:
         )
         is None
     )
+
+
+def test_sensor_health_read_use_case_validates_buoy_and_publishes_metrics() -> None:
+    now = datetime(2026, 11, 12, tzinfo=timezone.utc)
+
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            assert buoy_id == "buoy-1"
+            return True
+
+        def __getattr__(self, name):
+            if name.startswith("list_"):
+                return lambda buoy_id, limit, channel: []
+            raise AttributeError(name)
+
+    class Metrics:
+        def __init__(self):
+            self.values = []
+
+        def record_evaluation(self, *args):
+            self.values.append(args)
+
+    metrics = Metrics()
+    snapshot = evaluate_and_publish_sensor_health(
+        Reader(), metrics, "buoy-1", 1800, now
+    )
+
+    assert snapshot is not None
+    assert snapshot.health.buoy_id == "buoy-1"
+    assert snapshot.health.checked_at == now
+    assert len(metrics.values) == 1
 
 
 def test_sensor_health_degradation_margins_are_immutable() -> None:

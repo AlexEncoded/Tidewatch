@@ -126,12 +126,26 @@ def evaluate_and_persist_sensor_health_check(
     now: datetime,
 ) -> SensorHealthCheckSnapshot | None:
     """Validate, evaluate, publish, and persist one buoy health check."""
-    if not gateway.buoy_exists(buoy_id):
+    snapshot = evaluate_and_publish_sensor_health(
+        gateway, metrics, buoy_id, max_age_seconds, now
+    )
+    if snapshot is None:
+        return None
+    return persist_sensor_health_check(gateway, snapshot.health)
+
+
+def evaluate_and_publish_sensor_health(
+    reader: SensorHealthReader,
+    metrics: SensorHealthMetrics,
+    buoy_id: str,
+    max_age_seconds: float,
+    now: datetime,
+) -> SensorHealthSnapshot | None:
+    """Validate a buoy, evaluate its channels, and publish health metrics."""
+    if not reader.buoy_exists(buoy_id):
         return None
 
-    snapshot = evaluate_sensor_health_snapshot(
-        gateway, buoy_id, max_age_seconds, now
-    )
+    snapshot = evaluate_sensor_health_snapshot(reader, buoy_id, max_age_seconds, now)
     metrics.record_evaluation(
         buoy_id,
         snapshot.readings,
@@ -139,7 +153,7 @@ def evaluate_and_persist_sensor_health_check(
         snapshot.evaluation.missing_sensors,
         snapshot.evaluation.decisions,
     )
-    return persist_sensor_health_check(gateway, snapshot.health)
+    return snapshot
 
 
 def collect_sensor_readings(

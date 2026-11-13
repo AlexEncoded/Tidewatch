@@ -77,9 +77,8 @@ from ..application.sensor_health_ports import (
 from ..application.telemetry_ports import TelemetryMetrics
 from ..application.sensor_reading_metrics import record_sensor_reading_metrics
 from ..application.sensor_health import (
-    SensorHealthSnapshot as SensorHealthEvaluationSnapshot,
     evaluate_and_persist_sensor_health_check,
-    evaluate_sensor_health_snapshot,
+    evaluate_and_publish_sensor_health,
 )
 from ..application.telemetry_ingestion import (
     build_acoustic_altimeter_snapshot,
@@ -148,28 +147,6 @@ def record_buoy_heartbeat(metrics: TelemetryMetrics, buoy_id: str) -> None:
     metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
         datetime.now(timezone.utc).timestamp()
     )
-
-
-def _evaluate_and_publish_sensor_health(
-    reader: SensorHealthReader,
-    metrics: SensorHealthMetrics,
-    buoy_id: str,
-    max_age_minutes: float,
-) -> SensorHealthEvaluationSnapshot:
-    snapshot = evaluate_sensor_health_snapshot(
-        reader,
-        buoy_id,
-        max_age_minutes * 60,
-        datetime.now(timezone.utc),
-    )
-    metrics.record_evaluation(
-        buoy_id,
-        snapshot.readings,
-        snapshot.evaluation.degraded_sensors,
-        snapshot.evaluation.missing_sensors,
-        snapshot.evaluation.decisions,
-    )
-    return snapshot
 
 
 @router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
@@ -661,12 +638,15 @@ def sensor_health(
     reader: SensorHealthReader = Depends(get_sensor_health_reader),
     metrics: SensorHealthMetrics = Depends(get_sensor_health_metrics),
 ) -> SensorHealth:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-
-    snapshot = _evaluate_and_publish_sensor_health(
-        reader, metrics, buoy_id, max_age_minutes
+    snapshot = evaluate_and_publish_sensor_health(
+        reader,
+        metrics,
+        buoy_id,
+        max_age_minutes * 60,
+        datetime.now(timezone.utc),
     )
+    if snapshot is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return SensorHealth.model_validate(snapshot.health, from_attributes=True)
 
 

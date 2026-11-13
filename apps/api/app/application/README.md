@@ -51,6 +51,8 @@ Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
 The persisted sensor-health check use case validates buoy existence, evaluates
 the current readings, publishes the evaluation through `SensorHealthMetrics`,
 and stores the result through the check gateway.
+The non-persisting health query uses the same application evaluation and
+metrics flow, without storing a check.
 Ambient-light gateways live in `ambient_light_ports.py`; IMU gateways live in
 `motion_ports.py`; wind and
 marine-current gateways live in

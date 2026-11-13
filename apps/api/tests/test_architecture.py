@@ -2073,12 +2073,12 @@ def test_battery_router_uses_metrics_port_instead_of_prometheus() -> None:
 
 
 def test_sensor_health_publication_uses_metrics_port() -> None:
-    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    tree = ast.parse((API_APP / "application" / "sensor_health.py").read_text(encoding="utf-8"))
     helper = next(
         node
         for node in tree.body
         if isinstance(node, ast.FunctionDef)
-        and node.name == "_evaluate_and_publish_sensor_health"
+        and node.name == "evaluate_and_publish_sensor_health"
     )
     metric_calls = {
         node.func.attr
@@ -3158,6 +3158,7 @@ def test_sensor_health_route_uses_injected_reader():
     assert "BuoyRepository" not in calls
     assert isinstance(reader_parameter.annotation, ast.Name)
     assert reader_parameter.annotation.id == "SensorHealthReader"
+    assert "evaluate_and_publish_sensor_health" in calls
 
     imported_dependencies = {
         alias.name
