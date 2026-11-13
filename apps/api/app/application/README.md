@@ -101,6 +101,8 @@ Wind ingestion now coordinates buoy validation, persistence, heartbeat, and
 both wind metrics through its application use case.
 Marine-current ingestion follows the same boundary and publishes its speed
 and direction metrics through the metrics port.
+Acoustic-altimeter ingestion now uses its application gateway for persistence
+and depth metrics.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.

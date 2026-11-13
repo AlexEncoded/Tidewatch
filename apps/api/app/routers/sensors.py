@@ -44,6 +44,7 @@ from ..application.air_temperature_ingestion import ingest_air_temperature_readi
 from ..application.atmospheric_pressure_ingestion import ingest_atmospheric_pressure_reading
 from ..application.wind_ingestion import ingest_wind_reading
 from ..application.marine_current_ingestion import ingest_marine_current_reading
+from ..application.acoustic_altimeter_ingestion import ingest_acoustic_altimeter_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -605,15 +606,10 @@ def record_acoustic_altimeter(
     gateway: AcousticAltimeterTelemetryGateway = Depends(get_acoustic_altimeter_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> AcousticAltimeterReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_acoustic_altimeter_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_acoustic_altimeter(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics, buoy_id, "acoustic_altimeter", reading.sensor_channel,
-        reading.quality, {"depth_meters": reading.depth_meters},
-    )
+    saved_reading = ingest_acoustic_altimeter_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 
