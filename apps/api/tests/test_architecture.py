@@ -2058,6 +2058,10 @@ def test_system_router_uses_queue_metrics_publisher_port() -> None:
 
     assert "metrics" not in imported_modules
     assert "application.telemetry_ports" in imported_modules
+    assert "application.sensor_reading_metrics" not in imported_modules
+    assert "record_buoy_heartbeat" not in {
+        node.name for node in tree.body if isinstance(node, ast.FunctionDef)
+    }
 
 
 def test_battery_router_uses_metrics_port_instead_of_prometheus() -> None:

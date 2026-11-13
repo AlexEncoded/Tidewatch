@@ -75,7 +75,6 @@ from ..application.sensor_health_ports import (
     SensorHealthReader,
 )
 from ..application.telemetry_ports import TelemetryMetrics
-from ..application.sensor_reading_metrics import record_sensor_reading_metrics
 from ..application.sensor_health import (
     evaluate_and_persist_sensor_health_check,
     evaluate_and_publish_sensor_health,
@@ -140,13 +139,6 @@ from ..schemas.telemetry import (
     WindReadingCreate,
 )
 router = APIRouter()
-
-
-def record_buoy_heartbeat(metrics: TelemetryMetrics, buoy_id: str) -> None:
-    """Record receipt time so sensor clock drift cannot fake buoy downtime."""
-    metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
-        datetime.now(timezone.utc).timestamp()
-    )
 
 
 @router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
