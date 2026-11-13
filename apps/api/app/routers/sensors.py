@@ -78,8 +78,8 @@ from ..application.telemetry_ports import TelemetryMetrics
 from ..application.sensor_reading_metrics import record_sensor_reading_metrics
 from ..application.sensor_health import (
     SensorHealthSnapshot as SensorHealthEvaluationSnapshot,
+    evaluate_and_persist_sensor_health_check,
     evaluate_sensor_health_snapshot,
-    persist_sensor_health_check,
 )
 from ..application.telemetry_ingestion import (
     build_acoustic_altimeter_snapshot,
@@ -682,10 +682,13 @@ def record_sensor_health_check(
     gateway: SensorHealthCheckGateway = Depends(get_sensor_health_check_gateway),
     metrics: SensorHealthMetrics = Depends(get_sensor_health_metrics),
 ) -> SensorHealthCheck:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    snapshot = _evaluate_and_publish_sensor_health(
-        gateway, metrics, buoy_id, max_age_minutes
+    stored = evaluate_and_persist_sensor_health_check(
+        gateway,
+        metrics,
+        buoy_id,
+        max_age_minutes * 60,
+        datetime.now(timezone.utc),
     )
-    stored = persist_sensor_health_check(gateway, snapshot.health)
+    if stored is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return SensorHealthCheck.model_validate(stored, from_attributes=True)

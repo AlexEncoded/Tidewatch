@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
 from app.application.sensor_health import (
     assess_sensor_health,
     collect_sensor_readings,
+    evaluate_and_persist_sensor_health_check,
     evaluate_sensor_health_snapshot,
     persist_sensor_health_check,
 )
@@ -68,6 +70,64 @@ def test_sensor_health_application_service_maps_a_complete_snapshot() -> None:
     assert snapshot.health.buoy_id == "buoy-1"
     assert snapshot.health.status == "insufficient_data"
     assert snapshot.readings["temperature"]["A"] == []
+
+
+def test_sensor_health_check_orchestrates_buoy_validation_evaluation_metrics_and_write() -> None:
+    now = datetime(2026, 11, 12, tzinfo=timezone.utc)
+    events = []
+
+    class Gateway:
+        def buoy_exists(self, buoy_id):
+            events.append(("buoy_exists", buoy_id))
+            return True
+
+        def __getattr__(self, name):
+            if name.startswith("list_"):
+                return lambda buoy_id, limit, channel: []
+            if name == "add_sensor_health_check":
+                def add(health):
+                    events.append(("add_sensor_health_check", health))
+                    return SimpleNamespace(id=23, **health.__dict__)
+
+                return add
+            raise AttributeError(name)
+
+    class Metrics:
+        def record_evaluation(self, *args):
+            events.append(("record_evaluation", *args))
+
+    stored = evaluate_and_persist_sensor_health_check(
+        Gateway(), Metrics(), "buoy-1", 1800, now
+    )
+
+    assert stored.id == 23
+    assert stored.buoy_id == "buoy-1"
+    assert stored.checked_at == now
+    assert [event[0] for event in events].count("record_evaluation") == 1
+    assert [event[0] for event in events].count("add_sensor_health_check") == 1
+    assert events.index(next(event for event in events if event[0] == "record_evaluation")) < events.index(
+        next(event for event in events if event[0] == "add_sensor_health_check")
+    )
+
+
+def test_sensor_health_check_stops_when_buoy_is_unknown() -> None:
+    class Gateway:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def __getattr__(self, name):
+            raise AssertionError(f"unexpected gateway call: {name}")
+
+    class Metrics:
+        def record_evaluation(self, *args):
+            raise AssertionError("unknown buoy must not publish evaluation metrics")
+
+    assert (
+        evaluate_and_persist_sensor_health_check(
+            Gateway(), Metrics(), "missing", 1800, datetime.now(timezone.utc)
+        )
+        is None
+    )
 
 
 def test_sensor_health_degradation_margins_are_immutable() -> None:

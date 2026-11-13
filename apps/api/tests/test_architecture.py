@@ -3227,3 +3227,4 @@ def test_sensor_health_check_route_uses_injected_gateway():
         for alias in node.names
     }
     assert "get_sensor_health_check_gateway" in imported_dependencies
+    assert "evaluate_and_persist_sensor_health_check" in calls

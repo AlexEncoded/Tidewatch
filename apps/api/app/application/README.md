@@ -48,6 +48,9 @@ The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
 
 Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
+The persisted sensor-health check use case validates buoy existence, evaluates
+the current readings, publishes the evaluation through `SensorHealthMetrics`,
+and stores the result through the check gateway.
 Ambient-light gateways live in `ambient_light_ports.py`; IMU gateways live in
 `motion_ports.py`; wind and
 marine-current gateways live in

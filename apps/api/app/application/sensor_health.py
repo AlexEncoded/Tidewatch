@@ -17,7 +17,12 @@ from ..domain.sensor_health_analysis import calculate_sensor_health_deltas
 from ..domain.sensor_health_rules import SensorHealthDeltaName
 from ..domain.sensor_telemetry import SensorTelemetrySnapshot
 from ..domain.telemetry_family import TelemetryInputFamily
-from .sensor_health_ports import SensorHealthCheckWriter, SensorHealthReader
+from .sensor_health_ports import (
+    SensorHealthCheckGateway,
+    SensorHealthCheckWriter,
+    SensorHealthMetrics,
+    SensorHealthReader,
+)
 
 
 SENSOR_HEALTH_READING_FAMILIES: tuple[
@@ -111,6 +116,30 @@ def persist_sensor_health_check(
 ) -> SensorHealthCheckSnapshot:
     """Persist a completed sensor-health evaluation through its input port."""
     return writer.add_sensor_health_check(health)
+
+
+def evaluate_and_persist_sensor_health_check(
+    gateway: SensorHealthCheckGateway,
+    metrics: SensorHealthMetrics,
+    buoy_id: str,
+    max_age_seconds: float,
+    now: datetime,
+) -> SensorHealthCheckSnapshot | None:
+    """Validate, evaluate, publish, and persist one buoy health check."""
+    if not gateway.buoy_exists(buoy_id):
+        return None
+
+    snapshot = evaluate_sensor_health_snapshot(
+        gateway, buoy_id, max_age_seconds, now
+    )
+    metrics.record_evaluation(
+        buoy_id,
+        snapshot.readings,
+        snapshot.evaluation.degraded_sensors,
+        snapshot.evaluation.missing_sensors,
+        snapshot.evaluation.decisions,
+    )
+    return persist_sensor_health_check(gateway, snapshot.health)
 
 
 def collect_sensor_readings(
