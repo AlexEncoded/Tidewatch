@@ -43,6 +43,7 @@ from ..application.humidity_ingestion import ingest_humidity_reading
 from ..application.air_temperature_ingestion import ingest_air_temperature_reading
 from ..application.atmospheric_pressure_ingestion import ingest_atmospheric_pressure_reading
 from ..application.wind_ingestion import ingest_wind_reading
+from ..application.marine_current_ingestion import ingest_marine_current_reading
 from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
 from ..application.marine_water_ports import (
     PressureTelemetryGateway,
@@ -346,16 +347,10 @@ def record_marine_current(
     gateway: MarineCurrentTelemetryGateway = Depends(get_marine_current_telemetry_gateway),
     metrics: TelemetryMetrics = Depends(get_telemetry_metrics),
 ) -> MarineCurrentReading:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     reading = build_marine_current_snapshot(buoy_id, payload.model_dump(), None)
-    saved_reading = gateway.add_marine_current(reading)
-    record_buoy_heartbeat(metrics, buoy_id)
-    record_sensor_reading_metrics(
-        metrics, buoy_id, "marine_current", reading.sensor_channel, reading.quality,
-        {"current_speed_mps": reading.current_speed_mps,
-         "current_direction_degrees": reading.current_direction_degrees},
-    )
+    saved_reading = ingest_marine_current_reading(gateway, metrics, reading)
+    if saved_reading is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return saved_reading
 
 

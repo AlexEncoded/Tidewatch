@@ -2694,6 +2694,13 @@ def test_marine_current_routes_use_injected_telemetry_gateway():
         assert isinstance(gateway_parameter.annotation, ast.Name)
         assert gateway_parameter.annotation.id == "MarineCurrentTelemetryGateway"
 
+    record_calls = {
+        child.func.id
+        for child in ast.walk(routes["record_marine_current"])
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+    }
+    assert "ingest_marine_current_reading" in record_calls
+
     imported_dependencies = {
         alias.name
         for node in ast.walk(tree)

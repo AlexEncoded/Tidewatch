@@ -99,6 +99,8 @@ Air-temperature ingestion follows the same pattern through the weather port.
 Atmospheric-pressure ingestion also uses its weather application gateway.
 Wind ingestion now coordinates buoy validation, persistence, heartbeat, and
 both wind metrics through its application use case.
+Marine-current ingestion follows the same boundary and publishes its speed
+and direction metrics through the metrics port.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
