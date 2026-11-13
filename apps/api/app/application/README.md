@@ -105,6 +105,8 @@ Acoustic-altimeter ingestion now uses its application gateway for persistence
 and depth metrics.
 Underwater-acoustic ingestion follows the same application boundary and
 publishes echo-intensity metrics through the telemetry port.
+Battery ingestion coordinates buoy and physical-device validation, persistence,
+device heartbeat, and battery metrics through its application ports.
 
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
