@@ -57,6 +57,8 @@ Device-health queries apply the same existence check before summarizing device
 heartbeats; fleet maintenance can keep using the lower-level summary service.
 Buoy-location updates also publish calculated movement through `FleetMetrics`
 from application, alongside the persisted coordinates and analysis result.
+Buoy registration publishes its initial heartbeat from application after the
+registrar persists the new buoy snapshot.
 
 Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
 The persisted sensor-health check use case validates buoy existence, evaluates

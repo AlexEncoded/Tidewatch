@@ -2490,7 +2490,8 @@ def test_buoy_creation_route_delegates_to_application_service():
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
     }
 
-    assert "create_buoy_use_case" in calls
+    assert "register_buoy_and_publish_heartbeat" in calls
+    assert "record_buoy_heartbeat" not in calls
     assert "BuoyRepository" not in calls
 
 

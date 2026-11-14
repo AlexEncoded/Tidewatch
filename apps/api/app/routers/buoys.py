@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
 from ..application.buoy_location_update import update_buoy_location_and_publish_movement
-from ..application.buoy_registration import register_buoy as create_buoy_use_case
+from ..application.buoy_registration import register_buoy_and_publish_heartbeat
 from ..application.buoy_locations import (
     InvalidBuoyLocationTimeRange,
     list_buoy_locations as query_buoy_locations,
@@ -73,15 +73,15 @@ def create_buoy(
     registrar: BuoyRegistrar = Depends(get_buoy_registrar),
     metrics: FleetMetrics = Depends(get_fleet_metrics),
 ) -> Buoy:
-    buoy = create_buoy_use_case(
+    buoy = register_buoy_and_publish_heartbeat(
         registrar,
+        metrics,
         BuoyRegistrationCommand(
             name=payload.name,
             latitude=payload.latitude,
             longitude=payload.longitude,
         ),
     )
-    metrics.record_buoy_heartbeat(buoy.buoy_id, buoy.last_seen_at)
     return Buoy(
         id=buoy.buoy_id,
         name=buoy.name,
