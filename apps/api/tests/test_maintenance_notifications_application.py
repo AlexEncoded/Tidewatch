@@ -4,6 +4,7 @@ from app.application.maintenance_notifications import (
     MaintenanceNotificationTransport,
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
+    evaluate_and_enqueue_maintenance_notification,
     enqueue_maintenance_notification,
     maintenance_notification_idempotency_key,
 )
@@ -79,6 +80,46 @@ def test_enqueue_maintenance_notification_persists_domain_issue_and_key() -> Non
     assert payload["notification_idempotency_key"] == key
     assert issue_count == 1
     assert enqueued_at == requested_at
+
+
+def test_maintenance_notification_use_case_evaluates_then_enqueues(monkeypatch) -> None:
+    evaluated_at = datetime(2026, 11, 11, 12, tzinfo=timezone.utc)
+    requested_at = datetime(2026, 11, 11, 12, 0, 1, tzinfo=timezone.utc)
+    issue = MaintenanceIssueSnapshot(
+        buoy_id="buoy-1",
+        buoy_name="North buoy",
+        issue_type="low_battery",
+        severity="warning",
+        message="Battery level is low",
+    )
+    events = []
+    expected_job = object()
+
+    def evaluate(reader, metrics, now, max_age_minutes, drift_speed_mps):
+        events.append(("evaluate", reader, metrics, now, max_age_minutes, drift_speed_mps))
+        return [issue]
+
+    def enqueue(jobs, issues, now, key):
+        events.append(("enqueue", jobs, issues, now, key))
+        return expected_job
+
+    monkeypatch.setattr(
+        "app.application.maintenance_notifications.evaluate_maintenance_issues",
+        evaluate,
+    )
+    monkeypatch.setattr(
+        "app.application.maintenance_notifications.enqueue_maintenance_notification",
+        enqueue,
+    )
+
+    result = evaluate_and_enqueue_maintenance_notification(
+        "reader", "metrics", "jobs", evaluated_at, requested_at, 45, 1.5, "key-1"
+    )
+
+    assert result is expected_job
+    assert [event[0] for event in events] == ["evaluate", "enqueue"]
+    assert events[0][3:] == (evaluated_at, 45, 1.5)
+    assert events[1][2:] == ([issue], requested_at, "key-1")
 
 
 def test_generated_notification_key_is_stable_within_its_time_bucket() -> None:

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from ..application.maintenance_evaluation import evaluate_maintenance_issues
 from ..application.maintenance_notifications import (
-    enqueue_maintenance_notification,
+    evaluate_and_enqueue_maintenance_notification,
 )
 from ..adapter_dependencies import (
     get_maintenance_metrics,
@@ -73,13 +73,18 @@ def notify_maintenance(
             detail="MAINTENANCE_WEBHOOK_URL is not configured",
         )
 
-    issues = evaluate_maintenance_issues(
-        reader, metrics, datetime.now(timezone.utc), max_age_minutes, drift_speed_mps
-    )
+    evaluated_at = datetime.now(timezone.utc)
     requested_at = datetime.now(timezone.utc)
     try:
-        job = enqueue_maintenance_notification(
-            jobs, issues, requested_at, idempotency_key
+        job = evaluate_and_enqueue_maintenance_notification(
+            reader,
+            metrics,
+            jobs,
+            evaluated_at,
+            requested_at,
+            max_age_minutes,
+            drift_speed_mps,
+            idempotency_key,
         )
     except MaintenanceNotificationIdempotencyConflict as exc:
         raise HTTPException(

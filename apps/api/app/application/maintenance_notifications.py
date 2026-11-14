@@ -8,6 +8,8 @@ from typing import Protocol, Sequence, runtime_checkable
 
 from ..domain.maintenance import MaintenanceIssueSnapshot
 from ..domain.maintenance_notification_job import MaintenanceNotificationJob
+from .maintenance_evaluation import evaluate_maintenance_issues
+from .maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from .maintenance_notification_ports import MaintenanceNotificationJobStore
 
 
@@ -59,6 +61,23 @@ def enqueue_maintenance_notification(
     )
     payload["notification_idempotency_key"] = key
     return jobs.enqueue(key, payload, len(issues), requested_at)
+
+
+def evaluate_and_enqueue_maintenance_notification(
+    reader: MaintenanceReader,
+    metrics: MaintenanceMetrics,
+    jobs: MaintenanceNotificationJobStore,
+    evaluated_at: datetime,
+    requested_at: datetime,
+    max_age_minutes: float,
+    drift_speed_mps: float,
+    requested_key: str | None = None,
+) -> MaintenanceNotificationJob:
+    """Evaluate the fleet and enqueue its issues as one application use case."""
+    issues = evaluate_maintenance_issues(
+        reader, metrics, evaluated_at, max_age_minutes, drift_speed_mps
+    )
+    return enqueue_maintenance_notification(jobs, issues, requested_at, requested_key)
 
 
 def deliver_maintenance_notification(
