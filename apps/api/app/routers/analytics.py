@@ -1,5 +1,8 @@
 """HTTP routes for buoy analytics."""
 
+from collections.abc import Callable
+from typing import TypeVar
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.movement_analysis import analyze_movement_for_buoy
@@ -9,6 +12,10 @@ from ..application.temperature_analysis import (
 )
 from ..application.temperature_alerts import find_temperature_anomalies
 from ..application.wave_analysis import analyze_wave_for_buoy
+from ..application.analysis_queries import (
+    BuoyAnalysisReader,
+    analyze_if_buoy_exists,
+)
 from ..adapter_dependencies import (
     get_movement_analysis_reader,
     get_pressure_analysis_reader,
@@ -34,6 +41,20 @@ from ..schemas.analytics import (
 )
 from ..settings import configured_wave_imu_factor
 router = APIRouter()
+AnalysisT = TypeVar("AnalysisT")
+
+
+def _analyze_buoy(
+    reader: BuoyAnalysisReader,
+    buoy_id: str,
+    analyze: Callable[[], AnalysisT],
+) -> AnalysisT:
+    result = analyze_if_buoy_exists(reader, buoy_id, analyze)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        )
+    return result
 
 
 @router.get("/api/v1/buoys/{buoy_id}/pressure-analysis", response_model=PressureAnalysis, tags=["pressure"])
@@ -42,9 +63,9 @@ def pressure_analysis(
     window: int = Query(default=50, ge=1, le=500),
     reader: PressureAnalysisReader = Depends(get_pressure_analysis_reader),
 ) -> PressureAnalysis:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_pressure_for_buoy(reader, buoy_id, window)
+    result = _analyze_buoy(
+        reader, buoy_id, lambda: analyze_pressure_for_buoy(reader, buoy_id, window)
+    )
     return PressureAnalysis.model_validate(result, from_attributes=True)
 
 
@@ -54,9 +75,9 @@ def buoy_movement_analysis(
     window: int = Query(default=100, ge=2, le=500),
     reader: MovementAnalysisReader = Depends(get_movement_analysis_reader),
 ) -> MovementAnalysis:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_movement_for_buoy(reader, buoy_id, window)
+    result = _analyze_buoy(
+        reader, buoy_id, lambda: analyze_movement_for_buoy(reader, buoy_id, window)
+    )
     return MovementAnalysis.model_validate(result, from_attributes=True)
 
 
@@ -67,9 +88,13 @@ def buoy_wave_analysis(
     reader: WaveAnalysisReader = Depends(get_wave_analysis_reader),
     metrics: WaveAnalysisMetrics = Depends(get_wave_analysis_metrics),
 ) -> WaveAnalysis:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_wave_for_buoy(reader, buoy_id, window, configured_wave_imu_factor())
+    result = _analyze_buoy(
+        reader,
+        buoy_id,
+        lambda: analyze_wave_for_buoy(
+            reader, buoy_id, window, configured_wave_imu_factor()
+        ),
+    )
     metrics.record_analysis(result)
     return WaveAnalysis.model_validate(result, from_attributes=True)
 
@@ -85,9 +110,11 @@ def temperature_analysis(
     window: int = Query(default=50, ge=1, le=500),
     reader: TemperatureAnalysisReader = Depends(get_temperature_analysis_reader),
 ) -> TemperatureAnalysis:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    result = analyze_temperature_for_buoy(reader, buoy_id, window, threshold)
+    result = _analyze_buoy(
+        reader,
+        buoy_id,
+        lambda: analyze_temperature_for_buoy(reader, buoy_id, window, threshold),
+    )
     return TemperatureAnalysis.model_validate(result, from_attributes=True)
 
 

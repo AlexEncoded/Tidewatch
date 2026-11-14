@@ -3387,3 +3387,27 @@ def test_sensor_read_routes_delegate_buoy_validation_and_queries_to_application(
         }
         assert "_list_sensor_readings" in calls
         assert "buoy_exists" not in calls
+
+
+def test_buoy_analysis_routes_delegate_existence_check_to_application():
+    tree = ast.parse((API_APP / "routers" / "analytics.py").read_text(encoding="utf-8"))
+    routes = {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+
+    for name in (
+        "pressure_analysis",
+        "buoy_movement_analysis",
+        "buoy_wave_analysis",
+        "temperature_analysis",
+    ):
+        route = routes[name]
+        calls = {
+            child.func.id
+            for child in ast.walk(route)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        assert "_analyze_buoy" in calls
+        assert "buoy_exists" not in calls

@@ -137,5 +137,9 @@ delegate heartbeat freshness and health mapping to the domain service.
 Channel-filtered sensor-reading queries check buoy existence before calling the
 sensor-specific read port. The HTTP adapter maps a missing buoy to 404.
 
+Buoy-scoped analysis queries also check existence in application before
+running pressure, movement, wave, or temperature analysis; HTTP maps a missing
+target to 404.
+
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.
