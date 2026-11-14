@@ -3336,6 +3336,7 @@ def test_sensor_health_check_route_uses_injected_gateway():
     )
     assert "BuoyRepository" not in calls
     assert "sensor_health" not in calls
+    assert "evaluate_and_persist_sensor_health_check" in calls
     assert isinstance(gateway_parameter.annotation, ast.Name)
     assert gateway_parameter.annotation.id == "SensorHealthCheckGateway"
 
@@ -3347,4 +3348,42 @@ def test_sensor_health_check_route_uses_injected_gateway():
         for alias in node.names
     }
     assert "get_sensor_health_check_gateway" in imported_dependencies
-    assert "evaluate_and_persist_sensor_health_check" in calls
+
+
+def test_sensor_read_routes_delegate_buoy_validation_and_queries_to_application():
+    tree = ast.parse((API_APP / "routers" / "sensors.py").read_text(encoding="utf-8"))
+    routes = {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+    }
+    read_route_names = (
+        "list_wind",
+        "list_ambient_light",
+        "list_imu",
+        "list_temperatures",
+        "list_pressures",
+        "list_salinity",
+        "list_marine_current",
+        "list_turbidity",
+        "list_dissolved_oxygen",
+        "list_ph",
+        "list_conductivity",
+        "list_chlorophyll_a",
+        "list_rainfall",
+        "list_humidity",
+        "list_air_temperature",
+        "list_atmospheric_pressure",
+        "list_acoustic_altimeter",
+        "list_underwater_acoustic",
+    )
+
+    for name in read_route_names:
+        route = routes[name]
+        calls = {
+            child.func.id
+            for child in ast.walk(route)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        assert "_list_sensor_readings" in calls
+        assert "buoy_exists" not in calls

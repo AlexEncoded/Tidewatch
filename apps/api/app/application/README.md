@@ -134,5 +134,8 @@ device heartbeat, and battery metrics through its application ports.
 Device-health summaries load device snapshots through `DeviceHealthReader` and
 delegate heartbeat freshness and health mapping to the domain service.
 
+Channel-filtered sensor-reading queries check buoy existence before calling the
+sensor-specific read port. The HTTP adapter maps a missing buoy to 404.
+
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.

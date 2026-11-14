@@ -1,6 +1,8 @@
 """Specialized sensor telemetry endpoints."""
 
+from collections.abc import Callable
 from datetime import datetime, timezone
+from typing import TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -75,6 +77,12 @@ from ..application.sensor_health_ports import (
     SensorHealthReader,
 )
 from ..application.telemetry_ports import TelemetryMetrics
+from ..application.sensor_reading_queries import (
+    SensorReadingReader,
+    list_sensor_readings as query_sensor_readings,
+)
+from ..domain.devices import SensorChannel
+from ..domain.sensor_telemetry import SensorTelemetrySnapshot
 from ..application.sensor_health import (
     evaluate_and_persist_sensor_health_check,
     evaluate_and_publish_sensor_health,
@@ -139,6 +147,24 @@ from ..schemas.telemetry import (
     WindReadingCreate,
 )
 router = APIRouter()
+ReadingT = TypeVar("ReadingT", bound=SensorTelemetrySnapshot)
+
+
+def _list_sensor_readings(
+    gateway: SensorReadingReader,
+    list_readings: Callable[[str, int, SensorChannel | None], list[ReadingT]],
+    buoy_id: str,
+    limit: int,
+    sensor_channel: SensorChannel,
+) -> list[ReadingT]:
+    readings = query_sensor_readings(
+        gateway, list_readings, buoy_id, limit, sensor_channel
+    )
+    if readings is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        )
+    return readings
 
 
 @router.get("/api/v1/buoys/{buoy_id}/sensor-health/history", response_model=list[SensorHealthCheck], tags=["sensors"])
@@ -176,9 +202,9 @@ def list_wind(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: WindTelemetryGateway = Depends(get_wind_telemetry_gateway),
 ) -> list[WindReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_wind(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_wind, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/ambient-light", response_model=AmbientLightReading, status_code=status.HTTP_201_CREATED, tags=["ambient-light"])
@@ -202,9 +228,9 @@ def list_ambient_light(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: AmbientLightTelemetryGateway = Depends(get_ambient_light_telemetry_gateway),
 ) -> list[AmbientLightReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_ambient_light(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_ambient_light, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/imu", response_model=ImuReading, status_code=status.HTTP_201_CREATED, tags=["imu"])
@@ -228,9 +254,9 @@ def list_imu(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: ImuTelemetryGateway = Depends(get_imu_telemetry_gateway),
 ) -> list[ImuReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_imu(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_imu, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/temperatures", response_model=TemperatureReading, status_code=status.HTTP_201_CREATED, tags=["temperature"])
@@ -254,9 +280,9 @@ def list_temperatures(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: TemperatureTelemetryGateway = Depends(get_temperature_telemetry_gateway),
 ) -> list[TemperatureReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_temperatures(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_temperatures, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/pressures", response_model=PressureReading, status_code=status.HTTP_201_CREATED, tags=["pressure"])
@@ -280,9 +306,9 @@ def list_pressures(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: PressureTelemetryGateway = Depends(get_pressure_telemetry_gateway),
 ) -> list[PressureReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_pressures(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_pressures, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/salinity", response_model=SalinityReading, status_code=status.HTTP_201_CREATED, tags=["salinity"])
@@ -306,9 +332,9 @@ def list_salinity(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: SalinityTelemetryGateway = Depends(get_salinity_telemetry_gateway),
 ) -> list[SalinityReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_salinity(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_salinity, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/marine-current", response_model=MarineCurrentReading, status_code=status.HTTP_201_CREATED, tags=["marine-current"])
@@ -332,9 +358,9 @@ def list_marine_current(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: MarineCurrentTelemetryGateway = Depends(get_marine_current_telemetry_gateway),
 ) -> list[MarineCurrentReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_marine_current(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_marine_current, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/turbidity", response_model=TurbidityReading, status_code=status.HTTP_201_CREATED, tags=["turbidity"])
@@ -358,9 +384,9 @@ def list_turbidity(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: TurbidityTelemetryGateway = Depends(get_turbidity_telemetry_gateway),
 ) -> list[TurbidityReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_turbidity(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_turbidity, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/dissolved-oxygen", response_model=DissolvedOxygenReading, status_code=status.HTTP_201_CREATED, tags=["dissolved-oxygen"])
@@ -384,9 +410,9 @@ def list_dissolved_oxygen(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: DissolvedOxygenTelemetryGateway = Depends(get_dissolved_oxygen_telemetry_gateway),
 ) -> list[DissolvedOxygenReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_dissolved_oxygen, buoy_id, limit, sensor_channel
+    )
 @router.post("/api/v1/buoys/{buoy_id}/ph", response_model=PHReading, status_code=status.HTTP_201_CREATED, tags=["ph"])
 def record_ph(
     buoy_id: str,
@@ -408,9 +434,9 @@ def list_ph(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: PHTelemetryGateway = Depends(get_ph_telemetry_gateway),
 ) -> list[PHReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_ph(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_ph, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/conductivity", response_model=ConductivityReading, status_code=status.HTTP_201_CREATED, tags=["conductivity"])
@@ -434,9 +460,9 @@ def list_conductivity(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: ConductivityTelemetryGateway = Depends(get_conductivity_telemetry_gateway),
 ) -> list[ConductivityReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_conductivity(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_conductivity, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/chlorophyll-a", response_model=ChlorophyllAReading, status_code=status.HTTP_201_CREATED, tags=["chlorophyll-a"])
@@ -460,9 +486,9 @@ def list_chlorophyll_a(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: ChlorophyllATelemetryGateway = Depends(get_chlorophyll_a_telemetry_gateway),
 ) -> list[ChlorophyllAReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_chlorophyll_a(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_chlorophyll_a, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/rainfall", response_model=RainfallReading, status_code=status.HTTP_201_CREATED, tags=["rainfall"])
@@ -486,9 +512,9 @@ def list_rainfall(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: RainfallTelemetryGateway = Depends(get_rainfall_telemetry_gateway),
 ) -> list[RainfallReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_rainfall(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_rainfall, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/humidity", response_model=HumidityReading, status_code=status.HTTP_201_CREATED, tags=["humidity"])
@@ -512,9 +538,9 @@ def list_humidity(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: HumidityTelemetryGateway = Depends(get_humidity_telemetry_gateway),
 ) -> list[HumidityReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_humidity(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_humidity, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/air-temperature", response_model=AirTemperatureReading, status_code=status.HTTP_201_CREATED, tags=["air-temperature"])
@@ -538,9 +564,9 @@ def list_air_temperature(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: AirTemperatureTelemetryGateway = Depends(get_air_temperature_telemetry_gateway),
 ) -> list[AirTemperatureReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_air_temperature(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_air_temperature, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/atmospheric-pressure", response_model=AtmosphericPressureReading, status_code=status.HTTP_201_CREATED, tags=["atmospheric-pressure"])
@@ -564,9 +590,9 @@ def list_atmospheric_pressure(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: AtmosphericPressureTelemetryGateway = Depends(get_atmospheric_pressure_telemetry_gateway),
 ) -> list[AtmosphericPressureReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_atmospheric_pressure, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/acoustic-altimeter", response_model=AcousticAltimeterReading, status_code=status.HTTP_201_CREATED, tags=["acoustic-altimeter"])
@@ -590,9 +616,9 @@ def list_acoustic_altimeter(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: AcousticAltimeterTelemetryGateway = Depends(get_acoustic_altimeter_telemetry_gateway),
 ) -> list[AcousticAltimeterReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_acoustic_altimeter(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_acoustic_altimeter, buoy_id, limit, sensor_channel
+    )
 
 
 @router.post("/api/v1/buoys/{buoy_id}/underwater-acoustic", response_model=UnderwaterAcousticReading, status_code=status.HTTP_201_CREATED, tags=["underwater-acoustic"])
@@ -616,9 +642,9 @@ def list_underwater_acoustic(
     sensor_channel: str = Query(default="A", pattern="^(A|B)$"),
     gateway: UnderwaterAcousticTelemetryGateway = Depends(get_underwater_acoustic_telemetry_gateway),
 ) -> list[UnderwaterAcousticReading]:
-    if not gateway.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    return gateway.list_underwater_acoustic(buoy_id, limit, sensor_channel)
+    return _list_sensor_readings(
+        gateway, gateway.list_underwater_acoustic, buoy_id, limit, sensor_channel
+    )
 @router.get(
     "/api/v1/buoys/{buoy_id}/sensor-health",
     response_model=SensorHealth,
