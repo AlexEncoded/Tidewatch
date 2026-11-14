@@ -49,6 +49,8 @@ module is now the canonical contract.
 Device registration coordinates buoy existence, domain uniqueness checks,
 device persistence, and heartbeat publication through `DeviceRegistry` and
 `FleetMetrics` ports.
+Device-status updates validate buoy existence and device ownership in the
+application service before returning the updated device snapshot to HTTP.
 
 Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
 The persisted sensor-health check use case validates buoy existence, evaluates

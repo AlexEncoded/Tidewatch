@@ -16,7 +16,7 @@ from app.domain.devices import (
 from app.domain.staleness import stale_age_seconds
 from app.application.device_registration import register_device, register_device_for_buoy
 from app.application.device_listing import list_devices_for_buoy
-from app.application.device_status import update_device_status
+from app.application.device_status import update_device_status, update_device_status_for_buoy
 from app.application.device_heartbeat import record_device_heartbeat
 from app.domain.devices import DeviceSnapshot
 
@@ -323,6 +323,49 @@ def test_update_device_status_application_service_rejects_missing_device() -> No
 
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
         update_device_status(Registry(), "buoy-1", "missing", SimpleNamespace(status="active"))
+
+
+def test_update_device_status_use_case_checks_buoy_before_device() -> None:
+    calls = []
+
+    class Registry:
+        def buoy_exists(self, buoy_id):
+            calls.append(("buoy_exists", buoy_id))
+            return True
+
+        def update_device_status(self, buoy_id, device_id, update):
+            calls.append(("update_device_status", buoy_id, device_id, update))
+            return DeviceSnapshot(
+                buoy_id=buoy_id,
+                device_id=device_id,
+                sensor_channel="A",
+                status=update.status,
+                registered_at=datetime.now(timezone.utc),
+            )
+
+    result = update_device_status_for_buoy(
+        Registry(), "buoy-1", "device-a", DeviceStatusCommand(status="maintenance")
+    )
+
+    assert result is not None
+    assert result.status == "maintenance"
+    assert [call[0] for call in calls] == ["buoy_exists", "update_device_status"]
+
+
+def test_update_device_status_use_case_skips_update_for_unknown_buoy() -> None:
+    class Registry:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def update_device_status(self, *args):
+            raise AssertionError("unknown buoy must not update a device")
+
+    assert (
+        update_device_status_for_buoy(
+            Registry(), "missing", "device-a", DeviceStatusCommand(status="active")
+        )
+        is None
+    )
 
 
 def test_record_device_heartbeat_updates_registry_with_supplied_time() -> None:

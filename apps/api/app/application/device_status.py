@@ -15,3 +15,15 @@ def update_device_status(
     if device is None:
         raise DeviceOwnershipError("Device not found")
     return device
+
+
+def update_device_status_for_buoy(
+    registry: DeviceStatusRegistry,
+    buoy_id: str,
+    device_id: str,
+    update: DeviceStatusCommand,
+) -> DeviceSnapshot | None:
+    """Check buoy existence before updating one of its device statuses."""
+    if not registry.buoy_exists(buoy_id):
+        return None
+    return update_device_status(registry, buoy_id, device_id, update)

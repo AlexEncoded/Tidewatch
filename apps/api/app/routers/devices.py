@@ -13,7 +13,7 @@ from ..adapter_dependencies import (
 )
 from ..application.device_registration import register_device_for_buoy
 from ..application.device_listing import list_devices_for_buoy
-from ..application.device_status import update_device_status as update_device_status_use_case
+from ..application.device_status import update_device_status_for_buoy
 from ..domain.devices import (
     DeviceOwnershipError,
     DeviceRegistrationCommand,
@@ -104,15 +104,15 @@ def update_device_status(
     payload: DeviceStatusUpdate,
     registry: DeviceStatusRegistry = Depends(get_device_status_registry),
 ) -> Device:
-    if not registry.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     try:
-        result = update_device_status_use_case(
+        result = update_device_status_for_buoy(
             registry,
             buoy_id,
             device_id,
             DeviceStatusCommand(status=payload.status),
         )
+        if result is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
         return Device.model_validate(result, from_attributes=True)
     except DeviceOwnershipError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
