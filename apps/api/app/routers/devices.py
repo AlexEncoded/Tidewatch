@@ -69,9 +69,9 @@ def list_devices(
     buoy_id: str,
     reader: DeviceListingReader = Depends(get_device_listing_reader),
 ) -> list[Device]:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     snapshots = list_devices_for_buoy(reader, buoy_id)
+    if snapshots is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return [Device.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
 

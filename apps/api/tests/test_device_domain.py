@@ -103,6 +103,9 @@ def test_device_listing_application_service_returns_domain_snapshots() -> None:
     )
 
     class Reader:
+        def buoy_exists(self, buoy_id):
+            return True
+
         def list_device_snapshots(self, buoy_id):
             assert buoy_id == "buoy-1"
             return [expected]
@@ -113,6 +116,17 @@ def test_device_listing_application_service_returns_domain_snapshots() -> None:
     assert snapshots[0].device_id == "unit-a"
     assert snapshots[0].registered_at == registered_at
     assert snapshots[0] is expected
+
+
+def test_device_listing_use_case_stops_for_unknown_buoy() -> None:
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def list_device_snapshots(self, buoy_id):
+            raise AssertionError("unknown buoy must not list devices")
+
+    assert list_devices_for_buoy(Reader(), "missing") is None
 
 
 def test_device_registration_accepts_the_other_redundant_channel() -> None:

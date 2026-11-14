@@ -51,6 +51,8 @@ device persistence, and heartbeat publication through `DeviceRegistry` and
 `FleetMetrics` ports.
 Device-status updates validate buoy existence and device ownership in the
 application service before returning the updated device snapshot to HTTP.
+Device listing also checks buoy existence through its application reader
+before loading device snapshots.
 
 Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
 The persisted sensor-health check use case validates buoy existence, evaluates
