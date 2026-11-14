@@ -2468,7 +2468,13 @@ def test_buoy_location_update_route_delegates_to_application_service():
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
     }
 
-    assert "record_buoy_location" in calls
+    assert "update_buoy_location_and_publish_movement" in calls
+    metric_calls = {
+        child.func.attr
+        for child in ast.walk(route)
+        if isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)
+    }
+    assert "record_buoy_movement" not in metric_calls
     assert "BuoyRepository" not in calls
 
 

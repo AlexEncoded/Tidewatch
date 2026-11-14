@@ -1,8 +1,12 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
-from app.application.buoy_location_update import update_buoy_location
+from app.application.buoy_location_update import (
+    update_buoy_location,
+    update_buoy_location_and_publish_movement,
+)
 from app.domain.buoy import BuoyLocationCommand, BuoySnapshot
 from app.domain.location import LocationTelemetrySnapshot
 
@@ -55,6 +59,38 @@ def test_location_update_does_not_analyze_unknown_buoy():
         updater, reader, "missing", BuoyLocationCommand(1.0, 2.0)
     ) is None
     assert reader.buoy_id is None
+
+
+def test_location_update_publishes_movement_through_metrics_port(monkeypatch):
+    now = datetime(2026, 9, 27, tzinfo=timezone.utc)
+    buoy = BuoySnapshot("TW-123", "Buoy", 36.2, 3.1, "active", now, now)
+    updater = FakeBuoyLocationUpdater(buoy)
+    reader = FakeMovementReader()
+    monkeypatch.setattr(
+        "app.application.buoy_location_update.analyze_movement_for_buoy",
+        lambda *_args: SimpleNamespace(
+            buoy_id="TW-123", sample_count=2, average_speed_mps=1.25
+        ),
+    )
+
+    class Metrics:
+        def __init__(self):
+            self.events = []
+
+        def record_buoy_movement(self, buoy_id, speed_mps):
+            self.events.append((buoy_id, speed_mps))
+
+    metrics = Metrics()
+    result = update_buoy_location_and_publish_movement(
+        updater,
+        reader,
+        metrics,
+        "TW-123",
+        BuoyLocationCommand(36.2, 3.1),
+    )
+
+    assert result is not None
+    assert metrics.events == [("TW-123", 1.25)]
 
 
 @pytest.mark.parametrize(

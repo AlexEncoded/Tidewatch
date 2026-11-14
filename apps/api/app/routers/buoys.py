@@ -7,7 +7,7 @@ from io import StringIO
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
-from ..application.buoy_location_update import update_buoy_location as record_buoy_location
+from ..application.buoy_location_update import update_buoy_location_and_publish_movement
 from ..application.buoy_registration import register_buoy as create_buoy_use_case
 from ..application.buoy_locations import (
     InvalidBuoyLocationTimeRange,
@@ -123,16 +123,15 @@ def update_buoy_location(
     movement_reader: MovementAnalysisReader = Depends(get_movement_analysis_reader),
     metrics: FleetMetrics = Depends(get_fleet_metrics),
 ) -> Buoy:
-    result = record_buoy_location(
+    result = update_buoy_location_and_publish_movement(
         updater,
         movement_reader,
+        metrics,
         buoy_id,
         BuoyLocationCommand(latitude=payload.latitude, longitude=payload.longitude),
     )
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    if result.movement.average_speed_mps is not None:
-        metrics.record_buoy_movement(buoy_id, result.movement.average_speed_mps)
     buoy = result.buoy
     return Buoy(
         id=buoy.buoy_id,
