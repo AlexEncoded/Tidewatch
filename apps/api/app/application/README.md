@@ -46,6 +46,9 @@ use cases to map independently.
 The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
+Device registration coordinates buoy existence, domain uniqueness checks,
+device persistence, and heartbeat publication through `DeviceRegistry` and
+`FleetMetrics` ports.
 
 Sensor-health reads and persisted-check writes live in `sensor_health_ports.py`.
 The persisted sensor-health check use case validates buoy existence, evaluates

@@ -14,7 +14,7 @@ from app.domain.devices import (
     validate_telemetry_device_channel,
 )
 from app.domain.staleness import stale_age_seconds
-from app.application.device_registration import register_device
+from app.application.device_registration import register_device, register_device_for_buoy
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status
 from app.application.device_heartbeat import record_device_heartbeat
@@ -210,6 +210,65 @@ def test_register_device_application_service_uses_registry() -> None:
     assert result.buoy_id == "buoy-1"
     assert result.device_id == "device-a"
     assert result.status == "active"
+
+
+def test_device_registration_use_case_validates_buoy_and_publishes_heartbeat() -> None:
+    events = []
+
+    class Registry:
+        def buoy_exists(self, buoy_id):
+            events.append(("buoy_exists", buoy_id))
+            return True
+
+        def get_device_snapshot(self, device_id):
+            events.append(("get_device_snapshot", device_id))
+            return None
+
+        def list_device_snapshots(self, buoy_id):
+            events.append(("list_device_snapshots", buoy_id))
+            return []
+
+        def create_device_snapshot(self, buoy_id, device):
+            events.append(("create_device_snapshot", buoy_id, device))
+            return DeviceSnapshot(
+                buoy_id=buoy_id,
+                device_id=device.device_id,
+                sensor_channel=device.sensor_channel,
+                registered_at=datetime.now(timezone.utc),
+            )
+
+    class Metrics:
+        def record_device_heartbeat(self, *args):
+            events.append(("record_device_heartbeat", *args))
+
+    command = DeviceRegistrationCommand(device_id="device-new", sensor_channel="B")
+    result = register_device_for_buoy(Registry(), Metrics(), "buoy-1", command)
+
+    assert result is not None
+    assert result.device_id == "device-new"
+    assert [event[0] for event in events] == [
+        "buoy_exists",
+        "get_device_snapshot",
+        "list_device_snapshots",
+        "create_device_snapshot",
+        "record_device_heartbeat",
+    ]
+
+
+def test_device_registration_use_case_skips_unknown_buoy() -> None:
+    class Registry:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def __getattr__(self, name):
+            raise AssertionError(f"unexpected registry call: {name}")
+
+    class Metrics:
+        def record_device_heartbeat(self, *args):
+            raise AssertionError("unknown buoy must not publish a heartbeat")
+
+    command = DeviceRegistrationCommand(device_id="device-new", sensor_channel="B")
+    assert register_device_for_buoy(Registry(), Metrics(), "missing", command) is None
 
 
 @pytest.mark.parametrize(

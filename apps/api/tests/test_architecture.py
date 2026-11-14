@@ -2330,6 +2330,28 @@ def test_device_router_has_no_database_or_repository_dependency() -> None:
     assert "entities" not in imported_modules
 
 
+def test_device_registration_route_delegates_heartbeat_to_application() -> None:
+    tree = ast.parse((API_APP / "routers" / "devices.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "register_device"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    metric_calls = {
+        node.func.attr
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+
+    assert "register_device_for_buoy" in calls
+    assert "record_device_heartbeat" not in metric_calls
+
+
 def test_buoy_location_routes_delegate_to_application_service():
     tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
     routes = {
