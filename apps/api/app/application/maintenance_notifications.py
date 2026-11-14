@@ -80,6 +80,13 @@ def evaluate_and_enqueue_maintenance_notification(
     return enqueue_maintenance_notification(jobs, issues, requested_at, requested_key)
 
 
+def find_maintenance_notification_job(
+    jobs: MaintenanceNotificationJobStore, job_id: str
+) -> MaintenanceNotificationJob | None:
+    """Load one durable notification job through its application port."""
+    return jobs.get(job_id)
+
+
 def deliver_maintenance_notification(
     webhook_url: str,
     issues: Sequence[MaintenanceIssueSnapshot],

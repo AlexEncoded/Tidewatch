@@ -5,6 +5,7 @@ from app.application.maintenance_notifications import (
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
     evaluate_and_enqueue_maintenance_notification,
+    find_maintenance_notification_job,
     enqueue_maintenance_notification,
     maintenance_notification_idempotency_key,
 )
@@ -132,6 +133,17 @@ def test_generated_notification_key_is_stable_within_its_time_bucket() -> None:
 
     assert maintenance_notification_idempotency_key(payload, None, same_bucket) == first_key
     assert maintenance_notification_idempotency_key(payload, None, next_bucket) != first_key
+
+
+def test_notification_job_lookup_uses_the_store_port():
+    expected = object()
+
+    class JobStore:
+        def get(self, job_id):
+            assert job_id == "job-123"
+            return expected
+
+    assert find_maintenance_notification_job(JobStore(), "job-123") is expected
 
 
 def test_maintenance_notification_delivery_uses_injected_transport() -> None:

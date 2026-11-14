@@ -2348,6 +2348,23 @@ def test_maintenance_notification_route_delegates_evaluation_and_enqueue() -> No
     assert "enqueue_maintenance_notification" not in calls
 
 
+def test_maintenance_notification_status_route_uses_application_query() -> None:
+    tree = ast.parse((API_APP / "routers" / "maintenance.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "maintenance_notification_status"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "find_maintenance_notification_job" in calls
+    assert "get" not in calls
+
+
 def test_device_registration_route_delegates_heartbeat_to_application() -> None:
     tree = ast.parse((API_APP / "routers" / "devices.py").read_text(encoding="utf-8"))
     route = next(

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from ..application.maintenance_evaluation import evaluate_maintenance_issues
 from ..application.maintenance_notifications import (
     evaluate_and_enqueue_maintenance_notification,
+    find_maintenance_notification_job,
 )
 from ..adapter_dependencies import (
     get_maintenance_metrics,
@@ -109,7 +110,7 @@ def maintenance_notification_status(
         get_maintenance_notification_job_store
     ),
 ) -> MaintenanceNotificationJobStatus:
-    job = jobs.get(job_id)
+    job = find_maintenance_notification_job(jobs, job_id)
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

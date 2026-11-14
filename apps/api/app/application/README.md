@@ -46,6 +46,8 @@ use cases to map independently.
 Maintenance notification requests now combine fleet evaluation and durable
 job enqueueing in one application use case, while the HTTP adapter maps
 idempotency conflicts to the response contract.
+Notification-job status lookups also go through the application query before
+HTTP maps the job snapshot or missing-job result to its response.
 The database liveness/readiness contract lives in `system_ports.py`.
 The old generic `ports.py` facade has been removed; each context-specific port
 module is now the canonical contract.
