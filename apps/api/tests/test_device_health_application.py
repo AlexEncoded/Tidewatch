@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.application.device_health import summarize_device_health_for_buoy
+from app.application.device_health import get_device_health_for_buoy, summarize_device_health_for_buoy
 from app.domain.device_health import summarize_device_health
 from app.domain.devices import DeviceSnapshot
 
@@ -61,6 +61,9 @@ def test_device_health_reads_devices_through_application_port() -> None:
     )
 
     class Reader:
+        def buoy_exists(self, buoy_id: str) -> bool:
+            return True
+
         def list_device_snapshots(self, buoy_id: str) -> list[DeviceSnapshot]:
             assert buoy_id == "buoy-1"
             return [device]
@@ -69,3 +72,16 @@ def test_device_health_reads_devices_through_application_port() -> None:
 
     assert health[0].device_id == "unit-a"
     assert health[0].is_stale is False
+
+
+def test_device_health_query_returns_none_for_unknown_buoy() -> None:
+    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    class Reader:
+        def buoy_exists(self, buoy_id: str) -> bool:
+            return False
+
+        def list_device_snapshots(self, buoy_id: str):
+            raise AssertionError("unknown buoy must not query devices")
+
+    assert get_device_health_for_buoy(Reader(), "missing", now, 1800) is None

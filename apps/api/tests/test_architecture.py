@@ -2386,6 +2386,23 @@ def test_device_listing_route_delegates_buoy_validation_to_application() -> None
     assert "buoy_exists" not in calls
 
 
+def test_device_health_route_delegates_buoy_validation_to_application() -> None:
+    tree = ast.parse((API_APP / "routers" / "devices.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "device_health"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+    assert "get_device_health_for_buoy" in calls
+    assert "buoy_exists" not in calls
+
+
 def test_buoy_location_routes_delegate_to_application_service():
     tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
     routes = {

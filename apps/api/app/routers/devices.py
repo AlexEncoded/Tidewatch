@@ -20,7 +20,7 @@ from ..domain.devices import (
     DeviceRegistrationConflict,
     DeviceStatusCommand,
 )
-from ..application.device_health import summarize_device_health_for_buoy
+from ..application.device_health import get_device_health_for_buoy
 from ..schemas.devices import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
 from ..application.device_ports import (
     DeviceHealthReader,
@@ -85,11 +85,11 @@ def device_health(
     max_age_minutes: float = Query(default=30, gt=0, le=10080),
     reader: DeviceHealthReader = Depends(get_device_health_reader),
 ) -> list[DeviceHealth]:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    snapshots = summarize_device_health_for_buoy(
+    snapshots = get_device_health_for_buoy(
         reader, buoy_id, datetime.now(timezone.utc), max_age_minutes * 60
     )
+    if snapshots is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return [DeviceHealth.model_validate(snapshot, from_attributes=True) for snapshot in snapshots]
 
 
