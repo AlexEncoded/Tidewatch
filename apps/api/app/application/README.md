@@ -154,6 +154,10 @@ application query before loading samples.
 Wave analysis validates buoy existence, loads IMU/location data, computes the
 result, and publishes its metrics through application ports in one use case.
 
+Queue-observability refreshes read the queue snapshot and publish it through
+application ports; unavailable reads increment the collection-failure metric
+before the HTTP adapter renders Prometheus output.
+
 Persisted sensor-health history checks buoy existence in application before
 loading checks; HTTP retains the missing-buoy 404 mapping.
 

@@ -15,7 +15,7 @@ from ..application.telemetry_ports import (
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
 )
-from ..application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
+from ..application.telemetry_queue_metrics import refresh_telemetry_queue_metrics
 
 
 router = APIRouter()
@@ -38,12 +38,8 @@ def metrics(
     ),
     scraper: MetricsScraper = Depends(get_metrics_scraper),
 ) -> Response:
-    try:
-        snapshot = reader.observability_snapshot()
-        publisher.publish_snapshot(snapshot)
-    except TelemetryQueueMetricsUnavailable:
-        publisher.record_collection_failure()
-        logger.exception("telemetry_queue_metrics_refresh_failed")
+    if not refresh_telemetry_queue_metrics(reader, publisher):
+        logger.warning("telemetry_queue_metrics_refresh_failed")
     return Response(
         content=scraper.render(),
         headers={"Content-Type": scraper.content_type},

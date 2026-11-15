@@ -2080,6 +2080,22 @@ def test_system_router_uses_queue_metrics_publisher_port() -> None:
     assert "record_buoy_heartbeat" not in {
         node.name for node in tree.body if isinstance(node, ast.FunctionDef)
     }
+    metrics_route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "metrics"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(metrics_route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    assert "refresh_telemetry_queue_metrics" in calls
+    assert "record_collection_failure" not in {
+        node.func.attr
+        for node in ast.walk(metrics_route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
 
 
 def test_battery_router_uses_metrics_port_instead_of_prometheus() -> None:
