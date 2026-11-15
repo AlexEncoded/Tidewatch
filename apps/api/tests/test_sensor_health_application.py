@@ -9,10 +9,38 @@ from app.application.sensor_health import (
     evaluate_and_persist_sensor_health_check,
     evaluate_and_publish_sensor_health,
     evaluate_sensor_health_snapshot,
+    list_sensor_health_check_history,
     persist_sensor_health_check,
 )
 from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from app.schemas.sensors import SensorHealth, SensorHealthCheck
+
+
+def test_sensor_health_history_query_checks_buoy_before_reading() -> None:
+    events = []
+
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            events.append(("exists", buoy_id))
+            return True
+
+        def list_sensor_health_checks(self, buoy_id, limit):
+            events.append(("list", buoy_id, limit))
+            return []
+
+    assert list_sensor_health_check_history(Reader(), "buoy-1", 20) == []
+    assert events == [("exists", "buoy-1"), ("list", "buoy-1", 20)]
+
+
+def test_sensor_health_history_query_skips_unknown_buoy() -> None:
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def list_sensor_health_checks(self, buoy_id, limit):
+            raise AssertionError("unknown buoy must not load health history")
+
+    assert list_sensor_health_check_history(Reader(), "missing", 20) is None
 
 
 def test_sensor_health_application_service_delegates_snapshot_evaluation() -> None:

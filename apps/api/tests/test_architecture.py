@@ -3319,6 +3319,8 @@ def test_sensor_health_history_route_uses_injected_reader():
         argument for argument in route.args.args if argument.arg == "reader"
     )
     assert "BuoyRepository" not in calls
+    assert "list_sensor_health_check_history" in calls
+    assert "buoy_exists" not in calls
     assert isinstance(reader_parameter.annotation, ast.Name)
     assert reader_parameter.annotation.id == "SensorHealthReader"
 

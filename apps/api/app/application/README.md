@@ -151,5 +151,8 @@ missing buoys and foreign devices to their established 404 responses.
 Historical battery analysis also checks buoy existence through the shared
 application query before loading samples.
 
+Persisted sensor-health history checks buoy existence in application before
+loading checks; HTTP retains the missing-buoy 404 mapping.
+
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.

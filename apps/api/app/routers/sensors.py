@@ -86,6 +86,7 @@ from ..domain.sensor_telemetry import SensorTelemetrySnapshot
 from ..application.sensor_health import (
     evaluate_and_persist_sensor_health_check,
     evaluate_and_publish_sensor_health,
+    list_sensor_health_check_history,
 )
 from ..application.telemetry_ingestion import (
     build_acoustic_altimeter_snapshot,
@@ -173,11 +174,12 @@ def sensor_health_history(
     limit: int = Query(default=50, ge=1, le=500),
     reader: SensorHealthReader = Depends(get_sensor_health_reader),
 ) -> list[SensorHealthCheck]:
-    if not reader.buoy_exists(buoy_id):
+    checks = list_sensor_health_check_history(reader, buoy_id, limit)
+    if checks is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     return [
         SensorHealthCheck.model_validate(check, from_attributes=True)
-        for check in reader.list_sensor_health_checks(buoy_id, limit)
+        for check in checks
     ]
 
 

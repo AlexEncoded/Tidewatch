@@ -118,6 +118,15 @@ def persist_sensor_health_check(
     return writer.add_sensor_health_check(health)
 
 
+def list_sensor_health_check_history(
+    reader: SensorHealthReader, buoy_id: str, limit: int
+) -> list[SensorHealthCheckSnapshot] | None:
+    """Load persisted sensor-health checks for an existing buoy."""
+    if not reader.buoy_exists(buoy_id):
+        return None
+    return reader.list_sensor_health_checks(buoy_id, limit)
+
+
 def evaluate_and_persist_sensor_health_check(
     gateway: SensorHealthCheckGateway,
     metrics: SensorHealthMetrics,
