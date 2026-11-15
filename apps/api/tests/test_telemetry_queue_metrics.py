@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from app.application.telemetry_queue_metrics import (
     TelemetryQueueMetricsUnavailable,
     refresh_telemetry_queue_metrics,
@@ -22,7 +24,7 @@ def test_queue_metrics_refresh_publishes_the_reader_snapshot() -> None:
         def record_collection_failure(self):
             raise AssertionError("successful collection must not record failure")
 
-    assert refresh_telemetry_queue_metrics(Reader(), Publisher()) is True
+    assert refresh_telemetry_queue_metrics(Reader(), Publisher()) is None
     assert events == ["read", ("publish", snapshot)]
 
 
@@ -40,5 +42,6 @@ def test_queue_metrics_refresh_records_collection_failure() -> None:
         def record_collection_failure(self):
             events.append("failure")
 
-    assert refresh_telemetry_queue_metrics(Reader(), Publisher()) is False
+    with pytest.raises(TelemetryQueueMetricsUnavailable):
+        refresh_telemetry_queue_metrics(Reader(), Publisher())
     assert events == ["failure"]
