@@ -11,6 +11,7 @@ from ..adapter_dependencies import (
     get_telemetry_queue_metrics_publisher,
 )
 from ..application.system_ports import DatabaseHealthReader, MetricsScraper
+from ..application.system_health import check_database_health
 from ..application.telemetry_ports import (
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 def health(
     reader: DatabaseHealthReader = Depends(get_database_health_reader),
 ) -> dict[str, str]:
-    reader.check_database()
+    check_database_health(reader)
     return {"status": "ok"}
 
 

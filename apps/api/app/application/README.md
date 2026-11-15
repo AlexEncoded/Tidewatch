@@ -161,6 +161,10 @@ before the HTTP adapter renders Prometheus output.
 Fleet-wide buoy-summary snapshots are queried through the application layer;
 HTTP maps those snapshots into the public summary schema.
 
+The system readiness use case checks database availability through
+`DatabaseHealthReader`; the HTTP route only maps a successful check to its
+status response.
+
 Fleet-wide and per-buoy location-history queries share application validation
 for time ranges; HTTP maps invalid ranges to 422 while rendering CSV exports.
 

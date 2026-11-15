@@ -2080,6 +2080,22 @@ def test_system_router_uses_queue_metrics_publisher_port() -> None:
     assert "record_buoy_heartbeat" not in {
         node.name for node in tree.body if isinstance(node, ast.FunctionDef)
     }
+    health_route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "health"
+    )
+    health_calls = {
+        node.func.id
+        for node in ast.walk(health_route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    assert "check_database_health" in health_calls
+    assert "check_database" not in {
+        node.func.attr
+        for node in ast.walk(health_route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
     metrics_route = next(
         node
         for node in tree.body
