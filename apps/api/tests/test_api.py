@@ -1053,6 +1053,14 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
         'attachment; filename="tidewatch-locations.csv"'
     )
     assert len(fleet_export.text.splitlines()) == 3
+    invalid_fleet_export = client.get(
+        "/api/v1/locations/export",
+        params={
+            "since": (start + timedelta(hours=1)).isoformat(),
+            "until": start.isoformat(),
+        },
+    )
+    assert invalid_fleet_export.status_code == 422
     invalid_window = client.get(
         f"/api/v1/buoys/{buoy_id}/locations",
         params={

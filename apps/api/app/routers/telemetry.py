@@ -9,6 +9,7 @@ from fastapi.responses import Response
 
 from ..adapter_dependencies import get_fleet_location_reader
 from ..application.fleet_locations import list_fleet_locations
+from ..application.location_queries import InvalidLocationTimeRange
 from ..application.fleet_ports import FleetLocationReader
 
 
@@ -26,15 +27,17 @@ def export_fleet_locations(
     until: datetime | None = Query(default=None),
     reader: FleetLocationReader = Depends(get_fleet_location_reader),
 ) -> Response:
-    if since is not None and until is not None and since > until:
+    try:
+        locations = list_fleet_locations(reader, limit, since, until)
+    except InvalidLocationTimeRange as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="since must be earlier than or equal to until",
-        )
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
     output = StringIO()
     writer = DictWriter(output, fieldnames=["buoy_id", "latitude", "longitude", "measured_at"])
     writer.writeheader()
-    for location in list_fleet_locations(reader, limit, since, until):
+    for location in locations:
         writer.writerow(
             {
                 "buoy_id": location.buoy_id,

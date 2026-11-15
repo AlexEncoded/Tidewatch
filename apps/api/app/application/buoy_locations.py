@@ -4,10 +4,10 @@ from datetime import datetime
 
 from ..domain.location import LocationTelemetrySnapshot
 from .fleet_ports import BuoyLocationHistoryReader
-
-
-class InvalidBuoyLocationTimeRange(ValueError):
-    """The start of a location history range is later than its end."""
+from .location_queries import (
+    InvalidLocationTimeRange as InvalidBuoyLocationTimeRange,
+    validate_location_time_range,
+)
 
 
 def list_buoy_locations(
@@ -18,10 +18,7 @@ def list_buoy_locations(
     until: datetime | None = None,
 ) -> list[LocationTelemetrySnapshot] | None:
     """Return filtered location history, or ``None`` if the buoy is unknown."""
-    if since is not None and until is not None and since > until:
-        raise InvalidBuoyLocationTimeRange(
-            "since must be earlier than or equal to until"
-        )
+    validate_location_time_range(since, until)
     if not reader.buoy_exists(buoy_id):
         return None
     return reader.list_locations(buoy_id, limit, since, until)

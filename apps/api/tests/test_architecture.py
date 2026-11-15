@@ -2587,6 +2587,24 @@ def test_buoy_summary_route_delegates_query_to_application():
     assert "list_buoy_summaries" not in port_calls
 
 
+def test_fleet_location_export_delegates_range_validation_to_application():
+    tree = ast.parse((API_APP / "routers" / "telemetry.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "export_fleet_locations"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    comparisons = [node for node in ast.walk(route) if isinstance(node, ast.Compare)]
+
+    assert "list_fleet_locations" in calls
+    assert not comparisons
+
+
 def test_battery_routes_use_injected_telemetry_port():
     tree = ast.parse((API_APP / "routers" / "battery.py").read_text(encoding="utf-8"))
     imported_modules = {
