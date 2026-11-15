@@ -2565,6 +2565,28 @@ def test_buoy_creation_route_delegates_to_application_service():
     assert "BuoyRepository" not in calls
 
 
+def test_buoy_summary_route_delegates_query_to_application():
+    tree = ast.parse((API_APP / "routers" / "buoys.py").read_text(encoding="utf-8"))
+    route = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "list_buoys"
+    )
+    calls = {
+        node.func.id
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    port_calls = {
+        node.func.attr
+        for node in ast.walk(route)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+
+    assert "list_buoy_summaries" in calls
+    assert "list_buoy_summaries" not in port_calls
+
+
 def test_battery_routes_use_injected_telemetry_port():
     tree = ast.parse((API_APP / "routers" / "battery.py").read_text(encoding="utf-8"))
     imported_modules = {

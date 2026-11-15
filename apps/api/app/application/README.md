@@ -158,6 +158,9 @@ Queue-observability refreshes read the queue snapshot and publish it through
 application ports; unavailable reads increment the collection-failure metric
 before the HTTP adapter renders Prometheus output.
 
+Fleet-wide buoy-summary snapshots are queried through the application layer;
+HTTP maps those snapshots into the public summary schema.
+
 Persisted sensor-health history checks buoy existence in application before
 loading checks; HTTP retains the missing-buoy 404 mapping.
 

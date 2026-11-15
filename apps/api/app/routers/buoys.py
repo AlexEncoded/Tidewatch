@@ -26,6 +26,7 @@ from ..application.fleet_ports import (
     FleetMetrics,
 )
 from ..application.buoy_status import update_buoy_status as change_buoy_status
+from ..application.buoy_summaries import list_buoy_summaries
 from ..adapter_dependencies import get_buoy_status_registry
 from ..adapter_dependencies import (
     get_buoy_location_updater,
@@ -187,7 +188,7 @@ def list_buoys(
                 )
             }
         )
-        for summary in reader.list_buoy_summaries()
+        for summary in list_buoy_summaries(reader)
     ]
 
 
