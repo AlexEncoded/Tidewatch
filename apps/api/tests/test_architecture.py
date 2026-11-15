@@ -604,7 +604,7 @@ def test_wave_analysis_route_uses_injected_metrics_port() -> None:
         for node in ast.walk(route)
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
     }
-    assert "record_analysis" in calls
+    assert "record_analysis" not in calls
     assert "labels" not in calls
 
     imported_modules = {
@@ -613,6 +613,15 @@ def test_wave_analysis_route_uses_injected_metrics_port() -> None:
         if isinstance(node, ast.ImportFrom)
     }
     assert "..metrics" not in imported_modules
+    application = ast.parse(
+        (API_APP / "application" / "wave_analysis.py").read_text(encoding="utf-8")
+    )
+    application_calls = {
+        node.func.attr
+        for node in ast.walk(application)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+    assert "record_analysis" in application_calls
 
 
 def test_database_health_reader_is_grouped_with_system_ports() -> None:
@@ -2259,7 +2268,8 @@ def test_wave_analysis_route_uses_injected_reader_not_repository_constructor() -
     }
 
     assert "BuoyRepository" not in calls
-    assert "analyze_wave_for_buoy" in calls
+    assert "analyze_and_publish_wave_for_buoy" in calls
+    assert "record_analysis" not in calls
 
 
 def test_temperature_analysis_route_uses_injected_reader_not_repository_constructor() -> None:
@@ -3425,5 +3435,8 @@ def test_buoy_analysis_routes_delegate_existence_check_to_application():
             for child in ast.walk(route)
             if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
         }
-        assert "_analyze_buoy" in calls
+        if name == "buoy_wave_analysis":
+            assert "analyze_and_publish_wave_for_buoy" in calls
+        else:
+            assert "_analyze_buoy" in calls
         assert "buoy_exists" not in calls

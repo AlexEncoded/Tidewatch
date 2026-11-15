@@ -11,7 +11,7 @@ from ..application.temperature_analysis import (
     analyze_temperature_for_buoy,
 )
 from ..application.temperature_alerts import find_temperature_anomalies
-from ..application.wave_analysis import analyze_wave_for_buoy
+from ..application.wave_analysis import analyze_and_publish_wave_for_buoy
 from ..application.analysis_queries import (
     BuoyAnalysisReader,
     analyze_if_buoy_exists,
@@ -88,14 +88,17 @@ def buoy_wave_analysis(
     reader: WaveAnalysisReader = Depends(get_wave_analysis_reader),
     metrics: WaveAnalysisMetrics = Depends(get_wave_analysis_metrics),
 ) -> WaveAnalysis:
-    result = _analyze_buoy(
+    result = analyze_and_publish_wave_for_buoy(
         reader,
+        metrics,
         buoy_id,
-        lambda: analyze_wave_for_buoy(
-            reader, buoy_id, window, configured_wave_imu_factor()
-        ),
+        window,
+        configured_wave_imu_factor(),
     )
-    metrics.record_analysis(result)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        )
     return WaveAnalysis.model_validate(result, from_attributes=True)
 
 

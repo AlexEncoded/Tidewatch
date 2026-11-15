@@ -21,7 +21,10 @@ from app.domain.wave_calibration import (
     evaluate_factor,
     select_factor,
 )
-from app.application.wave_analysis import analyze_wave_for_buoy
+from app.application.wave_analysis import (
+    analyze_and_publish_wave_for_buoy,
+    analyze_wave_for_buoy,
+)
 from app.domain.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.domain.movement import MovementAnalysisSnapshot
@@ -1011,3 +1014,59 @@ def test_wave_fusion_recovers_known_period_from_synthetic_gnss_and_imu() -> None
     assert analysis.estimated_period_seconds == pytest.approx(period_seconds)
     assert analysis.period_confidence == "experimental"
     assert analysis.confidence == "experimental"
+
+
+def test_wave_use_case_publishes_metrics_after_existing_buoy_analysis() -> None:
+    events = []
+
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            events.append(("exists", buoy_id))
+            return True
+
+        def list_imu(self, buoy_id, limit, sensor_channel):
+            events.append(("imu", buoy_id, limit, sensor_channel))
+            return []
+
+        def list_locations(self, buoy_id, limit):
+            events.append(("locations", buoy_id, limit))
+            return []
+
+    class Metrics:
+        def record_analysis(self, result):
+            events.append(("metrics", result.buoy_id))
+
+    result = analyze_and_publish_wave_for_buoy(
+        Reader(), Metrics(), "buoy-1", 10, 0.1
+    )
+
+    assert result is not None
+    assert events == [
+        ("exists", "buoy-1"),
+        ("imu", "buoy-1", 10, None),
+        ("locations", "buoy-1", 10),
+        ("metrics", "buoy-1"),
+    ]
+
+
+def test_wave_use_case_skips_analysis_and_metrics_for_unknown_buoy() -> None:
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            return False
+
+        def list_imu(self, *args):
+            raise AssertionError("unknown buoy must not query IMU")
+
+        def list_locations(self, *args):
+            raise AssertionError("unknown buoy must not query locations")
+
+    class Metrics:
+        def record_analysis(self, result):
+            raise AssertionError("unknown buoy must not publish metrics")
+
+    assert (
+        analyze_and_publish_wave_for_buoy(
+            Reader(), Metrics(), "missing", 10, 0.1
+        )
+        is None
+    )
