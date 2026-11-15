@@ -148,6 +148,8 @@ maps an unknown buoy to 404 and serializes the result.
 Latest-battery and battery-history queries validate buoy existence and
 physical-device ownership in application before reading telemetry. HTTP maps
 missing buoys and foreign devices to their established 404 responses.
+Historical battery analysis also checks buoy existence through the shared
+application query before loading samples.
 
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.

@@ -12,6 +12,7 @@ from ..application.battery_queries import (
     get_latest_battery,
     list_battery_history,
 )
+from ..application.analysis_queries import analyze_if_buoy_exists
 from ..application.telemetry_ingestion import build_battery_snapshot
 from ..domain.devices import DeviceOwnershipError
 from ..adapter_dependencies import get_battery_metrics, get_battery_telemetry_reader
@@ -24,11 +25,6 @@ from ..schemas.battery import (
 )
 
 router = APIRouter()
-
-
-def ensure_buoy_exists(reader: BatteryTelemetryReader, buoy_id: str) -> None:
-    if not reader.buoy_exists(buoy_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
 
 
 @router.post("/api/v1/buoys/{buoy_id}/battery", response_model=BatteryReading, status_code=status.HTTP_201_CREATED, tags=["battery"])
@@ -99,8 +95,15 @@ def battery_analysis(
     window: int = Query(default=50, ge=1, le=500),
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
 ) -> BatteryAnalysis:
-    ensure_buoy_exists(reader, buoy_id)
-    result = analyze_battery_for_buoy(reader, buoy_id, device_id, window)
+    result = analyze_if_buoy_exists(
+        reader,
+        buoy_id,
+        lambda: analyze_battery_for_buoy(reader, buoy_id, device_id, window),
+    )
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        )
     return BatteryAnalysis.model_validate(result, from_attributes=True)
 
 
