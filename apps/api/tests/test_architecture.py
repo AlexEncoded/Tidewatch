@@ -1645,8 +1645,17 @@ def test_battery_router_uses_scoped_http_contracts() -> None:
     }
     assert "schemas.battery" in imported_modules
     assert "models" not in imported_modules
-    assert "get_device_snapshot" in called_attributes
+    assert "get_device_snapshot" not in called_attributes
     assert "get_device" not in called_attributes
+    battery_queries = ast.parse(
+        (API_APP / "application" / "battery_queries.py").read_text(encoding="utf-8")
+    )
+    query_calls = {
+        node.func.attr
+        for node in ast.walk(battery_queries)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+    assert "get_device_snapshot" in query_calls
 
 
 def test_analytics_routers_use_scoped_http_contracts() -> None:
@@ -2553,8 +2562,13 @@ def test_battery_routes_use_injected_telemetry_port():
     assert "ingest_battery_reading" in routes["record_battery"]
     assert all(
         "ensure_buoy_exists" in routes[name]
-        for name in ("latest_battery", "battery_history", "battery_analysis")
+        for name in ("battery_analysis",)
     )
+    assert "get_latest_battery" in routes["latest_battery"]
+    assert "list_battery_history" in routes["battery_history"]
+    assert "ensure_buoy_exists" not in routes["latest_battery"]
+    assert "ensure_buoy_exists" not in routes["battery_history"]
+    assert "_ensure_device_belongs_to_buoy" not in routes
     assert "ensure_buoy_exists" not in routes["battery_health"]
     assert "evaluate_battery_health_for_buoy" in routes["battery_health"]
     assert "record_health" not in routes["battery_health"]

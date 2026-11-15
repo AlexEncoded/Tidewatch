@@ -7,9 +7,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from ..application.battery_analysis import analyze_battery_for_buoy
 from ..application.battery_ingestion import ingest_battery_reading
 from ..application.battery_health import evaluate_battery_health_for_buoy
+from ..application.battery_queries import (
+    BatteryBuoyNotFound,
+    get_latest_battery,
+    list_battery_history,
+)
 from ..application.telemetry_ingestion import build_battery_snapshot
 from ..domain.devices import DeviceOwnershipError
-from ..domain.devices import validate_device_ownership
 from ..adapter_dependencies import get_battery_metrics, get_battery_telemetry_reader
 from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from ..schemas.battery import (
@@ -54,10 +58,16 @@ def latest_battery(
     physical_device_id: str | None = Query(default=None, min_length=1, max_length=100),
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
 ) -> BatteryReading | None:
-    ensure_buoy_exists(reader, buoy_id)
-    if physical_device_id is not None:
-        _ensure_device_belongs_to_buoy(reader, physical_device_id, buoy_id)
-    return reader.latest_battery(buoy_id, device_id, physical_device_id)
+    try:
+        return get_latest_battery(reader, buoy_id, device_id, physical_device_id)
+    except BatteryBuoyNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        ) from None
+    except DeviceOwnershipError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from None
 
 
 @router.get("/api/v1/buoys/{buoy_id}/battery/history", response_model=list[BatteryReading], tags=["battery"])
@@ -68,18 +78,14 @@ def battery_history(
     physical_device_id: str | None = Query(default=None, min_length=1, max_length=100),
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
 ) -> list[BatteryReading]:
-    ensure_buoy_exists(reader, buoy_id)
-    if physical_device_id is not None:
-        _ensure_device_belongs_to_buoy(reader, physical_device_id, buoy_id)
-    return reader.list_batteries(buoy_id, limit, device_id, physical_device_id)
-
-
-def _ensure_device_belongs_to_buoy(
-    reader: BatteryTelemetryReader, device_id: str, buoy_id: str
-) -> None:
-    device = reader.get_device_snapshot(device_id)
     try:
-        validate_device_ownership(device, buoy_id)
+        return list_battery_history(
+            reader, buoy_id, limit, device_id, physical_device_id
+        )
+    except BatteryBuoyNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        ) from None
     except DeviceOwnershipError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)

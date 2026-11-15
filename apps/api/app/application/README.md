@@ -145,5 +145,9 @@ Battery-health evaluation validates buoy existence, reads both battery
 channels, and publishes the health metrics through application ports. HTTP only
 maps an unknown buoy to 404 and serializes the result.
 
+Latest-battery and battery-history queries validate buoy existence and
+physical-device ownership in application before reading telemetry. HTTP maps
+missing buoys and foreign devices to their established 404 responses.
+
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.
