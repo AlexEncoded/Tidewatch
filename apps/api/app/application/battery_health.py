@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 
 from ..domain.battery_health import BatteryHealthSnapshot, estimate_battery_health
-from .battery_ports import BatteryTelemetryReader
+from .battery_ports import BatteryMetrics, BatteryTelemetryReader
 
 
 def analyze_battery_health_for_buoy(
@@ -30,3 +30,23 @@ def analyze_battery_health_for_buoy(
         degraded_devices=estimate.degraded_devices,
         checked_at=datetime.now(timezone.utc),
     )
+
+
+def evaluate_battery_health_for_buoy(
+    reader: BatteryTelemetryReader,
+    metrics: BatteryMetrics,
+    buoy_id: str,
+    threshold: float,
+) -> BatteryHealthSnapshot | None:
+    """Validate, evaluate, and publish a buoy's redundant battery health."""
+    if not reader.buoy_exists(buoy_id):
+        return None
+
+    result = analyze_battery_health_for_buoy(reader, buoy_id, threshold)
+    metrics.record_health(
+        buoy_id,
+        result.device_a_percent,
+        result.device_b_percent,
+        result.delta_percent,
+    )
+    return result

@@ -2551,12 +2551,13 @@ def test_battery_routes_use_injected_telemetry_port():
     assert "database" not in imported_modules
     assert all("BuoyRepository" not in calls for calls in routes.values())
     assert "ingest_battery_reading" in routes["record_battery"]
-    assert all("ensure_buoy_exists" in routes[name] for name in (
-        "latest_battery",
-        "battery_history",
-        "battery_analysis",
-        "battery_health",
-    ))
+    assert all(
+        "ensure_buoy_exists" in routes[name]
+        for name in ("latest_battery", "battery_history", "battery_analysis")
+    )
+    assert "ensure_buoy_exists" not in routes["battery_health"]
+    assert "evaluate_battery_health_for_buoy" in routes["battery_health"]
+    assert "record_health" not in routes["battery_health"]
 
 
 def test_temperature_routes_use_injected_telemetry_gateway():

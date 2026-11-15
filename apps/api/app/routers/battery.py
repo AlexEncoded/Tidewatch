@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ..application.battery_analysis import analyze_battery_for_buoy
 from ..application.battery_ingestion import ingest_battery_reading
-from ..application.battery_health import analyze_battery_health_for_buoy
+from ..application.battery_health import evaluate_battery_health_for_buoy
 from ..application.telemetry_ingestion import build_battery_snapshot
 from ..domain.devices import DeviceOwnershipError
 from ..domain.devices import validate_device_ownership
@@ -105,12 +105,9 @@ def battery_health(
     reader: BatteryTelemetryReader = Depends(get_battery_telemetry_reader),
     metrics: BatteryMetrics = Depends(get_battery_metrics),
 ) -> BatteryHealth:
-    ensure_buoy_exists(reader, buoy_id)
-    result = analyze_battery_health_for_buoy(reader, buoy_id, threshold)
-    metrics.record_health(
-        buoy_id,
-        result.device_a_percent,
-        result.device_b_percent,
-        result.delta_percent,
-    )
+    result = evaluate_battery_health_for_buoy(reader, metrics, buoy_id, threshold)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
+        )
     return BatteryHealth.model_validate(result, from_attributes=True)

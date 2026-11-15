@@ -34,7 +34,10 @@ from app.application.temperature_analysis import (
     list_valid_temperature_readings,
 )
 from app.domain.temperature import TemperatureAnalysisSnapshot
-from app.application.battery_health import analyze_battery_health_for_buoy
+from app.application.battery_health import (
+    analyze_battery_health_for_buoy,
+    evaluate_battery_health_for_buoy,
+)
 from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
@@ -880,6 +883,52 @@ def test_battery_health_application_service_reads_both_devices() -> None:
     assert isinstance(health, BatteryHealthSnapshot)
     assert health.status == "degraded"
     assert health.degraded_devices == ("A",)
+
+
+def test_battery_health_use_case_publishes_metrics_after_reading_both_devices() -> None:
+    calls = []
+
+    class FakeReader:
+        def buoy_exists(self, buoy_id):
+            calls.append(("exists", buoy_id))
+            return True
+
+        def latest_battery(self, buoy_id, device_id=None):
+            calls.append(("read", device_id))
+            return SimpleNamespace(battery_percent=70.0 if device_id == "A" else 80.0)
+
+    class FakeMetrics:
+        def record_health(self, buoy_id, device_a, device_b, delta):
+            calls.append(("metrics", buoy_id, device_a, device_b, delta))
+
+    health = evaluate_battery_health_for_buoy(
+        FakeReader(), FakeMetrics(), "TW-HEALTH", 5.0
+    )
+
+    assert isinstance(health, BatteryHealthSnapshot)
+    assert calls == [
+        ("exists", "TW-HEALTH"),
+        ("read", "A"),
+        ("read", "B"),
+        ("metrics", "TW-HEALTH", 70.0, 80.0, 10.0),
+    ]
+
+
+def test_battery_health_use_case_skips_metrics_for_unknown_buoy() -> None:
+    class FakeReader:
+        def buoy_exists(self, buoy_id):
+            return False
+
+    class FakeMetrics:
+        def record_health(self, *args):
+            raise AssertionError("unknown buoy must not publish metrics")
+
+    assert (
+        evaluate_battery_health_for_buoy(
+            FakeReader(), FakeMetrics(), "missing", 5.0
+        )
+        is None
+    )
 
 
 def test_temperature_domain_service_detects_rising_anomaly() -> None:

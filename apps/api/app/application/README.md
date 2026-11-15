@@ -141,5 +141,9 @@ Buoy-scoped analysis queries also check existence in application before
 running pressure, movement, wave, or temperature analysis; HTTP maps a missing
 target to 404.
 
+Battery-health evaluation validates buoy existence, reads both battery
+channels, and publishes the health metrics through application ports. HTTP only
+maps an unknown buoy to 404 and serializes the result.
+
 Wave analysis loads IMU and location snapshots through its read port, then
 delegates synchronization, estimation, and snapshot construction to the domain.
