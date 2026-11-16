@@ -27,6 +27,7 @@ from ..application.telemetry_batch_ingestion import (
     TelemetryQueuedOutcome,
     process_telemetry_batch,
 )
+from ..application.telemetry_job_queries import get_telemetry_job
 from ..domain.telemetry_job import TelemetryJobIdempotencyConflict
 from ..schemas.ingestion import TelemetryBatchCreate
 from ..schemas.telemetry import TelemetryIngestResponse
@@ -123,7 +124,7 @@ def get_telemetry_job_status(
         get_telemetry_ingestion_job_repository
     ),
 ) -> TelemetryJobStatusResponse:
-    job = jobs.get(job_id)
+    job = get_telemetry_job(jobs, job_id)
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Telemetry job not found"

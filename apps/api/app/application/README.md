@@ -158,6 +158,9 @@ Queue-observability refreshes read the queue snapshot and publish it through
 application ports; unavailable reads increment the collection-failure metric
 before the HTTP adapter renders Prometheus output.
 
+Telemetry-job status lookups also go through an application query before HTTP
+maps the snapshot or missing result to its response.
+
 Fleet-wide buoy-summary snapshots are queried through the application layer;
 HTTP maps those snapshots into the public summary schema.
 

@@ -278,6 +278,50 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
             ), path
 
 
+def test_http_routers_do_not_call_application_ports_directly() -> None:
+    port_suffixes = (
+        "Reader",
+        "Gateway",
+        "Registry",
+        "Updater",
+        "Registrar",
+        "Store",
+        "Metrics",
+        "Publisher",
+        "Writer",
+        "Scraper",
+    )
+
+    for path in (API_APP / "routers").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for function in (
+            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+        ):
+            port_parameters = {
+                argument.arg
+                for argument in (
+                    *function.args.posonlyargs,
+                    *function.args.args,
+                    *function.args.kwonlyargs,
+                )
+                if isinstance(argument.annotation, ast.Name)
+                and argument.annotation.id.endswith(port_suffixes)
+            }
+            direct_port_calls = [
+                node
+                for node in ast.walk(function)
+                if isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id in port_parameters
+                and not (
+                    node.func.value.id == "scraper" and node.func.attr == "render"
+                )
+            ]
+
+            assert not direct_port_calls, f"{path}:{function.name} calls an application port"
+
+
 def test_http_routers_do_not_import_orm_entities_or_sqlalchemy() -> None:
     for path in (API_APP / "routers").rglob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
