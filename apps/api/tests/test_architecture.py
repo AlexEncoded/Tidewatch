@@ -1986,6 +1986,45 @@ def test_http_routers_do_not_import_persistence_adapters() -> None:
         assert "repository" not in modules
 
 
+def test_http_routers_do_not_import_domain_exceptions() -> None:
+    exception_bases = {
+        "Exception",
+        "ValueError",
+        "LookupError",
+        "RuntimeError",
+        "TypeError",
+        "KeyError",
+    }
+    domain_exception_names = set()
+    for source_file in (API_APP / "domain").rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        domain_exception_names.update(
+            node.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef)
+            and any(
+                isinstance(base, ast.Name) and base.id in exception_bases
+                for base in node.bases
+            )
+        )
+
+    imported_domain_exceptions = {
+        (source_file.name, alias.name)
+        for source_file in (API_APP / "routers").glob("*.py")
+        for node in ast.walk(ast.parse(source_file.read_text(encoding="utf-8")))
+        if isinstance(node, ast.ImportFrom)
+        and node.module is not None
+        and node.module.startswith("domain.")
+        for alias in node.names
+        if alias.name in domain_exception_names
+    }
+
+    assert not imported_domain_exceptions, (
+        "HTTP routers must translate application errors, not import domain "
+        f"exceptions: {sorted(imported_domain_exceptions)}"
+    )
+
+
 def test_http_routers_do_not_import_sqlalchemy() -> None:
     for source_file in (API_APP / "routers").glob("*.py"):
         tree = ast.parse(source_file.read_text(encoding="utf-8"))
