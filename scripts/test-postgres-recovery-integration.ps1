@@ -21,6 +21,20 @@ try {
     $databaseCreated = $true
     $env:DATABASE_URL = "postgresql://tidewatch:tidewatch@localhost:5432/$databaseName"
 
+    $clientVersion = pg_restore --version
+    if ($LASTEXITCODE -ne 0 -or $clientVersion -notmatch "\(PostgreSQL\)\s+(\d+)") {
+        throw "Could not determine the pg_restore client version."
+    }
+    $clientMajorVersion = [int]$Matches[1]
+    $serverVersionNumberText = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SHOW server_version_num;"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not determine the PostgreSQL server version."
+    }
+    $serverMajorVersion = [math]::Floor([int]($serverVersionNumberText -join "").Trim() / 10000)
+    if ($clientMajorVersion -ne $serverMajorVersion) {
+        throw "PostgreSQL client major version $clientMajorVersion must match server major version $serverMajorVersion for the recovery integration test."
+    }
+
     psql --dbname=$env:DATABASE_URL --command "CREATE TABLE recovery_probe (id integer PRIMARY KEY, value text NOT NULL, committed_at timestamptz NOT NULL); INSERT INTO recovery_probe VALUES (1, 'before-backup', CURRENT_TIMESTAMP);"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not seed the isolated PostgreSQL recovery database."
