@@ -7,3 +7,7 @@ class BatteryBuoyNotFound(LookupError):
 
 class BatteryDeviceNotFound(LookupError):
     """Raised when a battery operation references a foreign or unknown unit."""
+
+
+class BatteryTelemetryInvalid(ValueError):
+    """Raised when battery telemetry violates a device or channel rule."""

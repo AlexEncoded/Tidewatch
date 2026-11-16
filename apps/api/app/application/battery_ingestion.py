@@ -8,7 +8,7 @@ from ..domain.devices import (
     validate_telemetry_device_channel,
 )
 from ..domain.battery import BatteryTelemetrySnapshot
-from .battery_errors import BatteryDeviceNotFound
+from .battery_errors import BatteryDeviceNotFound, BatteryTelemetryInvalid
 from .battery_ports import BatteryMetrics, BatteryTelemetryReader
 
 
@@ -46,6 +46,8 @@ def ingest_battery_reading(
         saved_reading = record_battery_reading(reader, reading, observed_at)
     except DeviceOwnershipError as exc:
         raise BatteryDeviceNotFound(str(exc)) from exc
+    except ValueError as exc:
+        raise BatteryTelemetryInvalid(str(exc)) from exc
     metrics.record_reading(
         reading.buoy_id,
         reading.battery_percent,

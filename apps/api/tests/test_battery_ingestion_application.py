@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.application.battery_ingestion import ingest_battery_reading, record_battery_reading
-from app.application.battery_errors import BatteryDeviceNotFound
+from app.application.battery_errors import BatteryDeviceNotFound, BatteryTelemetryInvalid
 from app.domain.devices import DeviceOwnershipError, DeviceSnapshot
 from app.domain.battery import BatteryTelemetrySnapshot
 
@@ -169,4 +169,25 @@ def test_battery_ingestion_translates_domain_ownership_error() -> None:
             raise AssertionError("foreign device must not publish metrics")
 
     with pytest.raises(BatteryDeviceNotFound, match="Device not found"):
+        ingest_battery_reading(Reader(), Metrics(), _reading(), RECEIVED_AT)
+
+
+def test_battery_ingestion_translates_domain_channel_error() -> None:
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            return True
+
+        def get_device_snapshot(self, device_id):
+            return SimpleNamespace(
+                buoy_id="buoy-1", device_id=device_id, sensor_channel="B"
+            )
+
+        def add_battery(self, reading):
+            raise AssertionError("mismatched channel must not persist telemetry")
+
+    class Metrics:
+        def record_reading(self, *args):
+            raise AssertionError("mismatched channel must not publish metrics")
+
+    with pytest.raises(BatteryTelemetryInvalid, match="channel must match"):
         ingest_battery_reading(Reader(), Metrics(), _reading(), RECEIVED_AT)

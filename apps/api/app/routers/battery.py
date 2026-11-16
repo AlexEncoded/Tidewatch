@@ -14,6 +14,7 @@ from ..application.battery_queries import (
 from ..application.battery_errors import (
     BatteryBuoyNotFound,
     BatteryDeviceNotFound,
+    BatteryTelemetryInvalid,
 )
 from ..application.analysis_queries import analyze_if_buoy_exists
 from ..application.telemetry_ingestion import build_battery_snapshot
@@ -44,7 +45,7 @@ def record_battery(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
     except BatteryDeviceNotFound as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
-    except ValueError as exc:
+    except BatteryTelemetryInvalid as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
     return saved_battery
 
