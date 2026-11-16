@@ -2,9 +2,11 @@
 
 from ..domain.devices import (
     DeviceRegistrationCommand,
+    DeviceRegistrationConflict,
     DeviceSnapshot,
     validate_device_registration,
 )
+from .device_errors import DeviceRegistrationConflictError
 from .device_ports import DeviceRegistry
 from .fleet_ports import FleetMetrics
 
@@ -14,12 +16,15 @@ def register_device(
 ) -> DeviceSnapshot:
     """Register a device after enforcing domain uniqueness rules."""
     registered_device = registry.get_device_snapshot(device.device_id)
-    validate_device_registration(
-        device.device_id,
-        device.sensor_channel,
-        registry.list_device_snapshots(buoy_id),
-        existing_registered_device=registered_device,
-    )
+    try:
+        validate_device_registration(
+            device.device_id,
+            device.sensor_channel,
+            registry.list_device_snapshots(buoy_id),
+            existing_registered_device=registered_device,
+        )
+    except DeviceRegistrationConflict as exc:
+        raise DeviceRegistrationConflictError(str(exc)) from exc
     return registry.create_device_snapshot(buoy_id, device)
 
 

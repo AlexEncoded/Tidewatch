@@ -18,6 +18,10 @@ from app.application.device_registration import register_device, register_device
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status, update_device_status_for_buoy
 from app.application.device_heartbeat import record_device_heartbeat
+from app.application.device_errors import (
+    DeviceNotFound,
+    DeviceRegistrationConflictError,
+)
 from app.domain.devices import DeviceSnapshot
 
 
@@ -306,7 +310,7 @@ def test_register_device_application_service_rejects_conflicts(existing, message
     device_id = existing[0].device_id if message == "Device already registered" else "device-c"
     device = SimpleNamespace(device_id=device_id, sensor_channel="A")
 
-    with pytest.raises(DeviceRegistrationConflict, match=message):
+    with pytest.raises(DeviceRegistrationConflictError, match=message):
         register_device(Registry(), "buoy-1", device)
 
 
@@ -335,8 +339,25 @@ def test_update_device_status_application_service_rejects_missing_device() -> No
         def update_device_status(self, buoy_id, device_id, update):
             return None
 
-    with pytest.raises(DeviceOwnershipError, match="Device not found"):
+    with pytest.raises(DeviceNotFound, match="Device not found"):
         update_device_status(Registry(), "buoy-1", "missing", SimpleNamespace(status="active"))
+
+
+def test_update_device_status_rejects_foreign_device_snapshot() -> None:
+    class Registry:
+        def update_device_status(self, buoy_id, device_id, update):
+            return DeviceSnapshot(
+                buoy_id="other-buoy",
+                device_id=device_id,
+                sensor_channel="A",
+                status=update.status,
+                registered_at=datetime.now(timezone.utc),
+            )
+
+    with pytest.raises(DeviceNotFound, match="Device not found"):
+        update_device_status(
+            Registry(), "buoy-1", "device-a", DeviceStatusCommand(status="inactive")
+        )
 
 
 def test_update_device_status_use_case_checks_buoy_before_device() -> None:

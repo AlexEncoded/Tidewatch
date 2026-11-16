@@ -2462,6 +2462,19 @@ def test_maintenance_notification_status_route_uses_application_query() -> None:
 
 def test_device_registration_route_delegates_heartbeat_to_application() -> None:
     tree = ast.parse((API_APP / "routers" / "devices.py").read_text(encoding="utf-8"))
+    domain_imports = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module == "domain.devices"
+        for alias in node.names
+    }
+    application_imports = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "application.device_errors"
+        for alias in node.names
+    }
     route = next(
         node
         for node in tree.body
@@ -2480,6 +2493,10 @@ def test_device_registration_route_delegates_heartbeat_to_application() -> None:
 
     assert "register_device_for_buoy" in calls
     assert "record_device_heartbeat" not in metric_calls
+    assert "DeviceRegistrationConflict" not in domain_imports
+    assert "DeviceOwnershipError" not in domain_imports
+    assert "DeviceRegistrationConflictError" in application_imports
+    assert "DeviceNotFound" in application_imports
 
 
 def test_device_status_route_delegates_buoy_validation_to_application() -> None:

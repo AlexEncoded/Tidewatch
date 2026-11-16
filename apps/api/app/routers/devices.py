@@ -15,10 +15,12 @@ from ..application.device_registration import register_device_for_buoy
 from ..application.device_listing import list_devices_for_buoy
 from ..application.device_status import update_device_status_for_buoy
 from ..domain.devices import (
-    DeviceOwnershipError,
     DeviceRegistrationCommand,
-    DeviceRegistrationConflict,
     DeviceStatusCommand,
+)
+from ..application.device_errors import (
+    DeviceNotFound,
+    DeviceRegistrationConflictError,
 )
 from ..application.device_health import get_device_health_for_buoy
 from ..schemas.devices import Device, DeviceCreate, DeviceHealth, DeviceStatusUpdate
@@ -56,7 +58,7 @@ def register_device(
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
         return Device.model_validate(result, from_attributes=True)
-    except DeviceRegistrationConflict as exc:
+    except DeviceRegistrationConflictError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
 
 
@@ -114,5 +116,5 @@ def update_device_status(
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
         return Device.model_validate(result, from_attributes=True)
-    except DeviceOwnershipError as exc:
+    except DeviceNotFound as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None

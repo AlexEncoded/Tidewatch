@@ -1,6 +1,7 @@
 """Application service for changing the operational state of a device."""
 
-from ..domain.devices import DeviceOwnershipError, DeviceSnapshot, DeviceStatusCommand
+from ..domain.devices import DeviceSnapshot, DeviceStatusCommand
+from .device_errors import DeviceNotFound
 from .device_ports import DeviceStatusRegistry
 
 
@@ -13,7 +14,9 @@ def update_device_status(
     """Update a device state or reject an unknown/foreign device."""
     device = registry.update_device_status(buoy_id, device_id, update)
     if device is None:
-        raise DeviceOwnershipError("Device not found")
+        raise DeviceNotFound("Device not found")
+    if device.buoy_id != buoy_id:
+        raise DeviceNotFound("Device not found")
     return device
 
 
