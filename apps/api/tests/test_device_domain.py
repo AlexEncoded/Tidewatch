@@ -314,6 +314,25 @@ def test_register_device_application_service_rejects_conflicts(existing, message
         register_device(Registry(), "buoy-1", device)
 
 
+def test_register_device_application_service_translates_persistence_race() -> None:
+    class Registry:
+        def get_device_snapshot(self, device_id):
+            return None
+
+        def list_device_snapshots(self, buoy_id):
+            return []
+
+        def create_device_snapshot(self, buoy_id, device):
+            raise DeviceRegistrationConflict("Device or sensor channel already registered")
+
+    with pytest.raises(DeviceRegistrationConflictError, match="already registered"):
+        register_device(
+            Registry(),
+            "buoy-1",
+            DeviceRegistrationCommand(device_id="device-a", sensor_channel="A"),
+        )
+
+
 def test_update_device_status_application_service_returns_updated_device() -> None:
     class Registry:
         def update_device_status(self, buoy_id, device_id, update):

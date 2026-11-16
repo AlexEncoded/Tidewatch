@@ -23,9 +23,9 @@ def register_device(
             registry.list_device_snapshots(buoy_id),
             existing_registered_device=registered_device,
         )
+        return registry.create_device_snapshot(buoy_id, device)
     except DeviceRegistrationConflict as exc:
         raise DeviceRegistrationConflictError(str(exc)) from exc
-    return registry.create_device_snapshot(buoy_id, device)
 
 
 def register_device_for_buoy(
