@@ -217,21 +217,22 @@ def load_windows(
         "excluded_suspect_rows": quality_row_counts["suspect"],
         "excluded_invalid_rows": quality_row_counts["invalid"],
     }
-    calibration = sorted(intervals["calibration"], key=lambda item: item[1])
-    validation = sorted(intervals["validation"], key=lambda item: item[1])
-    calibration_index = validation_index = 0
-    while calibration_index < len(calibration) and validation_index < len(validation):
-        calibration_id, calibration_start, calibration_end = calibration[calibration_index]
-        validation_id, validation_start, validation_end = validation[validation_index]
-        if calibration_start <= validation_end and validation_start <= calibration_end:
+    all_intervals = sorted(
+        (start_at, end_at, window_id, split)
+        for split, split_intervals in intervals.items()
+        for window_id, start_at, end_at in split_intervals
+    )
+    active_interval = None
+    for current_interval in all_intervals:
+        if active_interval is not None and current_interval[0] <= active_interval[1]:
+            _, _, previous_id, previous_split = active_interval
+            _, _, current_id, current_split = current_interval
             raise ValueError(
-                f"Calibration window {calibration_id!r} overlaps validation "
-                f"window {validation_id!r} in time"
+                f"{previous_split.title()} window {previous_id!r} overlaps "
+                f"{current_split} window {current_id!r} in time"
             )
-        if calibration_end < validation_end:
-            calibration_index += 1
-        else:
-            validation_index += 1
+        if active_interval is None or current_interval[1] > active_interval[1]:
+            active_interval = current_interval
     return result, coverage, quality_summary
 
 

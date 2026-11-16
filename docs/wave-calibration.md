@@ -41,11 +41,12 @@ empty. The evaluator excludes samples outside the shared
 GNSS/IMU time range and reports coverage for the retained interval. Timestamps
 must include a timezone. A timestamp may appear twice within a window when one
 row contains GNSS and the other contains IMU; duplicate timestamps for the same
-modality are rejected, as are timestamps reused by another window. Calibration
-and validation window time ranges must also not overlap, even when their sample
-timestamps differ. This prevents temporal leakage between calibration and
-validation. Put simultaneous GNSS and IMU values on the same row when available;
-separate rows for the two modalities are also accepted. Use a documented,
+modality are rejected, as are timestamps reused by another window. No two
+window time ranges may overlap, even when their sample timestamps differ. This
+prevents reusing one wave event as multiple observations and temporal leakage
+between calibration and validation. Put simultaneous GNSS and IMU values on the
+same row when possible; separate rows for the two modalities are also accepted.
+Use a documented,
 independently measured reference source; do not use simulator output as
 calibration evidence. If the optional `quality` column is omitted, all rows are
 treated as `good` for backward compatibility; the JSON report records whether
