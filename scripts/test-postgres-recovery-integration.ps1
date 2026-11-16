@@ -21,18 +21,28 @@ try {
     $databaseCreated = $true
     $env:DATABASE_URL = "postgresql://tidewatch:tidewatch@localhost:5432/$databaseName"
 
-    psql --dbname=$env:DATABASE_URL --command "CREATE TABLE recovery_probe (id integer PRIMARY KEY, value text NOT NULL); INSERT INTO recovery_probe VALUES (1, 'before-backup');"
+    psql --dbname=$env:DATABASE_URL --command "CREATE TABLE recovery_probe (id integer PRIMARY KEY, value text NOT NULL, committed_at timestamptz NOT NULL); INSERT INTO recovery_probe VALUES (1, 'before-backup', CURRENT_TIMESTAMP);"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not seed the isolated PostgreSQL recovery database."
     }
 
     . (Join-Path $PSScriptRoot "postgres-backup.ps1") -OutputFile $backupFile
 
-    psql --dbname=$env:DATABASE_URL --command "INSERT INTO recovery_probe VALUES (2, 'after-backup');"
+    psql --dbname=$env:DATABASE_URL --command "INSERT INTO recovery_probe VALUES (2, 'after-backup', CURRENT_TIMESTAMP);"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not mutate the isolated PostgreSQL recovery database."
     }
 
+    $simulatedRpoSecondsText = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT EXTRACT(EPOCH FROM ((SELECT committed_at FROM recovery_probe WHERE id = 2) - (SELECT committed_at FROM recovery_probe WHERE id = 1)));"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not measure the simulated recovery point objective."
+    }
+    $simulatedRpoSeconds = [double]::Parse(
+        ($simulatedRpoSecondsText -join "").Trim(),
+        [System.Globalization.CultureInfo]::InvariantCulture
+    )
+
+    $recoveryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     . (Join-Path $PSScriptRoot "postgres-restore.ps1") -BackupFile $backupFile -ConfirmRestore
 
     $restoredRows = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT id || ':' || value FROM recovery_probe ORDER BY id;"
@@ -42,8 +52,12 @@ try {
     if (($restoredRows -join "`n").Trim() -ne "1:before-backup") {
         throw "PostgreSQL restore did not recover the expected pre-backup state: $restoredRows"
     }
+    $recoveryStopwatch.Stop()
+    $simulatedRtoSeconds = $recoveryStopwatch.Elapsed.TotalSeconds
 
-    Write-Host "PostgreSQL backup and restore integration test passed."
+    $rpoText = $simulatedRpoSeconds.ToString("F3", [System.Globalization.CultureInfo]::InvariantCulture)
+    $rtoText = $simulatedRtoSeconds.ToString("F3", [System.Globalization.CultureInfo]::InvariantCulture)
+    Write-Host "Local PostgreSQL recovery drill passed (simulated RPO: ${rpoText}s, RTO: ${rtoText}s)."
 }
 finally {
     if ($databaseCreated) {
