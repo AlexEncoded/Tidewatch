@@ -25,10 +25,10 @@ from ..application.telemetry_batch_ingestion import (
     TelemetryDeviceNotFound,
     TelemetryIngestOutcome,
     TelemetryQueuedOutcome,
+    TelemetryIdempotencyConflict,
     process_telemetry_batch,
 )
 from ..application.telemetry_job_queries import get_telemetry_job
-from ..domain.telemetry_job import TelemetryJobIdempotencyConflict
 from ..schemas.ingestion import TelemetryBatchCreate
 from ..schemas.telemetry import TelemetryIngestResponse
 from ..schemas.telemetry_job import (
@@ -92,7 +92,7 @@ def ingest_telemetry(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
         ) from None
-    except TelemetryJobIdempotencyConflict as exc:
+    except TelemetryIdempotencyConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
 
     if isinstance(outcome, TelemetryQueuedOutcome):

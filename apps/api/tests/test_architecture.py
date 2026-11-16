@@ -2011,6 +2011,19 @@ def test_telemetry_router_uses_unit_of_work_port_for_transactions() -> None:
     assert not infrastructure_attributes
 
 
+def test_telemetry_router_maps_application_idempotency_error() -> None:
+    tree = ast.parse((API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8"))
+    imports = {
+        (node.module, alias.name)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        for alias in node.names
+    }
+
+    assert ("domain.telemetry_job", "TelemetryJobIdempotencyConflict") not in imports
+    assert ("application.telemetry_batch_ingestion", "TelemetryIdempotencyConflict") in imports
+
+
 def test_telemetry_worker_does_not_depend_on_http_router() -> None:
     tree = ast.parse(
         (API_APP / "telemetry_job_worker.py").read_text(encoding="utf-8")

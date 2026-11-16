@@ -40,7 +40,7 @@ from .telemetry_ingestion import (
 )
 from ..domain.devices import DeviceOwnershipError
 from ..domain.telemetry_family import TelemetryResultFamily
-from ..domain.telemetry_job import TelemetryJobStatus
+from ..domain.telemetry_job import TelemetryJobIdempotencyConflict, TelemetryJobStatus
 
 
 class TelemetryBuoyNotFound(LookupError):
@@ -53,6 +53,10 @@ class TelemetryDeviceNotFound(LookupError):
 
 class TelemetryBatchInvalid(ValueError):
     """Raised when a telemetry batch violates a device or sensor rule."""
+
+
+class TelemetryIdempotencyConflict(ValueError):
+    """Raised when an idempotency key is reused with a different payload."""
 
 
 @dataclass(frozen=True)
@@ -192,13 +196,16 @@ def process_telemetry_batch(
             metrics.metric("buoy_last_seen_timestamp_seconds").labels(buoy_id=buoy_id).set(
                 seen_at.timestamp()
             )
-        job = jobs.enqueue(
-            buoy_id,
-            payload.as_json_mapping(),
-            now=clock_observation_at,
-            idempotency_key=idempotency_key,
-            idempotency_fingerprint=idempotency_fingerprint,
-        )
+        try:
+            job = jobs.enqueue(
+                buoy_id,
+                payload.as_json_mapping(),
+                now=clock_observation_at,
+                idempotency_key=idempotency_key,
+                idempotency_fingerprint=idempotency_fingerprint,
+            )
+        except TelemetryJobIdempotencyConflict as exc:
+            raise TelemetryIdempotencyConflict(str(exc)) from exc
         status_url = f"/api/v1/telemetry/jobs/{job.job_id}"
         return TelemetryQueuedOutcome(
             job_id=job.job_id, status=job.status, status_url=status_url
