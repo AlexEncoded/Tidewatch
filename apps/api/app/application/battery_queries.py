@@ -1,12 +1,9 @@
 """Application queries for buoy-scoped battery telemetry."""
 
-from ..domain.devices import validate_device_ownership
+from ..domain.devices import DeviceOwnershipError, validate_device_ownership
 from ..domain.battery import BatteryTelemetrySnapshot
+from .battery_errors import BatteryBuoyNotFound, BatteryDeviceNotFound
 from .battery_ports import BatteryTelemetryReader
-
-
-class BatteryBuoyNotFound(LookupError):
-    """Raised when a battery query targets a missing buoy."""
 
 
 def _validate_query_target(
@@ -18,7 +15,10 @@ def _validate_query_target(
         raise BatteryBuoyNotFound(buoy_id)
     if physical_device_id is not None:
         device = reader.get_device_snapshot(physical_device_id)
-        validate_device_ownership(device, buoy_id)
+        try:
+            validate_device_ownership(device, buoy_id)
+        except DeviceOwnershipError as exc:
+            raise BatteryDeviceNotFound(str(exc)) from exc
 
 
 def get_latest_battery(

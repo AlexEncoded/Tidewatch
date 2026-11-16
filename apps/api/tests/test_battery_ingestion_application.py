@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.application.battery_ingestion import ingest_battery_reading, record_battery_reading
+from app.application.battery_errors import BatteryDeviceNotFound
 from app.domain.devices import DeviceOwnershipError, DeviceSnapshot
 from app.domain.battery import BatteryTelemetrySnapshot
 
@@ -150,3 +151,22 @@ def test_battery_ingestion_skips_metrics_for_unknown_buoy() -> None:
 
     assert ingest_battery_reading(reader, Metrics(), _reading(), RECEIVED_AT) is None
     assert reader.calls == [("buoy_exists", "buoy-1")]
+
+
+def test_battery_ingestion_translates_domain_ownership_error() -> None:
+    class Reader:
+        def buoy_exists(self, buoy_id):
+            return True
+
+        def get_device_snapshot(self, device_id):
+            return _device("other-buoy")
+
+        def add_battery(self, reading):
+            raise AssertionError("foreign device must not persist telemetry")
+
+    class Metrics:
+        def record_reading(self, *args):
+            raise AssertionError("foreign device must not publish metrics")
+
+    with pytest.raises(BatteryDeviceNotFound, match="Device not found"):
+        ingest_battery_reading(Reader(), Metrics(), _reading(), RECEIVED_AT)

@@ -8,13 +8,15 @@ from ..application.battery_analysis import analyze_battery_for_buoy
 from ..application.battery_ingestion import ingest_battery_reading
 from ..application.battery_health import evaluate_battery_health_for_buoy
 from ..application.battery_queries import (
-    BatteryBuoyNotFound,
     get_latest_battery,
     list_battery_history,
 )
+from ..application.battery_errors import (
+    BatteryBuoyNotFound,
+    BatteryDeviceNotFound,
+)
 from ..application.analysis_queries import analyze_if_buoy_exists
 from ..application.telemetry_ingestion import build_battery_snapshot
-from ..domain.devices import DeviceOwnershipError
 from ..adapter_dependencies import get_battery_metrics, get_battery_telemetry_reader
 from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from ..schemas.battery import (
@@ -40,7 +42,7 @@ def record_battery(
         saved_battery = ingest_battery_reading(reader, metrics, battery, received_at)
         if saved_battery is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found")
-    except DeviceOwnershipError as exc:
+    except BatteryDeviceNotFound as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from None
@@ -60,7 +62,7 @@ def latest_battery(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
         ) from None
-    except DeviceOwnershipError as exc:
+    except BatteryDeviceNotFound as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
@@ -82,7 +84,7 @@ def battery_history(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Buoy not found"
         ) from None
-    except DeviceOwnershipError as exc:
+    except BatteryDeviceNotFound as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None

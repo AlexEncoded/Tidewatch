@@ -3,11 +3,10 @@ from types import SimpleNamespace
 import pytest
 
 from app.application.battery_queries import (
-    BatteryBuoyNotFound,
     get_latest_battery,
     list_battery_history,
 )
-from app.domain.devices import DeviceOwnershipError
+from app.application.battery_errors import BatteryBuoyNotFound, BatteryDeviceNotFound
 
 
 @pytest.mark.parametrize("query", [get_latest_battery, list_battery_history])
@@ -45,7 +44,7 @@ def test_latest_battery_query_checks_physical_device_ownership() -> None:
         def latest_battery(self, *args):
             raise AssertionError("foreign device must not query a reading")
 
-    with pytest.raises(DeviceOwnershipError, match="Device not found"):
+    with pytest.raises(BatteryDeviceNotFound, match="Device not found"):
         get_latest_battery(Reader(), "buoy-1", None, "device-1")
 
 
