@@ -40,7 +40,7 @@ def load_windows(
     grouped: dict[str, dict] = {}
     seen_timestamps: dict[datetime, tuple[str, set[str]]] = {}
     quality_column_present = False
-    quality_counts = {"good": 0, "suspect": 0, "invalid": 0}
+    quality_row_counts = {"good": 0, "suspect": 0, "invalid": 0}
     with path.open(newline="", encoding="utf-8-sig") as source:
         reader = csv.DictReader(source)
         fieldnames = reader.fieldnames or ()
@@ -73,11 +73,11 @@ def load_windows(
                 raise ValueError(f"Line {line_number}: {exc}") from exc
             quality_value = row.get("quality") if quality_column_present else "good"
             quality = (quality_value or "").strip().lower()
-            if quality not in quality_counts:
+            if quality not in quality_row_counts:
                 raise ValueError(
                     f"Line {line_number}: quality must be 'good', 'suspect' or 'invalid'"
                 )
-            quality_counts[quality] += 1
+            quality_row_counts[quality] += 1
             if quality != "good":
                 continue
             try:
@@ -213,9 +213,9 @@ def load_windows(
         raise ValueError("CSV must contain at least one calibration and validation window")
     quality_summary = {
         "column_present": quality_column_present,
-        "accepted_good_samples": quality_counts["good"],
-        "excluded_suspect_samples": quality_counts["suspect"],
-        "excluded_invalid_samples": quality_counts["invalid"],
+        "accepted_good_rows": quality_row_counts["good"],
+        "excluded_suspect_rows": quality_row_counts["suspect"],
+        "excluded_invalid_rows": quality_row_counts["invalid"],
     }
     calibration = sorted(intervals["calibration"], key=lambda item: item[1])
     validation = sorted(intervals["validation"], key=lambda item: item[1])

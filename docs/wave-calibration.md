@@ -49,7 +49,9 @@ separate rows for the two modalities are also accepted. Use a documented,
 independently measured reference source; do not use simulator output as
 calibration evidence. If the optional `quality` column is omitted, all rows are
 treated as `good` for backward compatibility; the JSON report records whether
-quality filtering was available and how many rows were excluded.
+quality filtering was available and how many rows were excluded. These counts
+refer to CSV rows: a row containing both GNSS and IMU values counts once, while
+each sensor value counts separately in the per-window coverage report.
 
 Run the evaluator from the repository root:
 

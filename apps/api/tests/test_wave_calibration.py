@@ -99,10 +99,10 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["dataset"]["file_name"] == input_path.name
     assert report["dataset"]["sha256"] == hashlib.sha256(input_path.read_bytes()).hexdigest()
     assert report["dataset"]["quality_filter"] == {
-        "accepted_good_samples": 6,
+        "accepted_good_rows": 6,
         "column_present": False,
-        "excluded_invalid_samples": 0,
-        "excluded_suspect_samples": 0,
+        "excluded_invalid_rows": 0,
+        "excluded_suspect_rows": 0,
     }
     assert report["search"] == {
         "candidate_count": 11,
@@ -229,10 +229,10 @@ def test_wave_calibration_cli_excludes_non_good_quality_samples(tmp_path: Path) 
     assert report["window_coverage"]["calibration"][0]["gnss_samples"] == 2
     assert report["window_coverage"]["validation"][0]["imu_samples"] == 2
     assert report["dataset"]["quality_filter"] == {
-        "accepted_good_samples": 4,
+        "accepted_good_rows": 4,
         "column_present": True,
-        "excluded_invalid_samples": 1,
-        "excluded_suspect_samples": 1,
+        "excluded_invalid_rows": 1,
+        "excluded_suspect_rows": 1,
     }
 
 
