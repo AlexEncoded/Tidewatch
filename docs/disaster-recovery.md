@@ -99,7 +99,9 @@ la recuperación en el entorno Azure correspondiente.
 
 ## Pruebas pendientes
 
-- Restauración real de PostgreSQL Flexible Server.
-- Recuperación de AKS desde Terraform y Argo CD.
-- Medición de RPO/RTO.
-- Simulación de pérdida de una zona Azure.
+- Restauración real de PostgreSQL Flexible Server desde un punto de
+  recuperación de Azure.
+- Recuperación de AKS desde Terraform y Argo CD en un entorno desplegado.
+- Validación de los objetivos RPO/RTO en Azure; las mediciones actuales solo
+  cubren el simulacro local de PostgreSQL descrito arriba.
+- Simulación controlada de pérdida de una zona Azure.
