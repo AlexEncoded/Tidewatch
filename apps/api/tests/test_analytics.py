@@ -652,15 +652,39 @@ def test_maintenance_domain_ignores_inactive_or_recent_buoys() -> None:
 def test_reading_quality_domain_classifies_latest_sensor_states() -> None:
     invalid, suspect = classify_latest_readings(
         {
-            "temperature": [SimpleNamespace(quality="invalid")],
-            "pressure": [SimpleNamespace(quality="suspect")],
-            "salinity": [SimpleNamespace(quality="good")],
+            "temperature": [
+                SimpleNamespace(quality="invalid", measured_at=datetime(2024, 1, 1))
+            ],
+            "pressure": [
+                SimpleNamespace(quality="suspect", measured_at=datetime(2024, 1, 1))
+            ],
+            "salinity": [
+                SimpleNamespace(quality="good", measured_at=datetime(2024, 1, 1))
+            ],
             "wind": [],
         }
     )
 
     assert invalid == ["temperature"]
     assert suspect == ["pressure"]
+
+
+def test_reading_quality_classifies_by_timestamp_not_input_order() -> None:
+    invalid, suspect = classify_latest_readings(
+        {
+            "temperature": [
+                SimpleNamespace(
+                    quality="invalid", measured_at=datetime(2024, 1, 1, 0, 59)
+                ),
+                SimpleNamespace(
+                    quality="good", measured_at=datetime(2024, 1, 1, 1)
+                ),
+            ]
+        }
+    )
+
+    assert invalid == []
+    assert suspect == []
 
 
 def test_sensor_completeness_domain_lists_partial_redundancy() -> None:
