@@ -267,12 +267,24 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 for alias in node.names
             }
 
-            assert not imported_roots.intersection({"sqlalchemy", "fastapi"}), path
+            assert not imported_roots.intersection(
+                {
+                    "sqlalchemy",
+                    "fastapi",
+                    "prometheus_client",
+                    "adapter_dependencies",
+                    "database",
+                }
+            ), path
             assert not any(
                 module.split(".")[-1].endswith("entities")
                 or module.split(".")[-1] == "schemas"
                 or module.split(".")[-1] == "settings"
+                or module.split(".")[-1] == "routers"
+                or module.split(".")[-1] == "adapter_dependencies"
+                or module.split(".")[-1].endswith("_adapter")
                 or module in {"fastapi", "sqlalchemy"}
+                or module.startswith("prometheus_client")
                 or module.split(".")[-1].endswith("_repository")
                 for module in imported_modules
             ), path
