@@ -8,7 +8,7 @@ from ..domain.buoy import BuoyOperationalStatus
 from ..domain.sensor_health import SensorHealthSnapshot
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
-from ..domain.reading_quality import classify_latest_readings
+from ..domain.reading_quality import MeasuredReading, classify_latest_readings
 from ..domain.maintenance import (
     MaintenanceIssueSnapshot,
     low_battery_severity,
@@ -19,7 +19,7 @@ from ..domain.maintenance import (
 def build_reading_quality_issues(
     buoy_id: str,
     buoy_name: str,
-    latest_readings: Mapping[str, Sequence[object]],
+    latest_readings: Mapping[str, Sequence[MeasuredReading]],
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for invalid or suspect latest readings."""
     invalid_sensors, suspect_sensors = classify_latest_readings(latest_readings)
@@ -222,7 +222,7 @@ def build_maintenance_issues_for_buoy(
     max_age_minutes: float,
     drift_speed_mps: float,
     sensor_health: SensorHealthSnapshot,
-    latest_readings: Mapping[str, Sequence[object]],
+    latest_readings: Mapping[str, Sequence[MeasuredReading]],
     latest_batteries: Mapping[str, object | None],
     battery_health: BatteryHealthSnapshot,
     average_speed_mps: float | None,

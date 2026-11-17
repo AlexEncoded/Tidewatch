@@ -177,7 +177,16 @@ def test_reading_quality_issues_are_built_without_api_dependencies() -> None:
         "buoy-1",
         "North buoy",
         {
-            "temperature": [type("Reading", (), {"quality": "invalid"})()],
+            "temperature": [
+                type(
+                    "Reading",
+                    (),
+                    {
+                        "quality": "invalid",
+                        "measured_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+                    },
+                )()
+            ],
             "pressure": [],
             "salinity": [],
         },
