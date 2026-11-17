@@ -14,6 +14,29 @@ from app.domain.wave_calibration import (
 )
 
 
+def test_wave_calibration_template_matches_csv_contract() -> None:
+    template_path = (
+        Path(__file__).resolve().parents[3]
+        / "docs"
+        / "wave-calibration-template.csv"
+    )
+
+    with template_path.open(newline="", encoding="utf-8") as source:
+        rows = list(csv.reader(source))
+
+    assert rows == [
+        [
+            "window_id",
+            "split",
+            "measured_at",
+            "gnss_altitude_m",
+            "imu_vertical_acceleration_mps2",
+            "reference_wave_height_m",
+            "quality",
+        ]
+    ]
+
+
 def test_select_factor_minimizes_calibration_error() -> None:
     windows = [
         WaveCalibrationWindow((0.0, 0.1), (0.0, 0.5), 0.15),
