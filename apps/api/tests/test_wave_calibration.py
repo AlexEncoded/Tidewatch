@@ -123,6 +123,15 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     report = json.loads(result.stdout)
 
     assert report["selected_factor"] == 0.4
+    assert report["window_estimates"]["calibration"][0] == {
+        "window_id": "train-a",
+        "reference_wave_height_m": 0.15,
+        "baseline_estimated_wave_height_m": 0.075,
+        "baseline_error_m": -0.075,
+        "selected_estimated_wave_height_m": 0.15,
+        "selected_error_m": 0.0,
+    }
+    assert report["window_estimates"]["validation"][0]["selected_error_m"] == 0.0
     assert report["dataset"]["file_name"] == input_path.name
     assert report["dataset"]["sha256"] == hashlib.sha256(input_path.read_bytes()).hexdigest()
     assert report["dataset"]["quality_filter"] == {

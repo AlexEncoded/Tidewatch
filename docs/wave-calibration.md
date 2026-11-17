@@ -67,9 +67,10 @@ It selects the factor with the lowest RMSE on `calibration` windows, then
 reports MAE, RMSE and signed bias for both baseline and selected factors on the
 calibration and untouched `validation` splits. Comparing calibration and
 validation errors helps reveal overfitting. The JSON report also lists each
-window's
-sample counts by sensor, elapsed duration, and median and maximum interval
-between retained samples for each sensor. These cadence fields help identify
+window's baseline and selected height estimates with signed error against its
+reference, along with sample counts by sensor, elapsed duration, and median and
+maximum interval between retained samples for each sensor. Per-window errors
+help identify outliers hidden by aggregate metrics; cadence fields help identify
 irregular sampling and long gaps. Since the estimator uses a range over each
 window, compare results only across windows with durations appropriate
 to the same measurement protocol; investigate large duration differences

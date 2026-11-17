@@ -18,6 +18,7 @@ from app.domain.wave_calibration import (  # noqa: E402
     evaluate_factor,
     select_factor,
 )
+from app.domain.wave import estimate_wave  # noqa: E402
 
 
 REQUIRED_COLUMNS = {
@@ -289,6 +290,43 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _window_estimates(
+    windows: list[WaveCalibrationWindow],
+    coverage: list[dict],
+    baseline_factor: float,
+    selected_factor: float,
+) -> list[dict]:
+    results = []
+    for window, metadata in zip(windows, coverage, strict=True):
+        baseline = estimate_wave(
+            window.gnss_altitudes_m,
+            window.imu_vertical_accelerations_mps2,
+            baseline_factor,
+        ).estimated_wave_height_m
+        selected = estimate_wave(
+            window.gnss_altitudes_m,
+            window.imu_vertical_accelerations_mps2,
+            selected_factor,
+        ).estimated_wave_height_m
+        if baseline is None or selected is None:
+            raise ValueError("Every evaluated window must produce a wave-height estimate")
+        results.append(
+            {
+                "window_id": metadata["window_id"],
+                "reference_wave_height_m": window.reference_wave_height_m,
+                "baseline_estimated_wave_height_m": baseline,
+                "baseline_error_m": round(
+                    baseline - window.reference_wave_height_m, 6
+                ),
+                "selected_estimated_wave_height_m": selected,
+                "selected_error_m": round(
+                    selected - window.reference_wave_height_m, 6
+                ),
+            }
+        )
+    return results
+
+
 def _factor_candidates(max_factor: float, step: float) -> list[float]:
     ratio = max_factor / step
     nearest_step_count = round(ratio)
@@ -360,6 +398,15 @@ def main() -> int:
             "baseline_factor": args.baseline_factor,
             "selected_factor": selected_factor,
             "window_coverage": window_coverage,
+            "window_estimates": {
+                split: _window_estimates(
+                    splits[split],
+                    window_coverage[split],
+                    args.baseline_factor,
+                    selected_factor,
+                )
+                for split in ("calibration", "validation")
+            },
             "calibration_baseline_metrics": evaluate_factor(
                 splits["calibration"], args.baseline_factor
             ),
