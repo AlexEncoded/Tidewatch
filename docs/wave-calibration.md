@@ -21,7 +21,10 @@ withholds the fused period and reports `sensor_disagreement`; one usable source
 can still provide a partial estimate. Period and height confidence remain
 experimental until validated against independent field measurements.
 
-Prepare a CSV with one row per synchronized sensor sample and these columns:
+Prepare a CSV with one row per synchronized sensor sample and these columns.
+Start with the empty [CSV template](wave-calibration-template.csv); it contains
+headers only, so no example or simulated measurements can be mistaken for
+calibration evidence.
 
 | Column | Meaning |
 |---|---|
