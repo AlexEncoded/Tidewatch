@@ -29,8 +29,6 @@ REQUIRED_COLUMNS = {
     "imu_vertical_acceleration_mps2",
     "reference_wave_height_m",
 }
-
-
 def load_windows(
     path: Path,
 ) -> tuple[
@@ -58,6 +56,7 @@ def load_windows(
         if missing:
             raise ValueError(f"CSV is missing columns: {', '.join(sorted(missing))}")
         quality_column_present = "quality" in fieldnames
+        uncertainty_column_present = "reference_uncertainty_m" in fieldnames
         for line_number, row in enumerate(reader, start=2):
             if row.get(None):
                 raise ValueError(f"Line {line_number}: too many CSV fields")
@@ -87,6 +86,11 @@ def load_windows(
                 acceleration = _optional_number(
                     row["imu_vertical_acceleration_mps2"]
                 )
+                uncertainty = (
+                    _optional_number(row["reference_uncertainty_m"])
+                    if uncertainty_column_present
+                    else None
+                )
             except TypeError as exc:
                 raise ValueError(f"Line {line_number}: incomplete CSV row") from exc
             except ValueError as exc:
@@ -94,6 +98,12 @@ def load_windows(
             if not math.isfinite(reference) or reference < 0:
                 raise ValueError(
                     f"Line {line_number}: reference height must be finite and non-negative"
+                )
+            if uncertainty_column_present and (
+                uncertainty is None or uncertainty <= 0
+            ):
+                raise ValueError(
+                    f"Line {line_number}: reference uncertainty must be finite and positive"
                 )
             if altitude is None and acceleration is None:
                 raise ValueError(
@@ -104,6 +114,7 @@ def load_windows(
                 {
                     "split": split,
                     "reference": reference,
+                    "reference_uncertainty": uncertainty,
                     "altitudes": [],
                     "accelerations": [],
                     "timestamps": set(),
@@ -114,6 +125,18 @@ def load_windows(
             if not math.isclose(entry["reference"], reference, rel_tol=1e-6, abs_tol=1e-6):
                 raise ValueError(
                     f"Line {line_number}: reference height changes within window {window_id!r}"
+                )
+            previous_uncertainty = entry["reference_uncertainty"]
+            if previous_uncertainty is not None and uncertainty is not None:
+                uncertainty_matches = math.isclose(
+                    previous_uncertainty, uncertainty, rel_tol=1e-6, abs_tol=1e-6
+                )
+            else:
+                uncertainty_matches = previous_uncertainty is uncertainty
+            if not uncertainty_matches:
+                raise ValueError(
+                    f"Line {line_number}: reference uncertainty changes within "
+                    f"window {window_id!r}"
                 )
             modalities = {
                 name
@@ -188,6 +211,7 @@ def load_windows(
                 gnss_altitudes_m=tuple(altitudes),
                 imu_vertical_accelerations_mps2=tuple(accelerations),
                 reference_wave_height_m=values["reference"],
+                reference_uncertainty_m=values["reference_uncertainty"],
             )
         )
         coverage[split].append(
@@ -314,6 +338,7 @@ def _window_estimates(
             {
                 "window_id": metadata["window_id"],
                 "reference_wave_height_m": window.reference_wave_height_m,
+                "reference_uncertainty_m": window.reference_uncertainty_m,
                 "baseline_estimated_wave_height_m": baseline,
                 "baseline_error_m": round(
                     baseline - window.reference_wave_height_m, 6
@@ -321,6 +346,24 @@ def _window_estimates(
                 "selected_estimated_wave_height_m": selected,
                 "selected_error_m": round(
                     selected - window.reference_wave_height_m, 6
+                ),
+                "baseline_error_in_reference_uncertainties": (
+                    round(
+                        (baseline - window.reference_wave_height_m)
+                        / window.reference_uncertainty_m,
+                        6,
+                    )
+                    if window.reference_uncertainty_m is not None
+                    else None
+                ),
+                "selected_error_in_reference_uncertainties": (
+                    round(
+                        (selected - window.reference_wave_height_m)
+                        / window.reference_uncertainty_m,
+                        6,
+                    )
+                    if window.reference_uncertainty_m is not None
+                    else None
                 ),
             }
         )

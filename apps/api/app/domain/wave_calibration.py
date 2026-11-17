@@ -19,6 +19,7 @@ class WaveCalibrationWindow:
     gnss_altitudes_m: tuple[float, ...]
     imu_vertical_accelerations_mps2: tuple[float, ...]
     reference_wave_height_m: float
+    reference_uncertainty_m: float | None = None
 
 
 def evaluate_factor(
@@ -51,6 +52,11 @@ def evaluate_factor(
             raise ValueError("Every window must contain enough GNSS and IMU samples")
         if not isfinite(window.reference_wave_height_m) or window.reference_wave_height_m < 0:
             raise ValueError("Reference wave heights must be finite and non-negative")
+        if window.reference_uncertainty_m is not None and (
+            not isfinite(window.reference_uncertainty_m)
+            or window.reference_uncertainty_m <= 0
+        ):
+            raise ValueError("Reference uncertainties must be finite and positive")
         errors.append(estimate.estimated_wave_height_m - window.reference_wave_height_m)
 
     return {

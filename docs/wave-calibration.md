@@ -34,6 +34,7 @@ calibration evidence.
 | `gnss_altitude_m` | GNSS altitude in meters |
 | `imu_vertical_acceleration_mps2` | Vertical acceleration in m/s² |
 | `reference_wave_height_m` | Independently measured wave height in meters for the window |
+| `reference_uncertainty_m` (optional) | Positive absolute uncertainty from the reference instrument, in meters; constant within a window |
 | `quality` (optional) | `good`, `suspect` or `invalid`; only `good` samples are evaluated |
 
 The reference value must remain constant within each window. Each window needs
@@ -77,6 +78,9 @@ to the same measurement protocol; investigate large duration differences
 before interpreting the error metrics. It includes the input file's SHA-256 and
 the factor-search bounds and step so the results can be traced back to their
 exact data and settings. The default search spans 0–10 in increments of 0.01.
+When reference uncertainty is supplied, the per-window errors are also reported
+as multiples of that stated uncertainty. These descriptive ratios do not change
+factor selection or represent statistical confidence.
 To change the search resolution or baseline:
 
 ```bash

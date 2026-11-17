@@ -32,6 +32,7 @@ def test_wave_calibration_template_matches_csv_contract() -> None:
             "gnss_altitude_m",
             "imu_vertical_acceleration_mps2",
             "reference_wave_height_m",
+            "reference_uncertainty_m",
             "quality",
         ]
     ]
@@ -76,15 +77,27 @@ def test_evaluate_factor_requires_both_sensor_modalities(
         evaluate_factor([window], 0.1)
 
 
+def test_evaluate_factor_rejects_non_positive_reference_uncertainty() -> None:
+    window = WaveCalibrationWindow(
+        (0.0, 0.1),
+        (0.0, 0.5),
+        0.15,
+        reference_uncertainty_m=0.0,
+    )
+
+    with pytest.raises(ValueError, match="Reference uncertainties must be finite and positive"):
+        evaluate_factor([window], 0.1)
+
+
 def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     input_path = tmp_path / "labeled-waves.csv"
     rows = [
-        ("train-a", "calibration", "2026-01-01T00:00:00Z", 0.0, 0.0, 0.15),
-        ("train-a", "calibration", "2026-01-01T00:00:01Z", 0.1, 0.5, 0.15),
-        ("train-b", "calibration", "2026-01-01T00:01:00Z", 0.0, 0.0, 0.35),
-        ("train-b", "calibration", "2026-01-01T00:01:01Z", 0.3, 1.0, 0.35),
-        ("holdout", "validation", "2026-01-01T00:02:00Z", 0.0, 0.0, 0.26),
-        ("holdout", "validation", "2026-01-01T00:02:01Z", 0.2, 0.8, 0.26),
+        ("train-a", "calibration", "2026-01-01T00:00:00Z", 0.0, 0.0, 0.15, 0.05),
+        ("train-a", "calibration", "2026-01-01T00:00:01Z", 0.1, 0.5, 0.15, 0.05),
+        ("train-b", "calibration", "2026-01-01T00:01:00Z", 0.0, 0.0, 0.35, 0.02),
+        ("train-b", "calibration", "2026-01-01T00:01:01Z", 0.3, 1.0, 0.35, 0.02),
+        ("holdout", "validation", "2026-01-01T00:02:00Z", 0.0, 0.0, 0.26, 0.01),
+        ("holdout", "validation", "2026-01-01T00:02:01Z", 0.2, 0.8, 0.26, 0.01),
     ]
     with input_path.open("w", newline="", encoding="utf-8") as target:
         writer = csv.writer(target)
@@ -96,6 +109,7 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
                 "gnss_altitude_m",
                 "imu_vertical_acceleration_mps2",
                 "reference_wave_height_m",
+                "reference_uncertainty_m",
             )
         )
         writer.writerows(rows)
@@ -126,10 +140,13 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["window_estimates"]["calibration"][0] == {
         "window_id": "train-a",
         "reference_wave_height_m": 0.15,
+        "reference_uncertainty_m": 0.05,
         "baseline_estimated_wave_height_m": 0.075,
         "baseline_error_m": -0.075,
+        "baseline_error_in_reference_uncertainties": -1.5,
         "selected_estimated_wave_height_m": 0.15,
         "selected_error_m": 0.0,
+        "selected_error_in_reference_uncertainties": 0.0,
     }
     assert report["window_estimates"]["validation"][0]["selected_error_m"] == 0.0
     assert report["dataset"]["file_name"] == input_path.name
@@ -163,6 +180,34 @@ def test_wave_calibration_cli_reports_holdout_metrics(tmp_path: Path) -> None:
     assert report["calibration_baseline_metrics"]["rmse_m"] > 0
     assert report["validation_selected_metrics"]["rmse_m"] == 0
     assert report["validation_baseline_metrics"]["rmse_m"] > 0
+
+
+def test_wave_calibration_cli_rejects_uncertainty_changes_within_window(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "changing-reference-uncertainty.csv"
+    input_path.write_text(
+        "window_id,split,measured_at,gnss_altitude_m,"
+        "imu_vertical_acceleration_mps2,reference_wave_height_m,"
+        "reference_uncertainty_m\n"
+        "train,calibration,2026-01-01T00:00:00Z,0.0,0.0,0.15,0.01\n"
+        "train,calibration,2026-01-01T00:00:01Z,0.1,0.5,0.15,0.02\n"
+        "holdout,validation,2026-01-01T00:01:00Z,0.0,0.0,0.26,0.01\n"
+        "holdout,validation,2026-01-01T00:01:01Z,0.2,0.8,0.26,0.01\n",
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[3] / "scripts" / "evaluate-wave-calibration.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(input_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "reference uncertainty changes within window 'train'" in result.stderr
+    assert "Traceback" not in result.stderr
 
 
 @pytest.mark.parametrize(
