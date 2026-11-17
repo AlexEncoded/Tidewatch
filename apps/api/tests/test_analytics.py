@@ -708,6 +708,21 @@ def test_telemetry_domain_skips_invalid_and_stale_readings() -> None:
     assert usable == [readings[2]]
 
 
+def test_latest_usable_reading_does_not_require_newest_first_order() -> None:
+    newest = SimpleNamespace(
+        quality="good", measured_at=datetime(2024, 1, 1, 0, 59)
+    )
+    readings = [
+        SimpleNamespace(quality="good", measured_at=datetime(2024, 1, 1, 0, 58)),
+        newest,
+        SimpleNamespace(quality="invalid", measured_at=datetime(2024, 1, 1, 1, 0)),
+    ]
+
+    assert latest_usable_reading(
+        readings, max_age_seconds=300, now=datetime(2024, 1, 1, 1)
+    ) == [newest]
+
+
 def test_direction_domain_uses_smallest_circular_difference() -> None:
     assert circular_difference_degrees(359, 1) == 2
     assert circular_difference_degrees(10, 190) == 180
