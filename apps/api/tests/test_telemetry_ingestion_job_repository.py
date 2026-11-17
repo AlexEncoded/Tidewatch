@@ -1,16 +1,20 @@
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from threading import Barrier
+from uuid import uuid4
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, TidewatchSession
+from app.database import Base, TidewatchSession, engine
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from app.fleet_entities import BuoyEntity, DeviceEntity
 from app.sensor_entities import TemperatureReadingEntity
 from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.telemetry_entities import TelemetryIngestionJobEntity
 from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
 from app.telemetry_job_worker import process_next_telemetry_job
 
@@ -478,3 +482,66 @@ def test_stale_worker_attempt_cannot_finish_a_reclaimed_job(job_repository) -> N
     ) is None
     assert job_repository.get(enqueued.job_id).status == "processing"
     assert second_attempt.attempts == 2
+
+
+@pytest.mark.skipif(
+    engine.dialect.name != "postgresql",
+    reason="Concurrent row claiming requires PostgreSQL row locks",
+)
+def test_concurrent_workers_claim_distinct_telemetry_jobs() -> None:
+    session_factory = sessionmaker(
+        bind=engine, class_=TidewatchSession, expire_on_commit=False
+    )
+    buoy_id = uuid4().hex
+    now = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    barrier = Barrier(3)
+
+    try:
+        with session_factory() as db:
+            db.add(
+                BuoyEntity(
+                    id=buoy_id,
+                    name="Concurrent queue test buoy",
+                    status="active",
+                    created_at=now,
+                )
+            )
+            db.commit()
+            repository = TelemetryIngestionJobRepository(db)
+            enqueued = [
+                repository.enqueue(buoy_id, {"sample": index}, now)
+                for index in range(2)
+            ]
+
+        def claim_one_job() -> str | None:
+            barrier.wait(timeout=10)
+            with session_factory() as db:
+                claimed = TelemetryIngestionJobRepository(db).claim_next(
+                    now, lease_seconds=60
+                )
+                return claimed.job_id if claimed is not None else None
+
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            claims = [workers.submit(claim_one_job) for _ in range(2)]
+            barrier.wait(timeout=10)
+            claimed_ids = [claim.result(timeout=15) for claim in claims]
+
+        assert set(claimed_ids) == {job.job_id for job in enqueued}
+        with session_factory() as db:
+            persisted = [
+                db.get(TelemetryIngestionJobEntity, job.job_id)
+                for job in enqueued
+            ]
+            assert all(
+                job.status == "processing" and job.attempts == 1
+                for job in persisted
+            )
+    finally:
+        with session_factory() as db:
+            db.execute(
+                delete(TelemetryIngestionJobEntity).where(
+                    TelemetryIngestionJobEntity.buoy_id == buoy_id
+                )
+            )
+            db.execute(delete(BuoyEntity).where(BuoyEntity.id == buoy_id))
+            db.commit()

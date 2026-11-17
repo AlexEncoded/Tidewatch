@@ -43,6 +43,9 @@ equivalent environment variable in Compose. Worker timing and retry settings
 default to a 300-second lease, five attempts and a two-second poll interval;
 configure them with `TELEMETRY_JOB_LEASE_SECONDS`,
 `TELEMETRY_JOB_MAX_ATTEMPTS` and `TELEMETRY_JOB_POLL_SECONDS`.
+In Helm, scale queue processing with `--set telemetryQueueWorker.replicas=3`;
+PostgreSQL row locks let concurrent replicas claim different jobs. The API test
+suite exercises simultaneous claims against PostgreSQL in CI.
 
 The same worker delivers queued maintenance webhooks from PostgreSQL. Failed
 deliveries retry with exponential backoff; after five attempts the job becomes
