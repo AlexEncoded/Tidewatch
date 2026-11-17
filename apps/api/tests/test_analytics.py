@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from math import pi, sin
 from random import Random
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -721,6 +722,23 @@ def test_latest_usable_reading_does_not_require_newest_first_order() -> None:
     assert latest_usable_reading(
         readings, max_age_seconds=300, now=datetime(2024, 1, 1, 1)
     ) == [newest]
+
+
+def test_latest_usable_reading_orders_repeated_local_times_by_utc() -> None:
+    madrid = ZoneInfo("Europe/Madrid")
+    first_occurrence = SimpleNamespace(
+        quality="good",
+        measured_at=datetime(2024, 10, 27, 2, 30, tzinfo=madrid, fold=0),
+    )
+    second_occurrence = SimpleNamespace(
+        quality="good",
+        measured_at=datetime(2024, 10, 27, 2, 15, tzinfo=madrid, fold=1),
+    )
+
+    assert latest_usable_reading(
+        [first_occurrence, second_occurrence],
+        now=datetime(2024, 10, 27, 2, 30, tzinfo=madrid, fold=1),
+    ) == [second_occurrence]
 
 
 def test_direction_domain_uses_smallest_circular_difference() -> None:

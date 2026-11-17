@@ -23,6 +23,8 @@ def latest_usable_reading(
     reference_time = now or datetime.now(timezone.utc)
     if reference_time.tzinfo is None:
         reference_time = reference_time.replace(tzinfo=timezone.utc)
+    else:
+        reference_time = reference_time.astimezone(timezone.utc)
     latest_reading: ReadingT | None = None
     latest_measured_at: datetime | None = None
     for reading in readings:
@@ -31,6 +33,8 @@ def latest_usable_reading(
         measured_at = reading.measured_at
         if measured_at.tzinfo is None:
             measured_at = measured_at.replace(tzinfo=timezone.utc)
+        else:
+            measured_at = measured_at.astimezone(timezone.utc)
         if max_age_seconds is not None:
             if (reference_time - measured_at).total_seconds() > max_age_seconds:
                 continue
