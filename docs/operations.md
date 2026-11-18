@@ -36,6 +36,14 @@ processing. Neither simulated output is field calibration evidence. The
 simulator uses the batch telemetry endpoint and works with both synchronous
 and queued ingestion; in queued mode it prints each returned job ID.
 
+To generate an opt-in horizontal test signal, run for example
+`python scripts/telemetry_simulator.py --wave-direction-degrees 120 --interval 1`.
+The bearing is a synthetic displacement axis measured clockwise from north;
+the simulator synchronizes it with the vertical wave component and suppresses
+the usual random GNSS position jitter. It is synthetic input for future
+directional processing only: the API does not estimate wave direction from it,
+and this mode is not a substitute for a directional reference buoy.
+
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with
 `telemetryQueueWorker.enabled=false`. The batch endpoint remains synchronous

@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 import sys
 
+import pytest
+
 from app.domain.wave import estimate_fused_wave_period
 from app.schemas.ingestion import TelemetryBatchCreate
 
@@ -181,6 +183,57 @@ def test_simulator_wave_altitude_and_imu_share_a_reproducible_period() -> None:
     assert vertical_accelerations[1] < 9.81 < vertical_accelerations[3]
     assert vertical_accelerations[0] == vertical_accelerations[2] == 9.81
     assert round(vertical_accelerations[1] + vertical_accelerations[3], 4) == 19.62
+
+
+def test_simulator_directional_wave_adds_coherent_horizontal_gnss_motion() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+
+    north_payload = SIMULATOR.build_payloads(
+        devices,
+        origin,
+        device_b_clock_offset_seconds=0,
+        wave_direction_degrees=0,
+    )["A"]
+    east_payload = SIMULATOR.build_payloads(
+        devices,
+        origin,
+        device_b_clock_offset_seconds=0,
+        wave_direction_degrees=90,
+    )["A"]
+    quarter_period_payload = SIMULATOR.build_payloads(
+        devices,
+        origin + timedelta(seconds=SIMULATOR.SIMULATED_WAVE_PERIOD_SECONDS / 4),
+        device_b_clock_offset_seconds=0,
+        wave_direction_degrees=0,
+    )["A"]
+
+    assert north_payload["location"]["latitude"] > SIMULATOR.SIMULATED_LATITUDE
+    assert north_payload["location"]["longitude"] == SIMULATOR.SIMULATED_LONGITUDE
+    assert east_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
+    assert east_payload["location"]["longitude"] > SIMULATOR.SIMULATED_LONGITUDE
+    assert north_payload["location"]["altitude_meters"] == 2.0
+    assert quarter_period_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
+    assert quarter_period_payload["location"]["altitude_meters"] == 2.2
+    assert (
+        north_payload["location"]["measured_at"]
+        == north_payload["imu"][0]["measured_at"]
+    )
+    TelemetryBatchCreate.model_validate(north_payload)
+
+
+def test_simulator_directional_wave_requires_dense_sampling() -> None:
+    SIMULATOR._validate_wave_direction(45, interval_seconds=3.0)
+
+    with pytest.raises(ValueError, match="finite and greater than zero"):
+        SIMULATOR._validate_wave_direction(None, interval_seconds=float("nan"))
+    with pytest.raises(ValueError, match="at most 3 seconds"):
+        SIMULATOR._validate_wave_direction(45, interval_seconds=3.01)
+    with pytest.raises(ValueError, match=r"\[0, 360\)"):
+        SIMULATOR.build_payloads(
+            {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}},
+            wave_direction_degrees=360,
+        )
 
 
 def test_simulated_gnss_and_imu_fuse_to_the_configured_wave_period() -> None:

@@ -25,6 +25,12 @@ aleatorios de hasta 0,00002° (aproximadamente 2,2 m norte/sur y 1,8 m este/oest
 a la latitud simulada). Esa variación no representa el desplazamiento horizontal
 de una boya causado por el oleaje.
 
+El simulador ofrece ahora un modo opt-in (`--wave-direction-degrees`) que
+genera un componente horizontal sintético sincronizado con la señal vertical y
+requiere un intervalo máximo de 3 segundos. Sirve para preparar y probar
+entradas del futuro cálculo; no añade una estimación direccional al API ni
+cuenta como validación científica.
+
 ## Decisión
 
 No publicar una dirección de oleaje derivada de las señales actuales. Mantener

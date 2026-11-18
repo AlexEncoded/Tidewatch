@@ -17,6 +17,9 @@ SIMULATED_LONGITUDE = -5.0
 SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS = 2.0
 SIMULATED_WAVE_AMPLITUDE_METERS = 0.2
 SIMULATED_WAVE_PERIOD_SECONDS = 30.0
+SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS = 0.2
+EARTH_RADIUS_METERS = 6_371_000
+MIN_DIRECTIONAL_WAVE_SAMPLES_PER_PERIOD = 10
 SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS = 1.5
 
 
@@ -35,6 +38,27 @@ def request_json(url: str, method: str, payload: dict | None = None) -> dict | l
 def _direction_degrees(value: float) -> float:
     """Round a circular direction while keeping it in the half-open range."""
     return round(value % 360, 1) % 360
+
+
+def _validate_wave_direction(
+    direction_degrees: float | None, interval_seconds: float | None = None
+) -> None:
+    if interval_seconds is not None and (
+        not math.isfinite(interval_seconds) or interval_seconds <= 0
+    ):
+        raise ValueError("interval must be finite and greater than zero")
+    if direction_degrees is None:
+        return
+    if not math.isfinite(direction_degrees) or not 0 <= direction_degrees < 360:
+        raise ValueError("wave direction must be finite and in [0, 360) degrees")
+    maximum_interval = (
+        SIMULATED_WAVE_PERIOD_SECONDS / MIN_DIRECTIONAL_WAVE_SAMPLES_PER_PERIOD
+    )
+    if interval_seconds is not None and interval_seconds > maximum_interval:
+        raise ValueError(
+            "directional wave simulation requires an interval of at most "
+            f"{maximum_interval:g} seconds"
+        )
 
 
 def create_buoy(api_url: str, name: str) -> str:
@@ -91,8 +115,10 @@ def build_payloads(
     devices: dict[str, dict],
     now: datetime | None = None,
     device_b_clock_offset_seconds: float = SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS,
+    wave_direction_degrees: float | None = None,
 ) -> dict[str, dict]:
     """Build synchronized redundant readings and per-device diagnostics."""
+    _validate_wave_direction(wave_direction_degrees)
     now = now or datetime.now(timezone.utc)
     wave_angular_frequency = 2 * math.pi / SIMULATED_WAVE_PERIOD_SECONDS
     wave_phase = wave_angular_frequency * now.timestamp()
@@ -130,14 +156,45 @@ def build_payloads(
     for channel, device in devices.items():
         is_b = offsets[channel] == 1
         device_time_offset = device_b_clock_offset_seconds if is_b else 0.0
-        measured_at = (now + timedelta(seconds=device_time_offset)).isoformat()
+        sample_time = now + timedelta(seconds=device_time_offset)
+        measured_at = sample_time.isoformat()
+        device_wave_displacement = wave_displacement
+        device_wave_vertical_acceleration = wave_vertical_acceleration
+        location_latitude = gnss_latitude
+        location_longitude = gnss_longitude
+        if wave_direction_degrees is not None:
+            device_wave_phase = wave_angular_frequency * sample_time.timestamp()
+            device_wave_displacement = (
+                SIMULATED_WAVE_AMPLITUDE_METERS * math.sin(device_wave_phase)
+            )
+            device_wave_vertical_acceleration = (
+                -SIMULATED_WAVE_AMPLITUDE_METERS
+                * wave_angular_frequency**2
+                * math.sin(device_wave_phase)
+            )
+            horizontal_displacement = (
+                SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
+                * math.cos(device_wave_phase)
+            )
+            direction_radians = math.radians(wave_direction_degrees)
+            north_displacement = horizontal_displacement * math.cos(direction_radians)
+            east_displacement = horizontal_displacement * math.sin(direction_radians)
+            location_latitude = SIMULATED_LATITUDE + math.degrees(
+                north_displacement / EARTH_RADIUS_METERS
+            )
+            location_longitude = SIMULATED_LONGITUDE + math.degrees(
+                east_displacement
+                / (EARTH_RADIUS_METERS * math.cos(math.radians(SIMULATED_LATITUDE)))
+            )
         payloads[channel] = {
             "device_id": device["device_id"],
             "location": {
-                "latitude": round(gnss_latitude, 6),
-                "longitude": round(gnss_longitude, 6),
+                "latitude": round(location_latitude, 6),
+                "longitude": round(location_longitude, 6),
                 "altitude_meters": round(
-                    SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS + wave_displacement, 3
+                    SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS
+                    + device_wave_displacement,
+                    3,
                 ),
                 "speed_mps": round(random.uniform(0.0, 0.2), 3),
                 "hdop": round(random.uniform(0.6, 1.5), 2),
@@ -298,7 +355,7 @@ def build_payloads(
                 "acceleration_x_mps2": round(random.uniform(-0.3, 0.3), 3),
                 "acceleration_y_mps2": round(random.uniform(-0.3, 0.3), 3),
                 "acceleration_z_mps2": round(
-                    9.81 + wave_vertical_acceleration, 4
+                    9.81 + device_wave_vertical_acceleration, 4
                 ),
                 "angular_velocity_x_dps": round(random.uniform(-2.0, 2.0), 2),
                 "angular_velocity_y_dps": round(random.uniform(-2.0, 2.0), 2),
@@ -335,6 +392,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--name", default="Local Test Buoy")
     parser.add_argument("--interval", type=float, default=10.0)
     parser.add_argument(
+        "--wave-direction-degrees",
+        type=float,
+        help=(
+            "Generate synthetic horizontal wave displacement along this bearing "
+            "(0=north, clockwise); requires --interval <= 3 seconds"
+        ),
+    )
+    parser.add_argument(
         "--device-b-clock-offset-seconds",
         type=float,
         default=SIMULATED_DEVICE_B_CLOCK_OFFSET_SECONDS,
@@ -355,6 +420,10 @@ def main() -> None:
     args = parse_args()
     if args.interval <= 0:
         raise SystemExit("--interval must be greater than zero")
+    try:
+        _validate_wave_direction(args.wave_direction_degrees, args.interval)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     if not math.isfinite(args.device_b_clock_offset_seconds):
         raise SystemExit("--device-b-clock-offset-seconds must be finite")
 
@@ -367,6 +436,7 @@ def main() -> None:
         payloads = build_payloads(
             devices,
             device_b_clock_offset_seconds=args.device_b_clock_offset_seconds,
+            wave_direction_degrees=args.wave_direction_degrees,
         )
         for channel, payload in payloads.items():
             if channel in args.offline_device:
