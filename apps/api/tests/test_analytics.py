@@ -46,6 +46,7 @@ from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
 from app.domain.reading_quality import classify_latest_readings
+from app.domain.sensor_selection import select_summary_reading
 from app.domain.sensor_completeness import missing_sensor_channels
 from app.domain.reading_quality import latest_usable_reading
 from app.domain.directions import circular_difference_degrees
@@ -685,6 +686,34 @@ def test_reading_quality_classifies_by_timestamp_not_input_order() -> None:
 
     assert invalid == []
     assert suspect == []
+
+
+@pytest.mark.parametrize(
+    ("quality_a", "quality_b", "selected_channel"),
+    [
+        ("suspect", "good", "B"),
+        ("good", "suspect", "A"),
+        ("good", "good", "A"),
+        ("invalid", "suspect", "B"),
+        ("invalid", "invalid", "A"),
+    ],
+)
+def test_summary_selection_prefers_quality_and_keeps_a_ties(
+    quality_a: str, quality_b: str, selected_channel: str
+) -> None:
+    reading_a = SimpleNamespace(sensor_channel="A", quality=quality_a)
+    reading_b = SimpleNamespace(sensor_channel="B", quality=quality_b)
+
+    selected = select_summary_reading(reading_a, reading_b)
+
+    assert selected is not None
+    assert selected.sensor_channel == selected_channel
+
+
+def test_summary_selection_falls_back_when_a_is_missing() -> None:
+    reading_b = SimpleNamespace(sensor_channel="B", quality="invalid")
+
+    assert select_summary_reading(None, reading_b) is reading_b
 
 
 def test_sensor_completeness_domain_lists_partial_redundancy() -> None:

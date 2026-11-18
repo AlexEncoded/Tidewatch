@@ -351,6 +351,33 @@ def test_buoy_summary_keeps_latest_sensor_channels() -> None:
     assert summary["latest_underwater_acoustic"]["echo_intensity_db"] == 42.5
 
 
+def test_buoy_summary_falls_back_to_b_when_a_quality_is_invalid() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Summary fallback buoy"}
+    ).json()["id"]
+    for channel, quality, temperature in (
+        ("A", "invalid", 18.5),
+        ("B", "good", 19.0),
+    ):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "sensor_channel": channel,
+                "quality": quality,
+            },
+        )
+        assert response.status_code == 201
+
+    response = client.get("/api/v1/buoys")
+    summary = next(item for item in response.json() if item["buoy"]["id"] == buoy_id)
+
+    assert summary["latest_temperature"]["temperature_celsius"] == 19.0
+    assert summary["latest_temperature"]["sensor_channel"] == "B"
+    assert summary["latest_temperature_a"]["quality"] == "invalid"
+    assert summary["latest_temperature_b"]["quality"] == "good"
+
+
 def test_modularized_sensor_routes_remain_registered() -> None:
     openapi_paths = app.openapi()["paths"]
 

@@ -149,6 +149,10 @@ crítica `TidewatchSensorDecisionInvalid`.
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,
 `latest_pressure_a`/`latest_pressure_b` y `latest_salinity_a`/
-`latest_salinity_b`. Los campos sin lectura son `null`; los campos históricos
-`latest_temperature`, `latest_pressure` y `latest_salinity` siguen representando
-el canal A para mantener la compatibilidad.
+`latest_salinity_b`. Los campos sin lectura son `null`. Para los campos
+`latest_temperature`, `latest_pressure` y sus equivalentes, el resumen elige
+el canal con mejor calidad (`good`, después `suspect`, después `invalid`) y
+prefiere A en caso de empate. Así, una lectura válida de B queda visible como
+valor principal si A está ausente o tiene peor calidad; ambas lecturas por canal
+siguen disponibles para inspección. La batería no lleva `quality`: conserva A
+como preferida cuando existe y usa B si A está ausente.
