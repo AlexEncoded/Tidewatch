@@ -17,6 +17,12 @@ análisis de tendencia, oleaje ni generación de alertas.
 El análisis experimental de oleaje utiliza únicamente lecturas `good`; las
 `suspect` se mantienen para auditoría y revisión, pero no intervienen en la
 estimación de altura ni de período.
+`GET /api/v1/buoys/{id}/wave-analysis` devuelve estimaciones experimentales de
+altura y período a partir del movimiento vertical de GNSS e IMU. No estima ni
+publica dirección de ola: ese cálculo requiere señales direccionales y
+validación que el contrato actual de telemetría no garantiza. Los requisitos
+para habilitarlo están registrados en
+[ADR-0002](decisions/0002-directional-wave-estimation.md).
 Tampoco participan en la comparación de salud entre canales A/B; se utiliza la
 última lectura no inválida disponible. Esta regla aplica a las familias
 ambientales con `sensor_channel`, no a la batería, que tiene su propia
