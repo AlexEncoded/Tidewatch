@@ -72,7 +72,10 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         "degraded_sensor",
         "missing_sensor_channel",
     ]
-    assert "temperature (A/B delta 0.8 °C; selected B)" in issues[0].message
+    assert (
+        "temperature (A/B delta 0.8 °C > tolerance 0.5 °C; selected B)"
+        in issues[0].message
+    )
 
 
 def test_degraded_sensor_message_does_not_guess_channel_when_delta_is_ambiguous() -> None:
@@ -87,7 +90,10 @@ def test_degraded_sensor_message_does_not_guess_channel_when_delta_is_ambiguous(
 
     issues = build_sensor_health_maintenance_issues("buoy-1", "North buoy", health)
 
-    assert "temperature (A/B delta 1.2 °C; no channel selected)" in issues[0].message
+    assert (
+        "temperature (A/B delta 1.2 °C > tolerance 0.5 °C; no channel selected)"
+        in issues[0].message
+    )
 
 
 def test_device_maintenance_service_reports_stale_physical_units() -> None:

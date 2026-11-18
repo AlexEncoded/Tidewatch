@@ -6,6 +6,7 @@ from datetime import datetime
 from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.buoy import BuoyOperationalStatus
 from ..domain.sensor_health import SensorHealthSnapshot
+from ..domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import MeasuredReading, classify_latest_readings
@@ -88,10 +89,14 @@ def _describe_degraded_sensors(health: SensorHealthSnapshot) -> str:
 
         attribute, unit, family = details
         delta = getattr(health, attribute)
+        threshold = SENSOR_DEGRADATION_THRESHOLDS[sensor]
         decision = (health.decisions or {}).get(family)
         description = sensor
         if delta is not None:
-            description += f" (A/B delta {delta:g} {unit}"
+            description += (
+                f" (A/B delta {delta:g} {unit} > tolerance "
+                f"{threshold:g} {unit}"
+            )
             if decision == "fallback_a":
                 description += "; selected A)"
             elif decision == "fallback_b":

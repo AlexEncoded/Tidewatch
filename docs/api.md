@@ -148,10 +148,10 @@ La métrica Prometheus `tidewatch_sensor_health_decision` expone esa decisión
 actual para dashboards y alertas.
 Una decisión `invalid` mantenida activa durante cinco minutos dispara la alerta
 crítica `TidewatchSensorDecisionInvalid`.
-Las incidencias `degraded_sensor` incluyen el delta A/B con su unidad y la
-decisión de canal cuando está disponible. Si las lecturas divergen pero tienen
-la misma calidad, se indica que no se seleccionó ningún canal; el sistema no
-atribuye la avería a A o B sin evidencia suficiente.
+Las incidencias `degraded_sensor` incluyen el delta A/B, su unidad, la
+tolerancia configurada y la decisión de canal cuando está disponible. Si las
+lecturas divergen pero tienen la misma calidad, se indica que no se seleccionó
+ningún canal; el sistema no atribuye la avería a A o B sin evidencia suficiente.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,
