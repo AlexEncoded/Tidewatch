@@ -69,9 +69,10 @@ def evaluate_maintenance_buoy(
 ) -> MaintenanceBuoyEvaluation:
     """Evaluate all maintenance rules for one buoy through application ports."""
     buoy_id = buoy.buoy_id
-    sensor_health = evaluate_sensor_health_snapshot(
+    sensor_health_snapshot = evaluate_sensor_health_snapshot(
         reader, buoy_id, max_age_minutes * 60, now
-    ).health
+    )
+    sensor_health = sensor_health_snapshot.health
     latest_readings = {
         "temperature": reader.list_temperatures(buoy_id, 1),
         "pressure": reader.list_pressures(buoy_id, 1),
@@ -100,6 +101,7 @@ def evaluate_maintenance_buoy(
         battery_health,
         movement.average_speed_mps,
         device_health,
+        sensor_health_snapshot.last_valid_readings,
     )
     return MaintenanceBuoyEvaluation(
         issues=issues,

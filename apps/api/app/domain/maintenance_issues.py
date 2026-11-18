@@ -1,7 +1,7 @@
 """Application services for maintenance issue classification."""
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.buoy import BuoyOperationalStatus
@@ -68,8 +68,48 @@ _SENSOR_DELTA_DETAILS = {
     ),
 }
 
+_SENSOR_READING_DETAILS = {
+    "temperature": ("temperature", "temperature_celsius", "°C"),
+    "pressure": ("pressure", "pressure_kpa", "kPa"),
+    "salinity": ("salinity", "salinity_psu", "PSU"),
+    "imu": (
+        "imu",
+        ("acceleration_x_mps2", "acceleration_y_mps2", "acceleration_z_mps2"),
+        "m/s²",
+    ),
+    "ambient_light": ("ambient_light", "illuminance_lux", "lux"),
+    "wind_speed": ("wind", "wind_speed_mps", "m/s"),
+    "wind_direction": ("wind", "wind_direction_degrees", "°"),
+    "marine_current_speed": ("marine_current", "current_speed_mps", "m/s"),
+    "marine_current_direction": (
+        "marine_current",
+        "current_direction_degrees",
+        "°",
+    ),
+    "turbidity": ("turbidity", "turbidity_ntu", "NTU"),
+    "dissolved_oxygen": ("dissolved_oxygen", "dissolved_oxygen_mg_l", "mg/L"),
+    "ph": ("ph", "ph", "pH"),
+    "conductivity": ("conductivity", "conductivity_us_cm", "µS/cm"),
+    "chlorophyll_a": ("chlorophyll_a", "chlorophyll_a_ug_l", "µg/L"),
+    "rainfall": ("rainfall", "rainfall_mm_h", "mm/h"),
+    "humidity": ("humidity", "humidity_percent", "%"),
+    "air_temperature": ("air_temperature", "air_temperature_celsius", "°C"),
+    "atmospheric_pressure": (
+        "atmospheric_pressure",
+        "atmospheric_pressure_kpa",
+        "kPa",
+    ),
+    "acoustic_altimeter": ("acoustic_altimeter", "depth_meters", "m"),
+    "underwater_acoustic": ("underwater_acoustic", "echo_intensity_db", "dB"),
+}
 
-def _describe_degraded_sensors(health: SensorHealthSnapshot) -> str:
+
+def _describe_degraded_sensors(
+    health: SensorHealthSnapshot,
+    last_valid_readings: (
+        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+    ) = None,
+) -> str:
     degraded = health.degraded_sensors or []
     descriptions = []
     for sensor in degraded:
@@ -98,13 +138,40 @@ def _describe_degraded_sensors(health: SensorHealthSnapshot) -> str:
                 f"{threshold:g} {unit}"
             )
             if decision == "fallback_a":
-                description += "; selected A)"
+                description += "; selected A"
             elif decision == "fallback_b":
-                description += "; selected B)"
+                description += "; selected B"
             elif decision == "invalid":
-                description += "; no channel selected)"
-            else:
-                description += ")"
+                description += "; no channel selected"
+        reading_details = _SENSOR_READING_DETAILS.get(sensor)
+        if reading_details is not None and last_valid_readings is not None:
+            reading_family, value_attribute, reading_unit = reading_details
+            channel_values = []
+            for channel, samples in last_valid_readings.get(reading_family, {}).items():
+                sample = samples[0] if samples else None
+                if isinstance(value_attribute, tuple):
+                    components = [getattr(sample, name, None) for name in value_attribute]
+                    value = (
+                        "(" + ", ".join(
+                            f"{component:g}" for component in components
+                        ) + ")"
+                        if all(component is not None for component in components)
+                        else None
+                    )
+                else:
+                    value = getattr(sample, value_attribute, None)
+                measured_at = getattr(sample, "measured_at", None)
+                if value is None or measured_at is None:
+                    continue
+                if measured_at.tzinfo is None:
+                    measured_at = measured_at.replace(tzinfo=timezone.utc)
+                channel_values.append(
+                    f"{channel}={value} {reading_unit} at {measured_at.isoformat()}"
+                )
+            if channel_values:
+                description += f"; last good: {', '.join(channel_values)}"
+        if delta is not None:
+            description += ")"
         descriptions.append(description)
     return ", ".join(descriptions)
 
@@ -252,6 +319,9 @@ def build_sensor_health_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
     health: SensorHealthSnapshot,
+    last_valid_readings: (
+        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+    ) = None,
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for degraded or missing sensor channels."""
     if health.status != "degraded":
@@ -265,7 +335,10 @@ def build_sensor_health_maintenance_issues(
                 buoy_name=buoy_name,
                 issue_type="degraded_sensor",
                 severity="warning",
-                message=f"Degraded sensors: {_describe_degraded_sensors(health)}",
+                message=(
+                    "Degraded sensors: "
+                    f"{_describe_degraded_sensors(health, last_valid_readings)}"
+                ),
             )
         )
     if health.missing_sensors:
@@ -320,10 +393,13 @@ def build_maintenance_issues_for_buoy(
     battery_health: BatteryHealthSnapshot,
     average_speed_mps: float | None,
     device_health: Sequence[DeviceHealthSnapshot] = (),
+    last_valid_readings: (
+        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+    ) = None,
 ) -> list[MaintenanceIssueSnapshot]:
     """Compose all maintenance issue types for one buoy snapshot."""
     issues = build_sensor_health_maintenance_issues(
-        buoy_id, buoy_name, sensor_health
+        buoy_id, buoy_name, sensor_health, last_valid_readings
     )
     issues.extend(build_device_maintenance_issues(buoy_id, buoy_name, device_health))
     issues.extend(build_reading_quality_issues(buoy_id, buoy_name, latest_readings))

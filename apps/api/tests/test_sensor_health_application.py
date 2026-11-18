@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +13,7 @@ from app.application.sensor_health import (
     persist_sensor_health_check,
 )
 from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
+from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth, SensorHealthCheck
 
 
@@ -99,6 +100,38 @@ def test_sensor_health_application_service_maps_a_complete_snapshot() -> None:
     assert snapshot.health.buoy_id == "buoy-1"
     assert snapshot.health.status == "insufficient_data"
     assert snapshot.readings["temperature"]["A"] == []
+
+
+def test_sensor_health_snapshot_preserves_latest_good_reading_beyond_age_window() -> None:
+    now = datetime(2026, 11, 12, tzinfo=timezone.utc)
+    last_good = TemperatureTelemetrySnapshot(
+        buoy_id="buoy-1",
+        temperature_celsius=18.5,
+        measured_at=now - timedelta(hours=2),
+        sensor_channel="A",
+    )
+    suspect = TemperatureTelemetrySnapshot(
+        buoy_id="buoy-1",
+        temperature_celsius=20.0,
+        measured_at=now,
+        sensor_channel="A",
+        quality="suspect",
+    )
+
+    class Reader:
+        def __getattr__(self, name):
+            if name == "list_temperatures":
+                return lambda buoy_id, limit, channel: (
+                    [suspect, last_good] if channel == "A" else []
+                )
+            if name.startswith("list_"):
+                return lambda buoy_id, limit, channel: []
+            raise AttributeError(name)
+
+    snapshot = evaluate_sensor_health_snapshot(Reader(), "buoy-1", 60, now)
+
+    assert snapshot.readings["temperature"]["A"] == [suspect]
+    assert snapshot.last_valid_readings["temperature"]["A"] == [last_good]
 
 
 def test_sensor_health_check_orchestrates_buoy_validation_evaluation_metrics_and_write() -> None:

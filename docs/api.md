@@ -152,6 +152,9 @@ Las incidencias `degraded_sensor` incluyen el delta A/B, su unidad, la
 tolerancia configurada y la decisión de canal cuando está disponible. Si las
 lecturas divergen pero tienen la misma calidad, se indica que no se seleccionó
 ningún canal; el sistema no atribuye la avería a A o B sin evidencia suficiente.
+Cuando existe, la incidencia también incluye la última lectura `good` de cada
+canal, con su valor y timestamp, aunque ya no esté dentro de la ventana usada
+para evaluar la salud actual.
 
 El resumen de cada boya también incluye las lecturas redundantes más recientes
 como `latest_temperature_a`/`latest_temperature_b`,

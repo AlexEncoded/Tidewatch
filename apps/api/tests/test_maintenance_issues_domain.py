@@ -9,6 +9,7 @@ from app.domain.maintenance_issues import (
 )
 from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.device_health import DeviceHealthSnapshot
+from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth
 
 
@@ -54,6 +55,7 @@ def test_operational_maintenance_service_reports_silence_and_drift() -> None:
 
 
 def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
+    checked_at = datetime(2026, 11, 12, tzinfo=timezone.utc)
     health = SensorHealth(
         buoy_id="buoy-1",
         status="degraded",
@@ -61,11 +63,23 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         missing_sensors=["pressure:B"],
         temperature_delta_celsius=0.8,
         decisions={"temperature": "fallback_b"},
-        checked_at=datetime.now(timezone.utc),
+        checked_at=checked_at,
     )
+    last_valid_readings = {
+        "temperature": {
+            "A": [TemperatureTelemetrySnapshot(
+                buoy_id="buoy-1", temperature_celsius=18.5,
+                measured_at=checked_at - timedelta(hours=2), sensor_channel="A",
+            )],
+            "B": [TemperatureTelemetrySnapshot(
+                buoy_id="buoy-1", temperature_celsius=19.0,
+                measured_at=checked_at - timedelta(minutes=1), sensor_channel="B",
+            )],
+        }
+    }
 
     issues = build_sensor_health_maintenance_issues(
-        "buoy-1", "North buoy", health
+        "buoy-1", "North buoy", health, last_valid_readings
     )
 
     assert [issue.issue_type for issue in issues] == [
@@ -73,9 +87,11 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         "missing_sensor_channel",
     ]
     assert (
-        "temperature (A/B delta 0.8 °C > tolerance 0.5 °C; selected B)"
+        "temperature (A/B delta 0.8 °C > tolerance 0.5 °C; selected B;"
         in issues[0].message
     )
+    assert "last good: A=18.5 °C at 2026-11-11T22:00:00+00:00" in issues[0].message
+    assert "B=19.0 °C at 2026-11-11T23:59:00+00:00" in issues[0].message
 
 
 def test_degraded_sensor_message_does_not_guess_channel_when_delta_is_ambiguous() -> None:

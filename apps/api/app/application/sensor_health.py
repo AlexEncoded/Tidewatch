@@ -60,6 +60,7 @@ class SensorHealthSnapshot:
     deltas: dict[SensorHealthDeltaName, float | None]
     evaluation: SensorHealthEvaluation
     health: DomainSensorHealthSnapshot
+    last_valid_readings: SensorHealthReadings
 
 
 def assess_sensor_health(
@@ -77,7 +78,9 @@ def evaluate_sensor_health_snapshot(
     now: datetime,
 ) -> SensorHealthSnapshot:
     """Collect, compare and map a buoy's redundant sensor readings."""
-    readings = collect_sensor_readings(reader, buoy_id, max_age_seconds, now)
+    readings, last_valid_readings = _collect_sensor_readings(
+        reader, buoy_id, max_age_seconds, now
+    )
     deltas = calculate_sensor_health_deltas(readings)
     latest_by_channel = {
         family: {
@@ -115,7 +118,9 @@ def evaluate_sensor_health_snapshot(
         decisions=evaluation.decisions,
         checked_at=now,
     )
-    return SensorHealthSnapshot(readings, deltas, evaluation, health)
+    return SensorHealthSnapshot(
+        readings, deltas, evaluation, health, last_valid_readings
+    )
 
 
 def persist_sensor_health_check(
@@ -179,14 +184,30 @@ def collect_sensor_readings(
     now: datetime,
 ) -> SensorHealthReadings:
     """Load the latest usable A/B reading for every supported sensor family."""
+    return _collect_sensor_readings(reader, buoy_id, max_age_seconds, now)[0]
+
+
+def _collect_sensor_readings(
+    reader: SensorHealthReader,
+    buoy_id: str,
+    max_age_seconds: float,
+    now: datetime,
+) -> tuple[SensorHealthReadings, SensorHealthReadings]:
+    """Collect current usable readings and each channel's latest good sample."""
     readings: SensorHealthReadings = {}
+    last_valid_readings: SensorHealthReadings = {}
     channels: tuple[SensorChannel, ...] = ("A", "B")
     for batch_family, sensor_family in SENSOR_HEALTH_READING_FAMILIES:
         list_readings = getattr(reader, f"list_{batch_family}")
-        readings[sensor_family] = {
-            channel: latest_usable_reading(
-                list_readings(buoy_id, 50, channel), max_age_seconds, now
+        readings[sensor_family] = {}
+        last_valid_readings[sensor_family] = {}
+        for channel in channels:
+            samples = list_readings(buoy_id, 50, channel)
+            readings[sensor_family][channel] = latest_usable_reading(
+                samples, max_age_seconds, now
             )
-            for channel in channels
-        }
-    return readings
+            good_samples = [sample for sample in samples if sample.quality == "good"]
+            last_valid_readings[sensor_family][channel] = latest_usable_reading(
+                good_samples, now=now
+            )
+    return readings, last_valid_readings
