@@ -18,6 +18,13 @@ dirección de relaciones espectrales entre movimiento de la boya y sus ejes
 horizontal/vertical ([FAQ de NDBC](https://www.ndbc.noaa.gov/faq/wave.shtml),
 [procedimientos de análisis](https://www.ndbc.noaa.gov/wavemeas.pdf)).
 
+La configuración actual tampoco es una fuente válida para validar esa
+capacidad: el simulador envía una muestra cada 10 segundos por defecto para una
+onda sintética de 30 segundos y genera coordenadas horizontales con offsets
+aleatorios de hasta 0,00002° (aproximadamente 2,2 m norte/sur y 1,8 m este/oeste
+a la latitud simulada). Esa variación no representa el desplazamiento horizontal
+de una boya causado por el oleaje.
+
 ## Decisión
 
 No publicar una dirección de oleaje derivada de las señales actuales. Mantener
@@ -40,6 +47,9 @@ dirección media de movimiento de la boya como dirección de ola.
   sin energía direccional suficiente.
 - Casos sintéticos para comprobar el cálculo y sus límites; no cuentan como
   validación física.
+- La simulación direccional deberá generar series sincronizadas con resolución
+  temporal suficiente y desplazamientos horizontales derivados de una
+  propagación definida, sin reutilizar jitter de posición aleatorio como señal.
 - Comparación de campo con una boya direccional de referencia en condiciones
   representativas antes de etiquetar el resultado como operativo.
 - Respuesta API y métricas distinguen falta de datos y desacuerdo entre fuentes

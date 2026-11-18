@@ -25,12 +25,16 @@ packet-loss, latency, RSSI and SNR
 measurements for each unit every ten seconds. Ambient light follows a simple
 UTC day/night curve; wind and current direction and speed vary slightly between
 redundant units. New simulator buoys start near latitude 36, longitude -5;
-GNSS fixes remain close to that simulated origin. GNSS altitude and vertical
-IMU acceleration share a reproducible 30-second wave component for exercising
-the experimental wave-analysis endpoint; simulator data is not field calibration
-evidence. It uses the batch telemetry endpoint and works with both
-synchronous and queued ingestion; in queued mode it prints each returned job
-ID.
+GNSS fixes add independent random offsets up to 0.00002° per axis (about 2.2 m
+north/south and 1.8 m east/west at the simulated latitude). This jitter is not
+buoy wave displacement and must not be used to infer wave direction. GNSS
+altitude and vertical IMU acceleration share a reproducible 30-second wave
+component for exercising the experimental wave-analysis endpoint. With the
+default 10-second simulator interval, that component has only three nominal
+samples per period; use denser synthetic test windows to exercise signal
+processing. Neither simulated output is field calibration evidence. The
+simulator uses the batch telemetry endpoint and works with both synchronous
+and queued ingestion; in queued mode it prints each returned job ID.
 
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with
