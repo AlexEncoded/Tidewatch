@@ -616,6 +616,21 @@ def test_sensor_health_invalidates_degraded_redundant_channels() -> None:
     assert decide_channel(True, True, degraded=True) == "invalid"
 
 
+def test_sensor_health_falls_back_to_better_quality_channel() -> None:
+    evaluation = evaluate_sensor_health(
+        {"temperature": 0.6},
+        {
+            "temperature": {
+                "A": SimpleNamespace(quality="suspect"),
+                "B": SimpleNamespace(quality="good"),
+            }
+        },
+    )
+
+    assert evaluation.degraded_sensors == ["temperature"]
+    assert evaluation.decisions == {"temperature": "fallback_b"}
+
+
 def test_sensor_health_falls_back_to_available_channel() -> None:
     assert decide_channel(True, False) == "fallback_a"
     assert decide_channel(False, True) == "fallback_b"

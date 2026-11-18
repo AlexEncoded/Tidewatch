@@ -8,8 +8,8 @@ or decisions.
 Current rules include:
 
 - redundant sensor channel decisions and completeness;
-- fleet summaries prefer the channel with better reading quality and retain A
-  as the tie-breaker;
+- fleet summaries and persisted health decisions prefer the channel with better
+  reading quality and retain A as the tie-breaker;
 - missing-channel evaluation handles omitted A/B keys and rejects unknown
   physical channels;
 - sensor health delta calculations, thresholds, and aggregate status. The

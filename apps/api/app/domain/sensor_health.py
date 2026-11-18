@@ -12,6 +12,8 @@ from .sensor_health_rules import (
     degraded_sensor_names,
 )
 from .sensor_status import SensorHealthStatus, sensor_health_status
+from .sensor_selection import preferred_sensor_channel
+from .reading_quality import ReadingQuality
 
 
 ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
@@ -68,9 +70,17 @@ def decide_channel(
     has_a: bool,
     has_b: bool,
     degraded: bool = False,
+    quality_a: ReadingQuality = "good",
+    quality_b: ReadingQuality = "good",
 ) -> ChannelDecision:
     """Choose how the redundant sensor channels should be consumed."""
     if has_a and has_b:
+        if quality_a != quality_b:
+            return (
+                "fallback_b"
+                if preferred_sensor_channel(quality_a, quality_b) == "B"
+                else "fallback_a"
+            )
         return "invalid" if degraded else "average"
     if has_a:
         return "fallback_a"
@@ -92,6 +102,8 @@ def evaluate_sensor_health(
             bool(channels.get("A")),
             bool(channels.get("B")),
             sensor in degraded_sensors,
+            getattr(channels.get("A"), "quality", "good"),
+            getattr(channels.get("B"), "quality", "good"),
         )
         for sensor, channels in sensor_readings.items()
     }

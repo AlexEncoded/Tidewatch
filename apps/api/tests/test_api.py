@@ -2341,6 +2341,35 @@ def test_sensor_health_compares_redundant_air_temperature() -> None:
     assert health.json()["decisions"]["air_temperature"] == "average"
 
 
+def test_sensor_health_decision_uses_the_better_quality_channel() -> None:
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "Quality Selection Buoy"}
+    ).json()["id"]
+    for channel, quality, temperature in (
+        ("A", "suspect", 18.5),
+        ("B", "good", 18.6),
+    ):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/temperatures",
+            json={
+                "temperature_celsius": temperature,
+                "sensor_channel": channel,
+                "quality": quality,
+            },
+        )
+        assert response.status_code == 201
+
+    health = client.post(f"/api/v1/buoys/{buoy_id}/sensor-health/check")
+
+    assert health.status_code == 201
+    assert health.json()["decisions"]["temperature"] == "fallback_b"
+    history = client.get(
+        f"/api/v1/buoys/{buoy_id}/sensor-health/history"
+    )
+    assert history.status_code == 200
+    assert history.json()[0]["decisions"]["temperature"] == "fallback_b"
+
+
 def test_sensor_health_compares_redundant_humidity() -> None:
     buoy_id = client.post("/api/v1/buoys", json={"name": "Humidity Health Buoy"}).json()["id"]
     for channel, value in (("A", 75.0), ("B", 78.0)):

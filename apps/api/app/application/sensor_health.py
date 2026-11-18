@@ -79,7 +79,14 @@ def evaluate_sensor_health_snapshot(
     """Collect, compare and map a buoy's redundant sensor readings."""
     readings = collect_sensor_readings(reader, buoy_id, max_age_seconds, now)
     deltas = calculate_sensor_health_deltas(readings)
-    evaluation = assess_sensor_health(deltas, readings)
+    latest_by_channel = {
+        family: {
+            channel: channel_readings[0] if channel_readings else None
+            for channel, channel_readings in channels.items()
+        }
+        for family, channels in readings.items()
+    }
+    evaluation = assess_sensor_health(deltas, latest_by_channel)
     health = DomainSensorHealthSnapshot(
         buoy_id=buoy_id,
         status=evaluation.status,

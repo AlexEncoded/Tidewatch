@@ -141,6 +141,9 @@ La evaluación persistente se solicita con `POST /sensor-health/check`; el
 histórico se consulta con `GET /sensor-health/history?limit=50`.
 Cada evaluación guarda también la decisión por familia: `average`,
 `fallback_a`, `fallback_b` o `invalid`.
+Cuando ambos canales están disponibles pero uno tiene mejor `quality`, la
+decisión usa ese canal como fallback; si la calidad coincide, el sistema
+promedia cuando el delta está dentro del umbral y marca `invalid` si lo supera.
 La métrica Prometheus `tidewatch_sensor_health_decision` expone esa decisión
 actual para dashboards y alertas.
 Una decisión `invalid` mantenida activa durante cinco minutos dispara la alerta
