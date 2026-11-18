@@ -1,6 +1,10 @@
+from dataclasses import fields
 from datetime import datetime, timedelta, timezone
+from importlib import import_module
 
+from app.application.sensor_health import SENSOR_HEALTH_READING_FAMILIES
 from app.domain.maintenance_issues import (
+    _SENSOR_READING_DETAILS,
     build_battery_maintenance_issues,
     build_device_maintenance_issues,
     build_maintenance_issues_for_buoy,
@@ -9,8 +13,58 @@ from app.domain.maintenance_issues import (
 )
 from app.domain.battery_health import BatteryHealthSnapshot
 from app.domain.device_health import DeviceHealthSnapshot
+from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth
+
+
+def test_degraded_sensor_reading_details_cover_every_health_delta() -> None:
+    snapshot_types = {
+        "temperature": ("temperature", "TemperatureTelemetrySnapshot"),
+        "pressure": ("pressure", "PressureTelemetrySnapshot"),
+        "salinity": ("salinity", "SalinityTelemetrySnapshot"),
+        "imu": ("imu", "ImuTelemetrySnapshot"),
+        "ambient_light": ("ambient_light", "AmbientLightTelemetrySnapshot"),
+        "wind": ("wind", "WindTelemetrySnapshot"),
+        "marine_current": ("marine_current", "MarineCurrentTelemetrySnapshot"),
+        "turbidity": ("turbidity", "TurbidityTelemetrySnapshot"),
+        "dissolved_oxygen": (
+            "dissolved_oxygen",
+            "DissolvedOxygenTelemetrySnapshot",
+        ),
+        "ph": ("ph", "PHTelemetrySnapshot"),
+        "conductivity": ("conductivity", "ConductivityTelemetrySnapshot"),
+        "chlorophyll_a": ("chlorophyll_a", "ChlorophyllATelemetrySnapshot"),
+        "rainfall": ("rainfall", "RainfallTelemetrySnapshot"),
+        "humidity": ("humidity", "HumidityTelemetrySnapshot"),
+        "air_temperature": ("air_temperature", "AirTemperatureTelemetrySnapshot"),
+        "atmospheric_pressure": (
+            "atmospheric_pressure",
+            "AtmosphericPressureTelemetrySnapshot",
+        ),
+        "acoustic_altimeter": (
+            "acoustic_altimeter",
+            "AcousticAltimeterTelemetrySnapshot",
+        ),
+        "underwater_acoustic": (
+            "underwater_acoustic",
+            "UnderwaterAcousticTelemetrySnapshot",
+        ),
+    }
+    supported_families = {family for _, family in SENSOR_HEALTH_READING_FAMILIES}
+
+    assert set(_SENSOR_READING_DETAILS) == set(SENSOR_DEGRADATION_THRESHOLDS)
+    for sensor, (family, value_attributes, _) in _SENSOR_READING_DETAILS.items():
+        assert family in supported_families
+        module_name, class_name = snapshot_types[family]
+        snapshot_type = getattr(import_module(f"app.domain.{module_name}"), class_name)
+        available_fields = {field.name for field in fields(snapshot_type)}
+        attributes = (
+            value_attributes
+            if isinstance(value_attributes, tuple)
+            else (value_attributes,)
+        )
+        assert set(attributes) <= available_fields, sensor
 
 
 def test_battery_maintenance_service_reports_low_and_missing_units() -> None:
