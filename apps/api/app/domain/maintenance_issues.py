@@ -9,11 +9,99 @@ from ..domain.sensor_health import SensorHealthSnapshot
 from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
 from ..domain.device_health import DeviceHealthSnapshot
 from ..domain.reading_quality import MeasuredReading, classify_latest_readings
+from ..domain.sensor_health import SensorHealthSnapshot
 from ..domain.maintenance import (
     MaintenanceIssueSnapshot,
     low_battery_severity,
     missing_redundant_battery_device,
 )
+
+_SENSOR_DELTA_DETAILS = {
+    "temperature": ("temperature_delta_celsius", "°C", "temperature"),
+    "pressure": ("pressure_delta_kpa", "kPa", "pressure"),
+    "salinity": ("salinity_delta_psu", "PSU", "salinity"),
+    "imu": ("imu_acceleration_delta_mps2", "m/s²", "imu"),
+    "ambient_light": ("ambient_light_delta_lux", "lux", "ambient_light"),
+    "wind_speed": ("wind_speed_delta_mps", "m/s", "wind"),
+    "wind_direction": ("wind_direction_delta_degrees", "°", "wind"),
+    "marine_current_speed": (
+        "marine_current_speed_delta_mps",
+        "m/s",
+        "marine_current",
+    ),
+    "marine_current_direction": (
+        "marine_current_direction_delta_degrees",
+        "°",
+        "marine_current",
+    ),
+    "turbidity": ("turbidity_delta_ntu", "NTU", "turbidity"),
+    "dissolved_oxygen": (
+        "dissolved_oxygen_delta_mg_l",
+        "mg/L",
+        "dissolved_oxygen",
+    ),
+    "ph": ("ph_delta", "pH", "ph"),
+    "conductivity": ("conductivity_delta_us_cm", "µS/cm", "conductivity"),
+    "chlorophyll_a": ("chlorophyll_a_delta_ug_l", "µg/L", "chlorophyll_a"),
+    "rainfall": ("rainfall_delta_mm_h", "mm/h", "rainfall"),
+    "humidity": ("humidity_delta_percent", "percentage points", "humidity"),
+    "air_temperature": (
+        "air_temperature_delta_celsius",
+        "°C",
+        "air_temperature",
+    ),
+    "atmospheric_pressure": (
+        "atmospheric_pressure_delta_kpa",
+        "kPa",
+        "atmospheric_pressure",
+    ),
+    "acoustic_altimeter": (
+        "acoustic_altimeter_delta_meters",
+        "m",
+        "acoustic_altimeter",
+    ),
+    "underwater_acoustic": (
+        "underwater_acoustic_delta_db",
+        "dB",
+        "underwater_acoustic",
+    ),
+}
+
+
+def _describe_degraded_sensors(health: SensorHealthSnapshot) -> str:
+    degraded = health.degraded_sensors or []
+    descriptions = []
+    for sensor in degraded:
+        details = _SENSOR_DELTA_DETAILS.get(sensor)
+        if details is None:
+            if sensor == "wind" and any(
+                name in degraded for name in ("wind_speed", "wind_direction")
+            ):
+                continue
+            if sensor == "marine_current" and any(
+                name in degraded
+                for name in ("marine_current_speed", "marine_current_direction")
+            ):
+                continue
+            descriptions.append(sensor)
+            continue
+
+        attribute, unit, family = details
+        delta = getattr(health, attribute)
+        decision = (health.decisions or {}).get(family)
+        description = sensor
+        if delta is not None:
+            description += f" (A/B delta {delta:g} {unit}"
+            if decision == "fallback_a":
+                description += "; selected A)"
+            elif decision == "fallback_b":
+                description += "; selected B)"
+            elif decision == "invalid":
+                description += "; no channel selected)"
+            else:
+                description += ")"
+        descriptions.append(description)
+    return ", ".join(descriptions)
 
 
 def build_reading_quality_issues(
@@ -172,7 +260,7 @@ def build_sensor_health_maintenance_issues(
                 buoy_name=buoy_name,
                 issue_type="degraded_sensor",
                 severity="warning",
-                message=f"Degraded sensors: {', '.join(health.degraded_sensors)}",
+                message=f"Degraded sensors: {_describe_degraded_sensors(health)}",
             )
         )
     if health.missing_sensors:

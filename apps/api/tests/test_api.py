@@ -2433,6 +2433,7 @@ def test_maintenance_issues_reports_degraded_sensor() -> None:
     assert issues.status_code == 200
     assert issues.json()[0]["issue_type"] == "degraded_sensor"
     assert issues.json()[0]["buoy_id"] == buoy_id
+    assert "temperature (A/B delta 1 °C; no channel selected)" in issues.json()[0]["message"]
 
 
 def test_invalid_reading_is_ignored_by_sensor_health_comparison() -> None:

@@ -59,6 +59,8 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         status="degraded",
         degraded_sensors=["temperature"],
         missing_sensors=["pressure:B"],
+        temperature_delta_celsius=0.8,
+        decisions={"temperature": "fallback_b"},
         checked_at=datetime.now(timezone.utc),
     )
 
@@ -70,6 +72,22 @@ def test_sensor_health_maintenance_service_reports_degraded_channels() -> None:
         "degraded_sensor",
         "missing_sensor_channel",
     ]
+    assert "temperature (A/B delta 0.8 °C; selected B)" in issues[0].message
+
+
+def test_degraded_sensor_message_does_not_guess_channel_when_delta_is_ambiguous() -> None:
+    health = SensorHealth(
+        buoy_id="buoy-1",
+        status="degraded",
+        degraded_sensors=["temperature"],
+        temperature_delta_celsius=1.2,
+        decisions={"temperature": "invalid"},
+        checked_at=datetime.now(timezone.utc),
+    )
+
+    issues = build_sensor_health_maintenance_issues("buoy-1", "North buoy", health)
+
+    assert "temperature (A/B delta 1.2 °C; no channel selected)" in issues[0].message
 
 
 def test_device_maintenance_service_reports_stale_physical_units() -> None:
