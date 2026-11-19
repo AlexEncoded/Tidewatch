@@ -54,6 +54,8 @@ Current rules include:
 - scalar, vector, and circular direction differences;
 - movement, pressure, temperature, battery, and wave estimates; temperature
   analyses exclude invalid-quality readings and enforce the physical range;
+- an offline GNSS eta/u/v directional-wave prototype that evaluates the mean
+  direction at peak elevation frequency without being wired to an API route;
 - temperature-anomaly classification builds alert snapshots only from complete
   anomalous results;
 - GNSS/IMU synchronization filters quality and restricts fused estimates to

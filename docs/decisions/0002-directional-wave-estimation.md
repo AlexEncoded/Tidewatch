@@ -49,6 +49,14 @@ sintética. Esto prepara el contrato y permite comprobar el transporte de datos;
 no demuestra que la velocidad GNSS real tenga la resolución, frecuencia ni
 calidad necesarias.
 
+Se añadió un prototipo offline `wave_direction_experiment.py` basado en
+espectros de elevación y velocidades horizontales GNSS (`eta/u/v`). Calcula la
+dirección media del primer momento en la frecuencia de máxima energía de
+elevación, con Welch y sin interpolar huecos. No reconstruye el espectro
+direccional completo, no está conectado a la API y solo se ha probado con ondas
+sintéticas. El umbral de concentración es heurístico, no un criterio de calidad
+validado.
+
 La estimación deberá especificar orientación (desde/hacia y referencia norte),
 tratamiento de gaps y calidad, y método espectral. No se aceptará solamente una
 dirección media de movimiento de la boya como dirección de ola.
