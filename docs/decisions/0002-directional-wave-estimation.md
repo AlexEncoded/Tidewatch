@@ -26,10 +26,10 @@ a la latitud simulada). Esa variación no representa el desplazamiento horizonta
 de una boya causado por el oleaje.
 
 El simulador ofrece ahora un modo opt-in (`--wave-direction-degrees`) que
-genera un componente horizontal sintético sincronizado con la señal vertical y
-requiere un intervalo máximo de 3 segundos. Sirve para preparar y probar
-entradas del futuro cálculo; no añade una estimación direccional al API ni
-cuenta como validación científica.
+genera una propagación sintética hacia un rumbo conocido, sincroniza la
+velocidad horizontal con la elevación y requiere un intervalo máximo de 3
+segundos. Sirve para preparar y probar entradas del futuro cálculo; no añade
+una estimación direccional al API ni cuenta como validación científica.
 
 ## Decisión
 

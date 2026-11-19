@@ -38,8 +38,9 @@ and queued ingestion; in queued mode it prints each returned job ID.
 
 To generate an opt-in horizontal test signal, run for example
 `python scripts/telemetry_simulator.py --wave-direction-degrees 120 --interval 1`.
-The bearing is a synthetic displacement axis measured clockwise from north;
-the simulator synchronizes it with the vertical wave component and suppresses
+The bearing is the synthetic propagation direction **towards**, measured
+clockwise from north. The simulator synchronizes horizontal velocity with the
+vertical elevation signal and suppresses
 the usual random GNSS position jitter. It also emits east, north and up GNSS
 velocity components derived from the synthetic path. This is input for future
 directional processing only: the API does not estimate wave direction from it,

@@ -178,7 +178,7 @@ def build_payloads(
                 * wave_angular_frequency**2
                 * math.sin(device_wave_phase)
             )
-            horizontal_displacement = (
+            horizontal_displacement = -(
                 SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
                 * math.cos(device_wave_phase)
             )
@@ -186,7 +186,7 @@ def build_payloads(
             north_displacement = horizontal_displacement * math.cos(direction_radians)
             east_displacement = horizontal_displacement * math.sin(direction_radians)
             horizontal_velocity = (
-                -SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
+                SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
                 * wave_angular_frequency
                 * math.sin(device_wave_phase)
             )
@@ -429,7 +429,7 @@ def parse_args() -> argparse.Namespace:
         "--wave-direction-degrees",
         type=float,
         help=(
-            "Generate synthetic horizontal wave displacement along this bearing "
+            "Generate a synthetic wave propagating toward this compass bearing "
             "(0=north, clockwise); requires --interval <= 3 seconds"
         ),
     )

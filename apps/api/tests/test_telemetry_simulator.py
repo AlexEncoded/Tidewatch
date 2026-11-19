@@ -7,6 +7,10 @@ import sys
 import pytest
 
 from app.domain.wave import estimate_fused_wave_period
+from app.domain.wave_direction_experiment import (
+    WaveDirectionSample,
+    estimate_mean_direction_at_peak_frequency,
+)
 from app.schemas.ingestion import TelemetryBatchCreate
 
 
@@ -209,10 +213,10 @@ def test_simulator_directional_wave_adds_coherent_horizontal_gnss_motion() -> No
         wave_direction_degrees=0,
     )["A"]
 
-    assert north_payload["location"]["latitude"] > SIMULATOR.SIMULATED_LATITUDE
+    assert north_payload["location"]["latitude"] < SIMULATOR.SIMULATED_LATITUDE
     assert north_payload["location"]["longitude"] == SIMULATOR.SIMULATED_LONGITUDE
     assert east_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
-    assert east_payload["location"]["longitude"] > SIMULATOR.SIMULATED_LONGITUDE
+    assert east_payload["location"]["longitude"] < SIMULATOR.SIMULATED_LONGITUDE
     assert north_payload["location"]["altitude_meters"] == 2.0
     assert north_payload["location"]["velocity_east_mps"] == 0.0
     assert north_payload["location"]["velocity_north_mps"] == 0.0
@@ -225,7 +229,7 @@ def test_simulator_directional_wave_adds_coherent_horizontal_gnss_motion() -> No
     )
     assert quarter_period_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
     assert quarter_period_payload["location"]["altitude_meters"] == 2.2
-    assert quarter_period_payload["location"]["velocity_north_mps"] < 0
+    assert quarter_period_payload["location"]["velocity_north_mps"] > 0
     assert quarter_period_payload["location"]["velocity_up_mps"] == pytest.approx(0)
     assert (
         north_payload["location"]["measured_at"]
@@ -281,6 +285,41 @@ def test_dense_directional_wave_series_keeps_its_horizontal_axis() -> None:
         axis_degrees = math.degrees(math.atan2(east_meters, north_meters)) % 180
         angular_error = abs(axis_degrees - expected_axis_degrees)
         assert min(angular_error, 180 - angular_error) <= 20
+
+
+def test_directional_simulator_bearing_matches_offline_estimator() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+    expected_bearing = 120
+    samples = []
+
+    for offset in range(512):
+        measured_at = origin + timedelta(seconds=offset)
+        location = SIMULATOR.build_payloads(
+            devices,
+            measured_at,
+            device_b_clock_offset_seconds=0,
+            wave_direction_degrees=expected_bearing,
+        )["A"]["location"]
+        samples.append(
+            WaveDirectionSample(
+                measured_at=measured_at,
+                elevation_m=location["altitude_meters"],
+                velocity_east_mps=location["velocity_east_mps"],
+                velocity_north_mps=location["velocity_north_mps"],
+            )
+        )
+
+    estimate = estimate_mean_direction_at_peak_frequency(
+        samples,
+        minimum_frequency_hz=0.02,
+        maximum_frequency_hz=0.2,
+        segment_length=128,
+    )
+
+    assert estimate.mean_direction_towards_degrees == pytest.approx(
+        expected_bearing, abs=1
+    )
 
 
 def test_directional_simulator_velocities_match_position_derivatives() -> None:
