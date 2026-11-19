@@ -283,6 +283,52 @@ def test_dense_directional_wave_series_keeps_its_horizontal_axis() -> None:
         assert min(angular_error, 180 - angular_error) <= 20
 
 
+def test_directional_simulator_velocities_match_position_derivatives() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+    samples = [
+        SIMULATOR.build_payloads(
+            devices,
+            origin + timedelta(seconds=offset),
+            device_b_clock_offset_seconds=0,
+            wave_direction_degrees=120,
+        )["A"]["location"]
+        for offset in range(31)
+    ]
+
+    def horizontal_meters(location: dict, axis: str) -> float:
+        if axis == "north":
+            return (
+                math.radians(location["latitude"] - SIMULATOR.SIMULATED_LATITUDE)
+                * SIMULATOR.EARTH_RADIUS_METERS
+            )
+        return (
+            math.radians(location["longitude"] - SIMULATOR.SIMULATED_LONGITUDE)
+            * SIMULATOR.EARTH_RADIUS_METERS
+            * math.cos(math.radians(SIMULATOR.SIMULATED_LATITUDE))
+        )
+
+    for previous, current in zip(samples, samples[1:]):
+        for axis in ("east", "north"):
+            displacement = horizontal_meters(current, axis) - horizontal_meters(
+                previous, axis
+            )
+            expected_velocity = (
+                previous[f"velocity_{axis}_mps"] + current[f"velocity_{axis}_mps"]
+            ) / 2
+            assert displacement == pytest.approx(expected_velocity, abs=0.001)
+
+        vertical_displacement = (
+            current["altitude_meters"] - previous["altitude_meters"]
+        )
+        expected_vertical_velocity = (
+            previous["velocity_up_mps"] + current["velocity_up_mps"]
+        ) / 2
+        assert vertical_displacement == pytest.approx(
+            expected_vertical_velocity, abs=0.001
+        )
+
+
 def test_simulated_gnss_and_imu_fuse_to_the_configured_wave_period() -> None:
     devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
     origin = datetime.fromtimestamp(0, timezone.utc)

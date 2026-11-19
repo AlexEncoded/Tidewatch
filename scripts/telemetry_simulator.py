@@ -166,7 +166,9 @@ def build_payloads(
         velocity_north_mps = None
         velocity_up_mps = None
         speed_mps = random.uniform(0.0, 0.2)
+        coordinate_precision = 6
         if wave_direction_degrees is not None:
+            coordinate_precision = 8
             device_wave_phase = wave_angular_frequency * sample_time.timestamp()
             device_wave_displacement = (
                 SIMULATED_WAVE_AMPLITUDE_METERS * math.sin(device_wave_phase)
@@ -206,8 +208,8 @@ def build_payloads(
         payloads[channel] = {
             "device_id": device["device_id"],
             "location": {
-                "latitude": round(location_latitude, 6),
-                "longitude": round(location_longitude, 6),
+                "latitude": round(location_latitude, coordinate_precision),
+                "longitude": round(location_longitude, coordinate_precision),
                 "altitude_meters": round(
                     SIMULATED_BUOY_REFERENCE_ALTITUDE_METERS
                     + device_wave_displacement,

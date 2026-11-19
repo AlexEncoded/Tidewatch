@@ -44,7 +44,9 @@ the usual random GNSS position jitter. It also emits east, north and up GNSS
 velocity components derived from the synthetic path. This is input for future
 directional processing only: the API does not estimate wave direction from it,
 and the generated velocities are not a substitute for receiver-derived GNSS
-velocity or a directional reference buoy.
+velocity or a directional reference buoy. Directional-mode coordinates retain
+eight decimal places so one-second position differences are not hidden by GNSS
+coordinate rounding; the default random mode keeps its existing precision.
 
 Compose also starts `telemetry-queue-worker` from the API image. It polls the
 durable PostgreSQL queue and can be disabled in Helm with
