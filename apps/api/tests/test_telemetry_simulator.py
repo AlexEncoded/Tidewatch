@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import importlib.util
+import math
 from pathlib import Path
 import sys
 
@@ -234,6 +235,41 @@ def test_simulator_directional_wave_requires_dense_sampling() -> None:
             {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}},
             wave_direction_degrees=360,
         )
+
+
+def test_dense_directional_wave_series_keeps_its_horizontal_axis() -> None:
+    devices = {"A": {"device_id": "physical-unit-a", "sensor_channel": "A"}}
+    origin = datetime.fromtimestamp(0, timezone.utc)
+    expected_axis_degrees = 120
+    positions = []
+
+    for offset in range(int(SIMULATOR.SIMULATED_WAVE_PERIOD_SECONDS)):
+        payload = SIMULATOR.build_payloads(
+            devices,
+            origin + timedelta(seconds=offset),
+            device_b_clock_offset_seconds=0,
+            wave_direction_degrees=expected_axis_degrees,
+        )["A"]
+        location = payload["location"]
+        north_meters = (
+            math.radians(location["latitude"] - SIMULATOR.SIMULATED_LATITUDE)
+            * SIMULATOR.EARTH_RADIUS_METERS
+        )
+        east_meters = (
+            math.radians(location["longitude"] - SIMULATOR.SIMULATED_LONGITUDE)
+            * SIMULATOR.EARTH_RADIUS_METERS
+            * math.cos(math.radians(SIMULATOR.SIMULATED_LATITUDE))
+        )
+        displacement = math.hypot(north_meters, east_meters)
+        if displacement >= 0.15:
+            positions.append((north_meters, east_meters))
+        assert location["measured_at"] == payload["imu"][0]["measured_at"]
+
+    assert len(positions) >= 10
+    for north_meters, east_meters in positions:
+        axis_degrees = math.degrees(math.atan2(east_meters, north_meters)) % 180
+        angular_error = abs(axis_degrees - expected_axis_degrees)
+        assert min(angular_error, 180 - angular_error) <= 20
 
 
 def test_simulated_gnss_and_imu_fuse_to_the_configured_wave_period() -> None:
