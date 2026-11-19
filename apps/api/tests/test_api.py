@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta, timezone
+from csv import DictReader
+from io import StringIO
 import logging
 from typing import get_args
 
@@ -1030,6 +1032,17 @@ def test_gnss_metadata_is_persisted_with_location() -> None:
     assert "tidewatch_current_gnss_velocity_up_mps" in metrics.text
     assert "tidewatch_current_gnss_hdop" in metrics.text
     assert "tidewatch_current_gnss_satellites" in metrics.text
+    buoy_export = client.get(f"/api/v1/buoys/{buoy_id}/locations/export")
+    fleet_export = client.get("/api/v1/locations/export")
+    assert buoy_export.status_code == 200
+    assert fleet_export.status_code == 200
+    for export in (buoy_export, fleet_export):
+        rows = list(DictReader(StringIO(export.text)))
+        assert rows[0]["velocity_east_mps"] == "0.6"
+        assert rows[0]["velocity_north_mps"] == "-0.3"
+        assert rows[0]["velocity_up_mps"] == "0.12"
+        assert rows[0]["altitude_meters"] == "2.4"
+        assert rows[0]["satellites"] == "14"
 
 
 def test_movement_analysis_estimates_distance_and_speed() -> None:
@@ -1081,7 +1094,10 @@ def test_movement_analysis_estimates_distance_and_speed() -> None:
     assert export.headers["content-disposition"] == (
         f'attachment; filename="{buoy_id}-locations.csv"'
     )
-    assert export.text.splitlines()[0] == "buoy_id,latitude,longitude,measured_at"
+    assert export.text.splitlines()[0] == (
+        "buoy_id,latitude,longitude,measured_at,altitude_meters,speed_mps,"
+        "velocity_east_mps,velocity_north_mps,velocity_up_mps,hdop,satellites,device_id"
+    )
     assert len(export.text.splitlines()) == 3
     fleet_export = client.get("/api/v1/locations/export?limit=2")
     assert fleet_export.status_code == 200

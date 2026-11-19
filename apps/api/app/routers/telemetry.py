@@ -35,7 +35,21 @@ def export_fleet_locations(
             detail=str(exc),
         ) from exc
     output = StringIO()
-    writer = DictWriter(output, fieldnames=["buoy_id", "latitude", "longitude", "measured_at"])
+    fieldnames = [
+        "buoy_id",
+        "latitude",
+        "longitude",
+        "measured_at",
+        "altitude_meters",
+        "speed_mps",
+        "velocity_east_mps",
+        "velocity_north_mps",
+        "velocity_up_mps",
+        "hdop",
+        "satellites",
+        "device_id",
+    ]
+    writer = DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
     for location in locations:
         writer.writerow(
@@ -44,6 +58,14 @@ def export_fleet_locations(
                 "latitude": location.latitude,
                 "longitude": location.longitude,
                 "measured_at": location.measured_at.isoformat(),
+                "altitude_meters": location.altitude_meters,
+                "speed_mps": location.speed_mps,
+                "velocity_east_mps": location.velocity_east_mps,
+                "velocity_north_mps": location.velocity_north_mps,
+                "velocity_up_mps": location.velocity_up_mps,
+                "hdop": location.hdop,
+                "satellites": location.satellites,
+                "device_id": location.device_id,
             }
         )
     return Response(

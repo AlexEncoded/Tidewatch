@@ -95,7 +95,9 @@ desplazamientos. `location` acepta además los campos opcionales
 `velocity_east_mps`, `velocity_north_mps` y `velocity_up_mps` para conservar la
 velocidad GNSS instantánea en los tres ejes. Los valores se incluyen en el
 histórico de ubicaciones y se exponen como gauges `tidewatch_current_gnss_velocity_*_mps`;
-los clientes antiguos pueden seguir omitiéndolos.
+los clientes antiguos pueden seguir omitiéndolos. Ambas exportaciones CSV de
+ubicaciones incluyen altitud, velocidad, componentes este/norte/arriba, HDOP,
+número de satélites e identificador del dispositivo cuando están disponibles.
 
 Las unidades registradas también pueden incluir `device_runtime` en el lote,
 con `cpu_usage_percent` y `memory_usage_percent` entre 0 y 100. El reporte
