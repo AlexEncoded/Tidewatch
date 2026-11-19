@@ -122,6 +122,44 @@ def test_experimental_direction_removes_linear_sensor_drift() -> None:
     assert result.mean_direction_towards_degrees == pytest.approx(120, abs=0.05)
 
 
+def test_experimental_direction_uses_dominant_frequency_in_mixed_sea() -> None:
+    origin = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    dominant_bearing = math.radians(35)
+    secondary_bearing = math.radians(210)
+    samples = []
+    for index in range(512):
+        dominant = math.cos(2 * math.pi * index / 8)
+        secondary = 0.4 * math.cos(2 * math.pi * index / 4 + 0.7)
+        samples.append(
+            WaveDirectionSample(
+                measured_at=origin + timedelta(seconds=index),
+                elevation_m=dominant + secondary,
+                velocity_east_mps=0.15
+                * (
+                    dominant * math.sin(dominant_bearing)
+                    + secondary * math.sin(secondary_bearing)
+                ),
+                velocity_north_mps=0.15
+                * (
+                    dominant * math.cos(dominant_bearing)
+                    + secondary * math.cos(secondary_bearing)
+                ),
+            )
+        )
+
+    result = estimate_mean_direction_at_peak_frequency(
+        samples,
+        minimum_frequency_hz=0.05,
+        maximum_frequency_hz=0.4,
+        segment_length=128,
+    )
+
+    assert result.peak_frequency_hz == pytest.approx(0.125)
+    assert result.mean_direction_towards_degrees == pytest.approx(
+        35, abs=0.5
+    )
+
+
 def test_experimental_direction_rejects_gaps_and_invalid_frequency_band() -> None:
     samples = _plane_wave_samples(90)
     samples[100] = WaveDirectionSample(

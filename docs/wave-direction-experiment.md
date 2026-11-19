@@ -26,9 +26,11 @@ not for Tidewatch hardware. NDBC's established directional buoy procedures use
 earth-referenced motion and cross-spectra as well, with pitch, roll, and azimuth
 measurements ([NDBC analysis procedures](https://www.ndbc.noaa.gov/wavemeas.pdf)).
 
-Current tests use deterministic synthetic plane waves to verify the compass
-conversion, peak-frequency selection, rejection of missing horizontal energy,
-and cadence/frequency guards. This is an algorithm check only. Before
+Current tests use deterministic synthetic plane waves and a two-frequency
+mixed sea to verify compass conversion, peak-frequency selection, linear-drift
+detrending, rejection of missing horizontal energy, and cadence/frequency
+guards. This is an algorithm check only. It does not assess directional
+spreading when multiple headings share a frequency. Before
 operational use, Tidewatch still needs Doppler-derived velocity quality and
 cadence documentation, representative records, comparison with an independent
 directional reference buoy, and tests for mixed seas, drift, gaps, and
