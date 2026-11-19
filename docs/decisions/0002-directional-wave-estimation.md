@@ -38,10 +38,16 @@ el resultado limitado a altura y período, identificados como experimentales.
 Antes de habilitar dirección, definir e implementar una de estas entradas
 observables y sincronizadas:
 
-- GNSS tridimensional de alta frecuencia con desplazamientos horizontales y
-  verticales de calidad documentada; o
+- GNSS de alta frecuencia con velocidad instantánea en ejes este, norte y arriba
+  (preferiblemente salida Doppler del receptor), cadencia y calidad documentadas; o
 - heave y desplazamientos/aceleraciones horizontales con pitch, roll y heading
   referidos a un marco de coordenadas conocido.
+
+La API y la persistencia aceptan ahora los tres componentes de velocidad como
+campos opcionales, y el simulador direccional los deriva de su trayectoria
+sintética. Esto prepara el contrato y permite comprobar el transporte de datos;
+no demuestra que la velocidad GNSS real tenga la resolución, frecuencia ni
+calidad necesarias.
 
 La estimación deberá especificar orientación (desde/hacia y referencia norte),
 tratamiento de gaps y calidad, y método espectral. No se aceptará solamente una

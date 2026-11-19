@@ -1004,6 +1004,9 @@ def test_gnss_metadata_is_persisted_with_location() -> None:
                 "longitude": 3.1,
                 "altitude_meters": 2.4,
                 "speed_mps": 0.8,
+                "velocity_east_mps": 0.6,
+                "velocity_north_mps": -0.3,
+                "velocity_up_mps": 0.12,
                 "hdop": 0.9,
                 "satellites": 14,
             }
@@ -1014,11 +1017,17 @@ def test_gnss_metadata_is_persisted_with_location() -> None:
     location = client.get(f"/api/v1/buoys/{buoy_id}/locations").json()[0]
     assert location["altitude_meters"] == 2.4
     assert location["speed_mps"] == 0.8
+    assert location["velocity_east_mps"] == 0.6
+    assert location["velocity_north_mps"] == -0.3
+    assert location["velocity_up_mps"] == 0.12
     assert location["hdop"] == 0.9
     assert location["satellites"] == 14
     metrics = client.get("/metrics")
     assert "tidewatch_current_gnss_altitude_meters" in metrics.text
     assert "tidewatch_current_gnss_speed_mps" in metrics.text
+    assert "tidewatch_current_gnss_velocity_east_mps" in metrics.text
+    assert "tidewatch_current_gnss_velocity_north_mps" in metrics.text
+    assert "tidewatch_current_gnss_velocity_up_mps" in metrics.text
     assert "tidewatch_current_gnss_hdop" in metrics.text
     assert "tidewatch_current_gnss_satellites" in metrics.text
 

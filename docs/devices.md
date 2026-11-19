@@ -43,6 +43,10 @@ a device's status does not change the buoy's status or filter telemetry.
 Batch GNSS positions, IMU readings and all current sensor families retain the
 originating batch `device_id` when supplied. Battery readings continue to use
 their redundant channel identifier (`A` or `B`) as their device key.
+GNSS location readings may include the receiver's instantaneous east, north and
+up velocity components in meters per second. These optional values are retained
+in location history and exposed as current GNSS velocity metrics; legacy
+senders can continue omitting them.
 
 Active units marked stale by the same heartbeat rule generate a
 `stale_device` maintenance issue so the operational queue and device-health

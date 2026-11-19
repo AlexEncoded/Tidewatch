@@ -217,13 +217,27 @@ def process_telemetry_batch(
         )
         gateway.add_location(location)
         if location.altitude_meters is not None:
-            metrics.metric("current_gnss_altitude_meters").labels(buoy_id=buoy_id).set(location.altitude_meters)
+            metrics.metric("current_gnss_altitude_meters").labels(
+                buoy_id=buoy_id
+            ).set(location.altitude_meters)
         if location.speed_mps is not None:
-            metrics.metric("current_gnss_speed_mps").labels(buoy_id=buoy_id).set(location.speed_mps)
+            metrics.metric("current_gnss_speed_mps").labels(
+                buoy_id=buoy_id
+            ).set(location.speed_mps)
+        for axis in ("east", "north", "up"):
+            velocity = getattr(location, f"velocity_{axis}_mps")
+            if velocity is not None:
+                metrics.metric(f"current_gnss_velocity_{axis}_mps").labels(
+                    buoy_id=buoy_id
+                ).set(velocity)
         if location.hdop is not None:
-            metrics.metric("current_gnss_hdop").labels(buoy_id=buoy_id).set(location.hdop)
+            metrics.metric("current_gnss_hdop").labels(
+                buoy_id=buoy_id
+            ).set(location.hdop)
         if location.satellites is not None:
-            metrics.metric("current_gnss_satellites").labels(buoy_id=buoy_id).set(location.satellites)
+            metrics.metric("current_gnss_satellites").labels(
+                buoy_id=buoy_id
+            ).set(location.satellites)
         movement = analyze_movement_for_buoy(gateway, buoy_id, 50)
         if movement.average_speed_mps is not None:
             metrics.metric("buoy_movement_speed_mps").labels(buoy_id=buoy_id).set(

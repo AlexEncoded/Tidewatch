@@ -266,6 +266,24 @@ current_gnss_speed_mps = Gauge(
     ["buoy_id"],
 )
 
+current_gnss_velocity_east_mps = Gauge(
+    "tidewatch_current_gnss_velocity_east_mps",
+    "Most recent eastward GNSS velocity in meters per second by buoy.",
+    ["buoy_id"],
+)
+
+current_gnss_velocity_north_mps = Gauge(
+    "tidewatch_current_gnss_velocity_north_mps",
+    "Most recent northward GNSS velocity in meters per second by buoy.",
+    ["buoy_id"],
+)
+
+current_gnss_velocity_up_mps = Gauge(
+    "tidewatch_current_gnss_velocity_up_mps",
+    "Most recent upward GNSS velocity in meters per second by buoy.",
+    ["buoy_id"],
+)
+
 current_gnss_hdop = Gauge(
     "tidewatch_current_gnss_hdop",
     "Most recent GNSS horizontal dilution of precision by buoy.",

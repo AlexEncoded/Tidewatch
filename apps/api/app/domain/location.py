@@ -10,6 +10,8 @@ GNSS_ALTITUDE_MIN_METERS = -1000
 GNSS_ALTITUDE_MAX_METERS = 20000
 GNSS_SPEED_MIN_MPS = 0
 GNSS_SPEED_MAX_MPS = 100
+GNSS_VELOCITY_MIN_MPS = -100
+GNSS_VELOCITY_MAX_MPS = 100
 GNSS_HDOP_MIN = 0
 GNSS_HDOP_MAX = 100
 GNSS_SATELLITES_MIN = 0
@@ -26,6 +28,9 @@ class LocationTelemetrySnapshot:
     measured_at: datetime
     altitude_meters: float | None = None
     speed_mps: float | None = None
+    velocity_east_mps: float | None = None
+    velocity_north_mps: float | None = None
+    velocity_up_mps: float | None = None
     hdop: float | None = None
     satellites: int | None = None
     device_id: str | None = None
@@ -62,6 +67,15 @@ class LocationTelemetrySnapshot:
                 f"GNSS speed must be between {GNSS_SPEED_MIN_MPS} and "
                 f"{GNSS_SPEED_MAX_MPS} m/s"
             )
+        for axis in ("east", "north", "up"):
+            velocity = getattr(self, f"velocity_{axis}_mps")
+            if velocity is not None and not (
+                GNSS_VELOCITY_MIN_MPS <= velocity <= GNSS_VELOCITY_MAX_MPS
+            ):
+                raise ValueError(
+                    f"GNSS {axis} velocity must be between "
+                    f"{GNSS_VELOCITY_MIN_MPS} and {GNSS_VELOCITY_MAX_MPS} m/s"
+                )
         if self.hdop is not None and not GNSS_HDOP_MIN < self.hdop <= GNSS_HDOP_MAX:
             raise ValueError(
                 f"GNSS HDOP must be greater than {GNSS_HDOP_MIN} and at most {GNSS_HDOP_MAX}"

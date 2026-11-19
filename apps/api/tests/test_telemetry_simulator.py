@@ -214,8 +214,19 @@ def test_simulator_directional_wave_adds_coherent_horizontal_gnss_motion() -> No
     assert east_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
     assert east_payload["location"]["longitude"] > SIMULATOR.SIMULATED_LONGITUDE
     assert north_payload["location"]["altitude_meters"] == 2.0
+    assert north_payload["location"]["velocity_east_mps"] == 0.0
+    assert north_payload["location"]["velocity_north_mps"] == 0.0
+    assert north_payload["location"]["velocity_up_mps"] == pytest.approx(
+        SIMULATOR.SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
+        * 2
+        * math.pi
+        / SIMULATOR.SIMULATED_WAVE_PERIOD_SECONDS,
+        abs=1e-6,
+    )
     assert quarter_period_payload["location"]["latitude"] == SIMULATOR.SIMULATED_LATITUDE
     assert quarter_period_payload["location"]["altitude_meters"] == 2.2
+    assert quarter_period_payload["location"]["velocity_north_mps"] < 0
+    assert quarter_period_payload["location"]["velocity_up_mps"] == pytest.approx(0)
     assert (
         north_payload["location"]["measured_at"]
         == north_payload["imu"][0]["measured_at"]

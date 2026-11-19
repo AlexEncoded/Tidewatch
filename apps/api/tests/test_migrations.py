@@ -6,6 +6,7 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import (
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -56,11 +57,24 @@ def test_telemetry_job_idempotency_migration_upgrades_existing_queue(tmp_path, m
         Column("lease_expires_at", DateTime(timezone=True)),
         Column("last_error", String(1000)),
     )
-    Index("ix_telemetry_ingestion_jobs_claim", jobs.c.status, jobs.c.available_at, jobs.c.created_at)
+    Table(
+        "buoy_location_readings",
+        metadata,
+        Column("id", Integer, primary_key=True),
+    )
+    Index(
+        "ix_telemetry_ingestion_jobs_claim",
+        jobs.c.status,
+        jobs.c.available_at,
+        jobs.c.created_at,
+    )
     Index("ix_telemetry_ingestion_jobs_expired", jobs.c.status, jobs.c.lease_expires_at)
     metadata.create_all(engine)
     with engine.begin() as connection:
-        connection.exec_driver_sql("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY)")
+        connection.exec_driver_sql(
+            "CREATE TABLE alembic_version "
+            "(version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
+        )
         connection.exec_driver_sql(
             "INSERT INTO alembic_version (version_num) VALUES ('0066_telemetry_jobs')"
         )
@@ -83,4 +97,46 @@ def test_telemetry_job_idempotency_migration_upgrades_existing_queue(tmp_path, m
         constraint["name"] == "uq_telemetry_job_buoy_idempotency"
         for constraint in inspector.get_unique_constraints("telemetry_ingestion_jobs")
     )
+    engine.dispose()
+
+
+def test_gnss_velocity_migration_adds_optional_components(tmp_path, monkeypatch) -> None:
+    database_path = tmp_path / "gnss-velocity-migration.sqlite"
+    engine = create_engine(f"sqlite:///{database_path.as_posix()}")
+    metadata = MetaData()
+    Table(
+        "buoy_location_readings",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("latitude", Float, nullable=False),
+        Column("longitude", Float, nullable=False),
+        Column("measured_at", DateTime(timezone=True), nullable=False),
+    )
+    metadata.create_all(engine)
+    with engine.begin() as connection:
+        connection.exec_driver_sql(
+            "CREATE TABLE alembic_version "
+            "(version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
+        )
+        connection.exec_driver_sql(
+            "INSERT INTO alembic_version (version_num) "
+            "VALUES ('0069_telemetry_job_fingerprint')"
+        )
+
+    api_root = Path(__file__).parents[1]
+    config = Config(str(api_root / "alembic.ini"))
+    config.set_main_option("script_location", str(api_root / "alembic"))
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{database_path.as_posix()}")
+
+    command.upgrade(config, "head")
+
+    location_columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("buoy_location_readings")
+    }
+    assert {
+        "velocity_east_mps",
+        "velocity_north_mps",
+        "velocity_up_mps",
+    } <= location_columns
     engine.dispose()

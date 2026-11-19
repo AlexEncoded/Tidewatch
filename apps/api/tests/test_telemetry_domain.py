@@ -475,6 +475,9 @@ def test_location_snapshot_accepts_geographic_and_gnss_boundaries() -> None:
         measured_at=datetime.now(timezone.utc),
         altitude_meters=20000,
         speed_mps=100,
+        velocity_east_mps=-100,
+        velocity_north_mps=100,
+        velocity_up_mps=100,
         hdop=100,
         satellites=100,
     )
@@ -483,6 +486,9 @@ def test_location_snapshot_accepts_geographic_and_gnss_boundaries() -> None:
     assert snapshot.longitude == 180
     assert snapshot.altitude_meters == 20000
     assert snapshot.speed_mps == 100
+    assert snapshot.velocity_east_mps == -100
+    assert snapshot.velocity_north_mps == 100
+    assert snapshot.velocity_up_mps == 100
 
 
 @pytest.mark.parametrize(
@@ -491,6 +497,9 @@ def test_location_snapshot_accepts_geographic_and_gnss_boundaries() -> None:
         ({"longitude": -180.01}, "Longitude"),
         ({"altitude_meters": -1000.01}, "GNSS altitude"),
         ({"speed_mps": 100.01}, "GNSS speed"),
+        ({"velocity_east_mps": -100.01}, "GNSS east velocity"),
+        ({"velocity_north_mps": 100.01}, "GNSS north velocity"),
+        ({"velocity_up_mps": 100.01}, "GNSS up velocity"),
         ({"hdop": 0}, "GNSS HDOP"),
         ({"satellites": 101}, "GNSS satellite count"),
     ],

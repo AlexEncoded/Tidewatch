@@ -162,6 +162,10 @@ def build_payloads(
         device_wave_vertical_acceleration = wave_vertical_acceleration
         location_latitude = gnss_latitude
         location_longitude = gnss_longitude
+        velocity_east_mps = None
+        velocity_north_mps = None
+        velocity_up_mps = None
+        speed_mps = random.uniform(0.0, 0.2)
         if wave_direction_degrees is not None:
             device_wave_phase = wave_angular_frequency * sample_time.timestamp()
             device_wave_displacement = (
@@ -179,6 +183,19 @@ def build_payloads(
             direction_radians = math.radians(wave_direction_degrees)
             north_displacement = horizontal_displacement * math.cos(direction_radians)
             east_displacement = horizontal_displacement * math.sin(direction_radians)
+            horizontal_velocity = (
+                -SIMULATED_WAVE_HORIZONTAL_AMPLITUDE_METERS
+                * wave_angular_frequency
+                * math.sin(device_wave_phase)
+            )
+            velocity_north_mps = horizontal_velocity * math.cos(direction_radians)
+            velocity_east_mps = horizontal_velocity * math.sin(direction_radians)
+            velocity_up_mps = (
+                SIMULATED_WAVE_AMPLITUDE_METERS
+                * wave_angular_frequency
+                * math.cos(device_wave_phase)
+            )
+            speed_mps = math.hypot(velocity_east_mps, velocity_north_mps)
             location_latitude = SIMULATED_LATITUDE + math.degrees(
                 north_displacement / EARTH_RADIUS_METERS
             )
@@ -196,7 +213,22 @@ def build_payloads(
                     + device_wave_displacement,
                     3,
                 ),
-                "speed_mps": round(random.uniform(0.0, 0.2), 3),
+                "speed_mps": round(speed_mps, 3),
+                "velocity_east_mps": (
+                    round(velocity_east_mps, 6)
+                    if velocity_east_mps is not None
+                    else None
+                ),
+                "velocity_north_mps": (
+                    round(velocity_north_mps, 6)
+                    if velocity_north_mps is not None
+                    else None
+                ),
+                "velocity_up_mps": (
+                    round(velocity_up_mps, 6)
+                    if velocity_up_mps is not None
+                    else None
+                ),
                 "hdop": round(random.uniform(0.6, 1.5), 2),
                 "satellites": random.randint(8, 14),
                 "device_id": device["device_id"],

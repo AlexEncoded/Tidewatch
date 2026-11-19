@@ -91,7 +91,11 @@ objetos `battery`, uno por `device_id` A/B; el formato antiguo de un único
 objeto sigue siendo compatible. Un lote no puede repetir el mismo
 `device_id` ni el mismo `sensor_channel` dentro de una familia ambiental.
 Cada posición se conserva con su marca temporal para reconstruir
-desplazamientos.
+desplazamientos. `location` acepta además los campos opcionales
+`velocity_east_mps`, `velocity_north_mps` y `velocity_up_mps` para conservar la
+velocidad GNSS instantánea en los tres ejes. Los valores se incluyen en el
+histórico de ubicaciones y se exponen como gauges `tidewatch_current_gnss_velocity_*_mps`;
+los clientes antiguos pueden seguir omitiéndolos.
 
 Las unidades registradas también pueden incluir `device_runtime` en el lote,
 con `cpu_usage_percent` y `memory_usage_percent` entre 0 y 100. El reporte

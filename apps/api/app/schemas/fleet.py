@@ -23,6 +23,8 @@ from ..domain.location import (
     GNSS_SATELLITES_MIN,
     GNSS_SPEED_MAX_MPS,
     GNSS_SPEED_MIN_MPS,
+    GNSS_VELOCITY_MAX_MPS,
+    GNSS_VELOCITY_MIN_MPS,
 )
 
 
@@ -51,6 +53,21 @@ class BuoyLocationReadingCreate(BuoyLocationUpdate):
         default=None,
         ge=GNSS_SPEED_MIN_MPS,
         le=GNSS_SPEED_MAX_MPS,
+    )
+    velocity_east_mps: float | None = Field(
+        default=None,
+        ge=GNSS_VELOCITY_MIN_MPS,
+        le=GNSS_VELOCITY_MAX_MPS,
+    )
+    velocity_north_mps: float | None = Field(
+        default=None,
+        ge=GNSS_VELOCITY_MIN_MPS,
+        le=GNSS_VELOCITY_MAX_MPS,
+    )
+    velocity_up_mps: float | None = Field(
+        default=None,
+        ge=GNSS_VELOCITY_MIN_MPS,
+        le=GNSS_VELOCITY_MAX_MPS,
     )
     hdop: float | None = Field(default=None, gt=GNSS_HDOP_MIN, le=GNSS_HDOP_MAX)
     satellites: int | None = Field(
