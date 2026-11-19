@@ -50,6 +50,7 @@ def test_experimental_mean_direction_recovers_synthetic_compass_bearing(
     assert result.peak_frequency_hz == pytest.approx(0.125)
     assert result.directional_concentration == pytest.approx(1.0, abs=1e-6)
     assert result.segment_count == 7
+    assert result.segment_length == 128
 
 
 def test_experimental_direction_withholds_result_without_horizontal_energy() -> None:

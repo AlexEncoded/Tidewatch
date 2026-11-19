@@ -1,0 +1,139 @@
+import csv
+import hashlib
+import json
+import math
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+SCRIPT = ROOT / "scripts" / "evaluate-wave-direction.py"
+FIELDS = (
+    "window_id",
+    "split",
+    "measured_at",
+    "elevation_m",
+    "velocity_east_mps",
+    "velocity_north_mps",
+    "reference_direction_towards_degrees",
+    "quality",
+)
+
+
+def _write_dataset(path: Path, *, no_horizontal_motion: bool = False) -> None:
+    with path.open("w", newline="", encoding="utf-8") as target:
+        writer = csv.DictWriter(target, fieldnames=FIELDS)
+        writer.writeheader()
+        for window_id, split, start, direction in (
+            ("calibration-1", "calibration", datetime(2026, 1, 1, tzinfo=timezone.utc), 120),
+            ("validation-1", "validation", datetime(2026, 1, 1, 1, tzinfo=timezone.utc), 120),
+        ):
+            bearing = math.radians(direction)
+            for index in range(128):
+                elevation = math.cos(2 * math.pi * index / 8)
+                horizontal_speed = 0 if no_horizontal_motion else 0.15 * elevation
+                writer.writerow(
+                    {
+                        "window_id": window_id,
+                        "split": split,
+                        "measured_at": (start + timedelta(seconds=index)).isoformat(),
+                        "elevation_m": elevation,
+                        "velocity_east_mps": horizontal_speed * math.sin(bearing),
+                        "velocity_north_mps": horizontal_speed * math.cos(bearing),
+                        "reference_direction_towards_degrees": direction,
+                        "quality": "good",
+                    }
+                )
+            writer.writerow(
+                {
+                    "window_id": window_id,
+                    "split": split,
+                    "measured_at": (start + timedelta(seconds=128)).isoformat(),
+                    "elevation_m": 500,
+                    "velocity_east_mps": 500,
+                    "velocity_north_mps": 500,
+                    "reference_direction_towards_degrees": direction,
+                    "quality": "suspect",
+                }
+            )
+
+
+def _run_evaluator(path: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            str(path),
+            "--minimum-frequency-hz",
+            "0.05",
+            "--maximum-frequency-hz",
+            "0.4",
+            "--segment-length",
+            "64",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_wave_direction_cli_reports_holdout_angular_metrics(tmp_path: Path) -> None:
+    dataset = tmp_path / "labeled-directions.csv"
+    _write_dataset(dataset)
+
+    result = _run_evaluator(dataset)
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["metrics"]["calibration"]["mean_absolute_error_degrees"] == 0
+    assert report["metrics"]["validation"]["root_mean_square_error_degrees"] == 0
+    assert report["window_estimates"]["validation"][0][
+        "estimated_mean_direction_towards_degrees"
+    ] == 120
+    assert report["window_coverage"]["calibration"][0]["good_samples"] == 128
+    assert report["window_coverage"]["calibration"][0]["segment_length"] == 64
+    assert report["dataset"]["quality_filter"] == {
+        "accepted_good_rows": 256,
+        "column_present": True,
+        "excluded_invalid_rows": 0,
+        "excluded_suspect_rows": 2,
+    }
+    assert report["dataset"]["sha256"] == hashlib.sha256(dataset.read_bytes()).hexdigest()
+    assert report["warning"].startswith("Offline exploratory estimate only")
+
+
+def test_wave_direction_cli_reports_windows_without_an_angle(tmp_path: Path) -> None:
+    dataset = tmp_path / "no-horizontal-motion.csv"
+    _write_dataset(dataset, no_horizontal_motion=True)
+
+    result = _run_evaluator(dataset)
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["metrics"]["validation"]["estimated_windows"] == 0
+    assert report["metrics"]["validation"]["withheld_windows"] == 1
+    assert report["window_estimates"]["validation"][0][
+        "estimated_mean_direction_towards_degrees"
+    ] is None
+
+
+def test_wave_direction_cli_rejects_irregular_cadence_without_traceback(
+    tmp_path: Path,
+) -> None:
+    dataset = tmp_path / "irregular-directions.csv"
+    _write_dataset(dataset)
+    content = dataset.read_text(encoding="utf-8")
+    content = content.replace(
+        "2026-01-01T00:00:30+00:00",
+        "2026-01-01T00:00:30.200000+00:00",
+        1,
+    )
+    dataset.write_text(content, encoding="utf-8")
+
+    result = _run_evaluator(dataset)
+
+    assert result.returncode == 2
+    assert "uniform cadence without gaps" in result.stderr
+    assert "Traceback" not in result.stderr

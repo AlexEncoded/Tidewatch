@@ -31,3 +31,28 @@ operational use, Tidewatch still needs Doppler-derived velocity quality and
 cadence documentation, representative records, comparison with an independent
 directional reference buoy, and tests for mixed seas, drift, gaps, and
 directional spreading. The API continues to expose height and period only.
+
+## Offline CSV evaluation
+
+Use the [CSV template](wave-direction-template.csv) with one row per
+synchronized sample. `reference_direction_towards_degrees` must be an
+independent reference bearing in compass degrees clockwise from true north.
+Each `window_id` has one constant reference bearing and one split (`calibration`
+or `validation`); windows may not overlap in time. Mark rejected samples as
+`suspect` or `invalid`. The evaluator excludes those rows and does not fill the
+resulting gaps.
+
+Run it with an explicit frequency band chosen for the sampling protocol:
+
+```bash
+python scripts/evaluate-wave-direction.py data/labeled-directions.csv \
+  --minimum-frequency-hz 0.05 --maximum-frequency-hz 0.4 --segment-length 128
+```
+
+The JSON report records the input SHA-256, quality counts, per-window sample
+cadence, estimates, withheld angles, and circular angular error metrics for each
+split, including the effective Welch segment length and count. Calibration and
+validation are report-only groups; no parameter is selected or fitted. The tool
+requires uniform good-sample cadence and multiple overlapping Welch segments.
+Synthetic values can check code behavior but must not be treated as calibration
+or field validation evidence.

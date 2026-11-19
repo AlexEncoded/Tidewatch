@@ -7,7 +7,6 @@ field validation is required before operational use.
 
 from __future__ import annotations
 
-import cmath
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -39,6 +38,7 @@ class WaveDirectionEstimate:
     directional_concentration: float
     sample_count: int
     segment_count: int
+    segment_length: int
 
 
 def estimate_mean_direction_at_peak_frequency(
@@ -108,11 +108,6 @@ def estimate_mean_direction_at_peak_frequency(
         0.5 - 0.5 * math.cos(2 * math.pi * index / (segment_length - 1))
         for index in range(segment_length)
     ]
-    twiddles = [
-        [cmath.exp(-2j * math.pi * frequency_index * index / segment_length)
-         for index in range(segment_length)]
-        for frequency_index in range(segment_length // 2 + 1)
-    ]
     spectra: dict[int, list[tuple[complex, complex, complex]]] = {}
     segment_count = 0
     for start in starts:
@@ -124,12 +119,7 @@ def estimate_mean_direction_at_peak_frequency(
                 (value - segment_mean) * weight
                 for value, weight in zip(segment, window)
             ]
-            transformed.append(
-                [
-                    sum(value * twiddle for value, twiddle in zip(prepared, row))
-                    for row in twiddles
-                ]
-            )
+            transformed.append(_fft_real(prepared))
         for frequency_index in range(segment_length // 2 + 1):
             spectra.setdefault(frequency_index, []).append(
                 tuple(signal[frequency_index] for signal in transformed)
@@ -161,7 +151,9 @@ def estimate_mean_direction_at_peak_frequency(
             )
 
     if peak is None or peak[1] <= MIN_SPECTRAL_ENERGY:
-        return WaveDirectionEstimate(None, None, 0.0, len(samples), segment_count)
+        return WaveDirectionEstimate(
+            None, None, 0.0, len(samples), segment_count, segment_length
+        )
 
     (
         peak_frequency,
@@ -175,7 +167,7 @@ def estimate_mean_direction_at_peak_frequency(
     denominator = math.sqrt(eta_energy * horizontal_energy)
     if denominator <= MIN_SPECTRAL_ENERGY:
         return WaveDirectionEstimate(
-            None, peak_frequency, 0.0, len(samples), segment_count
+            None, peak_frequency, 0.0, len(samples), segment_count, segment_length
         )
 
     first_east = east_cross / denominator
@@ -183,7 +175,12 @@ def estimate_mean_direction_at_peak_frequency(
     concentration = math.hypot(first_east, first_north)
     if concentration < MIN_DIRECTIONAL_CONCENTRATION:
         return WaveDirectionEstimate(
-            None, peak_frequency, concentration, len(samples), segment_count
+            None,
+            peak_frequency,
+            concentration,
+            len(samples),
+            segment_count,
+            segment_length,
         )
 
     # The eta/u/v method uses east as x, north as y, and angles increasing
@@ -198,6 +195,7 @@ def estimate_mean_direction_at_peak_frequency(
         round(concentration, 6),
         len(samples),
         segment_count,
+        segment_length,
     )
 
 
@@ -207,3 +205,37 @@ def _timestamp_seconds(value: datetime) -> float:
     else:
         value = value.astimezone(timezone.utc)
     return value.timestamp()
+
+
+def _fft_real(values: Sequence[float]) -> list[complex]:
+    """Return the non-negative bins of a radix-2 FFT for a real-valued series."""
+    transformed = [complex(value) for value in values]
+    length = len(transformed)
+    reversed_index = 0
+    for index in range(1, length):
+        bit = length >> 1
+        while reversed_index & bit:
+            reversed_index ^= bit
+            bit >>= 1
+        reversed_index ^= bit
+        if index < reversed_index:
+            transformed[index], transformed[reversed_index] = (
+                transformed[reversed_index],
+                transformed[index],
+            )
+
+    block_length = 2
+    while block_length <= length:
+        half_block = block_length // 2
+        angle = -2 * math.pi / block_length
+        root = complex(math.cos(angle), math.sin(angle))
+        for block_start in range(0, length, block_length):
+            twiddle = 1 + 0j
+            for offset in range(half_block):
+                even = transformed[block_start + offset]
+                odd = transformed[block_start + offset + half_block] * twiddle
+                transformed[block_start + offset] = even + odd
+                transformed[block_start + offset + half_block] = even - odd
+                twiddle *= root
+        block_length *= 2
+    return transformed[: length // 2 + 1]
