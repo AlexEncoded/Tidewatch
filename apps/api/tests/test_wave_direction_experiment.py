@@ -100,6 +100,28 @@ def test_experimental_direction_withholds_angle_when_first_moment_is_weak() -> N
     assert result.directional_concentration < 0.1
 
 
+def test_experimental_direction_removes_linear_sensor_drift() -> None:
+    clean_samples = _plane_wave_samples(120)
+    samples = [
+        WaveDirectionSample(
+            measured_at=sample.measured_at,
+            elevation_m=sample.elevation_m + index * 0.5,
+            velocity_east_mps=sample.velocity_east_mps + index * 0.5,
+            velocity_north_mps=sample.velocity_north_mps - index * 0.35,
+        )
+        for index, sample in enumerate(clean_samples)
+    ]
+
+    result = estimate_mean_direction_at_peak_frequency(
+        samples,
+        minimum_frequency_hz=0.05,
+        maximum_frequency_hz=0.4,
+        segment_length=128,
+    )
+
+    assert result.mean_direction_towards_degrees == pytest.approx(120, abs=0.05)
+
+
 def test_experimental_direction_rejects_gaps_and_invalid_frequency_band() -> None:
     samples = _plane_wave_samples(90)
     samples[100] = WaveDirectionSample(

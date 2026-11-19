@@ -114,10 +114,9 @@ def estimate_mean_direction_at_peak_frequency(
         transformed = []
         for signal in signals:
             segment = signal[start : start + segment_length]
-            segment_mean = sum(segment) / segment_length
+            detrended = _remove_linear_trend(segment)
             prepared = [
-                (value - segment_mean) * weight
-                for value, weight in zip(segment, window)
+                value * weight for value, weight in zip(detrended, window)
             ]
             transformed.append(_fft_real(prepared))
         for frequency_index in range(segment_length // 2 + 1):
@@ -272,3 +271,19 @@ def _fft_real(values: Sequence[float]) -> list[complex]:
                 twiddle *= root
         block_length *= 2
     return transformed[: length // 2 + 1]
+
+
+def _remove_linear_trend(values: Sequence[float]) -> list[float]:
+    """Remove each Welch segment's least-squares line before windowing."""
+    length = len(values)
+    mean_value = mean(values)
+    mean_index = (length - 1) / 2
+    denominator = sum((index - mean_index) ** 2 for index in range(length))
+    slope = sum(
+        (index - mean_index) * (value - mean_value)
+        for index, value in enumerate(values)
+    ) / denominator
+    return [
+        value - mean_value - slope * (index - mean_index)
+        for index, value in enumerate(values)
+    ]

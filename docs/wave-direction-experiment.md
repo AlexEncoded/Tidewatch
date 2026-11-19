@@ -14,7 +14,9 @@ not interpolate gaps, estimate a full directional spreading spectrum, or
 publish a result through the API. Callers must screen sensor quality before
 passing samples. Its concentration value measures the length of the first
 directional moment; the 0.1 cutoff is a screening heuristic, not a calibrated
-quality threshold, and a weak value suppresses the angle.
+quality threshold, and a weak value suppresses the angle. It removes a
+least-squares linear trend from each Welch segment before spectral analysis;
+this reduces slow drift sensitivity but is not a complete GNSS-drift correction.
 
 The underlying `eta/u/v` approach derives directional moments from auto- and
 cross-spectra of elevation and horizontal velocities. See the GNSS buoy method
