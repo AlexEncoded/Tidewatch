@@ -54,5 +54,7 @@ cadence, estimates, withheld angles, and circular angular error metrics for each
 split, including the effective Welch segment length and count. Calibration and
 validation are report-only groups; no parameter is selected or fitted. The tool
 requires uniform good-sample cadence and multiple overlapping Welch segments.
+Mean signed error is calculated circularly and is omitted when its direction is
+undefined because errors cancel around the circle.
 Synthetic values can check code behavior but must not be treated as calibration
 or field validation evidence.

@@ -11,7 +11,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from statistics import median
+from statistics import mean, median
 
 
 MIN_SEGMENT_LENGTH = 16
@@ -197,6 +197,39 @@ def estimate_mean_direction_at_peak_frequency(
         segment_count,
         segment_length,
     )
+
+
+def summarize_angular_errors(errors_degrees: Sequence[float]) -> dict[str, float | None]:
+    """Summarize angular errors without treating the 0/360 boundary linearly."""
+    if not errors_degrees:
+        return {
+            "mean_absolute_error_degrees": None,
+            "root_mean_square_error_degrees": None,
+            "mean_signed_error_degrees": None,
+        }
+    if any(not math.isfinite(error) for error in errors_degrees):
+        raise ValueError("angular errors must be finite")
+
+    normalized_errors = [(error + 180) % 360 - 180 for error in errors_degrees]
+    mean_sine = mean(math.sin(math.radians(error)) for error in normalized_errors)
+    mean_cosine = mean(math.cos(math.radians(error)) for error in normalized_errors)
+    resultant_length = math.hypot(mean_sine, mean_cosine)
+    circular_bias = (
+        math.degrees(math.atan2(mean_sine, mean_cosine))
+        if resultant_length >= 1e-12
+        else None
+    )
+    return {
+        "mean_absolute_error_degrees": round(
+            mean(abs(error) for error in normalized_errors), 3
+        ),
+        "root_mean_square_error_degrees": round(
+            math.sqrt(mean(error**2 for error in normalized_errors)), 3
+        ),
+        "mean_signed_error_degrees": (
+            round(circular_bias, 3) if circular_bias is not None else None
+        ),
+    }
 
 
 def _timestamp_seconds(value: datetime) -> float:

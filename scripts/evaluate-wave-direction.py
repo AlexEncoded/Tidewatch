@@ -8,7 +8,7 @@ import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from statistics import mean, median
+from statistics import median
 
 API_ROOT = Path(__file__).resolve().parents[1] / "apps" / "api"
 sys.path.insert(0, str(API_ROOT))
@@ -16,6 +16,7 @@ sys.path.insert(0, str(API_ROOT))
 from app.domain.wave_direction_experiment import (  # noqa: E402
     WaveDirectionSample,
     estimate_mean_direction_at_peak_frequency,
+    summarize_angular_errors,
 )
 
 
@@ -221,18 +222,12 @@ def _error_metrics(rows: list[dict]) -> dict:
         return {
             "estimated_windows": 0,
             "withheld_windows": len(rows),
-            "mean_absolute_error_degrees": None,
-            "root_mean_square_error_degrees": None,
-            "mean_signed_error_degrees": None,
+            **summarize_angular_errors([]),
         }
     return {
         "estimated_windows": len(errors),
         "withheld_windows": len(rows) - len(errors),
-        "mean_absolute_error_degrees": round(mean(abs(error) for error in errors), 3),
-        "root_mean_square_error_degrees": round(
-            math.sqrt(mean(error**2 for error in errors)), 3
-        ),
-        "mean_signed_error_degrees": round(mean(errors), 3),
+        **summarize_angular_errors(errors),
     }
 
 

@@ -6,6 +6,7 @@ import pytest
 from app.domain.wave_direction_experiment import (
     WaveDirectionSample,
     estimate_mean_direction_at_peak_frequency,
+    summarize_angular_errors,
 )
 
 
@@ -130,3 +131,17 @@ def test_experimental_direction_rejects_gaps_and_invalid_frequency_band() -> Non
             maximum_frequency_hz=0.202,
             segment_length=128,
         )
+
+
+def test_angular_error_summary_uses_circular_bias_across_wraparound() -> None:
+    summary = summarize_angular_errors((179, -179))
+
+    assert summary["mean_absolute_error_degrees"] == 179
+    assert summary["mean_signed_error_degrees"] == 180
+
+
+def test_angular_error_summary_withholds_undefined_circular_bias() -> None:
+    summary = summarize_angular_errors((90, -90))
+
+    assert summary["mean_absolute_error_degrees"] == 90
+    assert summary["mean_signed_error_degrees"] is None
