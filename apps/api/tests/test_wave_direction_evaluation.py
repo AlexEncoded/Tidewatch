@@ -70,6 +70,8 @@ def _run_evaluator(path: Path) -> subprocess.CompletedProcess:
             "0.05",
             "--maximum-frequency-hz",
             "0.4",
+            "--minimum-window-duration-seconds",
+            "120",
             "--segment-length",
             "64",
         ],
@@ -136,4 +138,33 @@ def test_wave_direction_cli_rejects_irregular_cadence_without_traceback(
 
     assert result.returncode == 2
     assert "uniform cadence without gaps" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_wave_direction_cli_rejects_windows_shorter_than_protocol_minimum(
+    tmp_path: Path,
+) -> None:
+    dataset = tmp_path / "short-directions.csv"
+    _write_dataset(dataset)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            str(dataset),
+            "--minimum-frequency-hz",
+            "0.05",
+            "--maximum-frequency-hz",
+            "0.4",
+            "--minimum-window-duration-seconds",
+            "128",
+            "--segment-length",
+            "64",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "below the required 128s" in result.stderr
     assert "Traceback" not in result.stderr

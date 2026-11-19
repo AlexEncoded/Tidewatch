@@ -50,7 +50,8 @@ Run it with an explicit frequency band chosen for the sampling protocol:
 
 ```bash
 python scripts/evaluate-wave-direction.py data/labeled-directions.csv \
-  --minimum-frequency-hz 0.05 --maximum-frequency-hz 0.4 --segment-length 128
+  --minimum-frequency-hz 0.05 --maximum-frequency-hz 0.4 \
+  --minimum-window-duration-seconds 512 --segment-length 128
 ```
 
 The JSON report records the input SHA-256, quality counts, per-window sample
@@ -58,6 +59,9 @@ cadence, estimates, withheld angles, and circular angular error metrics for each
 split, including the effective Welch segment length and count. Calibration and
 validation are report-only groups; no parameter is selected or fitted. The tool
 requires uniform good-sample cadence and multiple overlapping Welch segments.
+The minimum window duration is mandatory and must be chosen for the receiver,
+sea-state protocol, and reference instrument; the example value is illustrative,
+not a universal scientific threshold.
 Mean signed error is calculated circularly and is omitted when its direction is
 undefined because errors cancel around the circle.
 Synthetic values can check code behavior but must not be treated as calibration

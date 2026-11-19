@@ -152,11 +152,20 @@ def evaluate_windows(
     minimum_frequency_hz: float,
     maximum_frequency_hz: float,
     segment_length: int | None,
+    minimum_window_duration_seconds: float,
 ) -> tuple[dict[str, list[dict]], dict[str, list[dict]], dict[str, dict]]:
     estimates = {"calibration": [], "validation": []}
     coverage = {"calibration": [], "validation": []}
     for window_id, window in windows.items():
         samples = sorted(window["samples"], key=lambda sample: sample.measured_at)
+        duration_seconds = (
+            samples[-1].measured_at - samples[0].measured_at
+        ).total_seconds()
+        if duration_seconds < minimum_window_duration_seconds:
+            raise ValueError(
+                f"Window {window_id!r}: duration {duration_seconds:g}s is below "
+                f"the required {minimum_window_duration_seconds:g}s"
+            )
         try:
             estimate = estimate_mean_direction_at_peak_frequency(
                 samples,
@@ -196,9 +205,7 @@ def evaluate_windows(
             {
                 "window_id": window_id,
                 "good_samples": len(samples),
-                "duration_seconds": round(
-                    (timestamps[-1] - timestamps[0]).total_seconds(), 6
-                ),
+                "duration_seconds": round(duration_seconds, 6),
                 "median_interval_seconds": round(median(intervals), 6),
                 "maximum_interval_seconds": round(max(intervals), 6),
                 "segments": estimate.segment_count,
@@ -270,6 +277,7 @@ def main() -> int:
     parser.add_argument("csv_path", type=Path, help="CSV containing labeled direction windows")
     parser.add_argument("--minimum-frequency-hz", type=float, required=True)
     parser.add_argument("--maximum-frequency-hz", type=float, required=True)
+    parser.add_argument("--minimum-window-duration-seconds", type=float, required=True)
     parser.add_argument("--segment-length", type=int)
     args = parser.parse_args()
     if (
@@ -278,6 +286,11 @@ def main() -> int:
         or not 0 < args.minimum_frequency_hz < args.maximum_frequency_hz
     ):
         parser.error("frequency bounds must be finite, positive and increasing")
+    if (
+        not math.isfinite(args.minimum_window_duration_seconds)
+        or args.minimum_window_duration_seconds <= 0
+    ):
+        parser.error("--minimum-window-duration-seconds must be finite and positive")
     try:
         windows, quality_summary = load_windows(args.csv_path)
         estimates, coverage, metrics = evaluate_windows(
@@ -285,6 +298,7 @@ def main() -> int:
             minimum_frequency_hz=args.minimum_frequency_hz,
             maximum_frequency_hz=args.maximum_frequency_hz,
             segment_length=args.segment_length,
+            minimum_window_duration_seconds=args.minimum_window_duration_seconds,
         )
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
@@ -296,6 +310,7 @@ def main() -> int:
             "quality_filter": quality_summary,
         },
         "frequency_band_hz": [args.minimum_frequency_hz, args.maximum_frequency_hz],
+        "minimum_window_duration_seconds": args.minimum_window_duration_seconds,
         "segment_length": args.segment_length,
         "window_counts": {split: len(rows) for split, rows in estimates.items()},
         "metrics": metrics,
