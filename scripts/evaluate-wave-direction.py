@@ -104,6 +104,7 @@ def load_windows(
                     "reference": reference,
                     "timestamps": [],
                     "samples": [],
+                    "fix_metadata": [],
                 },
             )
             if entry["split"] != split:
@@ -116,30 +117,36 @@ def load_windows(
             entry["timestamps"].append(timestamp)
             if quality != "good":
                 continue
+            hdop_value = _optional_finite_number(row.get("hdop"), line_number)
+            if hdop_value is not None and not 0 < hdop_value <= 100:
+                raise ValueError(f"Line {line_number}: HDOP must be in (0, 100]")
+            satellites_value = _optional_finite_number(
+                row.get("satellites"), line_number
+            )
+            if satellites_value is not None and (
+                not satellites_value.is_integer()
+                or not 0 <= satellites_value <= 100
+            ):
+                raise ValueError(
+                    f"Line {line_number}: satellites must be an integer in [0, 100]"
+                )
+            reject_fix = False
             if maximum_hdop is not None:
-                hdop_value = _optional_finite_number(row.get("hdop"), line_number)
                 if hdop_value is None:
                     excluded_missing_hdop_rows += 1
-                    continue
-                if not 0 < hdop_value <= 100:
-                    raise ValueError(f"Line {line_number}: HDOP must be in (0, 100]")
-                if hdop_value > maximum_hdop:
+                    reject_fix = True
+                elif hdop_value > maximum_hdop:
                     excluded_hdop_rows += 1
-                    continue
+                    reject_fix = True
             if minimum_satellites is not None:
-                satellites_value = _optional_finite_number(
-                    row.get("satellites"), line_number
-                )
                 if satellites_value is None:
                     excluded_missing_satellite_rows += 1
-                    continue
-                if not satellites_value.is_integer() or not 0 <= satellites_value <= 100:
-                    raise ValueError(
-                        f"Line {line_number}: satellites must be an integer in [0, 100]"
-                    )
-                if satellites_value < minimum_satellites:
+                    reject_fix = True
+                elif satellites_value < minimum_satellites:
                     excluded_satellite_rows += 1
-                    continue
+                    reject_fix = True
+            if reject_fix:
+                continue
             sample = WaveDirectionSample(
                 measured_at=timestamp,
                 elevation_m=_finite_number(row["elevation_m"], line_number),
@@ -151,6 +158,9 @@ def load_windows(
                 ),
             )
             entry["samples"].append(sample)
+            entry["fix_metadata"].append(
+                {"hdop": hdop_value, "satellites": satellites_value}
+            )
 
     if not windows:
         raise ValueError("CSV contains no data windows")
@@ -254,6 +264,32 @@ def evaluate_windows(
                 "maximum_interval_seconds": round(max(intervals), 6),
                 "segments": estimate.segment_count,
                 "segment_length": estimate.segment_length,
+                "hdop_samples": sum(
+                    item["hdop"] is not None for item in window["fix_metadata"]
+                ),
+                "hdop_missing_samples": sum(
+                    item["hdop"] is None for item in window["fix_metadata"]
+                ),
+                "hdop_median": _rounded_median(
+                    item["hdop"] for item in window["fix_metadata"]
+                ),
+                "hdop_max": _rounded_max(
+                    item["hdop"] for item in window["fix_metadata"]
+                ),
+                "satellite_samples": sum(
+                    item["satellites"] is not None
+                    for item in window["fix_metadata"]
+                ),
+                "satellite_missing_samples": sum(
+                    item["satellites"] is None
+                    for item in window["fix_metadata"]
+                ),
+                "satellites_min": _rounded_min(
+                    item["satellites"] for item in window["fix_metadata"]
+                ),
+                "satellites_median": _rounded_median(
+                    item["satellites"] for item in window["fix_metadata"]
+                ),
             }
         )
     return (
@@ -284,6 +320,21 @@ def _error_metrics(rows: list[dict]) -> dict:
 
 def _signed_angular_error(estimate: float, reference: float) -> float:
     return (estimate - reference + 180) % 360 - 180
+
+
+def _rounded_median(values) -> float | None:
+    present = [value for value in values if value is not None]
+    return round(median(present), 3) if present else None
+
+
+def _rounded_max(values) -> float | None:
+    present = [value for value in values if value is not None]
+    return round(max(present), 3) if present else None
+
+
+def _rounded_min(values) -> float | None:
+    present = [value for value in values if value is not None]
+    return round(min(present), 3) if present else None
 
 
 def _finite_number(value: str | None, line_number: int) -> float:

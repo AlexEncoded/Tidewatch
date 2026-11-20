@@ -142,6 +142,15 @@ def test_wave_direction_cli_reports_holdout_angular_metrics(tmp_path: Path) -> N
     ] == 120
     assert report["window_coverage"]["calibration"][0]["good_samples"] == 128
     assert report["window_coverage"]["calibration"][0]["segment_length"] == 64
+    coverage = report["window_coverage"]["calibration"][0]
+    assert coverage["hdop_samples"] == 128
+    assert coverage["hdop_missing_samples"] == 0
+    assert coverage["hdop_median"] == 0.8
+    assert coverage["hdop_max"] == 0.8
+    assert coverage["satellite_samples"] == 128
+    assert coverage["satellite_missing_samples"] == 0
+    assert coverage["satellites_min"] == 12
+    assert coverage["satellites_median"] == 12
     assert report["dataset"]["quality_filter"] == {
         "accepted_good_rows": 256,
         "column_present": True,
