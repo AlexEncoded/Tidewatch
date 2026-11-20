@@ -643,9 +643,14 @@ def test_maintenance_application_service_uses_metrics_port_not_prometheus() -> N
 
 def test_wave_analysis_reader_is_grouped_with_cross_context_analysis_ports() -> None:
     from app.application.analysis_ports import WaveAnalysisMetrics, WaveAnalysisReader
+    from app.adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
 
     assert WaveAnalysisReader.__module__ == "app.application.analysis_ports"
     assert WaveAnalysisMetrics.__module__ == "app.application.analysis_ports"
+    assert (
+        PrometheusWaveAnalysisMetrics.__module__
+        == "app.adapters.prometheus.wave_analysis"
+    )
 
 
 def test_wave_analysis_route_uses_injected_metrics_port() -> None:

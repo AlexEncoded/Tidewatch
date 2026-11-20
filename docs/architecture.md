@@ -164,6 +164,10 @@ through `SalinityRepository`.
 IMU persistence and history queries use `ImuRepository`; the wave-analysis
 PostgreSQL adapter lives in `app/adapters/postgres/wave_analysis.py` and
 composes it with the location adapter behind the `WaveAnalysisReader` port.
+Its Prometheus output adapter lives in
+`app/adapters/prometheus/wave_analysis.py` and implements
+`WaveAnalysisMetrics`; HTTP routes and application services depend only on the
+port.
 Ambient-light persistence and history queries now use `AmbientLightRepository`.
 Wind speed and direction persistence and history queries use `WindRepository`.
 Marine-current speed and direction persistence and queries use
