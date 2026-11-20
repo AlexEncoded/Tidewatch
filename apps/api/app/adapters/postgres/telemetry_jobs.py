@@ -7,12 +7,12 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .domain.telemetry_job import (
+from ...domain.telemetry_job import (
     TelemetryIngestionJobSnapshot,
     TelemetryJobIdempotencyConflict,
 )
-from .telemetry_entities import TelemetryIngestionJobEntity
-from .application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
+from ...telemetry_entities import TelemetryIngestionJobEntity
+from ...application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 
 
 class TelemetryIngestionJobRepository:

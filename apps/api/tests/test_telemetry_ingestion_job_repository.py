@@ -12,8 +12,8 @@ from app.database import Base, TidewatchSession, engine
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from app.fleet_entities import BuoyEntity, DeviceEntity
 from app.sensor_entities import TemperatureReadingEntity
-from app.sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from app.telemetry_entities import TelemetryIngestionJobEntity
 from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
 from app.telemetry_job_worker import process_next_telemetry_job

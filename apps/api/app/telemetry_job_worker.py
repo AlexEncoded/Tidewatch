@@ -21,8 +21,8 @@ from .settings import (
     telemetry_job_max_attempts,
     telemetry_job_poll_seconds,
 )
-from .sqlalchemy_telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from .telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from .adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from .adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 
 logger = logging.getLogger(__name__)
 

@@ -63,7 +63,7 @@ from app.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
 from app.sensor_health_repository import SensorHealthRepository
 from app.quality_summary_repository import QualitySummaryRepository
-from app.telemetry_ingestion_repository import TelemetryIngestionRepository
+from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from app.maintenance_repository import MaintenanceRepository
 from app.adapters.postgres.wave_analysis import WaveAnalysisRepository
 
@@ -80,6 +80,22 @@ def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
 
     assert package.is_dir()
     assert not list(API_APP.glob("prometheus_*.py"))
+
+
+def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
+    from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+    from app.adapters.postgres.telemetry_unit_of_work import (
+        SQLAlchemyTelemetryBatchUnitOfWork,
+    )
+
+    expected_module = "app.adapters.postgres"
+    assert TelemetryIngestionRepository.__module__.startswith(expected_module)
+    assert TelemetryIngestionJobRepository.__module__.startswith(expected_module)
+    assert SQLAlchemyTelemetryBatchUnitOfWork.__module__.startswith(expected_module)
+    assert not (API_APP / "telemetry_ingestion_repository.py").exists()
+    assert not (API_APP / "telemetry_ingestion_job_repository.py").exists()
+    assert not (API_APP / "sqlalchemy_telemetry_unit_of_work.py").exists()
 
 
 def test_legacy_models_facade_module_is_removed() -> None:
@@ -231,7 +247,7 @@ def test_public_repository_contracts_do_not_expose_orm_entities() -> None:
 
 
 def test_location_ingestion_gateway_returns_domain_snapshot_not_orm_entity() -> None:
-    source = (API_APP / "telemetry_ingestion_repository.py").read_text(
+    source = (API_APP / "adapters" / "postgres" / "telemetry_ingestion.py").read_text(
         encoding="utf-8"
     )
     tree = ast.parse(source)
@@ -868,7 +884,7 @@ def test_telemetry_job_http_port_is_implemented_by_sql_adapter() -> None:
 
     assert isinstance(adapter, TelemetryIngestionJobStore)
     route_source = (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
-    assert "from ..telemetry_ingestion_job_repository import" not in route_source
+    assert "from ..adapters.postgres.telemetry_jobs import" not in route_source
 
 
 def test_temperature_telemetry_uses_the_dedicated_adapter() -> None:

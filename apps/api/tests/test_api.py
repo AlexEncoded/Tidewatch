@@ -55,7 +55,7 @@ from app.routers.telemetry import router as telemetry_router
 import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
-from app.telemetry_ingestion_job_repository import TelemetryIngestionJobRepository
+from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from app.maintenance_notification_worker import process_next_maintenance_notification_job
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.telemetry import configure_telemetry
