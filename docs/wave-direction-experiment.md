@@ -3,10 +3,10 @@
 Tidewatch contains an offline prototype in
 `apps/api/app/domain/wave_direction_experiment.py`. It uses synchronized
 surface elevation (`eta`) and east/north GNSS velocity (`u`, `v`) samples,
-Welch averaged spectra, and the first directional moment at the elevation
-spectral peak. It reports a mean compass bearing **towards** which waves travel
-at that frequency; it does not claim to find the peak of a full spreading
-distribution.
+Welch averaged spectra, and first directional moments across resolvable bins
+in a selected frequency band. It reports the mean compass bearing **towards**
+which waves travel at the elevation spectral peak and diagnostic per-frequency
+directions; it does not claim to find the peak of a full spreading distribution.
 
 The prototype rejects irregular sample cadence, non-finite values, invalid
 frequency bands, and records too short for multiple spectral segments. It does
@@ -78,3 +78,42 @@ HDOP and satellite thresholds must be justified for the receiver and deployment;
 the example values are illustrative, not quality standards.
 Synthetic values can check code behavior but must not be treated as calibration
 or field validation evidence.
+
+## Field-validation checklist
+
+This is a campaign-planning checklist, not a validated acquisition standard.
+GNSS buoy studies have compared measurements against independent wave
+instrumentation, while operational directional-buoy procedures also track
+motion and heading quality ([GPS buoy field study](https://doi.org/10.1175/JTECH-D-11-00128.1),
+[NDBC analysis procedures](https://www.ndbc.noaa.gov/wavemeas.pdf)). Those results
+do not establish acceptance limits for Tidewatch hardware.
+
+Before collecting a validation dataset, record:
+
+1. **Instrument configuration:** buoy and receiver model, antenna placement,
+   firmware, GNSS processing mode, IMU model and calibration, coordinate frame,
+   sensor offsets, and whether horizontal velocity is Doppler-derived or
+   calculated from positions. Keep the native receiver and IMU files.
+2. **Time and sampling:** UTC clock source, measured clock offset between
+   streams, sample rates, observed cadence, dropped-sample indicators, and the
+   procedure used to synchronize GNSS, IMU, and reference records. Do not hide
+   gaps by interpolation for this evaluator.
+3. **Independent reference:** use a directional wave instrument with its own
+   documented heading convention and quality flags. Record its location,
+   separation from the test buoy, water depth, and time alignment; report these
+   because they affect how representative a comparison can be.
+4. **Predeclared analysis:** choose the frequency band, minimum window duration,
+   Welch segment length, GNSS quality limits, and acceptable circular angular
+   error before evaluating the held-out windows. These values must come from
+   the receiver and campaign protocol; this document sets no universal values.
+5. **Separate windows:** assign complete, non-overlapping time windows to
+   calibration or validation before inspecting their errors. Preserve the raw
+   records, labels, quality decisions, evaluator command, and report hash for
+   reproducibility.
+6. **Review results by conditions:** report circular error, withheld estimates,
+   sample coverage, and reference/instrument quality by sea state and deployment.
+   A good aggregate score must not conceal a condition where the estimate is
+   unreliable.
+
+Treat the result as exploratory until the selected reference, hardware setup,
+and acceptance criteria have been reviewed for the intended deployment.
