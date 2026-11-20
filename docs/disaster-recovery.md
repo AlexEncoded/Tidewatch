@@ -60,12 +60,13 @@ La CI ejecuta dos niveles de comprobación para los scripts:
    fallido no sustituye el archivo anterior y que un archivo inválido no
    inicia una restauración destructiva.
 2. `scripts/test-postgres-recovery-integration.ps1` usa un PostgreSQL 16
-   efímero: crea una base aislada, inserta datos, genera un backup, altera la
-   base, restaura y comprueba que vuelve exactamente el estado anterior. La
-   base de prueba se elimina al terminar. El job informa el RPO simulado según
-   la separación temporal entre la última fila antes del fallo y la última fila
-   recuperable, y el RTO medido desde el inicio de la restauración hasta la
-   verificación de los datos.
+   efímero: crea una base aislada, aplica todas las migraciones de Tidewatch,
+   inserta datos de prueba, genera un backup, altera la base, restaura y
+   comprueba los datos y la versión Alembic recuperada. La base de prueba se
+   elimina al terminar. El job informa el RPO simulado según la separación
+   temporal entre la última fila antes del fallo y la última fila recuperable,
+   y el RTO medido desde el inicio de la restauración hasta la verificación de
+   datos y esquema.
 
 La prueba de integración requiere `createdb`, `dropdb`, `psql`, `pg_dump`,
 `pg_restore` y una instancia PostgreSQL local disponible en `localhost:5432`

@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-foreach ($command in @("createdb", "dropdb", "psql")) {
+foreach ($command in @("createdb", "dropdb", "psql", "pg_dump", "pg_restore", "alembic")) {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
         throw "Required PostgreSQL client command not found: $command"
     }
@@ -20,6 +20,29 @@ try {
     }
     $databaseCreated = $true
     $env:DATABASE_URL = "postgresql://tidewatch:tidewatch@localhost:5432/$databaseName"
+
+    $libpqDatabaseUrl = $env:DATABASE_URL
+    $env:DATABASE_URL = "postgresql+psycopg://tidewatch:tidewatch@localhost:5432/$databaseName"
+    Push-Location (Join-Path $PSScriptRoot "..\apps\api")
+    try {
+        alembic upgrade head
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not apply the Tidewatch database migrations to the recovery database."
+        }
+    }
+    finally {
+        Pop-Location
+        $env:DATABASE_URL = $libpqDatabaseUrl
+    }
+
+    $migrationVersionBefore = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT version_num FROM alembic_version;"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($migrationVersionBefore -join "").Trim())) {
+        throw "Could not verify the migrated Tidewatch schema before backup."
+    }
+    $schemaBefore = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($schemaBefore -join "").Trim())) {
+        throw "Could not list the Tidewatch schema tables before backup."
+    }
 
     $clientVersion = pg_restore --version
     if ($LASTEXITCODE -ne 0 -or $clientVersion -notmatch "\(PostgreSQL\)\s+(\d+)") {
@@ -65,6 +88,14 @@ try {
     }
     if (($restoredRows -join "`n").Trim() -ne "1:before-backup") {
         throw "PostgreSQL restore did not recover the expected pre-backup state: $restoredRows"
+    }
+    $migrationVersionAfter = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT version_num FROM alembic_version;"
+    if ($LASTEXITCODE -ne 0 -or ($migrationVersionAfter -join "").Trim() -ne ($migrationVersionBefore -join "").Trim()) {
+        throw "PostgreSQL restore did not recover the Tidewatch Alembic migration version."
+    }
+    $schemaAfter = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"
+    if ($LASTEXITCODE -ne 0 -or ($schemaAfter -join "").Trim() -ne ($schemaBefore -join "").Trim()) {
+        throw "PostgreSQL restore did not recover the Tidewatch application schema."
     }
     $recoveryStopwatch.Stop()
     $simulatedRtoSeconds = $recoveryStopwatch.Elapsed.TotalSeconds
