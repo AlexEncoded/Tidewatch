@@ -32,10 +32,19 @@ REQUIRED_COLUMNS = {
 VALID_QUALITIES = {"good", "suspect", "invalid"}
 
 
-def load_windows(path: Path) -> tuple[dict[str, dict], dict[str, object]]:
+def load_windows(
+    path: Path,
+    *,
+    maximum_hdop: float | None,
+    minimum_satellites: int | None,
+) -> tuple[dict[str, dict], dict[str, object]]:
     windows: dict[str, dict] = {}
     seen_timestamps: dict[datetime, str] = {}
     quality_counts = {quality: 0 for quality in VALID_QUALITIES}
+    excluded_hdop_rows = 0
+    excluded_missing_hdop_rows = 0
+    excluded_satellite_rows = 0
+    excluded_missing_satellite_rows = 0
     quality_column_present = False
     with path.open(newline="", encoding="utf-8-sig") as source:
         reader = csv.DictReader(source)
@@ -49,6 +58,10 @@ def load_windows(path: Path) -> tuple[dict[str, dict], dict[str, object]]:
         if missing:
             raise ValueError(f"CSV is missing columns: {', '.join(sorted(missing))}")
         quality_column_present = "quality" in fieldnames
+        if maximum_hdop is not None and "hdop" not in fieldnames:
+            raise ValueError("--maximum-hdop requires an hdop CSV column")
+        if minimum_satellites is not None and "satellites" not in fieldnames:
+            raise ValueError("--minimum-satellites requires a satellites CSV column")
         for line_number, row in enumerate(reader, start=2):
             if row.get(None):
                 raise ValueError(f"Line {line_number}: too many CSV fields")
@@ -103,6 +116,30 @@ def load_windows(path: Path) -> tuple[dict[str, dict], dict[str, object]]:
             entry["timestamps"].append(timestamp)
             if quality != "good":
                 continue
+            if maximum_hdop is not None:
+                hdop_value = _optional_finite_number(row.get("hdop"), line_number)
+                if hdop_value is None:
+                    excluded_missing_hdop_rows += 1
+                    continue
+                if not 0 < hdop_value <= 100:
+                    raise ValueError(f"Line {line_number}: HDOP must be in (0, 100]")
+                if hdop_value > maximum_hdop:
+                    excluded_hdop_rows += 1
+                    continue
+            if minimum_satellites is not None:
+                satellites_value = _optional_finite_number(
+                    row.get("satellites"), line_number
+                )
+                if satellites_value is None:
+                    excluded_missing_satellite_rows += 1
+                    continue
+                if not satellites_value.is_integer() or not 0 <= satellites_value <= 100:
+                    raise ValueError(
+                        f"Line {line_number}: satellites must be an integer in [0, 100]"
+                    )
+                if satellites_value < minimum_satellites:
+                    excluded_satellite_rows += 1
+                    continue
             sample = WaveDirectionSample(
                 measured_at=timestamp,
                 elevation_m=_finite_number(row["elevation_m"], line_number),
@@ -139,9 +176,16 @@ def load_windows(path: Path) -> tuple[dict[str, dict], dict[str, object]]:
 
     quality_summary = {
         "column_present": quality_column_present,
-        "accepted_good_rows": quality_counts["good"],
+        "accepted_good_rows": sum(len(window["samples"]) for window in windows.values()),
+        "good_quality_rows": quality_counts["good"],
         "excluded_suspect_rows": quality_counts["suspect"],
         "excluded_invalid_rows": quality_counts["invalid"],
+        "maximum_hdop": maximum_hdop,
+        "excluded_hdop_rows": excluded_hdop_rows,
+        "excluded_missing_hdop_rows": excluded_missing_hdop_rows,
+        "minimum_satellites": minimum_satellites,
+        "excluded_satellite_rows": excluded_satellite_rows,
+        "excluded_missing_satellite_rows": excluded_missing_satellite_rows,
     }
     return windows, quality_summary
 
@@ -252,6 +296,12 @@ def _finite_number(value: str | None, line_number: int) -> float:
     return number
 
 
+def _optional_finite_number(value: str | None, line_number: int) -> float | None:
+    if value is None or not value.strip():
+        return None
+    return _finite_number(value, line_number)
+
+
 def _parse_timestamp(value: str | None, line_number: int) -> datetime:
     if not value:
         raise ValueError(f"Line {line_number}: timestamp is required")
@@ -278,6 +328,8 @@ def main() -> int:
     parser.add_argument("--minimum-frequency-hz", type=float, required=True)
     parser.add_argument("--maximum-frequency-hz", type=float, required=True)
     parser.add_argument("--minimum-window-duration-seconds", type=float, required=True)
+    parser.add_argument("--maximum-hdop", type=float)
+    parser.add_argument("--minimum-satellites", type=int)
     parser.add_argument("--segment-length", type=int)
     args = parser.parse_args()
     if (
@@ -291,8 +343,18 @@ def main() -> int:
         or args.minimum_window_duration_seconds <= 0
     ):
         parser.error("--minimum-window-duration-seconds must be finite and positive")
+    if args.maximum_hdop is not None and (
+        not math.isfinite(args.maximum_hdop) or not 0 < args.maximum_hdop <= 100
+    ):
+        parser.error("--maximum-hdop must be finite and in (0, 100]")
+    if args.minimum_satellites is not None and not 0 <= args.minimum_satellites <= 100:
+        parser.error("--minimum-satellites must be an integer in [0, 100]")
     try:
-        windows, quality_summary = load_windows(args.csv_path)
+        windows, quality_summary = load_windows(
+            args.csv_path,
+            maximum_hdop=args.maximum_hdop,
+            minimum_satellites=args.minimum_satellites,
+        )
         estimates, coverage, metrics = evaluate_windows(
             windows,
             minimum_frequency_hz=args.minimum_frequency_hz,

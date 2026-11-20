@@ -44,14 +44,18 @@ independent reference bearing in compass degrees clockwise from true north.
 Each `window_id` has one constant reference bearing and one split (`calibration`
 or `validation`); windows may not overlap in time. Mark rejected samples as
 `suspect` or `invalid`. The evaluator excludes those rows and does not fill the
-resulting gaps.
+resulting gaps. `hdop` and `satellites` are optional diagnostic columns; choose
+receiver-specific filters with `--maximum-hdop` or `--minimum-satellites`.
+When a filter is requested, its column is required and rows with missing values
+are excluded. The report records each exclusion count and the selected limits.
 
 Run it with an explicit frequency band chosen for the sampling protocol:
 
 ```bash
 python scripts/evaluate-wave-direction.py data/labeled-directions.csv \
   --minimum-frequency-hz 0.05 --maximum-frequency-hz 0.4 \
-  --minimum-window-duration-seconds 512 --segment-length 128
+  --minimum-window-duration-seconds 512 --segment-length 128 \
+  --maximum-hdop 2.0 --minimum-satellites 8
 ```
 
 The JSON report records the input SHA-256, quality counts, per-window sample
@@ -64,5 +68,7 @@ sea-state protocol, and reference instrument; the example value is illustrative,
 not a universal scientific threshold.
 Mean signed error is calculated circularly and is omitted when its direction is
 undefined because errors cancel around the circle.
+HDOP and satellite thresholds must be justified for the receiver and deployment;
+the example values are illustrative, not quality standards.
 Synthetic values can check code behavior but must not be treated as calibration
 or field validation evidence.

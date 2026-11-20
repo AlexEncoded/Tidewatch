@@ -19,10 +19,17 @@ FIELDS = (
     "velocity_north_mps",
     "reference_direction_towards_degrees",
     "quality",
+    "hdop",
+    "satellites",
 )
 
 
-def _write_dataset(path: Path, *, no_horizontal_motion: bool = False) -> None:
+def _write_dataset(
+    path: Path,
+    *,
+    no_horizontal_motion: bool = False,
+    include_bad_fixes: bool = False,
+) -> None:
     with path.open("w", newline="", encoding="utf-8") as target:
         writer = csv.DictWriter(target, fieldnames=FIELDS)
         writer.writeheader()
@@ -31,6 +38,21 @@ def _write_dataset(path: Path, *, no_horizontal_motion: bool = False) -> None:
             ("validation-1", "validation", datetime(2026, 1, 1, 1, tzinfo=timezone.utc), 120),
         ):
             bearing = math.radians(direction)
+            if include_bad_fixes:
+                writer.writerow(
+                    {
+                        "window_id": window_id,
+                        "split": split,
+                        "measured_at": (start - timedelta(seconds=1)).isoformat(),
+                        "elevation_m": 500,
+                        "velocity_east_mps": 500,
+                        "velocity_north_mps": 500,
+                        "reference_direction_towards_degrees": direction,
+                        "quality": "good",
+                        "hdop": 5,
+                        "satellites": 12,
+                    }
+                )
             for index in range(128):
                 elevation = math.cos(2 * math.pi * index / 8)
                 horizontal_speed = 0 if no_horizontal_motion else 0.15 * elevation
@@ -44,23 +66,46 @@ def _write_dataset(path: Path, *, no_horizontal_motion: bool = False) -> None:
                         "velocity_north_mps": horizontal_speed * math.cos(bearing),
                         "reference_direction_towards_degrees": direction,
                         "quality": "good",
+                        "hdop": 0.8,
+                        "satellites": 12,
+                    }
+                )
+            if include_bad_fixes:
+                writer.writerow(
+                    {
+                        "window_id": window_id,
+                        "split": split,
+                        "measured_at": (start + timedelta(seconds=128)).isoformat(),
+                        "elevation_m": 500,
+                        "velocity_east_mps": 500,
+                        "velocity_north_mps": 500,
+                        "reference_direction_towards_degrees": direction,
+                        "quality": "good",
+                        "hdop": 0.8,
+                        "satellites": 3,
                     }
                 )
             writer.writerow(
                 {
                     "window_id": window_id,
                     "split": split,
-                    "measured_at": (start + timedelta(seconds=128)).isoformat(),
+                    "measured_at": (
+                        start + timedelta(seconds=129 if include_bad_fixes else 128)
+                    ).isoformat(),
                     "elevation_m": 500,
                     "velocity_east_mps": 500,
                     "velocity_north_mps": 500,
                     "reference_direction_towards_degrees": direction,
                     "quality": "suspect",
+                    "hdop": 0.8,
+                    "satellites": 12,
                 }
             )
 
 
-def _run_evaluator(path: Path) -> subprocess.CompletedProcess:
+def _run_evaluator(
+    path: Path, extra_args: tuple[str, ...] = ()
+) -> subprocess.CompletedProcess:
     return subprocess.run(
         [
             sys.executable,
@@ -74,6 +119,7 @@ def _run_evaluator(path: Path) -> subprocess.CompletedProcess:
             "120",
             "--segment-length",
             "64",
+            *extra_args,
         ],
         check=False,
         capture_output=True,
@@ -99,8 +145,15 @@ def test_wave_direction_cli_reports_holdout_angular_metrics(tmp_path: Path) -> N
     assert report["dataset"]["quality_filter"] == {
         "accepted_good_rows": 256,
         "column_present": True,
+        "excluded_hdop_rows": 0,
         "excluded_invalid_rows": 0,
+        "excluded_missing_hdop_rows": 0,
+        "excluded_missing_satellite_rows": 0,
+        "excluded_satellite_rows": 0,
         "excluded_suspect_rows": 2,
+        "good_quality_rows": 256,
+        "maximum_hdop": None,
+        "minimum_satellites": None,
     }
     assert report["dataset"]["sha256"] == hashlib.sha256(dataset.read_bytes()).hexdigest()
     assert report["warning"].startswith("Offline exploratory estimate only")
@@ -168,3 +221,30 @@ def test_wave_direction_cli_rejects_windows_shorter_than_protocol_minimum(
     assert result.returncode == 2
     assert "below the required 128s" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_wave_direction_cli_filters_hdop_and_satellite_counts(tmp_path: Path) -> None:
+    dataset = tmp_path / "gnss-quality-directions.csv"
+    _write_dataset(dataset, include_bad_fixes=True)
+
+    result = _run_evaluator(
+        dataset,
+        extra_args=("--maximum-hdop", "2.0", "--minimum-satellites", "8"),
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["metrics"]["validation"]["mean_absolute_error_degrees"] == 0
+    assert report["dataset"]["quality_filter"] == {
+        "accepted_good_rows": 256,
+        "column_present": True,
+        "excluded_hdop_rows": 2,
+        "excluded_invalid_rows": 0,
+        "excluded_missing_hdop_rows": 0,
+        "excluded_missing_satellite_rows": 0,
+        "excluded_satellite_rows": 2,
+        "excluded_suspect_rows": 2,
+        "good_quality_rows": 260,
+        "maximum_hdop": 2.0,
+        "minimum_satellites": 8,
+    }

@@ -1,1 +1,1 @@
-window_id,split,measured_at,elevation_m,velocity_east_mps,velocity_north_mps,reference_direction_towards_degrees,quality
+window_id,split,measured_at,elevation_m,velocity_east_mps,velocity_north_mps,reference_direction_towards_degrees,quality,hdop,satellites
