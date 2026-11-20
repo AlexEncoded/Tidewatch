@@ -62,7 +62,10 @@ The JSON report records the input SHA-256, quality counts, per-window sample
 cadence, HDOP and satellite availability and summaries (median, maximum HDOP,
 and minimum satellite count), estimates, withheld angles, and circular angular
 error metrics for each split, including the effective Welch segment length and
-count. Metadata summaries describe accepted good-quality samples, including
+count. Each estimate also includes resolved frequency bins with relative
+elevation energy and a first-moment direction and concentration where available;
+this is diagnostic and does not reconstruct a directional distribution.
+Metadata summaries describe accepted good-quality samples, including
 accepted samples when no GNSS threshold was configured. Calibration and
 validation are report-only groups; no parameter is selected or fitted. The tool
 requires uniform good-sample cadence and multiple overlapping Welch segments.

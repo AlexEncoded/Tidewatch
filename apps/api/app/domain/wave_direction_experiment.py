@@ -30,6 +30,16 @@ class WaveDirectionSample:
 
 
 @dataclass(frozen=True)
+class WaveDirectionFrequency:
+    """Exploratory first-moment direction at one resolved FFT frequency."""
+
+    frequency_hz: float
+    relative_elevation_energy: float
+    mean_direction_towards_degrees: float | None
+    directional_concentration: float
+
+
+@dataclass(frozen=True)
 class WaveDirectionEstimate:
     """Mean direction at the elevation peak frequency; never an API response."""
 
@@ -39,6 +49,7 @@ class WaveDirectionEstimate:
     sample_count: int
     segment_count: int
     segment_length: int
+    frequency_spectrum: tuple[WaveDirectionFrequency, ...] = ()
 
 
 def estimate_mean_direction_at_peak_frequency(
@@ -126,6 +137,7 @@ def estimate_mean_direction_at_peak_frequency(
         segment_count += 1
 
     peak: tuple[float, float, float, float, float, float] | None = None
+    frequency_rows: list[tuple[float, float, float | None, float]] = []
     for frequency_index, segment_spectra in spectra.items():
         frequency_hz = frequency_index / (segment_length * sample_interval)
         if not minimum_frequency_hz <= frequency_hz <= maximum_frequency_hz:
@@ -139,6 +151,22 @@ def estimate_mean_direction_at_peak_frequency(
         north_cross = sum(
             (eta.conjugate() * north).real for eta, _, north in segment_spectra
         )
+        horizontal_energy = east_energy + north_energy
+        denominator = math.sqrt(eta_energy * horizontal_energy)
+        if denominator > MIN_SPECTRAL_ENERGY:
+            first_east = east_cross / denominator
+            first_north = north_cross / denominator
+            concentration = math.hypot(first_east, first_north)
+            theta = math.degrees(math.atan2(first_north, first_east))
+            direction = (90 - theta) % 360
+            if concentration < MIN_DIRECTIONAL_CONCENTRATION:
+                direction = None
+        else:
+            concentration = 0.0
+            direction = None
+        frequency_rows.append(
+            (frequency_hz, eta_energy, direction, concentration)
+        )
         if peak is None or eta_energy > peak[1]:
             peak = (
                 frequency_hz,
@@ -149,9 +177,25 @@ def estimate_mean_direction_at_peak_frequency(
                 north_cross,
             )
 
+    peak_energy = peak[1] if peak is not None else 0.0
+    frequency_spectrum = tuple(
+        WaveDirectionFrequency(
+            frequency_hz=round(frequency_hz, 6),
+            relative_elevation_energy=(
+                round(eta_energy / peak_energy, 6) if peak_energy > 0 else 0.0
+            ),
+            mean_direction_towards_degrees=(
+                round(direction, 1) if direction is not None else None
+            ),
+            directional_concentration=round(concentration, 6),
+        )
+        for frequency_hz, eta_energy, direction, concentration in frequency_rows
+    )
+
     if peak is None or peak[1] <= MIN_SPECTRAL_ENERGY:
         return WaveDirectionEstimate(
-            None, None, 0.0, len(samples), segment_count, segment_length
+            None, None, 0.0, len(samples), segment_count, segment_length,
+            frequency_spectrum,
         )
 
     (
@@ -166,7 +210,8 @@ def estimate_mean_direction_at_peak_frequency(
     denominator = math.sqrt(eta_energy * horizontal_energy)
     if denominator <= MIN_SPECTRAL_ENERGY:
         return WaveDirectionEstimate(
-            None, peak_frequency, 0.0, len(samples), segment_count, segment_length
+            None, peak_frequency, 0.0, len(samples), segment_count, segment_length,
+            frequency_spectrum,
         )
 
     first_east = east_cross / denominator
@@ -180,12 +225,14 @@ def estimate_mean_direction_at_peak_frequency(
             len(samples),
             segment_count,
             segment_length,
+            frequency_spectrum,
         )
 
     # The eta/u/v method uses east as x, north as y, and angles increasing
     # counter-clockwise. Convert that angle to a compass bearing clockwise
     # from north. This prototype reports the first-moment mean at the elevation
-    # peak frequency; it does not reconstruct the full directional distribution.
+    # peak frequency; the per-frequency first moments do not reconstruct the
+    # full directional distribution.
     theta = math.degrees(math.atan2(first_north, first_east))
     direction_towards = (90 - theta) % 360
     return WaveDirectionEstimate(
@@ -195,6 +242,7 @@ def estimate_mean_direction_at_peak_frequency(
         len(samples),
         segment_count,
         segment_length,
+        frequency_spectrum,
     )
 
 

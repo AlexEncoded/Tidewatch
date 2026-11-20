@@ -253,6 +253,17 @@ def evaluate_windows(
                 "absolute_error_degrees": round(abs(error), 3) if error is not None else None,
                 "peak_frequency_hz": estimate.peak_frequency_hz,
                 "directional_concentration": estimate.directional_concentration,
+                "frequency_spectrum": [
+                    {
+                        "frequency_hz": row.frequency_hz,
+                        "relative_elevation_energy": row.relative_elevation_energy,
+                        "mean_direction_towards_degrees": (
+                            row.mean_direction_towards_degrees
+                        ),
+                        "directional_concentration": row.directional_concentration,
+                    }
+                    for row in estimate.frequency_spectrum
+                ],
             }
         )
         coverage[window["split"]].append(

@@ -52,6 +52,11 @@ def test_experimental_mean_direction_recovers_synthetic_compass_bearing(
     assert result.directional_concentration == pytest.approx(1.0, abs=1e-6)
     assert result.segment_count == 7
     assert result.segment_length == 128
+    peak_bin = next(
+        row for row in result.frequency_spectrum if row.frequency_hz == 0.125
+    )
+    assert peak_bin.relative_elevation_energy == 1
+    assert peak_bin.mean_direction_towards_degrees == pytest.approx(direction, abs=0.2)
 
 
 def test_experimental_direction_withholds_result_without_horizontal_energy() -> None:
@@ -158,6 +163,10 @@ def test_experimental_direction_uses_dominant_frequency_in_mixed_sea() -> None:
     assert result.mean_direction_towards_degrees == pytest.approx(
         35, abs=0.5
     )
+    bins = {row.frequency_hz: row for row in result.frequency_spectrum}
+    assert bins[0.125].mean_direction_towards_degrees == pytest.approx(35, abs=0.5)
+    assert bins[0.25].mean_direction_towards_degrees == pytest.approx(210, abs=1)
+    assert bins[0.25].relative_elevation_energy < bins[0.125].relative_elevation_energy
 
 
 def test_experimental_direction_rejects_gaps_and_invalid_frequency_band() -> None:

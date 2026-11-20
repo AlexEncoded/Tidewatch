@@ -140,6 +140,13 @@ def test_wave_direction_cli_reports_holdout_angular_metrics(tmp_path: Path) -> N
     assert report["window_estimates"]["validation"][0][
         "estimated_mean_direction_towards_degrees"
     ] == 120
+    peak_bin = next(
+        row
+        for row in report["window_estimates"]["validation"][0]["frequency_spectrum"]
+        if row["frequency_hz"] == 0.125
+    )
+    assert peak_bin["mean_direction_towards_degrees"] == 120
+    assert peak_bin["relative_elevation_energy"] == 1
     assert report["window_coverage"]["calibration"][0]["good_samples"] == 128
     assert report["window_coverage"]["calibration"][0]["segment_length"] == 64
     coverage = report["window_coverage"]["calibration"][0]
