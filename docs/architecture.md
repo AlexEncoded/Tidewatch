@@ -162,7 +162,8 @@ which refreshes buoy activity through the fleet registry adapter.
 Salinity persistence and history queries follow the same port/adaptor boundary
 through `SalinityRepository`.
 IMU persistence and history queries use `ImuRepository`; the wave-analysis
-compatibility facade composes it with the location adapter.
+PostgreSQL adapter lives in `app/adapters/postgres/wave_analysis.py` and
+composes it with the location adapter behind the `WaveAnalysisReader` port.
 Ambient-light persistence and history queries now use `AmbientLightRepository`.
 Wind speed and direction persistence and history queries use `WindRepository`.
 Marine-current speed and direction persistence and queries use

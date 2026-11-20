@@ -111,7 +111,7 @@ from .prometheus_battery_metrics import PrometheusBatteryMetrics
 from .prometheus_metrics_scraper import PrometheusMetricsScraper
 from .prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
 from .maintenance_repository import MaintenanceRepository
-from .wave_analysis_repository import WaveAnalysisRepository
+from .adapters.postgres.wave_analysis import WaveAnalysisRepository
 
 
 def get_quality_summary_reader(

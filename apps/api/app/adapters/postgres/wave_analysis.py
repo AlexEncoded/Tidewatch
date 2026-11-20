@@ -1,18 +1,18 @@
-"""Read adapter composing IMU and location histories for wave analysis."""
+"""PostgreSQL adapter composing IMU and location histories for wave analysis."""
 
 from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from .buoy_location_repository import BuoyLocationRepository
-from .domain.location import LocationTelemetrySnapshot
-from .domain.imu import ImuTelemetrySnapshot
-from .imu_repository import ImuRepository
-from .domain.devices import SensorChannel
+from ...buoy_location_repository import BuoyLocationRepository
+from ...domain.devices import SensorChannel
+from ...domain.imu import ImuTelemetrySnapshot
+from ...domain.location import LocationTelemetrySnapshot
+from ...imu_repository import ImuRepository
 
 
 class WaveAnalysisRepository:
-    """Provide wave-analysis inputs from their focused persistence adapters."""
+    """Provide wave-analysis inputs from focused PostgreSQL adapters."""
 
     def __init__(self, db: Session) -> None:
         self.imu = ImuRepository(db)
