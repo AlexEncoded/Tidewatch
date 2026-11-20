@@ -257,3 +257,37 @@ def test_wave_direction_cli_filters_hdop_and_satellite_counts(tmp_path: Path) ->
         "maximum_hdop": 2.0,
         "minimum_satellites": 8,
     }
+
+
+def test_wave_direction_cli_reports_missing_optional_gnss_metadata(
+    tmp_path: Path,
+) -> None:
+    dataset = tmp_path / "legacy-directions.csv"
+    _write_dataset(dataset)
+    with dataset.open(newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        fields = [field for field in reader.fieldnames or [] if field not in {"hdop", "satellites"}]
+        rows = list(reader)
+    with dataset.open("w", newline="", encoding="utf-8") as target:
+        writer = csv.DictWriter(target, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows({field: row[field] for field in fields} for row in rows)
+
+    result = _run_evaluator(dataset)
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    coverage = report["window_coverage"]["validation"][0]
+    assert coverage["hdop_samples"] == 0
+    assert coverage["hdop_missing_samples"] == 128
+    assert coverage["hdop_median"] is None
+    assert coverage["hdop_max"] is None
+    assert coverage["satellite_samples"] == 0
+    assert coverage["satellite_missing_samples"] == 128
+    assert coverage["satellites_min"] is None
+    assert coverage["satellites_median"] is None
+
+    filtered = _run_evaluator(dataset, extra_args=("--maximum-hdop", "2.0"))
+    assert filtered.returncode == 2
+    assert "requires an hdop CSV column" in filtered.stderr
+    assert "Traceback" not in filtered.stderr
