@@ -7,8 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
 from .availability_metrics import initialize_availability_metrics
-from .prometheus_fleet_metrics import PrometheusFleetMetrics
-from .prometheus_http_request_metrics import PrometheusHttpRequestMetrics
+from .adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
+from .adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
 from .database import SessionLocal
 from .telemetry import configure_telemetry
 from .routers.devices import router as devices_router

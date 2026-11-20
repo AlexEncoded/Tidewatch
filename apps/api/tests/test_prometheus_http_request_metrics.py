@@ -1,5 +1,5 @@
-from app import prometheus_http_request_metrics as adapter_module
-from app.prometheus_http_request_metrics import PrometheusHttpRequestMetrics
+from app.adapters.prometheus import http_request_metrics as adapter_module
+from app.adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
 
 
 class FakeSample:

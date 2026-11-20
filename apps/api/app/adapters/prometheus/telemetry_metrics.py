@@ -2,7 +2,7 @@
 
 from prometheus_client.metrics import MetricWrapperBase
 
-from . import metrics as prometheus_metrics
+from ... import metrics as prometheus_metrics
 
 
 class PrometheusTelemetryMetrics:

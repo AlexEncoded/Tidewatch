@@ -6,7 +6,7 @@ from app.metrics import (
     telemetry_ingestion_oldest_pending_seconds,
     telemetry_ingestion_retried_jobs,
 )
-from app.prometheus_telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
+from app.adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
 
 
 def test_prometheus_queue_metrics_publish_snapshot_and_collection_status() -> None:

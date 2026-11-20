@@ -75,6 +75,13 @@ def test_legacy_analytics_adapter_module_is_removed() -> None:
     assert not (API_APP / "analytics.py").exists()
 
 
+def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
+    package = API_APP / "adapters" / "prometheus"
+
+    assert package.is_dir()
+    assert not list(API_APP.glob("prometheus_*.py"))
+
+
 def test_legacy_models_facade_module_is_removed() -> None:
     assert not (API_APP / "models.py").exists()
 
@@ -1313,7 +1320,7 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     )
     from app.domain.sensor_status import SensorHealthStatus, sensor_health_status
     from app.application.sensor_health_ports import SensorHealthMetrics
-    from app.prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
+    from app.adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
 
     assert get_type_hints(sensor_health_status)["return"] is SensorHealthStatus
     assert get_type_hints(SensorHealthEvaluation)["status"] is SensorHealthStatus
@@ -2136,7 +2143,7 @@ def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
 
 
 def test_prometheus_telemetry_metrics_resolves_registered_instruments() -> None:
-    from app.prometheus_telemetry_metrics import PrometheusTelemetryMetrics
+    from app.adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 
     metrics = PrometheusTelemetryMetrics()
     processor_tree = ast.parse(
@@ -2307,7 +2314,7 @@ def test_main_uses_http_metrics_adapter_not_prometheus_instruments() -> None:
     }
 
     assert "metrics" not in imported_modules
-    assert "prometheus_http_request_metrics" in imported_modules
+    assert "adapters.prometheus.http_request_metrics" in imported_modules
 
 
 def test_system_router_uses_metrics_scraper_instead_of_prometheus_client() -> None:

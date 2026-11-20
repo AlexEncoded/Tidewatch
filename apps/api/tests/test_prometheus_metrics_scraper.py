@@ -1,5 +1,5 @@
-from app import prometheus_metrics_scraper as adapter_module
-from app.prometheus_metrics_scraper import PrometheusMetricsScraper
+from app.adapters.prometheus import metrics_scraper as adapter_module
+from app.adapters.prometheus.metrics_scraper import PrometheusMetricsScraper
 
 
 def test_prometheus_metrics_scraper_returns_exposition_and_content_type(monkeypatch) -> None:

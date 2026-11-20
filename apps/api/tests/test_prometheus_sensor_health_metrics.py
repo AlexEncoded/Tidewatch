@@ -3,7 +3,7 @@ from app.metrics import (
     sensor_degraded,
     sensor_health_decision,
 )
-from app.prometheus_sensor_health_metrics import PrometheusSensorHealthMetrics
+from app.adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
 
 
 def test_prometheus_sensor_health_metrics_publish_missing_and_decisions() -> None:

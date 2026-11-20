@@ -5,7 +5,7 @@ from app.metrics import (
     buoy_movement_speed_mps,
     device_last_seen_timestamp_seconds,
 )
-from app.prometheus_fleet_metrics import PrometheusFleetMetrics
+from app.adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 
 
 def test_prometheus_fleet_metrics_publish_heartbeats_and_movement() -> None:

@@ -7,7 +7,7 @@ from app.metrics import (
     buoy_last_seen_timestamp_seconds,
     device_last_seen_timestamp_seconds,
 )
-from app.prometheus_battery_metrics import PrometheusBatteryMetrics
+from app.adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
 
 
 def test_prometheus_battery_metrics_publish_reading_heartbeats_and_health() -> None:

@@ -2,7 +2,7 @@
 
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-from .application.system_ports import MetricsScraper
+from ...application.system_ports import MetricsScraper
 
 
 class PrometheusMetricsScraper(MetricsScraper):
