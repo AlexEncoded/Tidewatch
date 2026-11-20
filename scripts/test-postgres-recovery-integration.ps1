@@ -39,11 +39,6 @@ try {
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($migrationVersionBefore -join "").Trim())) {
         throw "Could not verify the migrated Tidewatch schema before backup."
     }
-    $schemaBefore = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($schemaBefore -join "").Trim())) {
-        throw "Could not list the Tidewatch schema tables before backup."
-    }
-
     $clientVersion = pg_restore --version
     if ($LASTEXITCODE -ne 0 -or $clientVersion -notmatch "\(PostgreSQL\)\s+(\d+)") {
         throw "Could not determine the pg_restore client version."
@@ -61,6 +56,10 @@ try {
     psql --dbname=$env:DATABASE_URL --command "CREATE TABLE recovery_probe (id integer PRIMARY KEY, value text NOT NULL, committed_at timestamptz NOT NULL); INSERT INTO recovery_probe VALUES (1, 'before-backup', CURRENT_TIMESTAMP);"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not seed the isolated PostgreSQL recovery database."
+    }
+    $schemaBefore = psql --dbname=$env:DATABASE_URL --tuples-only --no-align --command "SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($schemaBefore -join "").Trim())) {
+        throw "Could not list the Tidewatch schema tables before backup."
     }
 
     . (Join-Path $PSScriptRoot "postgres-backup.ps1") -OutputFile $backupFile
