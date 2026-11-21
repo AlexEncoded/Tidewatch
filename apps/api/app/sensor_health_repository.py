@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .application.sensor_health_ports import SensorHealthCheckGateway
-from .ambient_light_repository import AmbientLightRepository
+from .adapters.postgres.ambient_light_repository import AmbientLightRepository
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from .buoy_registry_repository import BuoyRegistryRepository
@@ -38,7 +38,7 @@ from .sensor_entities import SensorHealthCheckEntity
 from .temperature_repository import TemperatureRepository
 from .adapters.postgres.humidity_repository import HumidityRepository
 from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
-from .imu_repository import ImuRepository
+from .adapters.postgres.imu_repository import ImuRepository
 from .adapters.postgres.marine_current_repository import MarineCurrentRepository
 from .persistence_mappers import sensor_health_check_snapshot
 from .adapters.postgres.ph_repository import PHRepository

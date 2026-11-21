@@ -8,7 +8,7 @@ from ...buoy_location_repository import BuoyLocationRepository
 from ...domain.devices import SensorChannel
 from ...domain.imu import ImuTelemetrySnapshot
 from ...domain.location import LocationTelemetrySnapshot
-from ...imu_repository import ImuRepository
+from .imu_repository import ImuRepository
 
 
 class WaveAnalysisRepository:

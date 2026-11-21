@@ -7,8 +7,8 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
-from .imu_repository import ImuRepository
-from .ambient_light_repository import AmbientLightRepository
+from .adapters.postgres.imu_repository import ImuRepository
+from .adapters.postgres.ambient_light_repository import AmbientLightRepository
 from .adapters.postgres.wind_repository import WindRepository
 from .adapters.postgres.marine_current_repository import MarineCurrentRepository
 from .adapters.postgres.turbidity_repository import TurbidityRepository
