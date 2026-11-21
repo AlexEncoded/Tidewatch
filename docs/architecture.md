@@ -78,6 +78,8 @@ The weather sensor persistence adapters for rainfall, humidity, air temperature,
 and atmospheric pressure live in the same package.
 Water-quality persistence adapters for salinity, dissolved oxygen, pH,
 conductivity, chlorophyll-a, and turbidity are grouped there as well.
+Wind and marine-current persistence adapters are in the same package under the
+flow-sensor ports.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
 `application/telemetry_ports.py`. The composite telemetry-ingestion gateway is
 defined in the same module. Context-specific modules are the canonical port

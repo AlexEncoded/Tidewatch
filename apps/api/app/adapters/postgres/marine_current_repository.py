@@ -3,10 +3,10 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.marine_current import MarineCurrentTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import MarineCurrentReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.marine_current import MarineCurrentTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import MarineCurrentReadingEntity
 
 
 class MarineCurrentRepository:

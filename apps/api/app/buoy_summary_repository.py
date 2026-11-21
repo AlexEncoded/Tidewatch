@@ -9,8 +9,8 @@ from .pressure_repository import PressureRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
 from .imu_repository import ImuRepository
 from .ambient_light_repository import AmbientLightRepository
-from .wind_repository import WindRepository
-from .marine_current_repository import MarineCurrentRepository
+from .adapters.postgres.wind_repository import WindRepository
+from .adapters.postgres.marine_current_repository import MarineCurrentRepository
 from .adapters.postgres.turbidity_repository import TurbidityRepository
 from .adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
 from .adapters.postgres.ph_repository import PHRepository

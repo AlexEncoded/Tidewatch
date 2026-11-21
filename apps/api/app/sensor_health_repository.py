@@ -39,7 +39,7 @@ from .temperature_repository import TemperatureRepository
 from .adapters.postgres.humidity_repository import HumidityRepository
 from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
 from .imu_repository import ImuRepository
-from .marine_current_repository import MarineCurrentRepository
+from .adapters.postgres.marine_current_repository import MarineCurrentRepository
 from .persistence_mappers import sensor_health_check_snapshot
 from .adapters.postgres.ph_repository import PHRepository
 from .pressure_repository import PressureRepository
@@ -47,7 +47,7 @@ from .adapters.postgres.rainfall_repository import RainfallRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
 from .adapters.postgres.turbidity_repository import TurbidityRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
-from .wind_repository import WindRepository
+from .adapters.postgres.wind_repository import WindRepository
 from .domain.devices import SensorChannel
 
 
