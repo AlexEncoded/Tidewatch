@@ -84,6 +84,7 @@ The acoustic-altimeter and underwater-acoustic persistence adapters are grouped
 there too.
 IMU and ambient-light persistence adapters also live in this package, alongside
 the other sensor-specific PostgreSQL implementations.
+Core water-temperature and pressure persistence adapters now live there too.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
 `application/telemetry_ports.py`. The composite telemetry-ingestion gateway is
 defined in the same module. Context-specific modules are the canonical port

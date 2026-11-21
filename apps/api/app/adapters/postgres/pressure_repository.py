@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for temperature telemetry persistence and queries."""
+"""SQLAlchemy adapter for water-pressure telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.temperature import TemperatureTelemetrySnapshot
-from .sensor_entities import TemperatureReadingEntity
-from .domain.devices import SensorChannel
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.pressure import PressureTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import PressureReadingEntity
 
 
-class TemperatureRepository:
-    """Persist temperature readings and refresh their buoy heartbeat."""
+class PressureRepository:
+    """Persist pressure samples and refresh their buoy heartbeat."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class TemperatureRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_temperature(
-        self, reading: TemperatureTelemetrySnapshot
-    ) -> TemperatureTelemetrySnapshot:
-        entity = TemperatureReadingEntity(
+    def add_pressure(
+        self, reading: PressureTelemetrySnapshot
+    ) -> PressureTelemetrySnapshot:
+        entity = PressureReadingEntity(
             buoy_id=reading.buoy_id,
-            temperature_celsius=reading.temperature_celsius,
+            pressure_kpa=reading.pressure_kpa,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class TemperatureRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return TemperatureTelemetrySnapshot(
+        return PressureTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            temperature_celsius=entity.temperature_celsius,
+            pressure_kpa=entity.pressure_kpa,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,21 +47,21 @@ class TemperatureRepository:
             quality=entity.quality,
         )
 
-    def list_temperatures(
+    def list_pressures(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[TemperatureTelemetrySnapshot]:
+    ) -> list[PressureTelemetrySnapshot]:
         query = (
-            select(TemperatureReadingEntity)
-            .where(TemperatureReadingEntity.buoy_id == buoy_id)
-            .order_by(TemperatureReadingEntity.measured_at.desc())
+            select(PressureReadingEntity)
+            .where(PressureReadingEntity.buoy_id == buoy_id)
+            .order_by(PressureReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
-            query = query.where(TemperatureReadingEntity.sensor_channel == sensor_channel)
+            query = query.where(PressureReadingEntity.sensor_channel == sensor_channel)
         return [
-            TemperatureTelemetrySnapshot(
+            PressureTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                temperature_celsius=entity.temperature_celsius,
+                pressure_kpa=entity.pressure_kpa,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -72,10 +72,8 @@ class TemperatureRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_temperature(
+    def latest_pressure(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> TemperatureTelemetrySnapshot | None:
-        readings = self.list_temperatures(
-            buoy_id, limit=1, sensor_channel=sensor_channel
-        )
+    ) -> PressureTelemetrySnapshot | None:
+        readings = self.list_pressures(buoy_id, limit=1, sensor_channel=sensor_channel)
         return readings[0] if readings else None

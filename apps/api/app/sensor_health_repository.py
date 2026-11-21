@@ -35,14 +35,14 @@ from .domain.wind import WindTelemetrySnapshot
 from .domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from .sensor_entities import SensorHealthCheckEntity
-from .temperature_repository import TemperatureRepository
+from .adapters.postgres.temperature_repository import TemperatureRepository
 from .adapters.postgres.humidity_repository import HumidityRepository
 from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
 from .adapters.postgres.imu_repository import ImuRepository
 from .adapters.postgres.marine_current_repository import MarineCurrentRepository
 from .persistence_mappers import sensor_health_check_snapshot
 from .adapters.postgres.ph_repository import PHRepository
-from .pressure_repository import PressureRepository
+from .adapters.postgres.pressure_repository import PressureRepository
 from .adapters.postgres.rainfall_repository import RainfallRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
 from .adapters.postgres.turbidity_repository import TurbidityRepository

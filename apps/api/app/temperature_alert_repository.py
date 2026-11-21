@@ -15,7 +15,7 @@ from .domain.temperature_alert import (
 )
 from .alert_entities import TemperatureAlertEntity
 from .fleet_entities import BuoyEntity
-from .temperature_repository import TemperatureRepository
+from .adapters.postgres.temperature_repository import TemperatureRepository
 from .domain.devices import SensorChannel
 
 

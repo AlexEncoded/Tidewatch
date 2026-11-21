@@ -42,8 +42,8 @@ from app.buoy_registry_repository import BuoyRegistryRepository
 from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
 from app.temperature_alert_repository import TemperatureAlertRepository
-from app.temperature_repository import TemperatureRepository
-from app.pressure_repository import PressureRepository
+from app.adapters.postgres.temperature_repository import TemperatureRepository
+from app.adapters.postgres.pressure_repository import PressureRepository
 from app.adapters.postgres.salinity_repository import SalinityRepository
 from app.adapters.postgres.imu_repository import ImuRepository
 from app.adapters.postgres.ambient_light_repository import AmbientLightRepository
@@ -440,6 +440,8 @@ def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
                 "underwater_acoustic_repository.py",
                 "imu_repository.py",
                 "ambient_light_repository.py",
+                "temperature_repository.py",
+                "pressure_repository.py",
             }
             else API_APP
         )
@@ -483,6 +485,14 @@ def test_water_quality_postgres_adapters_are_grouped_under_the_adapter_package()
 
 def test_motion_and_light_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     modules = ("imu_repository.py", "ambient_light_repository.py")
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_core_environment_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = ("temperature_repository.py", "pressure_repository.py")
 
     for module in modules:
         assert (API_APP / "adapters" / "postgres" / module).is_file()

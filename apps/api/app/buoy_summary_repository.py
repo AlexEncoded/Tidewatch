@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from .domain.buoy import BuoySummarySnapshot
 from .buoy_registry_repository import BuoyRegistryRepository
-from .temperature_repository import TemperatureRepository
-from .pressure_repository import PressureRepository
+from .adapters.postgres.temperature_repository import TemperatureRepository
+from .adapters.postgres.pressure_repository import PressureRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
 from .adapters.postgres.imu_repository import ImuRepository
 from .adapters.postgres.ambient_light_repository import AmbientLightRepository
