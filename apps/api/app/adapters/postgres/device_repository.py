@@ -13,8 +13,8 @@ from ...domain.devices import (
     DeviceStatusCommand,
 )
 from ...fleet_entities import BuoyEntity, DeviceEntity
-from ...persistence_mappers import device_snapshot
-from ...persistence_utils import is_newer_timestamp
+from .persistence_mappers import device_snapshot
+from .persistence_utils import is_newer_timestamp
 
 
 class DeviceRepository:

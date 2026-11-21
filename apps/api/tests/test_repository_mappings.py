@@ -3,7 +3,11 @@ from types import SimpleNamespace
 
 from app.domain.buoy import BuoySnapshot
 from app.domain.devices import DeviceSnapshot
-from app.persistence_mappers import buoy_snapshot, device_snapshot, sensor_health_check_snapshot
+from app.adapters.postgres.persistence_mappers import (
+    buoy_snapshot,
+    device_snapshot,
+    sensor_health_check_snapshot,
+)
 
 
 def test_buoy_entity_mapper_returns_domain_snapshot_without_losing_fields() -> None:

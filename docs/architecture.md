@@ -126,9 +126,10 @@ Wave analysis, which composes sensor and fleet reads, uses
 The database liveness/readiness input port is in
 `application/system_ports.py`.
 
-The SQLAlchemy adapter maps buoy, device and persisted sensor-health entities
-to immutable snapshots in `apps/api/app/persistence_mappers.py`. These mapping
-functions stay separate from query and transaction orchestration in
+The PostgreSQL adapters map buoy, device and persisted sensor-health entities
+to immutable snapshots in
+`apps/api/app/adapters/postgres/persistence_mappers.py`. These mapping functions
+stay separate from query and transaction orchestration in
 the focused SQLAlchemy adapters, making persistence-to-domain translation
 directly testable.
 Fleet identity, physical-device, and location-history ORM entities are grouped in

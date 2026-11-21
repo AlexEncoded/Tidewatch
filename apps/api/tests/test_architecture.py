@@ -849,6 +849,12 @@ def test_database_health_reader_is_grouped_with_system_ports() -> None:
     assert not (API_APP / "database_health.py").exists()
 
 
+def test_persistence_helpers_are_grouped_with_postgres_adapters() -> None:
+    for module in ("persistence_mappers.py", "persistence_utils.py"):
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
     from app.sensor_entities import (
         AcousticAltimeterReadingEntity,

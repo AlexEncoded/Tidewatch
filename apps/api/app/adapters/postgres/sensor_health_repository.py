@@ -40,7 +40,7 @@ from .humidity_repository import HumidityRepository
 from .air_temperature_repository import AirTemperatureRepository
 from .imu_repository import ImuRepository
 from .marine_current_repository import MarineCurrentRepository
-from ...persistence_mappers import sensor_health_check_snapshot
+from .persistence_mappers import sensor_health_check_snapshot
 from .ph_repository import PHRepository
 from .pressure_repository import PressureRepository
 from .rainfall_repository import RainfallRepository
