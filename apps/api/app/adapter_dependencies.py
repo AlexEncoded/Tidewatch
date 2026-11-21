@@ -93,8 +93,8 @@ from .adapters.postgres.rainfall_repository import RainfallRepository
 from .adapters.postgres.humidity_repository import HumidityRepository
 from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from .acoustic_altimeter_repository import AcousticAltimeterRepository
-from .underwater_acoustic_repository import UnderwaterAcousticRepository
+from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
+from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
 from .sensor_health_repository import SensorHealthRepository
 from .quality_summary_repository import QualitySummaryRepository

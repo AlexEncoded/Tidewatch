@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for underwater-acoustic telemetry persistence and queries."""
+"""SQLAlchemy adapter for acoustic-altimeter telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from .sensor_entities import UnderwaterAcousticReadingEntity
-from .domain.devices import SensorChannel
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import AcousticAltimeterReadingEntity
 
 
-class UnderwaterAcousticRepository:
-    """Persist underwater-acoustic readings and refresh buoy activity."""
+class AcousticAltimeterRepository:
+    """Persist acoustic-altimeter readings and refresh buoy activity."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class UnderwaterAcousticRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_underwater_acoustic(
-        self, reading: UnderwaterAcousticTelemetrySnapshot
-    ) -> UnderwaterAcousticTelemetrySnapshot:
-        entity = UnderwaterAcousticReadingEntity(
+    def add_acoustic_altimeter(
+        self, reading: AcousticAltimeterTelemetrySnapshot
+    ) -> AcousticAltimeterTelemetrySnapshot:
+        entity = AcousticAltimeterReadingEntity(
             buoy_id=reading.buoy_id,
-            echo_intensity_db=reading.echo_intensity_db,
+            depth_meters=reading.depth_meters,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class UnderwaterAcousticRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return UnderwaterAcousticTelemetrySnapshot(
+        return AcousticAltimeterTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            echo_intensity_db=entity.echo_intensity_db,
+            depth_meters=entity.depth_meters,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,23 +47,23 @@ class UnderwaterAcousticRepository:
             quality=entity.quality,
         )
 
-    def list_underwater_acoustic(
+    def list_acoustic_altimeter(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[UnderwaterAcousticTelemetrySnapshot]:
+    ) -> list[AcousticAltimeterTelemetrySnapshot]:
         query = (
-            select(UnderwaterAcousticReadingEntity)
-            .where(UnderwaterAcousticReadingEntity.buoy_id == buoy_id)
-            .order_by(UnderwaterAcousticReadingEntity.measured_at.desc())
+            select(AcousticAltimeterReadingEntity)
+            .where(AcousticAltimeterReadingEntity.buoy_id == buoy_id)
+            .order_by(AcousticAltimeterReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
             query = query.where(
-                UnderwaterAcousticReadingEntity.sensor_channel == sensor_channel
+                AcousticAltimeterReadingEntity.sensor_channel == sensor_channel
             )
         return [
-            UnderwaterAcousticTelemetrySnapshot(
+            AcousticAltimeterTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                echo_intensity_db=entity.echo_intensity_db,
+                depth_meters=entity.depth_meters,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -74,8 +74,8 @@ class UnderwaterAcousticRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_underwater_acoustic(
+    def latest_acoustic_altimeter(
         self, buoy_id: str, sensor_channel: SensorChannel | None = "A"
-    ) -> UnderwaterAcousticTelemetrySnapshot | None:
-        readings = self.list_underwater_acoustic(buoy_id, 1, sensor_channel)
+    ) -> AcousticAltimeterTelemetrySnapshot | None:
+        readings = self.list_acoustic_altimeter(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

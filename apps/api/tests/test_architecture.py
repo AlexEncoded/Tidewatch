@@ -58,8 +58,8 @@ from app.adapters.postgres.rainfall_repository import RainfallRepository
 from app.adapters.postgres.humidity_repository import HumidityRepository
 from app.adapters.postgres.air_temperature_repository import AirTemperatureRepository
 from app.adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from app.acoustic_altimeter_repository import AcousticAltimeterRepository
-from app.underwater_acoustic_repository import UnderwaterAcousticRepository
+from app.adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
+from app.adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
 from app.sensor_health_repository import SensorHealthRepository
 from app.quality_summary_repository import QualitySummaryRepository
@@ -436,6 +436,8 @@ def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
                 "turbidity_repository.py",
                 "wind_repository.py",
                 "marine_current_repository.py",
+                "acoustic_altimeter_repository.py",
+                "underwater_acoustic_repository.py",
             }
             else API_APP
         )
@@ -479,6 +481,17 @@ def test_water_quality_postgres_adapters_are_grouped_under_the_adapter_package()
 
 def test_flow_sensor_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     modules = ("wind_repository.py", "marine_current_repository.py")
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_acoustic_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = (
+        "acoustic_altimeter_repository.py",
+        "underwater_acoustic_repository.py",
+    )
 
     for module in modules:
         assert (API_APP / "adapters" / "postgres" / module).is_file()

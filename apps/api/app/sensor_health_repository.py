@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .application.sensor_health_ports import SensorHealthCheckGateway
 from .ambient_light_repository import AmbientLightRepository
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from .acoustic_altimeter_repository import AcousticAltimeterRepository
+from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
 from .adapters.postgres.conductivity_repository import ConductivityRepository
@@ -46,7 +46,7 @@ from .pressure_repository import PressureRepository
 from .adapters.postgres.rainfall_repository import RainfallRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
 from .adapters.postgres.turbidity_repository import TurbidityRepository
-from .underwater_acoustic_repository import UnderwaterAcousticRepository
+from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
 from .adapters.postgres.wind_repository import WindRepository
 from .domain.devices import SensorChannel
 
