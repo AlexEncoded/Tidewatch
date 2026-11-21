@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for humidity telemetry persistence and queries."""
+"""SQLAlchemy adapter for atmospheric-pressure telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.humidity import HumidityTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import HumidityReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import AtmosphericPressureReadingEntity
 
 
-class HumidityRepository:
-    """Persist humidity readings and refresh buoy activity."""
+class AtmosphericPressureRepository:
+    """Persist atmospheric-pressure readings and refresh buoy activity."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class HumidityRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_humidity(
-        self, reading: HumidityTelemetrySnapshot
-    ) -> HumidityTelemetrySnapshot:
-        entity = HumidityReadingEntity(
+    def add_atmospheric_pressure(
+        self, reading: AtmosphericPressureTelemetrySnapshot
+    ) -> AtmosphericPressureTelemetrySnapshot:
+        entity = AtmosphericPressureReadingEntity(
             buoy_id=reading.buoy_id,
-            humidity_percent=reading.humidity_percent,
+            atmospheric_pressure_kpa=reading.atmospheric_pressure_kpa,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class HumidityRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return HumidityTelemetrySnapshot(
+        return AtmosphericPressureTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            humidity_percent=entity.humidity_percent,
+            atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,21 +47,23 @@ class HumidityRepository:
             quality=entity.quality,
         )
 
-    def list_humidity(
+    def list_atmospheric_pressure(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[HumidityTelemetrySnapshot]:
+    ) -> list[AtmosphericPressureTelemetrySnapshot]:
         query = (
-            select(HumidityReadingEntity)
-            .where(HumidityReadingEntity.buoy_id == buoy_id)
-            .order_by(HumidityReadingEntity.measured_at.desc())
+            select(AtmosphericPressureReadingEntity)
+            .where(AtmosphericPressureReadingEntity.buoy_id == buoy_id)
+            .order_by(AtmosphericPressureReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
-            query = query.where(HumidityReadingEntity.sensor_channel == sensor_channel)
+            query = query.where(
+                AtmosphericPressureReadingEntity.sensor_channel == sensor_channel
+            )
         return [
-            HumidityTelemetrySnapshot(
+            AtmosphericPressureTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                humidity_percent=entity.humidity_percent,
+                atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -72,10 +74,8 @@ class HumidityRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_humidity(
+    def latest_atmospheric_pressure(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> HumidityTelemetrySnapshot | None:
-        readings = self.list_humidity(
-            buoy_id, limit=1, sensor_channel=sensor_channel
-        )
+    ) -> AtmosphericPressureTelemetrySnapshot | None:
+        readings = self.list_atmospheric_pressure(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

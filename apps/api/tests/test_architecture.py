@@ -54,10 +54,10 @@ from app.dissolved_oxygen_repository import DissolvedOxygenRepository
 from app.ph_repository import PHRepository
 from app.conductivity_repository import ConductivityRepository
 from app.chlorophyll_a_repository import ChlorophyllARepository
-from app.rainfall_repository import RainfallRepository
-from app.humidity_repository import HumidityRepository
-from app.air_temperature_repository import AirTemperatureRepository
-from app.atmospheric_pressure_repository import AtmosphericPressureRepository
+from app.adapters.postgres.rainfall_repository import RainfallRepository
+from app.adapters.postgres.humidity_repository import HumidityRepository
+from app.adapters.postgres.air_temperature_repository import AirTemperatureRepository
+from app.adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from app.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
@@ -420,7 +420,18 @@ def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
         "underwater_acoustic_repository.py",
         "battery_repository.py",
     ):
-        tree = ast.parse((API_APP / module_name).read_text(encoding="utf-8"))
+        adapter_directory = (
+            API_APP / "adapters" / "postgres"
+            if module_name
+            in {
+                "rainfall_repository.py",
+                "humidity_repository.py",
+                "air_temperature_repository.py",
+                "atmospheric_pressure_repository.py",
+            }
+            else API_APP
+        )
+        tree = ast.parse((adapter_directory / module_name).read_text(encoding="utf-8"))
         called_attributes = {
             node.func.attr
             for node in ast.walk(tree)
@@ -428,6 +439,19 @@ def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
         }
         assert "get_buoy" not in called_attributes
         assert "mark_buoy_seen_by_id" in called_attributes
+
+
+def test_weather_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = (
+        "rainfall_repository.py",
+        "humidity_repository.py",
+        "air_temperature_repository.py",
+        "atmospheric_pressure_repository.py",
+    )
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
 
 
 def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:

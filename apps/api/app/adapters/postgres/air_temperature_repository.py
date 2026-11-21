@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for atmospheric-pressure telemetry persistence and queries."""
+"""SQLAlchemy adapter for air-temperature telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import AtmosphericPressureReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.air_temperature import AirTemperatureTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import AirTemperatureReadingEntity
 
 
-class AtmosphericPressureRepository:
-    """Persist atmospheric-pressure readings and refresh buoy activity."""
+class AirTemperatureRepository:
+    """Persist air-temperature readings and refresh buoy activity."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class AtmosphericPressureRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_atmospheric_pressure(
-        self, reading: AtmosphericPressureTelemetrySnapshot
-    ) -> AtmosphericPressureTelemetrySnapshot:
-        entity = AtmosphericPressureReadingEntity(
+    def add_air_temperature(
+        self, reading: AirTemperatureTelemetrySnapshot
+    ) -> AirTemperatureTelemetrySnapshot:
+        entity = AirTemperatureReadingEntity(
             buoy_id=reading.buoy_id,
-            atmospheric_pressure_kpa=reading.atmospheric_pressure_kpa,
+            air_temperature_celsius=reading.air_temperature_celsius,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class AtmosphericPressureRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return AtmosphericPressureTelemetrySnapshot(
+        return AirTemperatureTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
+            air_temperature_celsius=entity.air_temperature_celsius,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,23 +47,23 @@ class AtmosphericPressureRepository:
             quality=entity.quality,
         )
 
-    def list_atmospheric_pressure(
+    def list_air_temperature(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[AtmosphericPressureTelemetrySnapshot]:
+    ) -> list[AirTemperatureTelemetrySnapshot]:
         query = (
-            select(AtmosphericPressureReadingEntity)
-            .where(AtmosphericPressureReadingEntity.buoy_id == buoy_id)
-            .order_by(AtmosphericPressureReadingEntity.measured_at.desc())
+            select(AirTemperatureReadingEntity)
+            .where(AirTemperatureReadingEntity.buoy_id == buoy_id)
+            .order_by(AirTemperatureReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
             query = query.where(
-                AtmosphericPressureReadingEntity.sensor_channel == sensor_channel
+                AirTemperatureReadingEntity.sensor_channel == sensor_channel
             )
         return [
-            AtmosphericPressureTelemetrySnapshot(
+            AirTemperatureTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                atmospheric_pressure_kpa=entity.atmospheric_pressure_kpa,
+                air_temperature_celsius=entity.air_temperature_celsius,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -74,8 +74,8 @@ class AtmosphericPressureRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_atmospheric_pressure(
+    def latest_air_temperature(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> AtmosphericPressureTelemetrySnapshot | None:
-        readings = self.list_atmospheric_pressure(buoy_id, 1, sensor_channel)
+    ) -> AirTemperatureTelemetrySnapshot | None:
+        readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
         return readings[0] if readings else None

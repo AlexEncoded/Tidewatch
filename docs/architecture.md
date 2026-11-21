@@ -74,6 +74,8 @@ Prometheus adapters that implement application metric ports are grouped under
 composition-root metrics module.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
 the telemetry unit of work are grouped under `apps/api/app/adapters/postgres/`.
+The weather sensor persistence adapters for rainfall, humidity, air temperature,
+and atmospheric pressure live in the same package.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
 `application/telemetry_ports.py`. The composite telemetry-ingestion gateway is
 defined in the same module. Context-specific modules are the canonical port

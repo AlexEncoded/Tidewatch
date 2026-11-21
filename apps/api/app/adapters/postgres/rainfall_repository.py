@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for air-temperature telemetry persistence and queries."""
+"""SQLAlchemy adapter for rainfall telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.air_temperature import AirTemperatureTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import AirTemperatureReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.rainfall import RainfallTelemetrySnapshot
+from ...sensor_entities import RainfallReadingEntity
+from ...domain.devices import SensorChannel
 
 
-class AirTemperatureRepository:
-    """Persist air-temperature readings and refresh buoy activity."""
+class RainfallRepository:
+    """Persist rainfall readings and refresh buoy activity."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class AirTemperatureRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_air_temperature(
-        self, reading: AirTemperatureTelemetrySnapshot
-    ) -> AirTemperatureTelemetrySnapshot:
-        entity = AirTemperatureReadingEntity(
+    def add_rainfall(
+        self, reading: RainfallTelemetrySnapshot
+    ) -> RainfallTelemetrySnapshot:
+        entity = RainfallReadingEntity(
             buoy_id=reading.buoy_id,
-            air_temperature_celsius=reading.air_temperature_celsius,
+            rainfall_mm_h=reading.rainfall_mm_h,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class AirTemperatureRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return AirTemperatureTelemetrySnapshot(
+        return RainfallTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            air_temperature_celsius=entity.air_temperature_celsius,
+            rainfall_mm_h=entity.rainfall_mm_h,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,23 +47,23 @@ class AirTemperatureRepository:
             quality=entity.quality,
         )
 
-    def list_air_temperature(
+    def list_rainfall(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[AirTemperatureTelemetrySnapshot]:
+    ) -> list[RainfallTelemetrySnapshot]:
         query = (
-            select(AirTemperatureReadingEntity)
-            .where(AirTemperatureReadingEntity.buoy_id == buoy_id)
-            .order_by(AirTemperatureReadingEntity.measured_at.desc())
+            select(RainfallReadingEntity)
+            .where(RainfallReadingEntity.buoy_id == buoy_id)
+            .order_by(RainfallReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
             query = query.where(
-                AirTemperatureReadingEntity.sensor_channel == sensor_channel
+                RainfallReadingEntity.sensor_channel == sensor_channel
             )
         return [
-            AirTemperatureTelemetrySnapshot(
+            RainfallTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                air_temperature_celsius=entity.air_temperature_celsius,
+                rainfall_mm_h=entity.rainfall_mm_h,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -74,8 +74,10 @@ class AirTemperatureRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_air_temperature(
+    def latest_rainfall(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> AirTemperatureTelemetrySnapshot | None:
-        readings = self.list_air_temperature(buoy_id, 1, sensor_channel)
+    ) -> RainfallTelemetrySnapshot | None:
+        readings = self.list_rainfall(
+            buoy_id, limit=1, sensor_channel=sensor_channel
+        )
         return readings[0] if readings else None
