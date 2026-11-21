@@ -4,14 +4,14 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from .adapters.postgres.battery_repository import BatteryRepository
-from .adapters.postgres.buoy_location_repository import BuoyLocationRepository
-from .adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
-from .domain.buoy import BuoySnapshot
-from .domain.devices import DeviceSnapshot
-from .domain.battery import BatteryTelemetrySnapshot
-from .domain.location import LocationTelemetrySnapshot
-from .adapters.postgres.sensor_health_repository import SensorHealthRepository
+from .battery_repository import BatteryRepository
+from .buoy_location_repository import BuoyLocationRepository
+from .buoy_registry_repository import BuoyRegistryRepository
+from ...domain.buoy import BuoySnapshot
+from ...domain.devices import DeviceSnapshot
+from ...domain.battery import BatteryTelemetrySnapshot
+from ...domain.location import LocationTelemetrySnapshot
+from .sensor_health_repository import SensorHealthRepository
 
 
 class MaintenanceRepository(SensorHealthRepository):

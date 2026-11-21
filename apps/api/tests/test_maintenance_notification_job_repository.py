@@ -8,7 +8,7 @@ from app.database import Base, TidewatchSession
 from app.application.maintenance_notification_ports import (
     MaintenanceNotificationIdempotencyConflict,
 )
-from app.maintenance_notification_job_repository import (
+from app.adapters.postgres.maintenance_notification_job_repository import (
     MaintenanceNotificationJobRepository,
 )
 

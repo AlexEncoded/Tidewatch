@@ -64,7 +64,7 @@ from app.adapters.postgres.battery_repository import BatteryRepository
 from app.adapters.postgres.sensor_health_repository import SensorHealthRepository
 from app.adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
-from app.maintenance_repository import MaintenanceRepository
+from app.adapters.postgres.maintenance_repository import MaintenanceRepository
 from app.adapters.postgres.wave_analysis import WaveAnalysisRepository
 
 
@@ -524,6 +524,17 @@ def test_fleet_postgres_adapters_are_grouped_under_the_adapter_package() -> None
         "buoy_registry_repository.py",
         "buoy_summary_repository.py",
         "device_repository.py",
+    )
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_maintenance_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = (
+        "maintenance_repository.py",
+        "maintenance_notification_job_repository.py",
     )
 
     for module in modules:

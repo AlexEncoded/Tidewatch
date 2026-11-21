@@ -7,7 +7,7 @@ import httpx
 from sqlalchemy.orm import Session
 
 from .domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
-from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
+from .adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
 from .settings import (
     configured_maintenance_webhook_url,
     maintenance_notification_lease_seconds,

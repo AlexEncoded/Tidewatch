@@ -87,8 +87,9 @@ the other sensor-specific PostgreSQL implementations.
 Core water-temperature and pressure persistence adapters now live there too.
 Sensor-health history/check persistence and fleet sensor-quality summaries are
 also grouped under the PostgreSQL adapter package.
-Battery-reading and temperature-alert stores use PostgreSQL adapters there as
-well; battery records remain mapped with the fleet persistence entities.
+Battery-reading, temperature-alert, and maintenance-notification outbox stores
+use PostgreSQL adapters there as well; battery records remain mapped with the
+fleet persistence entities.
 Fleet registration, activity, location, device, and buoy-summary repositories
 are grouped there too. Maintenance remains a composition adapter outside the
 database-specific package.
@@ -110,8 +111,8 @@ Pressure and temperature analysis readers and temperature alert-store ports
 are grouped with the sensor contracts.
 
 The maintenance use case declares a read-only `MaintenanceReader` input port.
-`MaintenanceRepository` composes its dedicated sources; the application service
-does not need to know about the SQLAlchemy session.
+`adapters/postgres/maintenance_repository.py` composes its dedicated sources;
+the application service does not need to know about the SQLAlchemy session.
 
 Device listing, registration, status, and health summary ports are grouped in
 `application/device_ports.py`, keeping heartbeat/status mapping outside the

@@ -100,7 +100,7 @@ from .adapters.postgres.sensor_health_repository import SensorHealthRepository
 from .adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from .adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from .adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
-from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
+from .adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
 from .adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from .adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from .adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
@@ -110,7 +110,7 @@ from .adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueu
 from .adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
 from .adapters.prometheus.metrics_scraper import PrometheusMetricsScraper
 from .adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
-from .maintenance_repository import MaintenanceRepository
+from .adapters.postgres.maintenance_repository import MaintenanceRepository
 from .adapters.postgres.wave_analysis import WaveAnalysisRepository
 
 
