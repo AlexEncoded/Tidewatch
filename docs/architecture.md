@@ -90,6 +90,8 @@ also grouped under the PostgreSQL adapter package.
 Battery-reading, temperature-alert, and maintenance-notification outbox stores
 use PostgreSQL adapters there as well; battery records remain mapped with the
 fleet persistence entities.
+Database connectivity checks are implemented by the PostgreSQL adapter package
+behind the application system-health port.
 Fleet registration, activity, location, device, and buoy-summary repositories
 are grouped there too. Maintenance remains a composition adapter outside the
 database-specific package.

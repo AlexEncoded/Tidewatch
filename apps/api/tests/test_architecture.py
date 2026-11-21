@@ -845,6 +845,8 @@ def test_database_health_reader_is_grouped_with_system_ports() -> None:
     )
 
     assert SystemDatabaseHealthReader.__module__ == "app.application.system_ports"
+    assert (API_APP / "adapters" / "postgres" / "database_health.py").is_file()
+    assert not (API_APP / "database_health.py").exists()
 
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:

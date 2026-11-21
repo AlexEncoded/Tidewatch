@@ -70,7 +70,7 @@ from .application.device_ports import (
     DeviceStatusRegistry,
 )
 from .database import get_db
-from .database_health import SQLDatabaseHealthReader
+from .adapters.postgres.database_health import SQLDatabaseHealthReader
 from .adapters.postgres.device_repository import DeviceRepository
 from .adapters.postgres.buoy_activity_repository import BuoyActivityRepository
 from .adapters.postgres.buoy_location_repository import BuoyLocationRepository
