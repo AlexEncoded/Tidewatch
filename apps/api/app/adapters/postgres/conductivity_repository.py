@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for chlorophyll-a telemetry persistence and queries."""
+"""SQLAlchemy adapter for conductivity telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import ChlorophyllAReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.conductivity import ConductivityTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import ConductivityReadingEntity
 
 
-class ChlorophyllARepository:
-    """Persist chlorophyll-a readings and refresh buoy activity."""
+class ConductivityRepository:
+    """Persist conductivity readings and refresh their buoy heartbeat."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class ChlorophyllARepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_chlorophyll_a(
-        self, reading: ChlorophyllATelemetrySnapshot
-    ) -> ChlorophyllATelemetrySnapshot:
-        entity = ChlorophyllAReadingEntity(
+    def add_conductivity(
+        self, reading: ConductivityTelemetrySnapshot
+    ) -> ConductivityTelemetrySnapshot:
+        entity = ConductivityReadingEntity(
             buoy_id=reading.buoy_id,
-            chlorophyll_a_ug_l=reading.chlorophyll_a_ug_l,
+            conductivity_us_cm=reading.conductivity_us_cm,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class ChlorophyllARepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return ChlorophyllATelemetrySnapshot(
+        return ConductivityTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            chlorophyll_a_ug_l=entity.chlorophyll_a_ug_l,
+            conductivity_us_cm=entity.conductivity_us_cm,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,23 +47,23 @@ class ChlorophyllARepository:
             quality=entity.quality,
         )
 
-    def list_chlorophyll_a(
+    def list_conductivity(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[ChlorophyllATelemetrySnapshot]:
+    ) -> list[ConductivityTelemetrySnapshot]:
         query = (
-            select(ChlorophyllAReadingEntity)
-            .where(ChlorophyllAReadingEntity.buoy_id == buoy_id)
-            .order_by(ChlorophyllAReadingEntity.measured_at.desc())
+            select(ConductivityReadingEntity)
+            .where(ConductivityReadingEntity.buoy_id == buoy_id)
+            .order_by(ConductivityReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
             query = query.where(
-                ChlorophyllAReadingEntity.sensor_channel == sensor_channel
+                ConductivityReadingEntity.sensor_channel == sensor_channel
             )
         return [
-            ChlorophyllATelemetrySnapshot(
+            ConductivityTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                chlorophyll_a_ug_l=entity.chlorophyll_a_ug_l,
+                conductivity_us_cm=entity.conductivity_us_cm,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -74,10 +74,10 @@ class ChlorophyllARepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_chlorophyll_a(
+    def latest_conductivity(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> ChlorophyllATelemetrySnapshot | None:
-        readings = self.list_chlorophyll_a(
+    ) -> ConductivityTelemetrySnapshot | None:
+        readings = self.list_conductivity(
             buoy_id, limit=1, sensor_channel=sensor_channel
         )
         return readings[0] if readings else None

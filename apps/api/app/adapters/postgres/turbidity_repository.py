@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for pH telemetry persistence and queries."""
+"""SQLAlchemy adapter for turbidity telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.ph import PHTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import PHReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.turbidity import TurbidityTelemetrySnapshot
+from ...sensor_entities import TurbidityReadingEntity
+from ...domain.devices import SensorChannel
 
 
-class PHRepository:
-    """Persist pH readings and refresh their buoy heartbeat."""
+class TurbidityRepository:
+    """Persist turbidity samples and refresh their buoy heartbeat."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,10 +19,12 @@ class PHRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_ph(self, reading: PHTelemetrySnapshot) -> PHTelemetrySnapshot:
-        entity = PHReadingEntity(
+    def add_turbidity(
+        self, reading: TurbidityTelemetrySnapshot
+    ) -> TurbidityTelemetrySnapshot:
+        entity = TurbidityReadingEntity(
             buoy_id=reading.buoy_id,
-            ph=reading.ph,
+            turbidity_ntu=reading.turbidity_ntu,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -34,9 +36,9 @@ class PHRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return PHTelemetrySnapshot(
+        return TurbidityTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            ph=entity.ph,
+            turbidity_ntu=entity.turbidity_ntu,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -45,21 +47,21 @@ class PHRepository:
             quality=entity.quality,
         )
 
-    def list_ph(
+    def list_turbidity(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[PHTelemetrySnapshot]:
+    ) -> list[TurbidityTelemetrySnapshot]:
         query = (
-            select(PHReadingEntity)
-            .where(PHReadingEntity.buoy_id == buoy_id)
-            .order_by(PHReadingEntity.measured_at.desc())
+            select(TurbidityReadingEntity)
+            .where(TurbidityReadingEntity.buoy_id == buoy_id)
+            .order_by(TurbidityReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
-            query = query.where(PHReadingEntity.sensor_channel == sensor_channel)
+            query = query.where(TurbidityReadingEntity.sensor_channel == sensor_channel)
         return [
-            PHTelemetrySnapshot(
+            TurbidityTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                ph=entity.ph,
+                turbidity_ntu=entity.turbidity_ntu,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -70,8 +72,10 @@ class PHRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_ph(
+    def latest_turbidity(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> PHTelemetrySnapshot | None:
-        readings = self.list_ph(buoy_id, limit=1, sensor_channel=sensor_channel)
+    ) -> TurbidityTelemetrySnapshot | None:
+        readings = self.list_turbidity(
+            buoy_id, limit=1, sensor_channel=sensor_channel
+        )
         return readings[0] if readings else None

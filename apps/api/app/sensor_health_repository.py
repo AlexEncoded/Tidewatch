@@ -8,9 +8,9 @@ from .ambient_light_repository import AmbientLightRepository
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .buoy_registry_repository import BuoyRegistryRepository
-from .chlorophyll_a_repository import ChlorophyllARepository
-from .conductivity_repository import ConductivityRepository
-from .dissolved_oxygen_repository import DissolvedOxygenRepository
+from .adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
+from .adapters.postgres.conductivity_repository import ConductivityRepository
+from .adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
 from .domain.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
@@ -41,11 +41,11 @@ from .adapters.postgres.air_temperature_repository import AirTemperatureReposito
 from .imu_repository import ImuRepository
 from .marine_current_repository import MarineCurrentRepository
 from .persistence_mappers import sensor_health_check_snapshot
-from .ph_repository import PHRepository
+from .adapters.postgres.ph_repository import PHRepository
 from .pressure_repository import PressureRepository
 from .adapters.postgres.rainfall_repository import RainfallRepository
-from .salinity_repository import SalinityRepository
-from .turbidity_repository import TurbidityRepository
+from .adapters.postgres.salinity_repository import SalinityRepository
+from .adapters.postgres.turbidity_repository import TurbidityRepository
 from .underwater_acoustic_repository import UnderwaterAcousticRepository
 from .wind_repository import WindRepository
 from .domain.devices import SensorChannel

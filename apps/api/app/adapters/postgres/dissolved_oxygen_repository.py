@@ -3,10 +3,10 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from .domain.devices import SensorChannel
-from .sensor_entities import DissolvedOxygenReadingEntity
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from ...domain.devices import SensorChannel
+from ...sensor_entities import DissolvedOxygenReadingEntity
 
 
 class DissolvedOxygenRepository:

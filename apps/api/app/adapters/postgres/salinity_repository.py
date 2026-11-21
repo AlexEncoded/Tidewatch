@@ -1,16 +1,16 @@
-"""SQLAlchemy adapter for turbidity telemetry persistence and queries."""
+"""SQLAlchemy adapter for salinity telemetry persistence and queries."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .buoy_registry_repository import BuoyRegistryRepository
-from .domain.turbidity import TurbidityTelemetrySnapshot
-from .sensor_entities import TurbidityReadingEntity
-from .domain.devices import SensorChannel
+from ...buoy_registry_repository import BuoyRegistryRepository
+from ...domain.salinity import SalinityTelemetrySnapshot
+from ...sensor_entities import SalinityReadingEntity
+from ...domain.devices import SensorChannel
 
 
-class TurbidityRepository:
-    """Persist turbidity samples and refresh their buoy heartbeat."""
+class SalinityRepository:
+    """Persist salinity samples and refresh their buoy heartbeat."""
 
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -19,12 +19,12 @@ class TurbidityRepository:
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def add_turbidity(
-        self, reading: TurbidityTelemetrySnapshot
-    ) -> TurbidityTelemetrySnapshot:
-        entity = TurbidityReadingEntity(
+    def add_salinity(
+        self, reading: SalinityTelemetrySnapshot
+    ) -> SalinityTelemetrySnapshot:
+        entity = SalinityReadingEntity(
             buoy_id=reading.buoy_id,
-            turbidity_ntu=reading.turbidity_ntu,
+            salinity_psu=reading.salinity_psu,
             sensor_channel=reading.sensor_channel,
             device_id=reading.device_id,
             sensor_id=reading.sensor_id,
@@ -36,9 +36,9 @@ class TurbidityRepository:
         self.db.commit()
         self.db.refresh(entity)
         self.registry.mark_buoy_seen_by_id(reading.buoy_id, reading.measured_at)
-        return TurbidityTelemetrySnapshot(
+        return SalinityTelemetrySnapshot(
             buoy_id=entity.buoy_id,
-            turbidity_ntu=entity.turbidity_ntu,
+            salinity_psu=entity.salinity_psu,
             measured_at=entity.measured_at,
             sensor_channel=entity.sensor_channel,
             device_id=entity.device_id,
@@ -47,21 +47,21 @@ class TurbidityRepository:
             quality=entity.quality,
         )
 
-    def list_turbidity(
+    def list_salinity(
         self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A"
-    ) -> list[TurbidityTelemetrySnapshot]:
+    ) -> list[SalinityTelemetrySnapshot]:
         query = (
-            select(TurbidityReadingEntity)
-            .where(TurbidityReadingEntity.buoy_id == buoy_id)
-            .order_by(TurbidityReadingEntity.measured_at.desc())
+            select(SalinityReadingEntity)
+            .where(SalinityReadingEntity.buoy_id == buoy_id)
+            .order_by(SalinityReadingEntity.measured_at.desc())
             .limit(limit)
         )
         if sensor_channel is not None:
-            query = query.where(TurbidityReadingEntity.sensor_channel == sensor_channel)
+            query = query.where(SalinityReadingEntity.sensor_channel == sensor_channel)
         return [
-            TurbidityTelemetrySnapshot(
+            SalinityTelemetrySnapshot(
                 buoy_id=entity.buoy_id,
-                turbidity_ntu=entity.turbidity_ntu,
+                salinity_psu=entity.salinity_psu,
                 measured_at=entity.measured_at,
                 sensor_channel=entity.sensor_channel,
                 device_id=entity.device_id,
@@ -72,10 +72,10 @@ class TurbidityRepository:
             for entity in self.db.scalars(query).all()
         ]
 
-    def latest_turbidity(
+    def latest_salinity(
         self, buoy_id: str, sensor_channel: SensorChannel = "A"
-    ) -> TurbidityTelemetrySnapshot | None:
-        readings = self.list_turbidity(
+    ) -> SalinityTelemetrySnapshot | None:
+        readings = self.list_salinity(
             buoy_id, limit=1, sensor_channel=sensor_channel
         )
         return readings[0] if readings else None
