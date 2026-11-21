@@ -28,7 +28,7 @@ from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from ...domain.devices import DeviceSnapshot
 from ...domain.buoy import BuoySnapshot
-from ...sensor_health_repository import SensorHealthRepository
+from .sensor_health_repository import SensorHealthRepository
 from ...battery_repository import BatteryRepository
 from ...buoy_registry_repository import BuoyRegistryRepository
 from ...domain.devices import SensorChannel

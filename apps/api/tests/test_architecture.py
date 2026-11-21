@@ -61,8 +61,8 @@ from app.adapters.postgres.atmospheric_pressure_repository import AtmosphericPre
 from app.adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
 from app.battery_repository import BatteryRepository
-from app.sensor_health_repository import SensorHealthRepository
-from app.quality_summary_repository import QualitySummaryRepository
+from app.adapters.postgres.sensor_health_repository import SensorHealthRepository
+from app.adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from app.maintenance_repository import MaintenanceRepository
 from app.adapters.postgres.wave_analysis import WaveAnalysisRepository
@@ -493,6 +493,14 @@ def test_motion_and_light_postgres_adapters_are_grouped_under_the_adapter_packag
 
 def test_core_environment_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     modules = ("temperature_repository.py", "pressure_repository.py")
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_sensor_health_and_quality_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = ("sensor_health_repository.py", "quality_summary_repository.py")
 
     for module in modules:
         assert (API_APP / "adapters" / "postgres" / module).is_file()

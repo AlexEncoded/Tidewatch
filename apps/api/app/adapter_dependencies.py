@@ -96,8 +96,8 @@ from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressu
 from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
 from .battery_repository import BatteryRepository
-from .sensor_health_repository import SensorHealthRepository
-from .quality_summary_repository import QualitySummaryRepository
+from .adapters.postgres.sensor_health_repository import SensorHealthRepository
+from .adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from .adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from .adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from .maintenance_notification_job_repository import MaintenanceNotificationJobRepository
