@@ -36,11 +36,11 @@ from app.application.telemetry_ports import (
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
 )
-from app.buoy_activity_repository import BuoyActivityRepository
-from app.buoy_location_repository import BuoyLocationRepository
-from app.buoy_registry_repository import BuoyRegistryRepository
-from app.buoy_summary_repository import BuoySummaryRepository
-from app.device_repository import DeviceRepository
+from app.adapters.postgres.buoy_activity_repository import BuoyActivityRepository
+from app.adapters.postgres.buoy_location_repository import BuoyLocationRepository
+from app.adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
+from app.adapters.postgres.buoy_summary_repository import BuoySummaryRepository
+from app.adapters.postgres.device_repository import DeviceRepository
 from app.adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
 from app.adapters.postgres.temperature_repository import TemperatureRepository
 from app.adapters.postgres.pressure_repository import PressureRepository
@@ -147,7 +147,7 @@ def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> 
 
 
 def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> None:
-    source = (API_APP / "buoy_summary_repository.py").read_text(encoding="utf-8")
+    source = (API_APP / "adapters" / "postgres" / "buoy_summary_repository.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
 
     imported_names = {
@@ -167,7 +167,7 @@ def test_buoy_summary_adapter_consumes_domain_snapshots_not_orm_entities() -> No
 
 
 def test_buoy_registry_keeps_orm_entity_queries_private() -> None:
-    source = (API_APP / "buoy_registry_repository.py").read_text(encoding="utf-8")
+    source = (API_APP / "adapters" / "postgres" / "buoy_registry_repository.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     registry_class = next(
         node
@@ -186,7 +186,7 @@ def test_buoy_registry_keeps_orm_entity_queries_private() -> None:
 
 
 def test_device_repository_keeps_orm_entity_queries_private() -> None:
-    source = (API_APP / "device_repository.py").read_text(encoding="utf-8")
+    source = (API_APP / "adapters" / "postgres" / "device_repository.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     repository_class = next(
         node
@@ -208,7 +208,7 @@ def test_device_repository_keeps_orm_entity_queries_private() -> None:
 
 
 def test_public_repository_contracts_do_not_expose_orm_entities() -> None:
-    for path in API_APP.glob("*_repository.py"):
+    for path in API_APP.rglob("*_repository.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for repository in (
             node for node in tree.body if isinstance(node, ast.ClassDef)
@@ -511,6 +511,20 @@ def test_sensor_health_and_quality_postgres_adapters_are_grouped_under_the_adapt
 
 def test_battery_and_temperature_alert_adapters_are_grouped_under_postgres() -> None:
     modules = ("battery_repository.py", "temperature_alert_repository.py")
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_fleet_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
+    modules = (
+        "buoy_activity_repository.py",
+        "buoy_location_repository.py",
+        "buoy_registry_repository.py",
+        "buoy_summary_repository.py",
+        "device_repository.py",
+    )
 
     for module in modules:
         assert (API_APP / "adapters" / "postgres" / module).is_file()

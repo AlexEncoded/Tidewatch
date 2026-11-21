@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
-from app.device_repository import DeviceRepository
+from app.adapters.postgres.device_repository import DeviceRepository
 from app.main import app
 
 

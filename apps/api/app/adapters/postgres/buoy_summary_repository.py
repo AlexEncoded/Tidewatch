@@ -2,27 +2,27 @@
 
 from sqlalchemy.orm import Session
 
-from .domain.buoy import BuoySummarySnapshot
+from ...domain.buoy import BuoySummarySnapshot
 from .buoy_registry_repository import BuoyRegistryRepository
-from .adapters.postgres.temperature_repository import TemperatureRepository
-from .adapters.postgres.pressure_repository import PressureRepository
-from .adapters.postgres.salinity_repository import SalinityRepository
-from .adapters.postgres.imu_repository import ImuRepository
-from .adapters.postgres.ambient_light_repository import AmbientLightRepository
-from .adapters.postgres.wind_repository import WindRepository
-from .adapters.postgres.marine_current_repository import MarineCurrentRepository
-from .adapters.postgres.turbidity_repository import TurbidityRepository
-from .adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
-from .adapters.postgres.ph_repository import PHRepository
-from .adapters.postgres.conductivity_repository import ConductivityRepository
-from .adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
-from .adapters.postgres.rainfall_repository import RainfallRepository
-from .adapters.postgres.humidity_repository import HumidityRepository
-from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
-from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
-from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from .adapters.postgres.battery_repository import BatteryRepository
+from .temperature_repository import TemperatureRepository
+from .pressure_repository import PressureRepository
+from .salinity_repository import SalinityRepository
+from .imu_repository import ImuRepository
+from .ambient_light_repository import AmbientLightRepository
+from .wind_repository import WindRepository
+from .marine_current_repository import MarineCurrentRepository
+from .turbidity_repository import TurbidityRepository
+from .dissolved_oxygen_repository import DissolvedOxygenRepository
+from .ph_repository import PHRepository
+from .conductivity_repository import ConductivityRepository
+from .chlorophyll_a_repository import ChlorophyllARepository
+from .rainfall_repository import RainfallRepository
+from .humidity_repository import HumidityRepository
+from .air_temperature_repository import AirTemperatureRepository
+from .atmospheric_pressure_repository import AtmosphericPressureRepository
+from .acoustic_altimeter_repository import AcousticAltimeterRepository
+from .underwater_acoustic_repository import UnderwaterAcousticRepository
+from .battery_repository import BatteryRepository
 
 
 class BuoySummaryRepository:

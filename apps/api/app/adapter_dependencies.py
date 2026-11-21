@@ -71,11 +71,11 @@ from .application.device_ports import (
 )
 from .database import get_db
 from .database_health import SQLDatabaseHealthReader
-from .device_repository import DeviceRepository
-from .buoy_activity_repository import BuoyActivityRepository
-from .buoy_location_repository import BuoyLocationRepository
-from .buoy_registry_repository import BuoyRegistryRepository
-from .buoy_summary_repository import BuoySummaryRepository
+from .adapters.postgres.device_repository import DeviceRepository
+from .adapters.postgres.buoy_activity_repository import BuoyActivityRepository
+from .adapters.postgres.buoy_location_repository import BuoyLocationRepository
+from .adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
+from .adapters.postgres.buoy_summary_repository import BuoySummaryRepository
 from .adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
 from .adapters.postgres.temperature_repository import TemperatureRepository
 from .adapters.postgres.pressure_repository import PressureRepository

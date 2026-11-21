@@ -7,7 +7,7 @@ from ...application.sensor_health_ports import SensorHealthCheckGateway
 from .ambient_light_repository import AmbientLightRepository
 from .atmospheric_pressure_repository import AtmosphericPressureRepository
 from .acoustic_altimeter_repository import AcousticAltimeterRepository
-from ...buoy_registry_repository import BuoyRegistryRepository
+from .buoy_registry_repository import BuoyRegistryRepository
 from .chlorophyll_a_repository import ChlorophyllARepository
 from .conductivity_repository import ConductivityRepository
 from .dissolved_oxygen_repository import DissolvedOxygenRepository

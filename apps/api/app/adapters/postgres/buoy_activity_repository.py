@@ -3,8 +3,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .domain.buoy import BuoyActivitySnapshot
-from .fleet_entities import BuoyEntity
+from ...domain.buoy import BuoyActivitySnapshot
+from ...fleet_entities import BuoyEntity
 
 
 class BuoyActivityRepository:

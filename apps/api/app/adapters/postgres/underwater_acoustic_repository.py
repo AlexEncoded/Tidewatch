@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ...buoy_registry_repository import BuoyRegistryRepository
+from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ...sensor_entities import UnderwaterAcousticReadingEntity
 from ...domain.devices import SensorChannel

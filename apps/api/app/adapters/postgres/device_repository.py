@@ -6,15 +6,15 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .domain.devices import (
+from ...domain.devices import (
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceSnapshot,
     DeviceStatusCommand,
 )
-from .fleet_entities import BuoyEntity, DeviceEntity
-from .persistence_mappers import device_snapshot
-from .persistence_utils import is_newer_timestamp
+from ...fleet_entities import BuoyEntity, DeviceEntity
+from ...persistence_mappers import device_snapshot
+from ...persistence_utils import is_newer_timestamp
 
 
 class DeviceRepository:

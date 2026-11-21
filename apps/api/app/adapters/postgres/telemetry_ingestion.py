@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from ...buoy_location_repository import BuoyLocationRepository
+from .buoy_location_repository import BuoyLocationRepository
 from ...domain.pressure import PressureTelemetrySnapshot
 from ...domain.temperature import TemperatureTelemetrySnapshot
 from ...domain.battery import BatteryTelemetrySnapshot
@@ -30,7 +30,7 @@ from ...domain.devices import DeviceSnapshot
 from ...domain.buoy import BuoySnapshot
 from .sensor_health_repository import SensorHealthRepository
 from .battery_repository import BatteryRepository
-from ...buoy_registry_repository import BuoyRegistryRepository
+from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.devices import SensorChannel
 
 
