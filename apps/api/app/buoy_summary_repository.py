@@ -22,7 +22,7 @@ from .adapters.postgres.air_temperature_repository import AirTemperatureReposito
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from .battery_repository import BatteryRepository
+from .adapters.postgres.battery_repository import BatteryRepository
 
 
 class BuoySummaryRepository:

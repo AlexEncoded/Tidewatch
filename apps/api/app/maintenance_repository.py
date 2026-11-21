@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from .battery_repository import BatteryRepository
+from .adapters.postgres.battery_repository import BatteryRepository
 from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .domain.buoy import BuoySnapshot

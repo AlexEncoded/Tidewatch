@@ -87,6 +87,8 @@ the other sensor-specific PostgreSQL implementations.
 Core water-temperature and pressure persistence adapters now live there too.
 Sensor-health history/check persistence and fleet sensor-quality summaries are
 also grouped under the PostgreSQL adapter package.
+Battery-reading and temperature-alert stores use PostgreSQL adapters there as
+well; battery records remain mapped with the fleet persistence entities.
 Telemetry queue, unit-of-work, and metrics contracts are grouped in
 `application/telemetry_ports.py`. The composite telemetry-ingestion gateway is
 defined in the same module. Context-specific modules are the canonical port

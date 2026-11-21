@@ -76,7 +76,7 @@ from .buoy_activity_repository import BuoyActivityRepository
 from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from .buoy_summary_repository import BuoySummaryRepository
-from .temperature_alert_repository import TemperatureAlertRepository
+from .adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
 from .adapters.postgres.temperature_repository import TemperatureRepository
 from .adapters.postgres.pressure_repository import PressureRepository
 from .adapters.postgres.salinity_repository import SalinityRepository
@@ -95,7 +95,7 @@ from .adapters.postgres.air_temperature_repository import AirTemperatureReposito
 from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from .battery_repository import BatteryRepository
+from .adapters.postgres.battery_repository import BatteryRepository
 from .adapters.postgres.sensor_health_repository import SensorHealthRepository
 from .adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from .adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository

@@ -41,7 +41,7 @@ from app.buoy_location_repository import BuoyLocationRepository
 from app.buoy_registry_repository import BuoyRegistryRepository
 from app.buoy_summary_repository import BuoySummaryRepository
 from app.device_repository import DeviceRepository
-from app.temperature_alert_repository import TemperatureAlertRepository
+from app.adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
 from app.adapters.postgres.temperature_repository import TemperatureRepository
 from app.adapters.postgres.pressure_repository import PressureRepository
 from app.adapters.postgres.salinity_repository import SalinityRepository
@@ -60,7 +60,7 @@ from app.adapters.postgres.air_temperature_repository import AirTemperatureRepos
 from app.adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
 from app.adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
 from app.adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from app.battery_repository import BatteryRepository
+from app.adapters.postgres.battery_repository import BatteryRepository
 from app.adapters.postgres.sensor_health_repository import SensorHealthRepository
 from app.adapters.postgres.quality_summary_repository import QualitySummaryRepository
 from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
@@ -442,6 +442,8 @@ def test_sensor_adapters_delegate_buoy_heartbeat_to_fleet_repository() -> None:
                 "ambient_light_repository.py",
                 "temperature_repository.py",
                 "pressure_repository.py",
+                "battery_repository.py",
+                "temperature_alert_repository.py",
             }
             else API_APP
         )
@@ -501,6 +503,14 @@ def test_core_environment_postgres_adapters_are_grouped_under_the_adapter_packag
 
 def test_sensor_health_and_quality_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     modules = ("sensor_health_repository.py", "quality_summary_repository.py")
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
+def test_battery_and_temperature_alert_adapters_are_grouped_under_postgres() -> None:
+    modules = ("battery_repository.py", "temperature_alert_repository.py")
 
     for module in modules:
         assert (API_APP / "adapters" / "postgres" / module).is_file()
@@ -1392,7 +1402,7 @@ def test_temperature_alert_status_uses_domain_type() -> None:
         TemperatureAlertStatus,
         TemperatureAnomalySnapshot,
     )
-    from app.temperature_alert_repository import TemperatureAlertRepository
+    from app.adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
 
     assert (
         get_type_hints(TemperatureAlertSnapshot)["status"]
