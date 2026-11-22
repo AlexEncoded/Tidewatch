@@ -71,7 +71,8 @@ adapters are isolated so use cases can be evolved and validated by the API and
 worker test suites.
 Prometheus adapters that implement application metric ports are grouped under
 `apps/api/app/adapters/prometheus/`; their instruments remain defined in the
-composition-root metrics module.
+composition-root metrics module. Availability-series restoration is grouped
+there with the other Prometheus adapters.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
 the telemetry unit of work are grouped under `apps/api/app/adapters/postgres/`.
 The weather sensor persistence adapters for rainfall, humidity, air temperature,

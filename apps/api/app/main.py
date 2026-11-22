@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
-from .availability_metrics import initialize_availability_metrics
+from .adapters.prometheus.availability_metrics import initialize_availability_metrics
 from .adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 from .adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
 from .database import SessionLocal

@@ -80,6 +80,8 @@ def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
 
     assert package.is_dir()
     assert not list(API_APP.glob("prometheus_*.py"))
+    assert (package / "availability_metrics.py").is_file()
+    assert not (API_APP / "availability_metrics.py").exists()
 
 
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
@@ -2463,7 +2465,11 @@ def test_batch_ingestion_reuses_sensor_reading_metrics_publisher() -> None:
 
 
 def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
-    tree = ast.parse((API_APP / "availability_metrics.py").read_text(encoding="utf-8"))
+    tree = ast.parse(
+        (API_APP / "adapters" / "prometheus" / "availability_metrics.py").read_text(
+            encoding="utf-8"
+        )
+    )
     imported_modules = {
         node.module
         for node in ast.walk(tree)
