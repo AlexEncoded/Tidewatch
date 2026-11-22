@@ -1,4 +1,4 @@
-from app.metrics import (
+from app.adapters.prometheus.instruments import (
     telemetry_ingestion_attempts,
     telemetry_ingestion_expired_leases,
     telemetry_ingestion_jobs,

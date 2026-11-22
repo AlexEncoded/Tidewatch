@@ -1,7 +1,7 @@
 """Prometheus adapter for durable telemetry queue metrics."""
 
 from ...application.telemetry_ports import TelemetryQueueMetricsPublisher
-from ...metrics import (
+from .instruments import (
     telemetry_ingestion_attempts,
     telemetry_ingestion_expired_leases,
     telemetry_ingestion_jobs,

@@ -4,7 +4,7 @@ from time import time
 
 from ...application.analysis_ports import WaveAnalysisMetrics
 from ...domain.wave import WaveAnalysisSnapshot
-from ...metrics import (
+from .instruments import (
     current_estimated_wave_height_m,
     current_estimated_wave_period_seconds,
     wave_analysis_last_run_timestamp_seconds,

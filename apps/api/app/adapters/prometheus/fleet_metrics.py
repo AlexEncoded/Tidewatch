@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ...application.fleet_ports import FleetMetrics
 from ...application.system_ports import AvailabilityMetrics
-from ...metrics import (
+from .instruments import (
     buoy_last_seen_timestamp_seconds,
     buoy_movement_speed_mps,
     device_last_seen_timestamp_seconds,

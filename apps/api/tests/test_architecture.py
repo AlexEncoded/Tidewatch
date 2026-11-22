@@ -82,6 +82,8 @@ def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
     assert not list(API_APP.glob("prometheus_*.py"))
     assert (package / "availability_metrics.py").is_file()
     assert not (API_APP / "availability_metrics.py").exists()
+    assert (package / "instruments.py").is_file()
+    assert not (API_APP / "metrics.py").exists()
 
 
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:

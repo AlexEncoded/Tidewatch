@@ -2,7 +2,7 @@
 
 from ...application.maintenance_ports import MaintenanceMetrics
 from ...domain.battery_health import BatteryHealthSnapshot
-from ...metrics import (
+from .instruments import (
     battery_delta_percent,
     battery_device_percent,
     buoy_movement_speed_mps,

@@ -1,4 +1,4 @@
-from app.metrics import (
+from app.adapters.prometheus.instruments import (
     sensor_channel_missing,
     sensor_degraded,
     sensor_health_decision,

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.metrics import (
+from app.adapters.prometheus.instruments import (
     buoy_last_seen_timestamp_seconds,
     buoy_movement_speed_mps,
     device_last_seen_timestamp_seconds,

@@ -1,7 +1,7 @@
 """Prometheus adapter for API request metrics."""
 
 from ...application.system_ports import HttpRequestMetrics
-from ...metrics import http_request_duration_seconds, http_requests_total
+from .instruments import http_request_duration_seconds, http_requests_total
 
 
 class PrometheusHttpRequestMetrics(HttpRequestMetrics):

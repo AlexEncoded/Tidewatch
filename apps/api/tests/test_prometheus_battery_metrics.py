@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.metrics import (
+from app.adapters.prometheus.instruments import (
     battery_delta_percent,
     battery_device_percent,
     battery_percent,
