@@ -4,13 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...application.sensor_health_ports import SensorHealthCheckGateway
-from .ambient_light_repository import AmbientLightRepository
-from .atmospheric_pressure_repository import AtmosphericPressureRepository
-from .acoustic_altimeter_repository import AcousticAltimeterRepository
 from .buoy_registry_repository import BuoyRegistryRepository
-from .chlorophyll_a_repository import ChlorophyllARepository
-from .conductivity_repository import ConductivityRepository
-from .dissolved_oxygen_repository import DissolvedOxygenRepository
 from ...domain.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
@@ -35,19 +29,8 @@ from ...domain.wind import WindTelemetrySnapshot
 from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from .sensor_entities import SensorHealthCheckEntity
-from .temperature_repository import TemperatureRepository
-from .humidity_repository import HumidityRepository
-from .air_temperature_repository import AirTemperatureRepository
-from .imu_repository import ImuRepository
-from .marine_current_repository import MarineCurrentRepository
+from .sensor_telemetry_repositories import SensorTelemetryRepositories
 from .persistence_mappers import sensor_health_check_snapshot
-from .ph_repository import PHRepository
-from .pressure_repository import PressureRepository
-from .rainfall_repository import RainfallRepository
-from .salinity_repository import SalinityRepository
-from .turbidity_repository import TurbidityRepository
-from .underwater_acoustic_repository import UnderwaterAcousticRepository
-from .wind_repository import WindRepository
 from ...domain.devices import SensorChannel
 
 
@@ -56,24 +39,7 @@ class SensorHealthRepository(SensorHealthCheckGateway):
 
     def __init__(self, db: Session) -> None:
         self.registry = BuoyRegistryRepository(db)
-        self.temperature = TemperatureRepository(db)
-        self.pressure = PressureRepository(db)
-        self.salinity = SalinityRepository(db)
-        self.imu = ImuRepository(db)
-        self.ambient_light = AmbientLightRepository(db)
-        self.wind = WindRepository(db)
-        self.marine_current = MarineCurrentRepository(db)
-        self.turbidity = TurbidityRepository(db)
-        self.dissolved_oxygen = DissolvedOxygenRepository(db)
-        self.ph = PHRepository(db)
-        self.conductivity = ConductivityRepository(db)
-        self.chlorophyll_a = ChlorophyllARepository(db)
-        self.rainfall = RainfallRepository(db)
-        self.humidity = HumidityRepository(db)
-        self.air_temperature = AirTemperatureRepository(db)
-        self.atmospheric_pressure = AtmosphericPressureRepository(db)
-        self.acoustic_altimeter = AcousticAltimeterRepository(db)
-        self.underwater_acoustic = UnderwaterAcousticRepository(db)
+        self.sensors = SensorTelemetryRepositories(db)
         self.db = db
 
     def buoy_exists(self, buoy_id: str) -> bool:
@@ -130,55 +96,55 @@ class SensorHealthRepository(SensorHealthCheckGateway):
         return sensor_health_check_snapshot(entity)
 
     def list_temperatures(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[TemperatureTelemetrySnapshot]:
-        return self.temperature.list_temperatures(buoy_id, limit, sensor_channel)
+        return self.sensors.temperature.list_temperatures(buoy_id, limit, sensor_channel)
 
     def list_pressures(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[PressureTelemetrySnapshot]:
-        return self.pressure.list_pressures(buoy_id, limit, sensor_channel)
+        return self.sensors.pressure.list_pressures(buoy_id, limit, sensor_channel)
 
     def list_salinity(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[SalinityTelemetrySnapshot]:
-        return self.salinity.list_salinity(buoy_id, limit, sensor_channel)
+        return self.sensors.salinity.list_salinity(buoy_id, limit, sensor_channel)
 
     def list_imu(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[ImuTelemetrySnapshot]:
-        return self.imu.list_imu(buoy_id, limit, sensor_channel)
+        return self.sensors.imu.list_imu(buoy_id, limit, sensor_channel)
 
     def list_ambient_light(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[AmbientLightTelemetrySnapshot]:
-        return self.ambient_light.list_ambient_light(buoy_id, limit, sensor_channel)
+        return self.sensors.ambient_light.list_ambient_light(buoy_id, limit, sensor_channel)
 
     def list_wind(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[WindTelemetrySnapshot]:
-        return self.wind.list_wind(buoy_id, limit, sensor_channel)
+        return self.sensors.wind.list_wind(buoy_id, limit, sensor_channel)
 
     def list_marine_current(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[MarineCurrentTelemetrySnapshot]:
-        return self.marine_current.list_marine_current(buoy_id, limit, sensor_channel)
+        return self.sensors.marine_current.list_marine_current(buoy_id, limit, sensor_channel)
 
     def list_turbidity(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[TurbidityTelemetrySnapshot]:
-        return self.turbidity.list_turbidity(buoy_id, limit, sensor_channel)
+        return self.sensors.turbidity.list_turbidity(buoy_id, limit, sensor_channel)
 
     def list_dissolved_oxygen(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[DissolvedOxygenTelemetrySnapshot]:
-        return self.dissolved_oxygen.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
+        return self.sensors.dissolved_oxygen.list_dissolved_oxygen(buoy_id, limit, sensor_channel)
 
     def list_ph(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[PHTelemetrySnapshot]:
-        return self.ph.list_ph(buoy_id, limit, sensor_channel)
+        return self.sensors.ph.list_ph(buoy_id, limit, sensor_channel)
 
     def list_conductivity(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[ConductivityTelemetrySnapshot]:
-        return self.conductivity.list_conductivity(buoy_id, limit, sensor_channel)
+        return self.sensors.conductivity.list_conductivity(buoy_id, limit, sensor_channel)
 
     def list_chlorophyll_a(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[ChlorophyllATelemetrySnapshot]:
-        return self.chlorophyll_a.list_chlorophyll_a(buoy_id, limit, sensor_channel)
+        return self.sensors.chlorophyll_a.list_chlorophyll_a(buoy_id, limit, sensor_channel)
 
     def list_rainfall(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[RainfallTelemetrySnapshot]:
-        return self.rainfall.list_rainfall(buoy_id, limit, sensor_channel)
+        return self.sensors.rainfall.list_rainfall(buoy_id, limit, sensor_channel)
 
     def list_humidity(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[HumidityTelemetrySnapshot]:
-        return self.humidity.list_humidity(buoy_id, limit, sensor_channel)
+        return self.sensors.humidity.list_humidity(buoy_id, limit, sensor_channel)
 
     def list_air_temperature(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[AirTemperatureTelemetrySnapshot]:
-        return self.air_temperature.list_air_temperature(buoy_id, limit, sensor_channel)
+        return self.sensors.air_temperature.list_air_temperature(buoy_id, limit, sensor_channel)
 
     def list_atmospheric_pressure(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[AtmosphericPressureTelemetrySnapshot]:
-        return self.atmospheric_pressure.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
+        return self.sensors.atmospheric_pressure.list_atmospheric_pressure(buoy_id, limit, sensor_channel)
 
     def list_acoustic_altimeter(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[AcousticAltimeterTelemetrySnapshot]:
-        return self.acoustic_altimeter.list_acoustic_altimeter(buoy_id, limit, sensor_channel)
+        return self.sensors.acoustic_altimeter.list_acoustic_altimeter(buoy_id, limit, sensor_channel)
 
     def list_underwater_acoustic(self, buoy_id: str, limit: int, sensor_channel: SensorChannel | None = "A") -> list[UnderwaterAcousticTelemetrySnapshot]:
-        return self.underwater_acoustic.list_underwater_acoustic(buoy_id, limit, sensor_channel)
+        return self.sensors.underwater_acoustic.list_underwater_acoustic(buoy_id, limit, sensor_channel)

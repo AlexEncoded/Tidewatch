@@ -1271,6 +1271,9 @@ def test_quality_summary_uses_its_dedicated_repository() -> None:
 
 def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
     from app.composition.dependencies import get_telemetry_ingestion_gateway
+    from app.adapters.postgres.sensor_telemetry_repositories import (
+        SensorTelemetryRepositories,
+    )
 
     session = object()
     gateway = get_telemetry_ingestion_gateway(session)
@@ -1278,7 +1281,27 @@ def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
     assert isinstance(gateway, TelemetryIngestionGateway)
     assert gateway.locations.db is session
     assert gateway.battery.db is session
-    assert gateway.sensors.registry.db is session
+    assert isinstance(gateway.sensors, SensorTelemetryRepositories)
+    assert gateway.sensors.temperature.db is session
+
+
+def test_batch_ingestion_delegates_sensor_reads_to_focused_adapters() -> None:
+    from types import SimpleNamespace
+
+    from app.composition.dependencies import get_telemetry_ingestion_gateway
+
+    gateway = get_telemetry_ingestion_gateway(object())
+    expected_temperature = object()
+    expected_pressure = object()
+    gateway.sensors.temperature = SimpleNamespace(
+        list_temperatures=lambda *_: expected_temperature
+    )
+    gateway.sensors.pressure = SimpleNamespace(
+        list_pressures=lambda *_: expected_pressure
+    )
+
+    assert gateway.list_temperatures("buoy-1", 10) is expected_temperature
+    assert gateway.list_pressures("buoy-1", 10) is expected_pressure
 
 
 def test_maintenance_reader_uses_its_composed_read_adapter() -> None:

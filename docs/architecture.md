@@ -158,6 +158,9 @@ Battery persistence and history queries use `BatteryRepository`, which composes
 the device adapter for the battery-ingestion port.
 Sensor-health history and check persistence use `SensorHealthRepository`,
 which composes the dedicated sensor adapters behind the health ports.
+`SensorTelemetryRepositories` groups those focused adapters for both health
+reads and batch ingestion, keeping the telemetry adapter independent from the
+sensor-health repository.
 Quality summaries use `QualitySummaryRepository` to aggregate quality labels
 across every sensor family that records a quality value.
 Fleet overview summaries now compose `BuoyRegistryRepository` with the
