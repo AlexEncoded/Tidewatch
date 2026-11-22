@@ -565,6 +565,13 @@ def test_maintenance_postgres_adapters_are_grouped_under_the_adapter_package() -
         assert not (API_APP / module).exists()
 
 
+def test_maintenance_repository_composes_sensor_health_instead_of_inheriting() -> None:
+    from app.adapters.postgres.maintenance_repository import MaintenanceRepository
+    from app.adapters.postgres.sensor_health_repository import SensorHealthRepository
+
+    assert not issubclass(MaintenanceRepository, SensorHealthRepository)
+
+
 def test_flow_sensor_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     modules = ("wind_repository.py", "marine_current_repository.py")
 
