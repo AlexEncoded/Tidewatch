@@ -1,476 +1,66 @@
-"""HTTP adapter dependency providers and infrastructure composition."""
+"""Public dependency provider facade for the HTTP application."""
 
-from fastapi import Depends
-from sqlalchemy.orm import Session
-
-from ..application.system_ports import DatabaseHealthReader, MetricsScraper
-from ..application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
-from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
-from ..application.analysis_ports import (
-    PressureAnalysisReader,
-    TemperatureAnalysisReader,
-    WaveAnalysisMetrics,
-    WaveAnalysisReader,
+from .operations import (
+    get_quality_summary_reader,
+    get_maintenance_reader,
+    get_maintenance_metrics,
+    get_maintenance_notification_job_store,
+    get_database_health_reader,
+    get_metrics_scraper,
 )
-from ..application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
-from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
-from ..application.quality_ports import QualitySummaryReader
-from ..application.sensor_health_ports import (
-    SensorHealthCheckGateway,
-    SensorHealthMetrics,
-    SensorHealthReader,
+from .sensors import (
+    get_sensor_health_reader,
+    get_sensor_health_metrics,
+    get_sensor_health_check_gateway,
+    get_battery_telemetry_reader,
+    get_battery_metrics,
+    get_temperature_telemetry_gateway,
+    get_pressure_telemetry_gateway,
+    get_salinity_telemetry_gateway,
+    get_imu_telemetry_gateway,
+    get_ambient_light_telemetry_gateway,
+    get_wind_telemetry_gateway,
+    get_marine_current_telemetry_gateway,
+    get_turbidity_telemetry_gateway,
+    get_dissolved_oxygen_telemetry_gateway,
+    get_ph_telemetry_gateway,
+    get_conductivity_telemetry_gateway,
+    get_chlorophyll_a_telemetry_gateway,
+    get_rainfall_telemetry_gateway,
+    get_humidity_telemetry_gateway,
+    get_air_temperature_telemetry_gateway,
+    get_atmospheric_pressure_telemetry_gateway,
+    get_acoustic_altimeter_telemetry_gateway,
+    get_underwater_acoustic_telemetry_gateway,
 )
-from ..application.fleet_ports import (
-    BuoyLocationHistoryReader,
-    BuoyLocationUpdater,
-    BuoyRegistrar,
-    BuoyStatusRegistry,
-    BuoySummaryReader,
-    FleetLocationReader,
-    FleetMetrics,
-    MovementAnalysisReader,
-    StaleBuoyReader,
+from .telemetry import (
+    get_telemetry_ingestion_gateway,
+    get_telemetry_batch_unit_of_work,
+    get_telemetry_metrics,
+    get_telemetry_ingestion_job_repository,
+    get_telemetry_queue_metrics_reader,
+    get_telemetry_queue_metrics_publisher,
 )
-from ..application.telemetry_ports import (
-    TelemetryBatchUnitOfWork,
-    TelemetryIngestionGateway,
-    TelemetryMetrics,
-    TelemetryQueueMetricsPublisher,
-    TelemetryQueueMetricsReader,
+from .fleet import (
+    get_buoy_summary_reader,
+    get_fleet_location_reader,
+    get_movement_analysis_reader,
+    get_buoy_location_history_reader,
+    get_stale_buoy_reader,
+    get_buoy_status_registry,
+    get_buoy_location_updater,
+    get_buoy_registrar,
+    get_fleet_metrics,
+    get_device_registry,
+    get_device_listing_reader,
+    get_device_health_reader,
+    get_device_status_registry,
 )
-from ..application.ambient_light_ports import AmbientLightTelemetryGateway
-from ..application.motion_ports import ImuTelemetryGateway
-from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
-from ..application.marine_water_ports import (
-    PressureTelemetryGateway,
-    SalinityTelemetryGateway,
-    TemperatureTelemetryGateway,
+from .analytics import (
+    get_pressure_analysis_reader,
+    get_wave_analysis_reader,
+    get_wave_analysis_metrics,
+    get_temperature_analysis_reader,
+    get_temperature_alerts_reader,
+    get_temperature_alert_store,
 )
-from ..application.acoustic_sensor_ports import (
-    AcousticAltimeterTelemetryGateway,
-    UnderwaterAcousticTelemetryGateway,
-)
-from ..application.weather_ports import (
-    AirTemperatureTelemetryGateway,
-    AtmosphericPressureTelemetryGateway,
-    HumidityTelemetryGateway,
-    RainfallTelemetryGateway,
-)
-from ..application.water_quality_ports import (
-    ChlorophyllATelemetryGateway,
-    ConductivityTelemetryGateway,
-    DissolvedOxygenTelemetryGateway,
-    PHTelemetryGateway,
-    TurbidityTelemetryGateway,
-)
-from ..application.device_ports import (
-    DeviceHealthReader,
-    DeviceListingReader,
-    DeviceRegistry,
-    DeviceStatusRegistry,
-)
-from ..adapters.postgres.database import get_db
-from ..adapters.postgres.database_health import SQLDatabaseHealthReader
-from ..adapters.postgres.device_repository import DeviceRepository
-from ..adapters.postgres.buoy_activity_repository import BuoyActivityRepository
-from ..adapters.postgres.buoy_location_repository import BuoyLocationRepository
-from ..adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
-from ..adapters.postgres.buoy_summary_repository import BuoySummaryRepository
-from ..adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
-from ..adapters.postgres.temperature_repository import TemperatureRepository
-from ..adapters.postgres.pressure_repository import PressureRepository
-from ..adapters.postgres.salinity_repository import SalinityRepository
-from ..adapters.postgres.imu_repository import ImuRepository
-from ..adapters.postgres.ambient_light_repository import AmbientLightRepository
-from ..adapters.postgres.wind_repository import WindRepository
-from ..adapters.postgres.marine_current_repository import MarineCurrentRepository
-from ..adapters.postgres.turbidity_repository import TurbidityRepository
-from ..adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
-from ..adapters.postgres.ph_repository import PHRepository
-from ..adapters.postgres.conductivity_repository import ConductivityRepository
-from ..adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
-from ..adapters.postgres.rainfall_repository import RainfallRepository
-from ..adapters.postgres.humidity_repository import HumidityRepository
-from ..adapters.postgres.air_temperature_repository import AirTemperatureRepository
-from ..adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from ..adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
-from ..adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from ..adapters.postgres.battery_repository import BatteryRepository
-from ..adapters.postgres.sensor_health_repository import SensorHealthRepository
-from ..adapters.postgres.quality_summary_repository import QualitySummaryRepository
-from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
-from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
-from ..adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
-from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
-from ..adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
-from ..adapters.prometheus.maintenance_metrics import PrometheusMaintenanceMetrics
-from ..adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
-from ..adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
-from ..adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
-from ..adapters.prometheus.metrics_scraper import PrometheusMetricsScraper
-from ..adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
-from ..adapters.postgres.maintenance_repository import MaintenanceRepository
-from ..adapters.postgres.wave_analysis import WaveAnalysisRepository
-
-
-def get_quality_summary_reader(
-    db: Session = Depends(get_db),
-) -> QualitySummaryReader:
-    """Compose the quality-summary input port with its SQL adapter."""
-    return QualitySummaryRepository(db)
-
-
-def get_sensor_health_reader(
-    db: Session = Depends(get_db),
-) -> SensorHealthReader:
-    """Compose redundant sensor-health queries with the SQL adapter."""
-    return SensorHealthRepository(db)
-
-
-def get_sensor_health_metrics() -> SensorHealthMetrics:
-    """Compose sensor-health observability with its Prometheus adapter."""
-    return PrometheusSensorHealthMetrics()
-
-
-def get_sensor_health_check_gateway(
-    db: Session = Depends(get_db),
-) -> SensorHealthCheckGateway:
-    """Compose sensor-health evaluation and persistence with the SQL adapter."""
-    return SensorHealthRepository(db)
-
-
-def get_telemetry_ingestion_gateway(
-    db: Session = Depends(get_db),
-) -> TelemetryIngestionGateway:
-    """Compose batch telemetry writes with the SQL repository adapter."""
-    return TelemetryIngestionRepository(db)
-
-
-def get_telemetry_batch_unit_of_work(
-    db: Session = Depends(get_db),
-) -> TelemetryBatchUnitOfWork:
-    """Compose the telemetry transaction port with its SQL adapter."""
-    return SQLAlchemyTelemetryBatchUnitOfWork(db)
-
-
-def get_telemetry_metrics() -> TelemetryMetrics:
-    """Compose the telemetry metrics port with Prometheus instruments."""
-    return PrometheusTelemetryMetrics()
-
-
-def get_telemetry_ingestion_job_repository(
-    db: Session = Depends(get_db),
-) -> TelemetryIngestionJobRepository:
-    """Provide the durable telemetry-job repository for HTTP operations."""
-    return TelemetryIngestionJobRepository(db)
-
-
-def get_telemetry_queue_metrics_reader(
-    db: Session = Depends(get_db),
-) -> TelemetryQueueMetricsReader:
-    """Provide queue state as a read-only observability port."""
-    return TelemetryIngestionJobRepository(db)
-
-
-def get_telemetry_queue_metrics_publisher() -> TelemetryQueueMetricsPublisher:
-    """Compose telemetry queue observability with its Prometheus adapter."""
-    return PrometheusTelemetryQueueMetrics()
-
-
-def get_maintenance_reader(
-    db: Session = Depends(get_db),
-) -> MaintenanceReader:
-    """Compose fleet maintenance queries with the SQL repository adapter."""
-    return MaintenanceRepository(db)
-
-
-def get_maintenance_metrics() -> MaintenanceMetrics:
-    """Compose maintenance metrics with the Prometheus adapter."""
-    return PrometheusMaintenanceMetrics()
-
-
-def get_maintenance_notification_job_store(
-    db: Session = Depends(get_db),
-) -> MaintenanceNotificationJobStore:
-    """Compose durable notification job storage with its SQL adapter."""
-    return MaintenanceNotificationJobRepository(db)
-
-
-def get_database_health_reader(
-    db: Session = Depends(get_db),
-) -> DatabaseHealthReader:
-    """Compose database-health checks with the SQL adapter."""
-    return SQLDatabaseHealthReader(db)
-
-
-def get_metrics_scraper() -> MetricsScraper:
-    """Compose process-metric export with the Prometheus adapter."""
-    return PrometheusMetricsScraper()
-
-
-def get_buoy_summary_reader(
-    db: Session = Depends(get_db),
-) -> BuoySummaryReader:
-    """Compose fleet overview queries from buoy and telemetry adapters."""
-    return BuoySummaryRepository(db)
-
-
-def get_fleet_location_reader(
-    db: Session = Depends(get_db),
-) -> FleetLocationReader:
-    """Compose fleet-location queries with the location persistence adapter."""
-    return BuoyLocationRepository(db)
-
-
-def get_movement_analysis_reader(
-    db: Session = Depends(get_db),
-) -> MovementAnalysisReader:
-    """Compose movement analysis with the location persistence adapter."""
-    return BuoyLocationRepository(db)
-
-
-def get_buoy_location_history_reader(
-    db: Session = Depends(get_db),
-) -> BuoyLocationHistoryReader:
-    """Compose buoy location-history queries with the location adapter."""
-    return BuoyLocationRepository(db)
-
-
-def get_stale_buoy_reader(
-    db: Session = Depends(get_db),
-) -> StaleBuoyReader:
-    """Compose stale-buoy evaluation with the fleet activity adapter."""
-    return BuoyActivityRepository(db)
-
-
-def get_buoy_status_registry(
-    db: Session = Depends(get_db),
-) -> BuoyStatusRegistry:
-    """Compose buoy status updates with the fleet registry adapter."""
-    return BuoyRegistryRepository(db)
-
-
-def get_buoy_location_updater(
-    db: Session = Depends(get_db),
-) -> BuoyLocationUpdater:
-    """Compose buoy location writes with the location persistence adapter."""
-    return BuoyLocationRepository(db)
-
-
-def get_buoy_registrar(
-    db: Session = Depends(get_db),
-) -> BuoyRegistrar:
-    """Compose buoy registration with the fleet registry adapter."""
-    return BuoyRegistryRepository(db)
-
-
-def get_fleet_metrics() -> FleetMetrics:
-    """Compose fleet observability with its Prometheus adapter."""
-    return PrometheusFleetMetrics()
-
-
-def get_battery_telemetry_reader(
-    db: Session = Depends(get_db),
-) -> BatteryTelemetryReader:
-    """Compose battery telemetry operations with the SQL repository adapter."""
-    return BatteryRepository(db)
-
-
-def get_battery_metrics() -> BatteryMetrics:
-    """Compose battery observability with its Prometheus adapter."""
-    return PrometheusBatteryMetrics()
-
-
-def get_temperature_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> TemperatureTelemetryGateway:
-    """Compose temperature telemetry reads and writes with its SQL adapter."""
-    return TemperatureRepository(db)
-
-
-def get_pressure_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> PressureTelemetryGateway:
-    """Compose pressure telemetry reads and writes with its SQL adapter."""
-    return PressureRepository(db)
-
-
-def get_salinity_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> SalinityTelemetryGateway:
-    """Compose salinity telemetry reads and writes with its SQL adapter."""
-    return SalinityRepository(db)
-
-
-def get_imu_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> ImuTelemetryGateway:
-    """Compose IMU telemetry reads and writes with its SQL adapter."""
-    return ImuRepository(db)
-
-
-def get_ambient_light_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> AmbientLightTelemetryGateway:
-    """Compose ambient-light reads and writes with their SQL adapter."""
-    return AmbientLightRepository(db)
-
-
-def get_wind_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> WindTelemetryGateway:
-    """Compose wind telemetry reads and writes with its SQL adapter."""
-    return WindRepository(db)
-
-
-def get_marine_current_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> MarineCurrentTelemetryGateway:
-    """Compose marine-current telemetry operations with its SQL adapter."""
-    return MarineCurrentRepository(db)
-
-
-def get_turbidity_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> TurbidityTelemetryGateway:
-    """Compose turbidity telemetry operations with its SQL adapter."""
-    return TurbidityRepository(db)
-
-
-def get_dissolved_oxygen_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> DissolvedOxygenTelemetryGateway:
-    """Compose dissolved-oxygen telemetry operations with its SQL adapter."""
-    return DissolvedOxygenRepository(db)
-
-
-def get_ph_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> PHTelemetryGateway:
-    """Compose pH telemetry operations with their SQL adapter."""
-    return PHRepository(db)
-
-
-def get_conductivity_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> ConductivityTelemetryGateway:
-    """Compose conductivity telemetry operations with the SQL adapter."""
-    return ConductivityRepository(db)
-
-
-def get_chlorophyll_a_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> ChlorophyllATelemetryGateway:
-    """Compose chlorophyll-a telemetry operations with the SQL adapter."""
-    return ChlorophyllARepository(db)
-
-
-def get_rainfall_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> RainfallTelemetryGateway:
-    """Compose rainfall telemetry operations with the SQL adapter."""
-    return RainfallRepository(db)
-
-
-def get_humidity_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> HumidityTelemetryGateway:
-    """Compose humidity telemetry operations with the SQL adapter."""
-    return HumidityRepository(db)
-
-
-def get_air_temperature_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> AirTemperatureTelemetryGateway:
-    """Compose air-temperature telemetry operations with the SQL adapter."""
-    return AirTemperatureRepository(db)
-
-
-def get_atmospheric_pressure_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> AtmosphericPressureTelemetryGateway:
-    """Compose atmospheric-pressure telemetry operations with the SQL adapter."""
-    return AtmosphericPressureRepository(db)
-
-
-def get_acoustic_altimeter_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> AcousticAltimeterTelemetryGateway:
-    """Compose acoustic-altimeter telemetry operations with the SQL adapter."""
-    return AcousticAltimeterRepository(db)
-
-
-def get_underwater_acoustic_telemetry_gateway(
-    db: Session = Depends(get_db),
-) -> UnderwaterAcousticTelemetryGateway:
-    """Compose underwater-acoustic telemetry operations with the SQL adapter."""
-    return UnderwaterAcousticRepository(db)
-
-
-def get_pressure_analysis_reader(
-    db: Session = Depends(get_db),
-) -> PressureAnalysisReader:
-    """Compose pressure analysis with its SQL telemetry adapter."""
-    return PressureRepository(db)
-
-
-def get_wave_analysis_reader(
-    db: Session = Depends(get_db),
-) -> WaveAnalysisReader:
-    """Compose wave analysis through the compatibility telemetry facade."""
-    return WaveAnalysisRepository(db)
-
-
-def get_wave_analysis_metrics() -> WaveAnalysisMetrics:
-    """Compose wave-analysis metrics with the Prometheus adapter."""
-    return PrometheusWaveAnalysisMetrics()
-
-
-def get_temperature_analysis_reader(
-    db: Session = Depends(get_db),
-) -> TemperatureAnalysisReader:
-    """Compose temperature analysis with its SQL telemetry adapter."""
-    return TemperatureRepository(db)
-
-
-def get_temperature_alerts_reader(
-    db: Session = Depends(get_db),
-) -> TemperatureAlertsReader:
-    """Compose fleet temperature-alert queries with the alert adapter."""
-    return TemperatureAlertRepository(db)
-
-
-def get_temperature_alert_store(
-    db: Session = Depends(get_db),
-) -> TemperatureAlertStore:
-    """Compose temperature-alert use cases with the alert persistence adapter."""
-    return TemperatureAlertRepository(db)
-
-
-def get_device_registry(
-    db: Session = Depends(get_db),
-) -> DeviceRegistry:
-    """Compose device registration with the SQL repository adapter."""
-    return DeviceRepository(db)
-
-
-def get_device_listing_reader(
-    db: Session = Depends(get_db),
-) -> DeviceListingReader:
-    """Compose device listing with the SQL repository adapter."""
-    return DeviceRepository(db)
-
-
-def get_device_health_reader(
-    db: Session = Depends(get_db),
-) -> DeviceHealthReader:
-    """Compose device health queries with the SQL repository adapter."""
-    return DeviceRepository(db)
-
-
-def get_device_status_registry(
-    db: Session = Depends(get_db),
-) -> DeviceStatusRegistry:
-    """Compose device status changes with the SQL repository adapter."""
-    return DeviceRepository(db)

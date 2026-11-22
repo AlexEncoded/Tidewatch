@@ -154,6 +154,16 @@ def test_dependency_wiring_is_grouped_under_the_composition_package() -> None:
     assert not (API_APP / "adapter_dependencies.py").exists()
 
 
+def test_dependency_facade_reexports_context_specific_providers() -> None:
+    from app.composition import analytics, dependencies, fleet, operations, sensors, telemetry
+
+    assert dependencies.get_quality_summary_reader is operations.get_quality_summary_reader
+    assert dependencies.get_temperature_telemetry_gateway is sensors.get_temperature_telemetry_gateway
+    assert dependencies.get_telemetry_ingestion_gateway is telemetry.get_telemetry_ingestion_gateway
+    assert dependencies.get_buoy_summary_reader is fleet.get_buoy_summary_reader
+    assert dependencies.get_wave_analysis_reader is analytics.get_wave_analysis_reader
+
+
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
     from app.adapters.postgres import sensor_entities
 

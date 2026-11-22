@@ -64,8 +64,9 @@ grouped by responsibility under `apps/api/app/routers/`:
 - `system.py` exposes health and Prometheus endpoints.
 
 Dependency wiring is grouped under
-`apps/api/app/composition/dependencies.py`, which connects application ports
-to PostgreSQL and Prometheus adapters.
+`apps/api/app/composition/`. Its context-specific modules connect application
+ports to PostgreSQL and Prometheus adapters; `dependencies.py` re-exports the
+providers used by the HTTP routers.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
