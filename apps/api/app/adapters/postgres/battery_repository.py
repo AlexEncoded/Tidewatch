@@ -9,7 +9,7 @@ from .buoy_registry_repository import BuoyRegistryRepository
 from .device_repository import DeviceRepository
 from ...domain.devices import DeviceSnapshot
 from ...domain.battery import BatteryTelemetrySnapshot
-from ...fleet_entities import BatteryReadingEntity
+from .fleet_entities import BatteryReadingEntity
 
 
 class BatteryRepository:

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.conductivity import ConductivityTelemetrySnapshot
 from ...domain.devices import SensorChannel
-from ...sensor_entities import ConductivityReadingEntity
+from .sensor_entities import ConductivityReadingEntity
 
 
 class ConductivityRepository:

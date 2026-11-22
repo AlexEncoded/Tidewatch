@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .database import Base
+from ...database import Base
 
 
 class BuoyEntity(Base):

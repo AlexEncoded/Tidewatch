@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 from ...domain.devices import SensorChannel
-from ...sensor_entities import AmbientLightReadingEntity
+from .sensor_entities import AmbientLightReadingEntity
 
 
 class AmbientLightRepository:

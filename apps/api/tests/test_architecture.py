@@ -107,18 +107,18 @@ def test_empty_legacy_telemetry_domain_module_is_removed() -> None:
 
 
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
-    from app.fleet_entities import BuoyEntity
-    from app.fleet_entities import (
+    from app.adapters.postgres.fleet_entities import BuoyEntity
+    from app.adapters.postgres.fleet_entities import (
         BatteryReadingEntity,
         BuoyEntity,
         BuoyLocationReadingEntity,
         DeviceEntity,
     )
 
-    assert BuoyEntity.__module__ == "app.fleet_entities"
-    assert DeviceEntity.__module__ == "app.fleet_entities"
-    assert BuoyLocationReadingEntity.__module__ == "app.fleet_entities"
-    assert BatteryReadingEntity.__module__ == "app.fleet_entities"
+    assert BuoyEntity.__module__ == "app.adapters.postgres.fleet_entities"
+    assert DeviceEntity.__module__ == "app.adapters.postgres.fleet_entities"
+    assert BuoyLocationReadingEntity.__module__ == "app.adapters.postgres.fleet_entities"
+    assert BatteryReadingEntity.__module__ == "app.adapters.postgres.fleet_entities"
     assert set(BuoyEntity.__mapper__.relationships.keys()) == {
         "battery_readings",
         "devices",
@@ -126,8 +126,22 @@ def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     }
 
 
+def test_orm_entity_modules_are_grouped_under_postgres_adapters() -> None:
+    modules = (
+        "alert_entities.py",
+        "fleet_entities.py",
+        "maintenance_entities.py",
+        "sensor_entities.py",
+        "telemetry_entities.py",
+    )
+
+    for module in modules:
+        assert (API_APP / "adapters" / "postgres" / module).is_file()
+        assert not (API_APP / module).exists()
+
+
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
-    from app import sensor_entities
+    from app.adapters.postgres import sensor_entities
 
     sensor_mappings = [
         mapping
@@ -562,11 +576,11 @@ def test_acoustic_postgres_adapters_are_grouped_under_the_adapter_package() -> N
 
 
 def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
-    from app.alert_entities import TemperatureAlertEntity
-    from app.telemetry_entities import TelemetryIngestionJobEntity
+    from app.adapters.postgres.alert_entities import TemperatureAlertEntity
+    from app.adapters.postgres.telemetry_entities import TelemetryIngestionJobEntity
 
-    assert TemperatureAlertEntity.__module__ == "app.alert_entities"
-    assert TelemetryIngestionJobEntity.__module__ == "app.telemetry_entities"
+    assert TemperatureAlertEntity.__module__ == "app.adapters.postgres.alert_entities"
+    assert TelemetryIngestionJobEntity.__module__ == "app.adapters.postgres.telemetry_entities"
 
 
 def test_telemetry_ports_are_grouped_by_context() -> None:
@@ -856,7 +870,7 @@ def test_persistence_helpers_are_grouped_with_postgres_adapters() -> None:
 
 
 def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
-    from app.sensor_entities import (
+    from app.adapters.postgres.sensor_entities import (
         AcousticAltimeterReadingEntity,
         AirTemperatureReadingEntity,
         AmbientLightReadingEntity,
@@ -878,25 +892,25 @@ def test_core_sensor_persistence_entities_are_grouped_by_context() -> None:
         WindReadingEntity,
     )
 
-    assert AmbientLightReadingEntity.__module__ == "app.sensor_entities"
-    assert AcousticAltimeterReadingEntity.__module__ == "app.sensor_entities"
-    assert AirTemperatureReadingEntity.__module__ == "app.sensor_entities"
-    assert AtmosphericPressureReadingEntity.__module__ == "app.sensor_entities"
-    assert ChlorophyllAReadingEntity.__module__ == "app.sensor_entities"
-    assert ConductivityReadingEntity.__module__ == "app.sensor_entities"
-    assert DissolvedOxygenReadingEntity.__module__ == "app.sensor_entities"
-    assert HumidityReadingEntity.__module__ == "app.sensor_entities"
-    assert PressureReadingEntity.__module__ == "app.sensor_entities"
-    assert RainfallReadingEntity.__module__ == "app.sensor_entities"
-    assert SalinityReadingEntity.__module__ == "app.sensor_entities"
-    assert SensorHealthCheckEntity.__module__ == "app.sensor_entities"
-    assert TemperatureReadingEntity.__module__ == "app.sensor_entities"
-    assert TurbidityReadingEntity.__module__ == "app.sensor_entities"
-    assert UnderwaterAcousticReadingEntity.__module__ == "app.sensor_entities"
-    assert ImuReadingEntity.__module__ == "app.sensor_entities"
-    assert MarineCurrentReadingEntity.__module__ == "app.sensor_entities"
-    assert PHReadingEntity.__module__ == "app.sensor_entities"
-    assert WindReadingEntity.__module__ == "app.sensor_entities"
+    assert AmbientLightReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert AcousticAltimeterReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert AirTemperatureReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert AtmosphericPressureReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert ChlorophyllAReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert ConductivityReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert DissolvedOxygenReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert HumidityReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert PressureReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert RainfallReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert SalinityReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert SensorHealthCheckEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert TemperatureReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert TurbidityReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert UnderwaterAcousticReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert ImuReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert MarineCurrentReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert PHReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
+    assert WindReadingEntity.__module__ == "app.adapters.postgres.sensor_entities"
 
 
 def test_orm_compatibility_facade_is_removed_and_never_imported() -> None:
@@ -924,7 +938,7 @@ def test_alembic_registers_context_entities_without_compatibility_facade() -> No
     imported_contexts = {
         alias.name
         for node in ast.walk(migration_env)
-        if isinstance(node, ast.ImportFrom) and node.module == "app"
+        if isinstance(node, ast.ImportFrom) and node.module == "app.adapters.postgres"
         for alias in node.names
     }
 

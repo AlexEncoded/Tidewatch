@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .fleet_entities import BuoyEntity, DeviceEntity
+from .adapters.postgres.fleet_entities import BuoyEntity, DeviceEntity
 from .application.system_ports import AvailabilityMetrics
 
 

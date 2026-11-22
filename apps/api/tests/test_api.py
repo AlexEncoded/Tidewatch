@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from sqlalchemy import delete
 
 from app.database import SessionLocal, create_tables, resolve_database_url
-from app.sensor_entities import (
+from app.adapters.postgres.sensor_entities import (
     AcousticAltimeterReadingEntity,
     AirTemperatureReadingEntity,
     AmbientLightReadingEntity,
@@ -31,13 +31,13 @@ from app.sensor_entities import (
     UnderwaterAcousticReadingEntity,
     WindReadingEntity,
 )
-from app.fleet_entities import (
+from app.adapters.postgres.fleet_entities import (
     BuoyEntity,
     BatteryReadingEntity,
     DeviceEntity,
     BuoyLocationReadingEntity,
 )
-from app.telemetry_entities import TelemetryIngestionJobEntity
+from app.adapters.postgres.telemetry_entities import TelemetryIngestionJobEntity
 from app.main import app
 from app.settings import configured_wave_imu_factor
 from app.schemas.ingestion import TelemetryBatchCreate

@@ -34,7 +34,7 @@ from ...domain.marine_current import MarineCurrentTelemetrySnapshot
 from ...domain.wind import WindTelemetrySnapshot
 from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 
-from ...sensor_entities import SensorHealthCheckEntity
+from .sensor_entities import SensorHealthCheckEntity
 from .temperature_repository import TemperatureRepository
 from .humidity_repository import HumidityRepository
 from .air_temperature_repository import AirTemperatureRepository

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.turbidity import TurbidityTelemetrySnapshot
-from ...sensor_entities import TurbidityReadingEntity
+from .sensor_entities import TurbidityReadingEntity
 from ...domain.devices import SensorChannel
 
 

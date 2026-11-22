@@ -132,18 +132,18 @@ to immutable snapshots in
 stay separate from query and transaction orchestration in
 the focused SQLAlchemy adapters, making persistence-to-domain translation
 directly testable.
-Fleet identity, physical-device, and location-history ORM entities are grouped in
-`apps/api/app/fleet_entities.py`. Sensor reading, health, and battery mappings
-are grouped in `apps/api/app/sensor_entities.py`; alert and telemetry-ingestion
-job mappings are grouped in `apps/api/app/alert_entities.py` and
-`apps/api/app/telemetry_entities.py`, respectively. The compatibility
+Fleet identity, physical-device, and location-history ORM entities are grouped
+in `apps/api/app/adapters/postgres/fleet_entities.py`. Sensor reading, health,
+and battery mappings are grouped in
+`apps/api/app/adapters/postgres/sensor_entities.py`; alert, maintenance, and
+telemetry-ingestion job mappings live alongside them. The compatibility
 `entities.py` module has been removed; Alembic imports each context mapping
 module directly, as do production adapters.
 Core temperature, pressure, salinity, IMU, ambient-light, wind, marine-current,
 turbidity, dissolved-oxygen, pH, conductivity, chlorophyll, rainfall, humidity,
 air-temperature, atmospheric-pressure, acoustic-altimeter, and underwater-
 acoustic mappings are grouped in
-`apps/api/app/sensor_entities.py`.
+`apps/api/app/adapters/postgres/sensor_entities.py`.
 Sensor-health snapshots and battery readings are also mapped there.
 Physical-device registration, heartbeat and status operations use a dedicated
 `DeviceRepository`.

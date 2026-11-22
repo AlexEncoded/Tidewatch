@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.imu import ImuTelemetrySnapshot
 from ...domain.devices import SensorChannel
-from ...sensor_entities import ImuReadingEntity
+from .sensor_entities import ImuReadingEntity
 
 
 class ImuRepository:

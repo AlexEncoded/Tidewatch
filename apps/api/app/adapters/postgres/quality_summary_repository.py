@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ...application.quality_ports import QualitySummaryReader
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...sensor_entities import (
+from .sensor_entities import (
     AcousticAltimeterReadingEntity,
     AirTemperatureReadingEntity,
     AmbientLightReadingEntity,

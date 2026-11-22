@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from ...domain.devices import SensorChannel
-from ...sensor_entities import ChlorophyllAReadingEntity
+from .sensor_entities import ChlorophyllAReadingEntity
 
 
 class ChlorophyllARepository:

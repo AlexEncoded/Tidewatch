@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base
+from ...database import Base
 
 
 class TemperatureReadingEntity(Base):

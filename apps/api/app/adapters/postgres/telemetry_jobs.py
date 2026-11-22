@@ -11,7 +11,7 @@ from ...domain.telemetry_job import (
     TelemetryIngestionJobSnapshot,
     TelemetryJobIdempotencyConflict,
 )
-from ...telemetry_entities import TelemetryIngestionJobEntity
+from .telemetry_entities import TelemetryIngestionJobEntity
 from ...application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 
 
