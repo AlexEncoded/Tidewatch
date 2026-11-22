@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
-from ..adapter_dependencies import (
+from ..composition.dependencies import (
     get_telemetry_metrics,
     get_telemetry_ingestion_gateway,
     get_telemetry_ingestion_job_repository,

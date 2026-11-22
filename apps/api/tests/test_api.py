@@ -1569,7 +1569,7 @@ def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
     from math import pi, sin
     from types import SimpleNamespace
 
-    from app.adapter_dependencies import get_wave_analysis_reader
+    from app.composition.dependencies import get_wave_analysis_reader
     from app.adapters.prometheus.instruments import (
         wave_analysis_last_run_timestamp_seconds,
         wave_period_sensor_disagreement,

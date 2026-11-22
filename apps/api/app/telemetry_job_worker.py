@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from .adapter_dependencies import (
+from .composition.dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_metrics,
 )

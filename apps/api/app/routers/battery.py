@@ -18,7 +18,7 @@ from ..application.battery_errors import (
 )
 from ..application.analysis_queries import analyze_if_buoy_exists
 from ..application.telemetry_ingestion import build_battery_snapshot
-from ..adapter_dependencies import get_battery_metrics, get_battery_telemetry_reader
+from ..composition.dependencies import get_battery_metrics, get_battery_telemetry_reader
 from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
 from ..schemas.battery import (
     BatteryAnalysis,

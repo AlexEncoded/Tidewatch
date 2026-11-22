@@ -3,24 +3,24 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from .application.system_ports import DatabaseHealthReader, MetricsScraper
-from .application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
-from .application.battery_ports import BatteryMetrics, BatteryTelemetryReader
-from .application.analysis_ports import (
+from ..application.system_ports import DatabaseHealthReader, MetricsScraper
+from ..application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
+from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
+from ..application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
     WaveAnalysisMetrics,
     WaveAnalysisReader,
 )
-from .application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
-from .application.maintenance_notification_ports import MaintenanceNotificationJobStore
-from .application.quality_ports import QualitySummaryReader
-from .application.sensor_health_ports import (
+from ..application.maintenance_ports import MaintenanceMetrics, MaintenanceReader
+from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
+from ..application.quality_ports import QualitySummaryReader
+from ..application.sensor_health_ports import (
     SensorHealthCheckGateway,
     SensorHealthMetrics,
     SensorHealthReader,
 )
-from .application.fleet_ports import (
+from ..application.fleet_ports import (
     BuoyLocationHistoryReader,
     BuoyLocationUpdater,
     BuoyRegistrar,
@@ -31,87 +31,87 @@ from .application.fleet_ports import (
     MovementAnalysisReader,
     StaleBuoyReader,
 )
-from .application.telemetry_ports import (
+from ..application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryMetrics,
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
 )
-from .application.ambient_light_ports import AmbientLightTelemetryGateway
-from .application.motion_ports import ImuTelemetryGateway
-from .application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
-from .application.marine_water_ports import (
+from ..application.ambient_light_ports import AmbientLightTelemetryGateway
+from ..application.motion_ports import ImuTelemetryGateway
+from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
+from ..application.marine_water_ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
 )
-from .application.acoustic_sensor_ports import (
+from ..application.acoustic_sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
 )
-from .application.weather_ports import (
+from ..application.weather_ports import (
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
     HumidityTelemetryGateway,
     RainfallTelemetryGateway,
 )
-from .application.water_quality_ports import (
+from ..application.water_quality_ports import (
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
     TurbidityTelemetryGateway,
 )
-from .application.device_ports import (
+from ..application.device_ports import (
     DeviceHealthReader,
     DeviceListingReader,
     DeviceRegistry,
     DeviceStatusRegistry,
 )
-from .adapters.postgres.database import get_db
-from .adapters.postgres.database_health import SQLDatabaseHealthReader
-from .adapters.postgres.device_repository import DeviceRepository
-from .adapters.postgres.buoy_activity_repository import BuoyActivityRepository
-from .adapters.postgres.buoy_location_repository import BuoyLocationRepository
-from .adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
-from .adapters.postgres.buoy_summary_repository import BuoySummaryRepository
-from .adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
-from .adapters.postgres.temperature_repository import TemperatureRepository
-from .adapters.postgres.pressure_repository import PressureRepository
-from .adapters.postgres.salinity_repository import SalinityRepository
-from .adapters.postgres.imu_repository import ImuRepository
-from .adapters.postgres.ambient_light_repository import AmbientLightRepository
-from .adapters.postgres.wind_repository import WindRepository
-from .adapters.postgres.marine_current_repository import MarineCurrentRepository
-from .adapters.postgres.turbidity_repository import TurbidityRepository
-from .adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
-from .adapters.postgres.ph_repository import PHRepository
-from .adapters.postgres.conductivity_repository import ConductivityRepository
-from .adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
-from .adapters.postgres.rainfall_repository import RainfallRepository
-from .adapters.postgres.humidity_repository import HumidityRepository
-from .adapters.postgres.air_temperature_repository import AirTemperatureRepository
-from .adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from .adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
-from .adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from .adapters.postgres.battery_repository import BatteryRepository
-from .adapters.postgres.sensor_health_repository import SensorHealthRepository
-from .adapters.postgres.quality_summary_repository import QualitySummaryRepository
-from .adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
-from .adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
-from .adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
-from .adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from .adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
-from .adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
-from .adapters.prometheus.maintenance_metrics import PrometheusMaintenanceMetrics
-from .adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
-from .adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
-from .adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
-from .adapters.prometheus.metrics_scraper import PrometheusMetricsScraper
-from .adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
-from .adapters.postgres.maintenance_repository import MaintenanceRepository
-from .adapters.postgres.wave_analysis import WaveAnalysisRepository
+from ..adapters.postgres.database import get_db
+from ..adapters.postgres.database_health import SQLDatabaseHealthReader
+from ..adapters.postgres.device_repository import DeviceRepository
+from ..adapters.postgres.buoy_activity_repository import BuoyActivityRepository
+from ..adapters.postgres.buoy_location_repository import BuoyLocationRepository
+from ..adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
+from ..adapters.postgres.buoy_summary_repository import BuoySummaryRepository
+from ..adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
+from ..adapters.postgres.temperature_repository import TemperatureRepository
+from ..adapters.postgres.pressure_repository import PressureRepository
+from ..adapters.postgres.salinity_repository import SalinityRepository
+from ..adapters.postgres.imu_repository import ImuRepository
+from ..adapters.postgres.ambient_light_repository import AmbientLightRepository
+from ..adapters.postgres.wind_repository import WindRepository
+from ..adapters.postgres.marine_current_repository import MarineCurrentRepository
+from ..adapters.postgres.turbidity_repository import TurbidityRepository
+from ..adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
+from ..adapters.postgres.ph_repository import PHRepository
+from ..adapters.postgres.conductivity_repository import ConductivityRepository
+from ..adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
+from ..adapters.postgres.rainfall_repository import RainfallRepository
+from ..adapters.postgres.humidity_repository import HumidityRepository
+from ..adapters.postgres.air_temperature_repository import AirTemperatureRepository
+from ..adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
+from ..adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
+from ..adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
+from ..adapters.postgres.battery_repository import BatteryRepository
+from ..adapters.postgres.sensor_health_repository import SensorHealthRepository
+from ..adapters.postgres.quality_summary_repository import QualitySummaryRepository
+from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
+from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from ..adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
+from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
+from ..adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
+from ..adapters.prometheus.maintenance_metrics import PrometheusMaintenanceMetrics
+from ..adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
+from ..adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
+from ..adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
+from ..adapters.prometheus.metrics_scraper import PrometheusMetricsScraper
+from ..adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
+from ..adapters.postgres.maintenance_repository import MaintenanceRepository
+from ..adapters.postgres.wave_analysis import WaveAnalysisRepository
 
 
 def get_quality_summary_reader(

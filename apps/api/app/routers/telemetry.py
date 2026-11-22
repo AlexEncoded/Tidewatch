@@ -7,7 +7,7 @@ from io import StringIO
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
-from ..adapter_dependencies import get_fleet_location_reader
+from ..composition.dependencies import get_fleet_location_reader
 from ..application.fleet_locations import list_fleet_locations
 from ..application.location_queries import InvalidLocationTimeRange
 from ..application.fleet_ports import FleetLocationReader

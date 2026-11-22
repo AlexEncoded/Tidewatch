@@ -63,6 +63,10 @@ grouped by responsibility under `apps/api/app/routers/`:
 - `maintenance.py` exposes maintenance issues and webhook notifications;
 - `system.py` exposes health and Prometheus endpoints.
 
+Dependency wiring is grouped under
+`apps/api/app/composition/dependencies.py`, which connects application ports
+to PostgreSQL and Prometheus adapters.
+
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
 notifications use an application transport port, and `maintenance_evaluation`

@@ -149,6 +149,11 @@ def test_sqlalchemy_database_configuration_is_grouped_with_postgres_adapters() -
     assert not (API_APP / "database.py").exists()
 
 
+def test_dependency_wiring_is_grouped_under_the_composition_package() -> None:
+    assert (API_APP / "composition" / "dependencies.py").is_file()
+    assert not (API_APP / "adapter_dependencies.py").exists()
+
+
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
     from app.adapters.postgres import sensor_entities
 
@@ -318,7 +323,6 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                     "sqlalchemy",
                     "fastapi",
                     "prometheus_client",
-                    "adapter_dependencies",
                     "database",
                 }
             ), path
@@ -327,7 +331,7 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 or module.split(".")[-1] == "schemas"
                 or module.split(".")[-1] == "settings"
                 or module.split(".")[-1] == "routers"
-                or module.split(".")[-1] == "adapter_dependencies"
+                or module.endswith("composition.dependencies")
                 or module.split(".")[-1].endswith("_adapter")
                 or module in {"fastapi", "sqlalchemy"}
                 or module.startswith("prometheus_client")
@@ -971,7 +975,7 @@ def test_alembic_registers_context_entities_without_compatibility_facade() -> No
 
 
 def test_buoy_registry_operations_use_the_fleet_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_buoy_registrar,
         get_buoy_status_registry,
     )
@@ -1007,13 +1011,13 @@ def test_legacy_buoy_repository_module_is_removed_and_never_imported() -> None:
 
 
 def test_stale_buoy_queries_use_the_fleet_activity_adapter() -> None:
-    from app.adapter_dependencies import get_stale_buoy_reader
+    from app.composition.dependencies import get_stale_buoy_reader
 
     assert isinstance(get_stale_buoy_reader(object()), BuoyActivityRepository)
 
 
 def test_buoy_location_updates_use_the_location_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_buoy_location_updater,
         get_buoy_location_history_reader,
         get_fleet_location_reader,
@@ -1036,7 +1040,7 @@ def test_buoy_location_updates_use_the_location_adapter() -> None:
 
 
 def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_temperature_alert_store,
         get_temperature_alerts_reader,
     )
@@ -1047,7 +1051,7 @@ def test_temperature_alert_ports_use_the_composed_alert_adapter() -> None:
 
 
 def test_telemetry_job_http_port_is_implemented_by_sql_adapter() -> None:
-    from app.adapter_dependencies import get_telemetry_ingestion_job_repository
+    from app.composition.dependencies import get_telemetry_ingestion_job_repository
 
     adapter = get_telemetry_ingestion_job_repository(object())
 
@@ -1057,7 +1061,7 @@ def test_telemetry_job_http_port_is_implemented_by_sql_adapter() -> None:
 
 
 def test_temperature_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_temperature_analysis_reader,
         get_temperature_telemetry_gateway,
     )
@@ -1068,7 +1072,7 @@ def test_temperature_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_pressure_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_pressure_analysis_reader,
         get_pressure_telemetry_gateway,
     )
@@ -1079,21 +1083,21 @@ def test_pressure_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_salinity_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_salinity_telemetry_gateway
+    from app.composition.dependencies import get_salinity_telemetry_gateway
 
     session = object()
     assert isinstance(get_salinity_telemetry_gateway(session), SalinityRepository)
 
 
 def test_imu_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_imu_telemetry_gateway
+    from app.composition.dependencies import get_imu_telemetry_gateway
 
     session = object()
     assert isinstance(get_imu_telemetry_gateway(session), ImuRepository)
 
 
 def test_ambient_light_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_ambient_light_telemetry_gateway
+    from app.composition.dependencies import get_ambient_light_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1102,14 +1106,14 @@ def test_ambient_light_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_wind_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_wind_telemetry_gateway
+    from app.composition.dependencies import get_wind_telemetry_gateway
 
     session = object()
     assert isinstance(get_wind_telemetry_gateway(session), WindRepository)
 
 
 def test_marine_current_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_marine_current_telemetry_gateway
+    from app.composition.dependencies import get_marine_current_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1118,14 +1122,14 @@ def test_marine_current_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_turbidity_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_turbidity_telemetry_gateway
+    from app.composition.dependencies import get_turbidity_telemetry_gateway
 
     session = object()
     assert isinstance(get_turbidity_telemetry_gateway(session), TurbidityRepository)
 
 
 def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_dissolved_oxygen_telemetry_gateway
+    from app.composition.dependencies import get_dissolved_oxygen_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1134,14 +1138,14 @@ def test_dissolved_oxygen_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_ph_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_ph_telemetry_gateway
+    from app.composition.dependencies import get_ph_telemetry_gateway
 
     session = object()
     assert isinstance(get_ph_telemetry_gateway(session), PHRepository)
 
 
 def test_conductivity_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_conductivity_telemetry_gateway
+    from app.composition.dependencies import get_conductivity_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1150,7 +1154,7 @@ def test_conductivity_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_chlorophyll_a_telemetry_gateway
+    from app.composition.dependencies import get_chlorophyll_a_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1159,21 +1163,21 @@ def test_chlorophyll_a_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_rainfall_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_rainfall_telemetry_gateway
+    from app.composition.dependencies import get_rainfall_telemetry_gateway
 
     session = object()
     assert isinstance(get_rainfall_telemetry_gateway(session), RainfallRepository)
 
 
 def test_humidity_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_humidity_telemetry_gateway
+    from app.composition.dependencies import get_humidity_telemetry_gateway
 
     session = object()
     assert isinstance(get_humidity_telemetry_gateway(session), HumidityRepository)
 
 
 def test_air_temperature_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_air_temperature_telemetry_gateway
+    from app.composition.dependencies import get_air_temperature_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1182,7 +1186,7 @@ def test_air_temperature_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_atmospheric_pressure_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_atmospheric_pressure_telemetry_gateway
+    from app.composition.dependencies import get_atmospheric_pressure_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1192,7 +1196,7 @@ def test_atmospheric_pressure_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_acoustic_altimeter_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_acoustic_altimeter_telemetry_gateway
+    from app.composition.dependencies import get_acoustic_altimeter_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1202,7 +1206,7 @@ def test_acoustic_altimeter_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_underwater_acoustic_telemetry_uses_the_dedicated_adapter() -> None:
-    from app.adapter_dependencies import get_underwater_acoustic_telemetry_gateway
+    from app.composition.dependencies import get_underwater_acoustic_telemetry_gateway
 
     session = object()
     assert isinstance(
@@ -1212,7 +1216,7 @@ def test_underwater_acoustic_telemetry_uses_the_dedicated_adapter() -> None:
 
 
 def test_battery_telemetry_uses_its_adapter_and_device_composition() -> None:
-    from app.adapter_dependencies import get_battery_telemetry_reader
+    from app.composition.dependencies import get_battery_telemetry_reader
 
     session = object()
     adapter = get_battery_telemetry_reader(session)
@@ -1222,7 +1226,7 @@ def test_battery_telemetry_uses_its_adapter_and_device_composition() -> None:
 
 
 def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
-    from app.adapter_dependencies import (
+    from app.composition.dependencies import (
         get_sensor_health_check_gateway,
         get_sensor_health_reader,
     )
@@ -1235,14 +1239,14 @@ def test_sensor_health_ports_use_the_composed_sensor_health_adapter() -> None:
 
 
 def test_quality_summary_uses_its_dedicated_repository() -> None:
-    from app.adapter_dependencies import get_quality_summary_reader
+    from app.composition.dependencies import get_quality_summary_reader
 
     session = object()
     assert isinstance(get_quality_summary_reader(session), QualitySummaryRepository)
 
 
 def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
-    from app.adapter_dependencies import get_telemetry_ingestion_gateway
+    from app.composition.dependencies import get_telemetry_ingestion_gateway
 
     session = object()
     gateway = get_telemetry_ingestion_gateway(session)
@@ -1254,7 +1258,7 @@ def test_batch_ingestion_uses_composed_sensor_and_fleet_adapters() -> None:
 
 
 def test_maintenance_reader_uses_its_composed_read_adapter() -> None:
-    from app.adapter_dependencies import get_maintenance_reader
+    from app.composition.dependencies import get_maintenance_reader
 
     session = object()
     reader = get_maintenance_reader(session)
@@ -2033,7 +2037,7 @@ def test_batch_ingestion_route_uses_injected_gateway() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_telemetry_ingestion_gateway" in imported_dependencies
@@ -2062,14 +2066,14 @@ def test_database_health_route_uses_injected_reader() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_database_health_reader" in imported_dependencies
 
 
 def test_buoy_summary_port_uses_composed_fleet_adapter() -> None:
-    from app.adapter_dependencies import get_buoy_summary_reader
+    from app.composition.dependencies import get_buoy_summary_reader
 
     adapter = get_buoy_summary_reader(object())
 
@@ -2104,7 +2108,7 @@ def test_buoy_summary_route_uses_injected_reader() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_buoy_summary_reader" in imported_dependencies
@@ -2136,7 +2140,7 @@ def test_maintenance_routes_use_injected_reader() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_maintenance_reader" in imported_dependencies
@@ -3016,7 +3020,7 @@ def test_temperature_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_temperature_telemetry_gateway" in imported_dependencies
@@ -3048,7 +3052,7 @@ def test_pressure_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_pressure_telemetry_gateway" in imported_dependencies
@@ -3093,7 +3097,7 @@ def test_salinity_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_salinity_telemetry_gateway" in imported_dependencies
@@ -3125,7 +3129,7 @@ def test_imu_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_imu_telemetry_gateway" in imported_dependencies
@@ -3170,7 +3174,7 @@ def test_ambient_light_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_ambient_light_telemetry_gateway" in imported_dependencies
@@ -3209,7 +3213,7 @@ def test_wind_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_wind_telemetry_gateway" in imported_dependencies
@@ -3248,7 +3252,7 @@ def test_marine_current_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_marine_current_telemetry_gateway" in imported_dependencies
@@ -3287,7 +3291,7 @@ def test_turbidity_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_turbidity_telemetry_gateway" in imported_dependencies
@@ -3326,7 +3330,7 @@ def test_dissolved_oxygen_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_dissolved_oxygen_telemetry_gateway" in imported_dependencies
@@ -3365,7 +3369,7 @@ def test_ph_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_ph_telemetry_gateway" in imported_dependencies
@@ -3404,7 +3408,7 @@ def test_conductivity_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_conductivity_telemetry_gateway" in imported_dependencies
@@ -3443,7 +3447,7 @@ def test_chlorophyll_a_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_chlorophyll_a_telemetry_gateway" in imported_dependencies
@@ -3482,7 +3486,7 @@ def test_rainfall_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_rainfall_telemetry_gateway" in imported_dependencies
@@ -3521,7 +3525,7 @@ def test_humidity_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_humidity_telemetry_gateway" in imported_dependencies
@@ -3560,7 +3564,7 @@ def test_air_temperature_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_air_temperature_telemetry_gateway" in imported_dependencies
@@ -3599,7 +3603,7 @@ def test_atmospheric_pressure_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_atmospheric_pressure_telemetry_gateway" in imported_dependencies
@@ -3638,7 +3642,7 @@ def test_acoustic_altimeter_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_acoustic_altimeter_telemetry_gateway" in imported_dependencies
@@ -3677,7 +3681,7 @@ def test_underwater_acoustic_routes_use_injected_telemetry_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_underwater_acoustic_telemetry_gateway" in imported_dependencies
@@ -3707,7 +3711,7 @@ def test_sensor_health_route_uses_injected_reader():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_sensor_health_reader" in imported_dependencies
@@ -3738,7 +3742,7 @@ def test_sensor_health_history_route_uses_injected_reader():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_sensor_health_reader" in imported_dependencies
@@ -3770,7 +3774,7 @@ def test_sensor_health_check_route_uses_injected_gateway():
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "adapter_dependencies"
+        and node.module == "composition.dependencies"
         for alias in node.names
     }
     assert "get_sensor_health_check_gateway" in imported_dependencies

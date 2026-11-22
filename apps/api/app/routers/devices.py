@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from ..adapter_dependencies import (
+from ..composition.dependencies import (
     get_device_health_reader,
     get_device_listing_reader,
     get_device_registry,
