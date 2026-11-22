@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, TidewatchSession
+from app.adapters.postgres.database import Base, TidewatchSession
 from app.application.maintenance_notification_ports import (
     MaintenanceNotificationIdempotencyConflict,
 )

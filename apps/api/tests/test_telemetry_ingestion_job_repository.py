@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, TidewatchSession, engine
+from app.adapters.postgres.database import Base, TidewatchSession, engine
 from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
 from app.adapters.postgres.fleet_entities import BuoyEntity, DeviceEntity
 from app.adapters.postgres.sensor_entities import TemperatureReadingEntity

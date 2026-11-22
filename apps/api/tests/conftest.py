@@ -20,7 +20,7 @@ def pytest_unconfigure(config) -> None:
     if _test_database_directory is None:
         return
 
-    database_module = sys.modules.get("app.database")
+    database_module = sys.modules.get("app.adapters.postgres.database")
     if database_module is not None:
         database_module.engine.dispose()
 

@@ -87,7 +87,7 @@ def process_next_telemetry_job(db: Session) -> bool:
 
 def run_worker() -> None:
     """Poll PostgreSQL continuously using a fresh session per job."""
-    from .database import SessionLocal
+    from .adapters.postgres.database import SessionLocal
 
     while True:
         try:

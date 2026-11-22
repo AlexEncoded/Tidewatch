@@ -144,6 +144,11 @@ def test_orm_entity_modules_are_grouped_under_postgres_adapters() -> None:
         assert not (API_APP / module).exists()
 
 
+def test_sqlalchemy_database_configuration_is_grouped_with_postgres_adapters() -> None:
+    assert (API_APP / "adapters" / "postgres" / "database.py").is_file()
+    assert not (API_APP / "database.py").exists()
+
+
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
     from app.adapters.postgres import sensor_entities
 

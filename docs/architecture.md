@@ -74,6 +74,8 @@ Prometheus adapters that implement application metric ports are grouped under
 and availability-series restoration.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
 the telemetry unit of work are grouped under `apps/api/app/adapters/postgres/`.
+SQLAlchemy engine, session, and declarative-base setup is grouped there as well;
+Alembic loads the context-specific mappings from the same package.
 The weather sensor persistence adapters for rainfall, humidity, air temperature,
 and atmospheric pressure live in the same package.
 Water-quality persistence adapters for salinity, dissolved oxygen, pH,

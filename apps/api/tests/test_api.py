@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from sqlalchemy import delete
 
-from app.database import SessionLocal, create_tables, resolve_database_url
+from app.adapters.postgres.database import SessionLocal, create_tables, resolve_database_url
 from app.adapters.postgres.sensor_entities import (
     AcousticAltimeterReadingEntity,
     AirTemperatureReadingEntity,

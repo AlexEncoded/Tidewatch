@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Index, JSON, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ...database import Base
+from .database import Base
 
 
 class MaintenanceNotificationJobEntity(Base):

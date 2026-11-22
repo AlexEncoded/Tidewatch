@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from .adapters.prometheus.availability_metrics import initialize_availability_metrics
 from .adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 from .adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
-from .database import SessionLocal
+from .adapters.postgres.database import SessionLocal
 from .telemetry import configure_telemetry
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
