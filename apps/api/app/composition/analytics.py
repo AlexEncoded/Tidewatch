@@ -28,7 +28,7 @@ def get_pressure_analysis_reader(
 def get_wave_analysis_reader(
     db: Session = Depends(get_db),
 ) -> WaveAnalysisReader:
-    """Compose wave analysis through the compatibility telemetry facade."""
+    """Compose wave analysis from focused IMU and location adapters."""
     return WaveAnalysisRepository(db)
 
 
