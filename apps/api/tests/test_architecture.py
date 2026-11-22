@@ -341,7 +341,7 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 or module.split(".")[-1] == "schemas"
                 or module.split(".")[-1] == "settings"
                 or module.split(".")[-1] == "routers"
-                or module.endswith("composition.dependencies")
+                or "composition" in module.split(".")
                 or module.split(".")[-1].endswith("_adapter")
                 or module in {"fastapi", "sqlalchemy"}
                 or module.startswith("prometheus_client")
@@ -392,6 +392,20 @@ def test_http_routers_do_not_call_application_ports_directly() -> None:
             ]
 
             assert not direct_port_calls, f"{path}:{function.name} calls an application port"
+
+
+def test_http_routers_import_providers_only_through_the_composition_facade() -> None:
+    for path in (API_APP / "routers").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        composition_imports = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and "composition" in node.module.split(".")
+        }
+
+        assert composition_imports <= {"composition.dependencies"}, path
 
 
 def test_http_routers_do_not_import_orm_entities_or_sqlalchemy() -> None:
