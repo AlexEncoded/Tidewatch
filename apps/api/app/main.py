@@ -10,7 +10,7 @@ from .adapters.prometheus.availability_metrics import initialize_availability_me
 from .adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 from .adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
 from .adapters.postgres.database import SessionLocal
-from .telemetry import configure_telemetry
+from .adapters.opentelemetry.tracing import configure_telemetry
 from .routers.devices import router as devices_router
 from .routers.buoys import router as buoys_router
 from .routers.telemetry import router as telemetry_router

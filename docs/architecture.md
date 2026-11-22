@@ -77,6 +77,8 @@ worker test suites.
 Prometheus adapters that implement application metric ports are grouped under
 `apps/api/app/adapters/prometheus/`, including the shared instrument definitions
 and availability-series restoration.
+Optional FastAPI tracing and OTLP export are grouped under
+`apps/api/app/adapters/opentelemetry/`.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
 the telemetry unit of work are grouped under `apps/api/app/adapters/postgres/`.
 SQLAlchemy engine, session, and declarative-base setup is grouped there as well;

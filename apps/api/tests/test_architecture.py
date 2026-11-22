@@ -86,6 +86,13 @@ def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
     assert not (API_APP / "metrics.py").exists()
 
 
+def test_opentelemetry_adapter_is_grouped_under_the_adapter_package() -> None:
+    package = API_APP / "adapters" / "opentelemetry"
+
+    assert (package / "tracing.py").is_file()
+    assert not (API_APP / "telemetry.py").exists()
+
+
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
     from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
