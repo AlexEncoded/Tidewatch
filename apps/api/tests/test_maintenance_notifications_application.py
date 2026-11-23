@@ -4,6 +4,7 @@ from app.application.maintenance_notifications import (
     MaintenanceNotificationTransport,
     build_maintenance_notification_payload,
     deliver_maintenance_notification,
+    deliver_maintenance_notification_payload,
     evaluate_and_enqueue_maintenance_notification,
     find_maintenance_notification_job,
     enqueue_maintenance_notification,
@@ -170,6 +171,32 @@ def test_maintenance_notification_delivery_uses_injected_transport() -> None:
     assert calls[0][0] == "https://example.test/hook"
     assert calls[0][2] == 5
     assert calls[1] == "raised"
+
+
+def test_persisted_notification_payload_is_delivered_unchanged() -> None:
+    payload = {
+        "source": "tidewatch",
+        "issues": [],
+        "notification_idempotency_key": "request-1",
+    }
+    calls = []
+
+    class Response:
+        def raise_for_status(self) -> None:
+            calls.append("raised")
+
+    def transport(url: str, *, json: dict, timeout: float) -> Response:
+        calls.append((url, json, timeout))
+        return Response()
+
+    deliver_maintenance_notification_payload(
+        "https://example.test/hook", payload, transport
+    )
+
+    assert calls == [
+        ("https://example.test/hook", payload, 5),
+        "raised",
+    ]
 
 
 def test_reading_quality_issues_are_built_without_api_dependencies() -> None:

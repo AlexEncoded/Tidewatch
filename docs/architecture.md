@@ -81,6 +81,8 @@ Prometheus adapters that implement application metric ports are grouped under
 and availability-series restoration.
 Optional FastAPI tracing and OTLP export are grouped under
 `apps/api/app/adapters/opentelemetry/`.
+Maintenance webhook delivery uses the application transport port and its HTTPX
+adapter under `apps/api/app/adapters/http/`.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
 the telemetry unit of work are grouped under `apps/api/app/adapters/postgres/`.
 SQLAlchemy engine, session, and declarative-base setup is grouped there as well;

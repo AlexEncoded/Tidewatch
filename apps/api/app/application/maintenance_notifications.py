@@ -93,9 +93,18 @@ def deliver_maintenance_notification(
     transport: MaintenanceNotificationTransport,
 ) -> int:
     """Deliver maintenance issues through the injected notification port."""
-    transport(
+    deliver_maintenance_notification_payload(
         webhook_url,
-        json=build_maintenance_notification_payload(issues),
-        timeout=5,
-    ).raise_for_status()
+        build_maintenance_notification_payload(issues),
+        transport,
+    )
     return len(issues)
+
+
+def deliver_maintenance_notification_payload(
+    webhook_url: str,
+    payload: dict,
+    transport: MaintenanceNotificationTransport,
+) -> None:
+    """Deliver an already persisted payload through the transport port."""
+    transport(webhook_url, json=payload, timeout=5).raise_for_status()

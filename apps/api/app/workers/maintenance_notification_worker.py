@@ -3,11 +3,19 @@
 import logging
 from datetime import datetime, timezone
 
-import httpx
 from sqlalchemy.orm import Session
 
+from ..application.maintenance_notifications import (
+    MaintenanceNotificationTransport,
+    deliver_maintenance_notification_payload,
+)
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
-from ..adapters.postgres.maintenance_notification_job_repository import MaintenanceNotificationJobRepository
+from ..adapters.http.maintenance_notifications import (
+    HttpxMaintenanceNotificationTransport,
+)
+from ..adapters.postgres.maintenance_notification_job_repository import (
+    MaintenanceNotificationJobRepository,
+)
 from ..settings import (
     configured_maintenance_webhook_url,
     maintenance_notification_lease_seconds,
@@ -20,7 +28,7 @@ logger = logging.getLogger(__name__)
 def process_next_maintenance_notification_job(
     db: Session,
     *,
-    transport=httpx.post,
+    transport: MaintenanceNotificationTransport | None = None,
     webhook_url: str | None = None,
     now: datetime | None = None,
 ) -> bool:
@@ -37,7 +45,10 @@ def process_next_maintenance_notification_job(
     try:
         if not destination:
             raise RuntimeError("webhook_not_configured")
-        transport(destination, json=job.payload, timeout=5).raise_for_status()
+        delivery_transport = transport or HttpxMaintenanceNotificationTransport()
+        deliver_maintenance_notification_payload(
+            destination, job.payload, delivery_transport
+        )
         completed = repository.complete(
             job.job_id, job.attempts, datetime.now(timezone.utc)
         )

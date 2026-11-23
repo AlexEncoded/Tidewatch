@@ -102,6 +102,31 @@ def test_background_workers_are_grouped_under_the_workers_package() -> None:
     assert not (API_APP / "maintenance_notification_worker.py").exists()
 
 
+def test_maintenance_worker_uses_the_application_transport_port() -> None:
+    source = (API_APP / "workers" / "maintenance_notification_worker.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+    imported_roots = {
+        alias.name.split(".", maxsplit=1)[0]
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+
+    assert "httpx" not in imported_roots
+    assert not any(
+        module == "httpx" or module.startswith("httpx.")
+        for module in imported_modules
+    )
+    assert "application.maintenance_notifications" in imported_modules
+
+
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
     from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
