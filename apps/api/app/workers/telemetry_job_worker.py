@@ -13,7 +13,6 @@ from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import process_telemetry_batch
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .maintenance_notification_worker import process_next_maintenance_notification_job
-from ..schemas.ingestion import TelemetryBatchCreate
 from ..settings import (
     telemetry_job_lease_seconds,
     telemetry_job_max_attempts,
@@ -38,8 +37,7 @@ def process_next_telemetry_job(db: Session) -> bool:
         unit_of_work = SQLAlchemyTelemetryBatchUnitOfWork(db)
 
         def process_batch() -> None:
-            payload = TelemetryBatchCreate.model_validate(job.payload)
-            command = TelemetryBatchCommand.from_mapping(payload.model_dump())
+            command = TelemetryBatchCommand.from_json_mapping(job.payload)
             gateway = TelemetryIngestionRepository(db)
             metrics = PrometheusTelemetryMetrics()
             process_telemetry_batch(

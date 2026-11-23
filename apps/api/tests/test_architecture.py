@@ -2352,6 +2352,7 @@ def test_telemetry_worker_does_not_depend_on_http_composition() -> None:
 
     assert not any("composition" in module.split(".") for module in imported)
     assert not any(module == "fastapi" or module.startswith("fastapi.") for module in imported)
+    assert not any("schemas" in module.split(".") for module in imported)
 
 
 def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:

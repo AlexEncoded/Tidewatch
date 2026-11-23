@@ -72,3 +72,22 @@ def test_batch_command_copies_readings_and_serializes_datetime_for_queue() -> No
     assert command.as_json_mapping()["device_id"] == "buoy-device"
     assert command.as_json_mapping()["device_runtime"]["measured_at"] == measured_at.isoformat()
     assert command.as_json_mapping()["device_communications"]["measured_at"] == measured_at.isoformat()
+
+
+def test_batch_command_restores_datetime_values_from_durable_json() -> None:
+    measured_at = datetime(2026, 10, 19, 12, 30, tzinfo=timezone.utc)
+    queued_payload = TelemetryBatchCommand.from_mapping(
+        {
+            "temperatures": [{"measured_at": measured_at}],
+            "location": {"measured_at": measured_at},
+            "device_runtime": {"measured_at": measured_at},
+            "device_communications": {"measured_at": measured_at},
+        }
+    ).as_json_mapping()
+
+    command = TelemetryBatchCommand.from_json_mapping(queued_payload)
+
+    assert command.readings["temperatures"][0]["measured_at"] == measured_at
+    assert command.location["measured_at"] == measured_at
+    assert command.device_runtime["measured_at"] == measured_at
+    assert command.device_communications["measured_at"] == measured_at

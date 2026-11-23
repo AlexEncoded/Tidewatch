@@ -330,7 +330,7 @@ def test_worker_retries_invalid_batch_without_persisting_readings(job_repository
     assert failed_attempt is not None
     assert failed_attempt.status == "pending"
     assert failed_attempt.attempts == 1
-    assert "temperature_celsius" in failed_attempt.last_error
+    assert "Sea temperature must be between -5 and 45" in failed_attempt.last_error
     assert job_repository.db.query(TemperatureReadingEntity).count() == 0
 
 
