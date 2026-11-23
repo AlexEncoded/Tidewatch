@@ -22,3 +22,24 @@ class MaintenanceNotificationJobStore(Protocol):
 
     def get(self, job_id: str) -> MaintenanceNotificationJob | None:
         ...
+
+    def claim_next(
+        self, now: datetime, lease_seconds: int, max_attempts: int
+    ) -> MaintenanceNotificationJob | None:
+        ...
+
+    def complete(
+        self, job_id: str, attempt: int, now: datetime
+    ) -> MaintenanceNotificationJob | None:
+        ...
+
+    def fail(
+        self,
+        job_id: str,
+        attempt: int,
+        error_code: str,
+        now: datetime,
+        max_attempts: int,
+        retry_delay_seconds: int,
+    ) -> MaintenanceNotificationJob | None:
+        ...

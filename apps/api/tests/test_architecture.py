@@ -173,6 +173,23 @@ def test_maintenance_worker_uses_the_application_transport_port() -> None:
     assert "application.maintenance_notifications" in imported_modules
 
 
+def test_maintenance_worker_depends_on_job_port_not_database_adapters() -> None:
+    tree = ast.parse(
+        (API_APP / "workers" / "maintenance_notification_worker.py").read_text(
+            encoding="utf-8"
+        )
+    )
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+
+    assert not any("adapters" in module.split(".") for module in imported_modules)
+    assert not any("sqlalchemy" in module.split(".") for module in imported_modules)
+    assert any("maintenance_notification_ports" in module for module in imported_modules)
+
+
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
     from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository

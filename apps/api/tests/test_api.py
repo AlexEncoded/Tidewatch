@@ -56,6 +56,9 @@ import app.routers.maintenance as maintenance_module
 from app.routers.sensors import router as sensors_router
 from app.routers.system import router as system_router
 from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from app.adapters.postgres.maintenance_notification_job_repository import (
+    MaintenanceNotificationJobRepository,
+)
 from app.workers.maintenance_notification_worker import process_next_maintenance_notification_job
 from app.application.wave_analysis import analyze_wave_for_buoy
 from app.adapters.opentelemetry.tracing import configure_telemetry
@@ -1795,8 +1798,10 @@ def test_maintenance_notification_is_durable_idempotent_and_delivers_current_iss
 
     with SessionLocal() as db:
         assert process_next_maintenance_notification_job(
-            db,
+            MaintenanceNotificationJobRepository(db),
             transport=fake_post,
+            lease_seconds=60,
+            max_attempts=5,
             webhook_url="https://hooks.example.test/tidewatch",
         ) is True
 

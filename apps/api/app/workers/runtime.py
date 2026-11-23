@@ -5,7 +5,16 @@ import os
 import time
 
 from ..adapters.postgres.database import SessionLocal
-from ..settings import telemetry_job_poll_seconds
+from ..adapters.postgres.maintenance_notification_job_repository import (
+    MaintenanceNotificationJobRepository,
+)
+from ..adapters.http.maintenance_notifications import HttpxMaintenanceNotificationTransport
+from ..settings import (
+    configured_maintenance_webhook_url,
+    maintenance_notification_lease_seconds,
+    maintenance_notification_max_attempts,
+    telemetry_job_poll_seconds,
+)
 from .maintenance_notification_worker import process_next_maintenance_notification_job
 from .telemetry_job_worker import process_next_telemetry_job
 
@@ -18,7 +27,13 @@ def run_worker() -> None:
         try:
             with SessionLocal() as db:
                 found_telemetry_job = process_next_telemetry_job(db)
-                found_notification_job = process_next_maintenance_notification_job(db)
+                found_notification_job = process_next_maintenance_notification_job(
+                    MaintenanceNotificationJobRepository(db),
+                    transport=HttpxMaintenanceNotificationTransport(),
+                    webhook_url=configured_maintenance_webhook_url(),
+                    lease_seconds=maintenance_notification_lease_seconds(),
+                    max_attempts=maintenance_notification_max_attempts(),
+                )
                 found_job = found_telemetry_job or found_notification_job
         except Exception:
             logger.exception("Worker queue polling failed; will retry")

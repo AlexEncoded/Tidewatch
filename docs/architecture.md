@@ -71,6 +71,9 @@ providers used by the HTTP routers.
 and middleware; `app/main.py` remains the ASGI entry point.
 Durable telemetry and maintenance notification consumers live under
 `apps/api/app/workers/` and run together in the worker process.
+`workers/runtime.py` composes their PostgreSQL stores, HTTP transport, and
+configuration; each consumer receives its application ports and required
+settings instead of constructing infrastructure internally.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
