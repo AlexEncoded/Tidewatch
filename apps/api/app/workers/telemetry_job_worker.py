@@ -1,8 +1,6 @@
 """Durable queue consumer for telemetry batches."""
 
 import logging
-import os
-import time
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -12,11 +10,9 @@ from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import process_telemetry_batch
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
-from .maintenance_notification_worker import process_next_maintenance_notification_job
 from ..settings import (
     telemetry_job_lease_seconds,
     telemetry_job_max_attempts,
-    telemetry_job_poll_seconds,
 )
 from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
@@ -79,25 +75,3 @@ def process_next_telemetry_job(db: Session) -> bool:
                 failed.status,
             )
     return True
-
-
-def run_worker() -> None:
-    """Poll PostgreSQL continuously using a fresh session per job."""
-    from ..adapters.postgres.database import SessionLocal
-
-    while True:
-        try:
-            with SessionLocal() as db:
-                found_telemetry_job = process_next_telemetry_job(db)
-                found_notification_job = process_next_maintenance_notification_job(db)
-                found_job = found_telemetry_job or found_notification_job
-        except Exception:
-            logger.exception("Telemetry queue polling failed; will retry")
-            found_job = False
-        if not found_job:
-            time.sleep(telemetry_job_poll_seconds())
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
-    run_worker()

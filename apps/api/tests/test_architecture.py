@@ -143,6 +143,7 @@ def test_background_workers_are_grouped_under_the_workers_package() -> None:
 
     assert (workers / "telemetry_job_worker.py").is_file()
     assert (workers / "maintenance_notification_worker.py").is_file()
+    assert (workers / "runtime.py").is_file()
     assert not (API_APP / "telemetry_job_worker.py").exists()
     assert not (API_APP / "maintenance_notification_worker.py").exists()
 
@@ -2467,6 +2468,18 @@ def test_telemetry_worker_does_not_depend_on_http_composition() -> None:
     assert not any("composition" in module.split(".") for module in imported)
     assert not any(module == "fastapi" or module.startswith("fastapi.") for module in imported)
     assert not any("schemas" in module.split(".") for module in imported)
+
+
+def test_worker_runtime_composes_both_job_consumers() -> None:
+    tree = ast.parse((API_APP / "workers" / "runtime.py").read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+
+    assert "maintenance_notification_worker" in imported_modules
+    assert "telemetry_job_worker" in imported_modules
 
 
 def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
