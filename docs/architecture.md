@@ -67,6 +67,8 @@ Dependency wiring is grouped under
 `apps/api/app/composition/`. Its context-specific modules connect application
 ports to PostgreSQL and Prometheus adapters; `dependencies.py` re-exports the
 providers used by the HTTP routers.
+`composition/api.py` creates the FastAPI application and registers its routers
+and middleware; `app/main.py` remains the ASGI entry point.
 Durable telemetry and maintenance notification consumers live under
 `apps/api/app/workers/` and run together in the worker process.
 

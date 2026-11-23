@@ -93,6 +93,27 @@ def test_opentelemetry_adapter_is_grouped_under_the_adapter_package() -> None:
     assert not (API_APP / "telemetry.py").exists()
 
 
+def test_main_exports_the_application_from_the_composition_root() -> None:
+    tree = ast.parse((API_APP / "main.py").read_text(encoding="utf-8"))
+    imports_factory = any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "composition.api"
+        and any(alias.name == "create_app" for alias in node.names)
+        for node in tree.body
+    )
+    creates_application = any(
+        isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "app" for target in node.targets)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "create_app"
+        for node in tree.body
+    )
+
+    assert imports_factory
+    assert creates_application
+
+
 def test_background_workers_are_grouped_under_the_workers_package() -> None:
     workers = API_APP / "workers"
 
@@ -2588,8 +2609,8 @@ def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
     assert "application.system_ports" in imported_modules
 
 
-def test_main_uses_http_metrics_adapter_not_prometheus_instruments() -> None:
-    tree = ast.parse((API_APP / "main.py").read_text(encoding="utf-8"))
+def test_api_composition_uses_http_metrics_adapter_not_prometheus_instruments() -> None:
+    tree = ast.parse((API_APP / "composition" / "api.py").read_text(encoding="utf-8"))
     imported_modules = {
         node.module
         for node in ast.walk(tree)
