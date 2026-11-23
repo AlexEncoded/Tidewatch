@@ -413,6 +413,29 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
             ), path
 
 
+def test_external_adapters_do_not_depend_on_http_routers_or_schemas() -> None:
+    forbidden_modules = {"routers", "schemas"}
+
+    for path in (API_APP / "adapters").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+        imported_modules.update(
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        )
+
+        assert not any(
+            forbidden_modules.intersection(module.split("."))
+            for module in imported_modules
+        ), path
+
+
 def test_http_routers_do_not_call_application_ports_directly() -> None:
     port_suffixes = (
         "Reader",

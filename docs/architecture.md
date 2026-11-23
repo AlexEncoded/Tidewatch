@@ -83,6 +83,10 @@ Prometheus adapters that implement application metric ports are grouped under
 and availability-series restoration.
 Optional FastAPI tracing and OTLP export are grouped under
 `apps/api/app/adapters/opentelemetry/`.
+External adapters must not import HTTP routers or response/request schemas;
+HTTP mapping belongs at the router boundary, while persistence and telemetry
+adapters consume application ports and domain contracts. An architecture test
+enforces this dependency rule.
 Maintenance webhook delivery uses the application transport port and its HTTPX
 adapter under `apps/api/app/adapters/http/`.
 PostgreSQL implementations for durable telemetry ingestion, queue jobs, and
