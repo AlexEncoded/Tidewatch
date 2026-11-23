@@ -16,7 +16,7 @@ from app.adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatc
 from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from app.adapters.postgres.telemetry_entities import TelemetryIngestionJobEntity
 from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
-from app.telemetry_job_worker import process_next_telemetry_job
+from app.workers.telemetry_job_worker import process_next_telemetry_job
 
 
 class CapturingMetric:
@@ -235,7 +235,7 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
 ) -> None:
     metrics = CapturingMetrics()
     monkeypatch.setattr(
-        "app.telemetry_job_worker.get_telemetry_metrics", lambda: metrics
+        "app.workers.telemetry_job_worker.get_telemetry_metrics", lambda: metrics
     )
     job_repository.db.add(
         DeviceEntity(

@@ -67,6 +67,8 @@ Dependency wiring is grouped under
 `apps/api/app/composition/`. Its context-specific modules connect application
 ports to PostgreSQL and Prometheus adapters; `dependencies.py` re-exports the
 providers used by the HTTP routers.
+Durable telemetry and maintenance notification consumers live under
+`apps/api/app/workers/` and run together in the worker process.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance

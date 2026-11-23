@@ -7,22 +7,22 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from .composition.dependencies import (
+from ..composition.dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_metrics,
 )
-from .application.telemetry_batch import TelemetryBatchCommand
-from .application.telemetry_batch_ingestion import process_telemetry_batch
-from .domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
+from ..application.telemetry_batch import TelemetryBatchCommand
+from ..application.telemetry_batch_ingestion import process_telemetry_batch
+from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
 from .maintenance_notification_worker import process_next_maintenance_notification_job
-from .schemas.ingestion import TelemetryBatchCreate
-from .settings import (
+from ..schemas.ingestion import TelemetryBatchCreate
+from ..settings import (
     telemetry_job_lease_seconds,
     telemetry_job_max_attempts,
     telemetry_job_poll_seconds,
 )
-from .adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from .adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ def process_next_telemetry_job(db: Session) -> bool:
 
 def run_worker() -> None:
     """Poll PostgreSQL continuously using a fresh session per job."""
-    from .adapters.postgres.database import SessionLocal
+    from ..adapters.postgres.database import SessionLocal
 
     while True:
         try:

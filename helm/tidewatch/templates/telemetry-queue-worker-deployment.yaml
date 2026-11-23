@@ -31,7 +31,7 @@ spec:
         - name: telemetry-queue-worker
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
-          command: ["python", "-m", "app.telemetry_job_worker"]
+          command: ["python", "-m", "app.workers.telemetry_job_worker"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

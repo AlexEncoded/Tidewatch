@@ -93,6 +93,15 @@ def test_opentelemetry_adapter_is_grouped_under_the_adapter_package() -> None:
     assert not (API_APP / "telemetry.py").exists()
 
 
+def test_background_workers_are_grouped_under_the_workers_package() -> None:
+    workers = API_APP / "workers"
+
+    assert (workers / "telemetry_job_worker.py").is_file()
+    assert (workers / "maintenance_notification_worker.py").is_file()
+    assert not (API_APP / "telemetry_job_worker.py").exists()
+    assert not (API_APP / "maintenance_notification_worker.py").exists()
+
+
 def test_telemetry_postgres_adapters_are_grouped_under_the_adapter_package() -> None:
     from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
     from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
@@ -2333,7 +2342,7 @@ def test_telemetry_router_maps_application_idempotency_error() -> None:
 
 def test_telemetry_worker_does_not_depend_on_http_router() -> None:
     tree = ast.parse(
-        (API_APP / "telemetry_job_worker.py").read_text(encoding="utf-8")
+        (API_APP / "workers" / "telemetry_job_worker.py").read_text(encoding="utf-8")
     )
     imported = {
         node.module
