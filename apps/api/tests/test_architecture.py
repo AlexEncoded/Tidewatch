@@ -80,10 +80,34 @@ def test_prometheus_adapters_are_grouped_under_the_adapter_package() -> None:
 
     assert package.is_dir()
     assert not list(API_APP.glob("prometheus_*.py"))
-    assert (package / "availability_metrics.py").is_file()
-    assert not (API_APP / "availability_metrics.py").exists()
     assert (package / "instruments.py").is_file()
+    assert not (API_APP / "availability_metrics.py").exists()
     assert not (API_APP / "metrics.py").exists()
+    assert (API_APP / "application" / "availability_metrics.py").is_file()
+
+
+def test_prometheus_adapters_do_not_depend_on_postgres_persistence() -> None:
+    for path in (API_APP / "adapters" / "prometheus").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+        imported_modules.update(
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        )
+
+        assert not any(
+            module.split(".")[-1] == "postgres"
+            or module.split(".")[-1].endswith("entities")
+            or module == "sqlalchemy"
+            or module.startswith("sqlalchemy.")
+            for module in imported_modules
+        ), path
 
 
 def test_opentelemetry_adapter_is_grouped_under_the_adapter_package() -> None:
@@ -2639,9 +2663,7 @@ def test_batch_ingestion_reuses_sensor_reading_metrics_publisher() -> None:
 
 def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
     tree = ast.parse(
-        (API_APP / "adapters" / "prometheus" / "availability_metrics.py").read_text(
-            encoding="utf-8"
-        )
+        (API_APP / "application" / "availability_metrics.py").read_text(encoding="utf-8")
     )
     imported_modules = {
         node.module
@@ -2650,7 +2672,7 @@ def test_availability_initializer_uses_metrics_port_not_prometheus() -> None:
     }
 
     assert "metrics" not in imported_modules
-    assert "application.system_ports" in imported_modules
+    assert "system_ports" in imported_modules
 
 
 def test_api_composition_uses_http_metrics_adapter_not_prometheus_instruments() -> None:

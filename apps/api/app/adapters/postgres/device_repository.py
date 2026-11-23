@@ -71,6 +71,15 @@ class DeviceRepository:
             for device in self._list_device_entities(buoy_id)
         ]
 
+    def list_all_device_snapshots(self) -> list[DeviceSnapshot]:
+        query = select(DeviceEntity).order_by(
+            DeviceEntity.buoy_id, DeviceEntity.sensor_channel
+        )
+        return [
+            device_snapshot(device)
+            for device in self.db.scalars(query).all()
+        ]
+
     def _get_device_entity(self, device_id: str) -> DeviceEntity | None:
         return self.db.get(DeviceEntity, device_id)
 

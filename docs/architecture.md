@@ -80,7 +80,8 @@ adapters are isolated so use cases can be evolved and validated by the API and
 worker test suites.
 Prometheus adapters that implement application metric ports are grouped under
 `apps/api/app/adapters/prometheus/`, including the shared instrument definitions
-and availability-series restoration.
+and metric publication. Availability-series restoration is coordinated by the
+application layer from domain snapshots provided by PostgreSQL repositories.
 Optional FastAPI tracing and OTLP export are grouped under
 `apps/api/app/adapters/opentelemetry/`.
 External adapters must not import HTTP routers or response/request schemas;

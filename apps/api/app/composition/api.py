@@ -8,9 +8,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
+from ..application.availability_metrics import initialize_availability_metrics
+from ..adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
+from ..adapters.postgres.device_repository import DeviceRepository
 from ..adapters.opentelemetry.tracing import configure_telemetry
 from ..adapters.postgres.database import SessionLocal
-from ..adapters.prometheus.availability_metrics import initialize_availability_metrics
 from ..adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 from ..adapters.prometheus.http_request_metrics import PrometheusHttpRequestMetrics
 from ..routers.alerts import router as alerts_router
@@ -37,7 +39,11 @@ def create_app() -> FastAPI:
     async def lifespan(_: FastAPI):
         try:
             with SessionLocal() as session:
-                initialize_availability_metrics(session, PrometheusFleetMetrics())
+                initialize_availability_metrics(
+                    BuoyRegistryRepository(session).list_buoy_snapshots(),
+                    DeviceRepository(session).list_all_device_snapshots(),
+                    PrometheusFleetMetrics(),
+                )
         except SQLAlchemyError:
             logger.exception("availability_metrics_initialization_failed")
         yield

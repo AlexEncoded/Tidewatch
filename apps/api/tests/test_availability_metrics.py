@@ -4,9 +4,11 @@ from prometheus_client import generate_latest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.adapters.prometheus.availability_metrics import initialize_availability_metrics
+from app.application.availability_metrics import initialize_availability_metrics
 from app.adapters.postgres.database import Base
 from app.adapters.postgres.fleet_entities import BuoyEntity, DeviceEntity
+from app.adapters.postgres.buoy_registry_repository import BuoyRegistryRepository
+from app.adapters.postgres.device_repository import DeviceRepository
 from app.adapters.prometheus.fleet_metrics import PrometheusFleetMetrics
 
 
@@ -62,7 +64,11 @@ def test_initialize_availability_metrics_includes_unseen_registered_entities() -
         )
         session.commit()
 
-        initialize_availability_metrics(session, PrometheusFleetMetrics())
+        initialize_availability_metrics(
+            BuoyRegistryRepository(session).list_buoy_snapshots(),
+            DeviceRepository(session).list_all_device_snapshots(),
+            PrometheusFleetMetrics(),
+        )
 
     metrics = generate_latest().decode("utf-8")
     assert (
