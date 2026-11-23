@@ -1,14 +1,10 @@
 """Application-level failures for telemetry queue observability."""
 
 from .telemetry_ports import (
+    TelemetryQueueMetricsUnavailable,
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
 )
-
-
-class TelemetryQueueMetricsUnavailable(RuntimeError):
-    """Raised when queue metrics cannot be read from their backing store."""
-
 
 def refresh_telemetry_queue_metrics(
     reader: TelemetryQueueMetricsReader,

@@ -38,6 +38,10 @@ from .weather_ports import (
 T = TypeVar("T")
 
 
+class TelemetryQueueMetricsUnavailable(RuntimeError):
+    """Raised when queue metrics cannot be read from their backing store."""
+
+
 class TelemetryQueueMetricsReader(Protocol):
     """Read bounded-cardinality durable queue metrics for observability."""
 

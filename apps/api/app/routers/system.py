@@ -13,13 +13,11 @@ from ..composition.dependencies import (
 from ..application.system_ports import DatabaseHealthReader, MetricsScraper
 from ..application.system_health import check_database_health
 from ..application.telemetry_ports import (
+    TelemetryQueueMetricsUnavailable,
     TelemetryQueueMetricsPublisher,
     TelemetryQueueMetricsReader,
 )
-from ..application.telemetry_queue_metrics import (
-    TelemetryQueueMetricsUnavailable,
-    refresh_telemetry_queue_metrics,
-)
+from ..application.telemetry_queue_metrics import refresh_telemetry_queue_metrics
 
 
 router = APIRouter()

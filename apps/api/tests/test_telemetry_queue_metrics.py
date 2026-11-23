@@ -3,9 +3,9 @@ from types import SimpleNamespace
 import pytest
 
 from app.application.telemetry_queue_metrics import (
-    TelemetryQueueMetricsUnavailable,
     refresh_telemetry_queue_metrics,
 )
+from app.application.telemetry_ports import TelemetryQueueMetricsUnavailable
 
 
 def test_queue_metrics_refresh_publishes_the_reader_snapshot() -> None:

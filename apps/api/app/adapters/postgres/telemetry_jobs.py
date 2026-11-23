@@ -12,7 +12,7 @@ from ...domain.telemetry_job import (
     TelemetryJobIdempotencyConflict,
 )
 from .telemetry_entities import TelemetryIngestionJobEntity
-from ...application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
+from ...application.telemetry_ports import TelemetryQueueMetricsUnavailable
 
 
 class TelemetryIngestionJobRepository:

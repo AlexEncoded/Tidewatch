@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.postgres.database import Base, TidewatchSession, engine
-from app.application.telemetry_queue_metrics import TelemetryQueueMetricsUnavailable
+from app.application.telemetry_ports import TelemetryQueueMetricsUnavailable
 from app.adapters.postgres.fleet_entities import BuoyEntity, DeviceEntity
 from app.adapters.postgres.sensor_entities import TemperatureReadingEntity
 from app.adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork

@@ -436,6 +436,26 @@ def test_external_adapters_do_not_depend_on_http_routers_or_schemas() -> None:
         ), path
 
 
+def test_external_adapters_depend_on_application_ports_not_use_cases() -> None:
+    for path in (API_APP / "adapters").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported_modules = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module is not None
+        }
+
+        application_imports = [
+            module
+            for module in imported_modules
+            if "application" in module.split(".")
+        ]
+        assert all(
+            module.split(".")[-1].endswith("_ports")
+            for module in application_imports
+        ), path
+
+
 def test_http_routers_do_not_call_application_ports_directly() -> None:
     port_suffixes = (
         "Reader",
