@@ -7,10 +7,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from ..composition.dependencies import (
-    get_telemetry_ingestion_gateway,
-    get_telemetry_metrics,
-)
+from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
+from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import process_telemetry_batch
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
@@ -42,8 +40,8 @@ def process_next_telemetry_job(db: Session) -> bool:
         def process_batch() -> None:
             payload = TelemetryBatchCreate.model_validate(job.payload)
             command = TelemetryBatchCommand.from_mapping(payload.model_dump())
-            gateway = get_telemetry_ingestion_gateway(db)
-            metrics = get_telemetry_metrics()
+            gateway = TelemetryIngestionRepository(db)
+            metrics = PrometheusTelemetryMetrics()
             process_telemetry_batch(
                 job.buoy_id,
                 command,

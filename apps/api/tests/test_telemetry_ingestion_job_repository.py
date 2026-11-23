@@ -235,7 +235,7 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
 ) -> None:
     metrics = CapturingMetrics()
     monkeypatch.setattr(
-        "app.workers.telemetry_job_worker.get_telemetry_metrics", lambda: metrics
+        "app.workers.telemetry_job_worker.PrometheusTelemetryMetrics", lambda: metrics
     )
     job_repository.db.add(
         DeviceEntity(

@@ -2340,7 +2340,7 @@ def test_telemetry_router_maps_application_idempotency_error() -> None:
     assert ("application.telemetry_batch_ingestion", "TelemetryIdempotencyConflict") in imports
 
 
-def test_telemetry_worker_does_not_depend_on_http_router() -> None:
+def test_telemetry_worker_does_not_depend_on_http_composition() -> None:
     tree = ast.parse(
         (API_APP / "workers" / "telemetry_job_worker.py").read_text(encoding="utf-8")
     )
@@ -2350,7 +2350,8 @@ def test_telemetry_worker_does_not_depend_on_http_router() -> None:
         if isinstance(node, ast.ImportFrom) and node.module is not None
     }
 
-    assert not any(module.endswith("routers.ingestion") for module in imported)
+    assert not any("composition" in module.split(".") for module in imported)
+    assert not any(module == "fastapi" or module.startswith("fastapi.") for module in imported)
 
 
 def test_telemetry_batch_processor_is_independent_of_http_frameworks() -> None:
