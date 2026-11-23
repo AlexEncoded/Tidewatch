@@ -399,7 +399,8 @@ def test_domain_and_application_layers_avoid_framework_and_persistence_imports()
                 }
             ), path
             assert not any(
-                module.split(".")[-1].endswith("entities")
+                "adapters" in module.split(".")
+                or module.split(".")[-1].endswith("entities")
                 or module.split(".")[-1] == "schemas"
                 or module.split(".")[-1] == "settings"
                 or module.split(".")[-1] == "routers"
