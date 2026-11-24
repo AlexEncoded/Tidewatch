@@ -1,6 +1,6 @@
 """Public dependency provider facade for the HTTP application."""
 
-from .operations import (
+from ..adapters.http.operations_dependencies import (
     get_quality_summary_reader,
     get_maintenance_reader,
     get_maintenance_metrics,

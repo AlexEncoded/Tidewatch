@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..composition.dependencies import get_quality_summary_reader
+from ..adapters.http.operations_dependencies import get_quality_summary_reader
 from ..application.quality_ports import QualitySummaryReader
 from ..application.quality_summary import summarize_quality
 from ..schemas.quality import QualitySummary

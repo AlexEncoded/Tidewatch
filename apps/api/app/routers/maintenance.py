@@ -9,7 +9,7 @@ from ..application.maintenance_notifications import (
     evaluate_and_enqueue_maintenance_notification,
     find_maintenance_notification_job,
 )
-from ..composition.dependencies import (
+from ..adapters.http.operations_dependencies import (
     get_maintenance_metrics,
     get_maintenance_notification_job_store,
     get_maintenance_reader,
