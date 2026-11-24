@@ -13,8 +13,16 @@ from ..application.buoy_locations import (
     InvalidBuoyLocationTimeRange,
     list_buoy_locations as query_buoy_locations,
 )
-from ..composition.dependencies import get_buoy_location_history_reader
-from ..composition.dependencies import get_buoy_summary_reader
+from ..adapters.http.fleet_dependencies import (
+    get_buoy_location_history_reader,
+    get_buoy_summary_reader,
+    get_buoy_status_registry,
+    get_buoy_location_updater,
+    get_buoy_registrar,
+    get_movement_analysis_reader,
+    get_fleet_metrics,
+    get_stale_buoy_reader,
+)
 from ..application.fleet_ports import (
     BuoyLocationHistoryReader,
     BuoyLocationUpdater,
@@ -27,17 +35,9 @@ from ..application.fleet_ports import (
 )
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..application.buoy_summaries import list_buoy_summaries
-from ..composition.dependencies import get_buoy_status_registry
-from ..composition.dependencies import (
-    get_buoy_location_updater,
-    get_buoy_registrar,
-    get_movement_analysis_reader,
-    get_fleet_metrics,
-)
 from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
 from ..domain.location import LocationTelemetrySnapshot
 from ..application.stale_buoys import find_stale_buoys
-from ..composition.dependencies import get_stale_buoy_reader
 from ..schemas.fleet_summary import BuoySummary
 from ..schemas.fleet import (
     Buoy,

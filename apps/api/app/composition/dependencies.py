@@ -43,7 +43,7 @@ from .telemetry import (
     get_telemetry_metrics,
     get_telemetry_ingestion_job_repository,
 )
-from .fleet import (
+from ..adapters.http.fleet_dependencies import (
     get_buoy_summary_reader,
     get_fleet_location_reader,
     get_movement_analysis_reader,

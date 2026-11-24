@@ -260,12 +260,13 @@ def test_dependency_wiring_is_grouped_under_the_composition_package() -> None:
 
 
 def test_dependency_facade_reexports_context_specific_providers() -> None:
-    from app.composition import analytics, dependencies, fleet, operations, sensors, telemetry
+    from app.adapters.http import fleet_dependencies
+    from app.composition import analytics, dependencies, operations, sensors, telemetry
 
     assert dependencies.get_quality_summary_reader is operations.get_quality_summary_reader
     assert dependencies.get_temperature_telemetry_gateway is sensors.get_temperature_telemetry_gateway
     assert dependencies.get_telemetry_ingestion_gateway is telemetry.get_telemetry_ingestion_gateway
-    assert dependencies.get_buoy_summary_reader is fleet.get_buoy_summary_reader
+    assert dependencies.get_buoy_summary_reader is fleet_dependencies.get_buoy_summary_reader
     assert dependencies.get_wave_analysis_reader is analytics.get_wave_analysis_reader
 
 
@@ -555,6 +556,17 @@ def test_http_routers_import_providers_only_through_the_composition_facade() -> 
         }
 
         assert composition_imports <= {"composition.dependencies"}, path
+        http_provider_imports = {
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and node.module.startswith("adapters.http.")
+        }
+        assert http_provider_imports <= {
+            "adapters.http.system_dependencies",
+            "adapters.http.fleet_dependencies",
+        }, path
 
 
 def test_http_routers_do_not_import_orm_entities_or_sqlalchemy() -> None:
@@ -2272,7 +2284,7 @@ def test_database_health_route_uses_injected_reader() -> None:
 
 
 def test_buoy_summary_port_uses_composed_fleet_adapter() -> None:
-    from app.composition.dependencies import get_buoy_summary_reader
+    from app.adapters.http.fleet_dependencies import get_buoy_summary_reader
 
     adapter = get_buoy_summary_reader(object())
 
@@ -2307,7 +2319,7 @@ def test_buoy_summary_route_uses_injected_reader() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "composition.dependencies"
+        and node.module == "adapters.http.fleet_dependencies"
         for alias in node.names
     }
     assert "get_buoy_summary_reader" in imported_dependencies
