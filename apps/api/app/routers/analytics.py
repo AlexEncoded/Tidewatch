@@ -17,7 +17,7 @@ from ..application.analysis_queries import (
     analyze_if_buoy_exists,
 )
 from ..adapters.http.fleet_dependencies import get_movement_analysis_reader
-from ..composition.dependencies import (
+from ..adapters.http.analytics_dependencies import (
     get_pressure_analysis_reader,
     get_wave_analysis_reader,
     get_wave_analysis_metrics,

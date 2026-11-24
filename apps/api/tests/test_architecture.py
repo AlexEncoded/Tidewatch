@@ -263,7 +263,8 @@ def test_dependency_facade_reexports_context_specific_providers() -> None:
     from app.adapters.http import fleet_dependencies
     from app.adapters.http import sensor_dependencies
     from app.adapters.http import telemetry_dependencies
-    from app.composition import analytics, dependencies, operations
+    from app.adapters.http import analytics_dependencies
+    from app.composition import dependencies, operations
 
     assert dependencies.get_quality_summary_reader is operations.get_quality_summary_reader
     assert (
@@ -275,7 +276,10 @@ def test_dependency_facade_reexports_context_specific_providers() -> None:
         is telemetry_dependencies.get_telemetry_ingestion_gateway
     )
     assert dependencies.get_buoy_summary_reader is fleet_dependencies.get_buoy_summary_reader
-    assert dependencies.get_wave_analysis_reader is analytics.get_wave_analysis_reader
+    assert (
+        dependencies.get_wave_analysis_reader
+        is analytics_dependencies.get_wave_analysis_reader
+    )
 
 
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
@@ -576,6 +580,7 @@ def test_http_routers_import_providers_only_through_the_composition_facade() -> 
             "adapters.http.fleet_dependencies",
             "adapters.http.sensor_dependencies",
             "adapters.http.telemetry_dependencies",
+            "adapters.http.analytics_dependencies",
         }, path
 
 

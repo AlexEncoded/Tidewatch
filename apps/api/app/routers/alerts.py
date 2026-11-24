@@ -1,7 +1,7 @@
 """Persisted temperature alert endpoints."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from ..composition.dependencies import get_temperature_alert_store
+from ..adapters.http.analytics_dependencies import get_temperature_alert_store
 from ..application.alert_ports import TemperatureAlertStore
 from ..application.temperature_alerts import (
     evaluate_and_store_temperature_alerts,

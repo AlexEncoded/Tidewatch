@@ -58,7 +58,7 @@ from ..adapters.http.fleet_dependencies import (
     get_device_health_reader,
     get_device_status_registry,
 )
-from .analytics import (
+from ..adapters.http.analytics_dependencies import (
     get_pressure_analysis_reader,
     get_wave_analysis_reader,
     get_wave_analysis_metrics,

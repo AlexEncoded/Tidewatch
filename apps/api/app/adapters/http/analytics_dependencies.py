@@ -2,19 +2,19 @@
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from ..application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
-from ..application.analysis_ports import (
+from ...application.alert_ports import TemperatureAlertsReader, TemperatureAlertStore
+from ...application.analysis_ports import (
     PressureAnalysisReader,
     TemperatureAnalysisReader,
     WaveAnalysisMetrics,
     WaveAnalysisReader,
 )
-from ..adapters.postgres.database import get_db
-from ..adapters.postgres.temperature_alert_repository import TemperatureAlertRepository
-from ..adapters.postgres.temperature_repository import TemperatureRepository
-from ..adapters.postgres.pressure_repository import PressureRepository
-from ..adapters.prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
-from ..adapters.postgres.wave_analysis import WaveAnalysisRepository
+from ..postgres.database import get_db
+from ..postgres.temperature_alert_repository import TemperatureAlertRepository
+from ..postgres.temperature_repository import TemperatureRepository
+from ..postgres.pressure_repository import PressureRepository
+from ..prometheus.wave_analysis import PrometheusWaveAnalysisMetrics
+from ..postgres.wave_analysis import WaveAnalysisRepository
 
 
 
