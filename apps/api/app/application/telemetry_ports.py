@@ -61,7 +61,7 @@ class TelemetryQueueMetricsPublisher(Protocol):
 
 @runtime_checkable
 class TelemetryIngestionJobStore(Protocol):
-    """Enqueue and read durable telemetry jobs without exposing a SQL adapter."""
+    """Enqueue, read, and manage durable telemetry jobs without SQL coupling."""
 
     def enqueue(
         self,
@@ -74,6 +74,27 @@ class TelemetryIngestionJobStore(Protocol):
         ...
 
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
+        ...
+
+    def claim_next(
+        self, now: datetime, lease_seconds: int, max_attempts: int = 5
+    ) -> TelemetryIngestionJobSnapshot | None:
+        ...
+
+    def complete(
+        self, job_id: str, attempt: int, now: datetime
+    ) -> TelemetryIngestionJobSnapshot | None:
+        ...
+
+    def fail(
+        self,
+        job_id: str,
+        attempt: int,
+        error_code: str,
+        now: datetime,
+        max_attempts: int,
+        retry_delay_seconds: int,
+    ) -> TelemetryIngestionJobSnapshot | None:
         ...
 
 

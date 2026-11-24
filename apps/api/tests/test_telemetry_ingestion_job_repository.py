@@ -9,12 +9,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.postgres.database import Base, TidewatchSession, engine
-from app.application.telemetry_ports import TelemetryQueueMetricsUnavailable
 from app.adapters.postgres.fleet_entities import BuoyEntity, DeviceEntity
 from app.adapters.postgres.sensor_entities import TemperatureReadingEntity
 from app.adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from app.adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from app.adapters.postgres.telemetry_entities import TelemetryIngestionJobEntity
+from app.adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
+from app.application.telemetry_ports import TelemetryQueueMetricsUnavailable
 from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
 from app.workers.telemetry_job_worker import process_next_telemetry_job
 
@@ -42,6 +44,18 @@ class CapturingMetrics:
 
     def metric(self, name):
         return CapturingMetric(self, name)
+
+
+def process_next_job(job_repository, metrics=None):
+    db = job_repository.db
+    return process_next_telemetry_job(
+        job_repository,
+        gateway=TelemetryIngestionRepository(db),
+        unit_of_work=SQLAlchemyTelemetryBatchUnitOfWork(db),
+        metrics=metrics or PrometheusTelemetryMetrics(),
+        lease_seconds=30,
+        max_attempts=5,
+    )
 
 
 @pytest.fixture
@@ -222,7 +236,7 @@ def test_worker_processes_job_and_commits_readings_with_completion(job_repositor
         "TW-JOB", {"temperatures": [{"temperature_celsius": 19.5}]}
     )
 
-    assert process_next_telemetry_job(job_repository.db) is True
+    assert process_next_job(job_repository) is True
 
     completed = job_repository.get(job.job_id)
     assert completed is not None
@@ -234,9 +248,6 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
     job_repository, monkeypatch
 ) -> None:
     metrics = CapturingMetrics()
-    monkeypatch.setattr(
-        "app.workers.telemetry_job_worker.PrometheusTelemetryMetrics", lambda: metrics
-    )
     job_repository.db.add(
         DeviceEntity(
             device_id="runtime-unit-a",
@@ -279,7 +290,7 @@ def test_worker_publishes_runtime_metrics_and_uses_enqueue_time_for_clock_offset
         "2026-10-15T10:00:07"
     )
 
-    assert process_next_telemetry_job(job_repository.db) is True
+    assert process_next_job(job_repository, metrics) is True
 
     completed = job_repository.get(job.job_id)
     assert completed is not None and completed.status == "completed"
@@ -324,7 +335,7 @@ def test_worker_retries_invalid_batch_without_persisting_readings(job_repository
         "TW-JOB", {"temperatures": [{"temperature_celsius": 999}]}
     )
 
-    assert process_next_telemetry_job(job_repository.db) is True
+    assert process_next_job(job_repository) is True
 
     failed_attempt = job_repository.get(job.job_id)
     assert failed_attempt is not None

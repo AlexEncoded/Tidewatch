@@ -2487,6 +2487,21 @@ def test_telemetry_worker_does_not_depend_on_http_composition() -> None:
     assert not any("schemas" in module.split(".") for module in imported)
 
 
+def test_telemetry_worker_receives_ports_instead_of_infrastructure() -> None:
+    tree = ast.parse(
+        (API_APP / "workers" / "telemetry_job_worker.py").read_text(encoding="utf-8")
+    )
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+
+    assert not any("adapters" in module.split(".") for module in imported_modules)
+    assert not any("sqlalchemy" in module.split(".") for module in imported_modules)
+    assert any("telemetry_ports" in module for module in imported_modules)
+
+
 def test_worker_runtime_composes_both_job_consumers() -> None:
     tree = ast.parse((API_APP / "workers" / "runtime.py").read_text(encoding="utf-8"))
     imported_modules = {

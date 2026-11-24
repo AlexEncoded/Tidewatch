@@ -3,39 +3,38 @@
 import logging
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
-
-from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
-from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from ..application.telemetry_batch import TelemetryBatchCommand
 from ..application.telemetry_batch_ingestion import process_telemetry_batch
-from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
-from ..settings import (
-    telemetry_job_lease_seconds,
-    telemetry_job_max_attempts,
+from ..application.telemetry_ports import (
+    TelemetryBatchUnitOfWork,
+    TelemetryIngestionGateway,
+    TelemetryIngestionJobStore,
+    TelemetryMetrics,
 )
-from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
 
 logger = logging.getLogger(__name__)
 
 
-def process_next_telemetry_job(db: Session) -> bool:
+def process_next_telemetry_job(
+    jobs: TelemetryIngestionJobStore,
+    *,
+    gateway: TelemetryIngestionGateway,
+    unit_of_work: TelemetryBatchUnitOfWork,
+    metrics: TelemetryMetrics,
+    lease_seconds: int,
+    max_attempts: int,
+    now: datetime | None = None,
+) -> bool:
     """Process one queued batch; its sensor writes and completion commit together."""
-    jobs = TelemetryIngestionJobRepository(db)
-    now = datetime.now(timezone.utc)
-    max_attempts = telemetry_job_max_attempts()
-    job = jobs.claim_next(now, telemetry_job_lease_seconds(), max_attempts)
+    claimed_at = now or datetime.now(timezone.utc)
+    job = jobs.claim_next(claimed_at, lease_seconds, max_attempts)
     if job is None:
         return False
 
     try:
-        unit_of_work = SQLAlchemyTelemetryBatchUnitOfWork(db)
-
         def process_batch() -> None:
             command = TelemetryBatchCommand.from_json_mapping(job.payload)
-            gateway = TelemetryIngestionRepository(db)
-            metrics = PrometheusTelemetryMetrics()
             process_telemetry_batch(
                 job.buoy_id,
                 command,

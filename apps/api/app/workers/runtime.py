@@ -8,11 +8,21 @@ from ..adapters.postgres.database import SessionLocal
 from ..adapters.postgres.maintenance_notification_job_repository import (
     MaintenanceNotificationJobRepository,
 )
-from ..adapters.http.maintenance_notifications import HttpxMaintenanceNotificationTransport
+from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
+from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from ..adapters.postgres.telemetry_unit_of_work import (
+    SQLAlchemyTelemetryBatchUnitOfWork,
+)
+from ..adapters.http.maintenance_notifications import (
+    HttpxMaintenanceNotificationTransport,
+)
+from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from ..settings import (
     configured_maintenance_webhook_url,
     maintenance_notification_lease_seconds,
     maintenance_notification_max_attempts,
+    telemetry_job_lease_seconds,
+    telemetry_job_max_attempts,
     telemetry_job_poll_seconds,
 )
 from .maintenance_notification_worker import process_next_maintenance_notification_job
@@ -26,7 +36,14 @@ def run_worker() -> None:
     while True:
         try:
             with SessionLocal() as db:
-                found_telemetry_job = process_next_telemetry_job(db)
+                found_telemetry_job = process_next_telemetry_job(
+                    TelemetryIngestionJobRepository(db),
+                    gateway=TelemetryIngestionRepository(db),
+                    unit_of_work=SQLAlchemyTelemetryBatchUnitOfWork(db),
+                    metrics=PrometheusTelemetryMetrics(),
+                    lease_seconds=telemetry_job_lease_seconds(),
+                    max_attempts=telemetry_job_max_attempts(),
+                )
                 found_notification_job = process_next_maintenance_notification_job(
                     MaintenanceNotificationJobRepository(db),
                     transport=HttpxMaintenanceNotificationTransport(),
