@@ -2,60 +2,60 @@
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from ..application.battery_ports import BatteryMetrics, BatteryTelemetryReader
-from ..application.sensor_health_ports import (
+from ...application.battery_ports import BatteryMetrics, BatteryTelemetryReader
+from ...application.sensor_health_ports import (
     SensorHealthCheckGateway,
     SensorHealthMetrics,
     SensorHealthReader,
 )
-from ..application.ambient_light_ports import AmbientLightTelemetryGateway
-from ..application.motion_ports import ImuTelemetryGateway
-from ..application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
-from ..application.marine_water_ports import (
+from ...application.ambient_light_ports import AmbientLightTelemetryGateway
+from ...application.motion_ports import ImuTelemetryGateway
+from ...application.flow_ports import MarineCurrentTelemetryGateway, WindTelemetryGateway
+from ...application.marine_water_ports import (
     PressureTelemetryGateway,
     SalinityTelemetryGateway,
     TemperatureTelemetryGateway,
 )
-from ..application.acoustic_sensor_ports import (
+from ...application.acoustic_sensor_ports import (
     AcousticAltimeterTelemetryGateway,
     UnderwaterAcousticTelemetryGateway,
 )
-from ..application.weather_ports import (
+from ...application.weather_ports import (
     AirTemperatureTelemetryGateway,
     AtmosphericPressureTelemetryGateway,
     HumidityTelemetryGateway,
     RainfallTelemetryGateway,
 )
-from ..application.water_quality_ports import (
+from ...application.water_quality_ports import (
     ChlorophyllATelemetryGateway,
     ConductivityTelemetryGateway,
     DissolvedOxygenTelemetryGateway,
     PHTelemetryGateway,
     TurbidityTelemetryGateway,
 )
-from ..adapters.postgres.database import get_db
-from ..adapters.postgres.temperature_repository import TemperatureRepository
-from ..adapters.postgres.pressure_repository import PressureRepository
-from ..adapters.postgres.salinity_repository import SalinityRepository
-from ..adapters.postgres.imu_repository import ImuRepository
-from ..adapters.postgres.ambient_light_repository import AmbientLightRepository
-from ..adapters.postgres.wind_repository import WindRepository
-from ..adapters.postgres.marine_current_repository import MarineCurrentRepository
-from ..adapters.postgres.turbidity_repository import TurbidityRepository
-from ..adapters.postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
-from ..adapters.postgres.ph_repository import PHRepository
-from ..adapters.postgres.conductivity_repository import ConductivityRepository
-from ..adapters.postgres.chlorophyll_a_repository import ChlorophyllARepository
-from ..adapters.postgres.rainfall_repository import RainfallRepository
-from ..adapters.postgres.humidity_repository import HumidityRepository
-from ..adapters.postgres.air_temperature_repository import AirTemperatureRepository
-from ..adapters.postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
-from ..adapters.postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
-from ..adapters.postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
-from ..adapters.postgres.battery_repository import BatteryRepository
-from ..adapters.postgres.sensor_health_repository import SensorHealthRepository
-from ..adapters.prometheus.battery_metrics import PrometheusBatteryMetrics
-from ..adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
+from ..postgres.database import get_db
+from ..postgres.temperature_repository import TemperatureRepository
+from ..postgres.pressure_repository import PressureRepository
+from ..postgres.salinity_repository import SalinityRepository
+from ..postgres.imu_repository import ImuRepository
+from ..postgres.ambient_light_repository import AmbientLightRepository
+from ..postgres.wind_repository import WindRepository
+from ..postgres.marine_current_repository import MarineCurrentRepository
+from ..postgres.turbidity_repository import TurbidityRepository
+from ..postgres.dissolved_oxygen_repository import DissolvedOxygenRepository
+from ..postgres.ph_repository import PHRepository
+from ..postgres.conductivity_repository import ConductivityRepository
+from ..postgres.chlorophyll_a_repository import ChlorophyllARepository
+from ..postgres.rainfall_repository import RainfallRepository
+from ..postgres.humidity_repository import HumidityRepository
+from ..postgres.air_temperature_repository import AirTemperatureRepository
+from ..postgres.atmospheric_pressure_repository import AtmosphericPressureRepository
+from ..postgres.acoustic_altimeter_repository import AcousticAltimeterRepository
+from ..postgres.underwater_acoustic_repository import UnderwaterAcousticRepository
+from ..postgres.battery_repository import BatteryRepository
+from ..postgres.sensor_health_repository import SensorHealthRepository
+from ..prometheus.battery_metrics import PrometheusBatteryMetrics
+from ..prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
 
 
 

@@ -12,7 +12,7 @@ from ..adapters.http.system_dependencies import (
     get_telemetry_queue_metrics_reader,
     get_telemetry_queue_metrics_publisher,
 )
-from .sensors import (
+from ..adapters.http.sensor_dependencies import (
     get_sensor_health_reader,
     get_sensor_health_metrics,
     get_sensor_health_check_gateway,

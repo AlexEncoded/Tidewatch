@@ -6,27 +6,29 @@ from typing import TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from ..composition.dependencies import get_temperature_telemetry_gateway
-from ..composition.dependencies import get_pressure_telemetry_gateway
-from ..composition.dependencies import get_salinity_telemetry_gateway
-from ..composition.dependencies import get_imu_telemetry_gateway
-from ..composition.dependencies import get_ambient_light_telemetry_gateway
-from ..composition.dependencies import get_wind_telemetry_gateway
-from ..composition.dependencies import get_marine_current_telemetry_gateway
-from ..composition.dependencies import get_turbidity_telemetry_gateway
-from ..composition.dependencies import get_dissolved_oxygen_telemetry_gateway
-from ..composition.dependencies import get_ph_telemetry_gateway
-from ..composition.dependencies import get_conductivity_telemetry_gateway
-from ..composition.dependencies import get_chlorophyll_a_telemetry_gateway
-from ..composition.dependencies import get_rainfall_telemetry_gateway
-from ..composition.dependencies import get_humidity_telemetry_gateway
-from ..composition.dependencies import get_air_temperature_telemetry_gateway
-from ..composition.dependencies import get_atmospheric_pressure_telemetry_gateway
-from ..composition.dependencies import get_acoustic_altimeter_telemetry_gateway
-from ..composition.dependencies import get_underwater_acoustic_telemetry_gateway
-from ..composition.dependencies import get_sensor_health_reader
-from ..composition.dependencies import get_sensor_health_check_gateway
-from ..composition.dependencies import get_sensor_health_metrics
+from ..adapters.http.sensor_dependencies import (
+    get_temperature_telemetry_gateway,
+    get_pressure_telemetry_gateway,
+    get_salinity_telemetry_gateway,
+    get_imu_telemetry_gateway,
+    get_ambient_light_telemetry_gateway,
+    get_wind_telemetry_gateway,
+    get_marine_current_telemetry_gateway,
+    get_turbidity_telemetry_gateway,
+    get_dissolved_oxygen_telemetry_gateway,
+    get_ph_telemetry_gateway,
+    get_conductivity_telemetry_gateway,
+    get_chlorophyll_a_telemetry_gateway,
+    get_rainfall_telemetry_gateway,
+    get_humidity_telemetry_gateway,
+    get_air_temperature_telemetry_gateway,
+    get_atmospheric_pressure_telemetry_gateway,
+    get_acoustic_altimeter_telemetry_gateway,
+    get_underwater_acoustic_telemetry_gateway,
+    get_sensor_health_reader,
+    get_sensor_health_check_gateway,
+    get_sensor_health_metrics,
+)
 from ..composition.dependencies import get_telemetry_metrics
 from ..application.ambient_light_ports import AmbientLightTelemetryGateway
 from ..application.ambient_light_ingestion import ingest_ambient_light_reading
