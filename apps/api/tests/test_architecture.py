@@ -560,7 +560,7 @@ def test_http_routers_do_not_call_application_ports_directly() -> None:
             assert not direct_port_calls, f"{path}:{function.name} calls an application port"
 
 
-def test_http_routers_import_providers_only_through_the_composition_facade() -> None:
+def test_http_routers_import_providers_from_public_or_http_adapters() -> None:
     for path in (API_APP / "routers").rglob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         composition_imports = {
@@ -3229,6 +3229,7 @@ def test_battery_routes_use_injected_telemetry_port():
 
     assert "repository" not in imported_modules
     assert "database" not in imported_modules
+    assert "adapters.http.sensor_dependencies" in imported_modules
     assert all("BuoyRepository" not in calls for calls in routes.values())
     assert "ingest_battery_reading" in routes["record_battery"]
     assert "domain.devices" not in imported_modules
