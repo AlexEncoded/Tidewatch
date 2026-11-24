@@ -571,7 +571,7 @@ def test_http_routers_import_providers_from_public_or_http_adapters() -> None:
             and "composition" in node.module.split(".")
         }
 
-        assert composition_imports <= {"composition.dependencies"}, path
+        assert not composition_imports, path
         http_provider_imports = {
             node.module
             for node in ast.walk(tree)
