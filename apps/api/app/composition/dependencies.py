@@ -5,8 +5,12 @@ from .operations import (
     get_maintenance_reader,
     get_maintenance_metrics,
     get_maintenance_notification_job_store,
+)
+from ..adapters.http.system_dependencies import (
     get_database_health_reader,
     get_metrics_scraper,
+    get_telemetry_queue_metrics_reader,
+    get_telemetry_queue_metrics_publisher,
 )
 from .sensors import (
     get_sensor_health_reader,
@@ -38,8 +42,6 @@ from .telemetry import (
     get_telemetry_batch_unit_of_work,
     get_telemetry_metrics,
     get_telemetry_ingestion_job_repository,
-    get_telemetry_queue_metrics_reader,
-    get_telemetry_queue_metrics_publisher,
 )
 from .fleet import (
     get_buoy_summary_reader,

@@ -2265,7 +2265,7 @@ def test_database_health_route_uses_injected_reader() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "composition.dependencies"
+        and node.module == "adapters.http.system_dependencies"
         for alias in node.names
     }
     assert "get_database_health_reader" in imported_dependencies

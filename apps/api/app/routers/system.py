@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
-from ..composition.dependencies import (
+from ..adapters.http.system_dependencies import (
     get_database_health_reader,
     get_metrics_scraper,
     get_telemetry_queue_metrics_reader,

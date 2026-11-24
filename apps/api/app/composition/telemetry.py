@@ -6,15 +6,12 @@ from ..application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryMetrics,
-    TelemetryQueueMetricsPublisher,
-    TelemetryQueueMetricsReader,
 )
 from ..adapters.postgres.database import get_db
 from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
 from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
 from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
-from ..adapters.prometheus.telemetry_queue_metrics import PrometheusTelemetryQueueMetrics
 
 
 
@@ -42,15 +39,3 @@ def get_telemetry_ingestion_job_repository(
 ) -> TelemetryIngestionJobRepository:
     """Provide the durable telemetry-job repository for HTTP operations."""
     return TelemetryIngestionJobRepository(db)
-
-
-def get_telemetry_queue_metrics_reader(
-    db: Session = Depends(get_db),
-) -> TelemetryQueueMetricsReader:
-    """Provide queue state as a read-only observability port."""
-    return TelemetryIngestionJobRepository(db)
-
-
-def get_telemetry_queue_metrics_publisher() -> TelemetryQueueMetricsPublisher:
-    """Compose telemetry queue observability with its Prometheus adapter."""
-    return PrometheusTelemetryQueueMetrics()

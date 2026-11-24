@@ -69,6 +69,9 @@ ports to PostgreSQL and Prometheus adapters; `dependencies.py` re-exports the
 providers used by the HTTP routers.
 `composition/api.py` creates the FastAPI application and registers its routers
 and middleware; `app/main.py` remains the ASGI entry point.
+System health and metrics route providers live under
+`apps/api/app/adapters/http/`; the system router does not import the
+composition facade.
 Durable telemetry and maintenance notification consumers live under
 `apps/api/app/workers/` and run together in the worker process.
 `workers/runtime.py` composes their PostgreSQL stores, HTTP transport, and
