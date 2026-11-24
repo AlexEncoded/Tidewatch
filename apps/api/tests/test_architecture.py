@@ -35,6 +35,7 @@ from app.application.system_ports import DatabaseHealthReader
 from app.application.telemetry_ports import (
     TelemetryIngestionGateway,
     TelemetryIngestionJobStore,
+    TelemetryIngestionWorkerStore,
 )
 from app.adapters.postgres.buoy_activity_repository import BuoyActivityRepository
 from app.adapters.postgres.buoy_location_repository import BuoyLocationRepository
@@ -779,6 +780,7 @@ def test_telemetry_ports_are_grouped_by_context() -> None:
     from app.application.telemetry_ports import (
         TelemetryBatchUnitOfWork,
         TelemetryIngestionJobStore,
+        TelemetryIngestionWorkerStore,
         TelemetryMetrics,
         TelemetryQueueMetricsReader,
         TelemetryIngestionGateway,
@@ -786,6 +788,7 @@ def test_telemetry_ports_are_grouped_by_context() -> None:
 
     assert TelemetryBatchUnitOfWork.__module__ == "app.application.telemetry_ports"
     assert TelemetryIngestionJobStore.__module__ == "app.application.telemetry_ports"
+    assert TelemetryIngestionWorkerStore.__module__ == "app.application.telemetry_ports"
     assert TelemetryMetrics.__module__ == "app.application.telemetry_ports"
     assert TelemetryQueueMetricsReader.__module__ == "app.application.telemetry_ports"
     assert TelemetryIngestionGateway.__module__ == "app.application.telemetry_ports"
@@ -1228,6 +1231,7 @@ def test_telemetry_job_http_port_is_implemented_by_sql_adapter() -> None:
     adapter = get_telemetry_ingestion_job_repository(object())
 
     assert isinstance(adapter, TelemetryIngestionJobStore)
+    assert isinstance(adapter, TelemetryIngestionWorkerStore)
     route_source = (API_APP / "routers" / "ingestion.py").read_text(encoding="utf-8")
     assert "from ..adapters.postgres.telemetry_jobs import" not in route_source
 

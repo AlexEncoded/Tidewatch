@@ -73,7 +73,8 @@ Durable telemetry and maintenance notification consumers live under
 `apps/api/app/workers/` and run together in the worker process.
 `workers/runtime.py` composes their PostgreSQL stores, HTTP transport, and
 configuration; each consumer receives its application ports and required
-settings instead of constructing infrastructure internally.
+settings instead of constructing infrastructure internally. API job-store
+ports are separate from worker lifecycle ports for claim, completion, and retry.
 
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance

@@ -61,7 +61,7 @@ class TelemetryQueueMetricsPublisher(Protocol):
 
 @runtime_checkable
 class TelemetryIngestionJobStore(Protocol):
-    """Enqueue, read, and manage durable telemetry jobs without SQL coupling."""
+    """Enqueue and read durable telemetry jobs without SQL coupling."""
 
     def enqueue(
         self,
@@ -75,6 +75,11 @@ class TelemetryIngestionJobStore(Protocol):
 
     def get(self, job_id: str) -> TelemetryIngestionJobSnapshot | None:
         ...
+
+
+@runtime_checkable
+class TelemetryIngestionWorkerStore(Protocol):
+    """Claim, complete, and retry durable telemetry jobs from a worker."""
 
     def claim_next(
         self, now: datetime, lease_seconds: int, max_attempts: int = 5

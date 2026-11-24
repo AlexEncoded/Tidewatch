@@ -8,7 +8,7 @@ from ..application.telemetry_batch_ingestion import process_telemetry_batch
 from ..application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
-    TelemetryIngestionJobStore,
+    TelemetryIngestionWorkerStore,
     TelemetryMetrics,
 )
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def process_next_telemetry_job(
-    jobs: TelemetryIngestionJobStore,
+    jobs: TelemetryIngestionWorkerStore,
     *,
     gateway: TelemetryIngestionGateway,
     unit_of_work: TelemetryBatchUnitOfWork,

@@ -23,6 +23,10 @@ class MaintenanceNotificationJobStore(Protocol):
     def get(self, job_id: str) -> MaintenanceNotificationJob | None:
         ...
 
+
+class MaintenanceNotificationWorkerStore(Protocol):
+    """Claim, complete, and retry jobs from a maintenance worker."""
+
     def claim_next(
         self, now: datetime, lease_seconds: int, max_attempts: int
     ) -> MaintenanceNotificationJob | None:

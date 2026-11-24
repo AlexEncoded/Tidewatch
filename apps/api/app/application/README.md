@@ -84,11 +84,12 @@ Cross-sensor health, quality, and analysis contracts live in their
 context-specific port modules.
 
 Maintenance notifications expose a `MaintenanceNotificationTransport` input
-port and a durable job-store port for enqueueing, claiming, completing, and
-retrying jobs. The application service builds the stable payload, applies
-idempotency, and queues the job from domain issues; HTTP maps idempotency
-conflicts at the route boundary. The worker receives the job store, transport,
-destination, and retry configuration from the runtime composition root.
+port, an API job-store port for enqueueing and lookup, and a separate worker
+port for claiming, completing, and retrying jobs. The application service
+builds the stable payload, applies idempotency, and queues the job from domain
+issues; HTTP maps idempotency conflicts at the route boundary. The worker
+receives its worker port, transport, destination, and retry configuration from
+the runtime composition root.
 
 Maintenance issue classification is split into application services for sensor
 health, reading quality, redundant battery health, and operational state in the

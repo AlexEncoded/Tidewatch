@@ -7,14 +7,16 @@ from ..application.maintenance_notifications import (
     MaintenanceNotificationTransport,
     deliver_maintenance_notification_payload,
 )
-from ..application.maintenance_notification_ports import MaintenanceNotificationJobStore
+from ..application.maintenance_notification_ports import (
+    MaintenanceNotificationWorkerStore,
+)
 from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
 
 logger = logging.getLogger(__name__)
 
 
 def process_next_maintenance_notification_job(
-    repository: MaintenanceNotificationJobStore,
+    repository: MaintenanceNotificationWorkerStore,
     *,
     transport: MaintenanceNotificationTransport,
     lease_seconds: int,
