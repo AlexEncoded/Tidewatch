@@ -2,16 +2,16 @@
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from ..application.telemetry_ports import (
+from ...application.telemetry_ports import (
     TelemetryBatchUnitOfWork,
     TelemetryIngestionGateway,
     TelemetryMetrics,
 )
-from ..adapters.postgres.database import get_db
-from ..adapters.postgres.telemetry_ingestion import TelemetryIngestionRepository
-from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
-from ..adapters.postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
-from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
+from ..postgres.database import get_db
+from ..postgres.telemetry_ingestion import TelemetryIngestionRepository
+from ..postgres.telemetry_jobs import TelemetryIngestionJobRepository
+from ..postgres.telemetry_unit_of_work import SQLAlchemyTelemetryBatchUnitOfWork
+from ..prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 
 
 

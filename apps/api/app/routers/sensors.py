@@ -29,7 +29,7 @@ from ..adapters.http.sensor_dependencies import (
     get_sensor_health_check_gateway,
     get_sensor_health_metrics,
 )
-from ..composition.dependencies import get_telemetry_metrics
+from ..adapters.http.telemetry_dependencies import get_telemetry_metrics
 from ..application.ambient_light_ports import AmbientLightTelemetryGateway
 from ..application.ambient_light_ingestion import ingest_ambient_light_reading
 from ..application.motion_ports import ImuTelemetryGateway

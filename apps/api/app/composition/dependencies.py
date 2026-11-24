@@ -37,7 +37,7 @@ from ..adapters.http.sensor_dependencies import (
     get_acoustic_altimeter_telemetry_gateway,
     get_underwater_acoustic_telemetry_gateway,
 )
-from .telemetry import (
+from ..adapters.http.telemetry_dependencies import (
     get_telemetry_ingestion_gateway,
     get_telemetry_batch_unit_of_work,
     get_telemetry_metrics,

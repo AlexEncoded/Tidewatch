@@ -262,14 +262,18 @@ def test_dependency_wiring_is_grouped_under_the_composition_package() -> None:
 def test_dependency_facade_reexports_context_specific_providers() -> None:
     from app.adapters.http import fleet_dependencies
     from app.adapters.http import sensor_dependencies
-    from app.composition import analytics, dependencies, operations, telemetry
+    from app.adapters.http import telemetry_dependencies
+    from app.composition import analytics, dependencies, operations
 
     assert dependencies.get_quality_summary_reader is operations.get_quality_summary_reader
     assert (
         dependencies.get_temperature_telemetry_gateway
         is sensor_dependencies.get_temperature_telemetry_gateway
     )
-    assert dependencies.get_telemetry_ingestion_gateway is telemetry.get_telemetry_ingestion_gateway
+    assert (
+        dependencies.get_telemetry_ingestion_gateway
+        is telemetry_dependencies.get_telemetry_ingestion_gateway
+    )
     assert dependencies.get_buoy_summary_reader is fleet_dependencies.get_buoy_summary_reader
     assert dependencies.get_wave_analysis_reader is analytics.get_wave_analysis_reader
 
@@ -571,6 +575,7 @@ def test_http_routers_import_providers_only_through_the_composition_facade() -> 
             "adapters.http.system_dependencies",
             "adapters.http.fleet_dependencies",
             "adapters.http.sensor_dependencies",
+            "adapters.http.telemetry_dependencies",
         }, path
 
 
@@ -2253,7 +2258,7 @@ def test_batch_ingestion_route_uses_injected_gateway() -> None:
         alias.name
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom)
-        and node.module == "composition.dependencies"
+        and node.module == "adapters.http.telemetry_dependencies"
         for alias in node.names
     }
     assert "get_telemetry_ingestion_gateway" in imported_dependencies
