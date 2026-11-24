@@ -285,6 +285,17 @@ def test_dependency_facade_reexports_context_specific_providers() -> None:
         is analytics_dependencies.get_wave_analysis_reader
     )
 
+    providers = {
+        name: provider
+        for name, provider in vars(dependencies).items()
+        if name.startswith("get_")
+    }
+    assert providers
+    assert all(
+        provider.__module__.startswith("app.adapters.http.")
+        for provider in providers.values()
+    )
+
 
 def test_sensor_orm_mappings_keep_foreign_keys_without_fleet_relationships() -> None:
     from app.adapters.postgres import sensor_entities
