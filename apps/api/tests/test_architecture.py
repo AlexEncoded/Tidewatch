@@ -286,6 +286,14 @@ def test_sensor_health_domain_types_are_grouped_by_context() -> None:
         assert not (API_APP / "domain" / module).exists()
 
 
+def test_analytics_domain_types_are_grouped_by_context() -> None:
+    analytics = API_APP / "domain" / "analytics"
+
+    for module in ("wave.py", "wave_calibration.py", "wave_direction_experiment.py"):
+        assert (analytics / module).is_file()
+        assert not (API_APP / "domain" / module).exists()
+
+
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     from app.adapters.postgres.fleet_entities import BuoyEntity
     from app.adapters.postgres.fleet_entities import (
@@ -1639,7 +1647,7 @@ def test_application_does_not_depend_on_http_or_database_frameworks() -> None:
 
     assert "app.application.ports" not in modules
     assert not (API_APP / "application" / "ports.py").exists()
-    assert "app.domain.wave" in modules
+    assert "app.domain.analytics.wave" in modules
     assert not any(
         module == "app"
         or (
@@ -2014,7 +2022,7 @@ def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
 
 
 def test_wave_analytics_use_the_wave_confidence_type() -> None:
-    from app.domain.wave import (
+    from app.domain.analytics.wave import (
         WaveAnalysisSnapshot,
         WaveConfidence,
         WaveEstimate,
@@ -2056,7 +2064,7 @@ def test_http_schemas_preserve_domain_value_types() -> None:
     from app.domain.sensors.sensor_status import SensorHealthStatus
     from app.domain.sensors.temperature import TemperatureTrend
     from app.domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
-    from app.domain.wave import WaveConfidence
+    from app.domain.analytics.wave import WaveConfidence
     from app.schemas.analytics import (
         MovementAnalysis,
         PressureAnalysis,

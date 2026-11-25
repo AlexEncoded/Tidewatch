@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from app.domain.wave_calibration import (
+from app.domain.analytics.wave_calibration import (
     WaveCalibrationWindow,
     evaluate_factor,
     select_factor,

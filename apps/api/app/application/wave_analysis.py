@@ -1,6 +1,6 @@
 """Application service for the experimental wave-analysis use case."""
 
-from ..domain.wave import (
+from ..domain.analytics.wave import (
     WaveAnalysisSnapshot,
     analyze_wave_samples,
 )

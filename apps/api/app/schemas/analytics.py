@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from ..domain.analysis import AnalysisConfidence, SeaState
 from ..domain.sensors.temperature import TemperatureTrend
 from ..domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
-from ..domain.wave import WaveConfidence
+from ..domain.analytics.wave import WaveConfidence
 
 
 class PressureAnalysis(BaseModel):

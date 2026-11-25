@@ -13,12 +13,12 @@ from statistics import median
 API_ROOT = Path(__file__).resolve().parents[1] / "apps" / "api"
 sys.path.insert(0, str(API_ROOT))
 
-from app.domain.wave_calibration import (  # noqa: E402
+from app.domain.analytics.wave_calibration import (  # noqa: E402
     WaveCalibrationWindow,
     evaluate_factor,
     select_factor,
 )
-from app.domain.wave import estimate_wave  # noqa: E402
+from app.domain.analytics.wave import estimate_wave  # noqa: E402
 
 
 REQUIRED_COLUMNS = {

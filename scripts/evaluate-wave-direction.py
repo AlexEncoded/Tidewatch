@@ -13,7 +13,7 @@ from statistics import median
 API_ROOT = Path(__file__).resolve().parents[1] / "apps" / "api"
 sys.path.insert(0, str(API_ROOT))
 
-from app.domain.wave_direction_experiment import (  # noqa: E402
+from app.domain.analytics.wave_direction_experiment import (  # noqa: E402
     WaveDirectionSample,
     estimate_mean_direction_at_peak_frequency,
     summarize_angular_errors,

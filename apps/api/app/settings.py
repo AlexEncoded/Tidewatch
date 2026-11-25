@@ -3,7 +3,7 @@
 import os
 from math import isfinite
 
-from .domain.wave import (
+from .domain.analytics.wave import (
     DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
     MAX_IMU_WAVE_HEIGHT_FACTOR,
     MIN_IMU_WAVE_HEIGHT_FACTOR,

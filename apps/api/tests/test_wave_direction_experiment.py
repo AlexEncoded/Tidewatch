@@ -3,7 +3,7 @@ import math
 
 import pytest
 
-from app.domain.wave_direction_experiment import (
+from app.domain.analytics.wave_direction_experiment import (
     WaveDirectionSample,
     estimate_mean_direction_at_peak_frequency,
     summarize_angular_errors,

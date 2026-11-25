@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.wave import WaveAnalysisSnapshot
+from ..domain.analytics.wave import WaveAnalysisSnapshot
 from .fleet_ports import LocationTelemetryReader
 from .motion_ports import ImuTelemetryReader
 from .marine_water_ports import (

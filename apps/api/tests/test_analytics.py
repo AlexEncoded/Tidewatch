@@ -12,12 +12,12 @@ from app.domain.sensors.battery_analysis import BatterySample, estimate_battery_
 from app.domain.sensors.battery_analysis import BatteryAnalysisSnapshot
 from app.domain.sensors.temperature import estimate_temperature
 from app.domain.sensors.pressure import estimate_pressure
-from app.domain.wave import (
+from app.domain.analytics.wave import (
     estimate_fused_wave_period,
     estimate_wave,
     estimate_wave_period,
 )
-from app.domain.wave_calibration import (
+from app.domain.analytics.wave_calibration import (
     WaveCalibrationWindow,
     evaluate_factor,
     select_factor,
@@ -26,7 +26,7 @@ from app.application.wave_analysis import (
     analyze_and_publish_wave_for_buoy,
     analyze_wave_for_buoy,
 )
-from app.domain.wave import WaveAnalysisSnapshot
+from app.domain.analytics.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.domain.fleet.movement import MovementAnalysisSnapshot
 from app.application.pressure_analysis import analyze_pressure_for_buoy
