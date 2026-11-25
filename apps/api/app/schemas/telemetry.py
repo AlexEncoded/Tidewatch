@@ -63,7 +63,7 @@ from ..domain.conductivity import (
 
 from pydantic import BaseModel, Field
 
-from ..domain.telemetry_family import TelemetryResultFamily
+from ..domain.telemetry.family import TelemetryResultFamily
 
 
 class TemperatureReadingCreate(BaseModel):

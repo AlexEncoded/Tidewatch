@@ -836,6 +836,17 @@ def test_alert_and_ingestion_job_entities_are_grouped_by_context() -> None:
     assert TelemetryIngestionJobEntity.__module__ == "app.adapters.postgres.telemetry_entities"
 
 
+def test_telemetry_domain_contracts_are_grouped_by_context() -> None:
+    telemetry = API_APP / "domain" / "telemetry"
+
+    assert (telemetry / "family.py").is_file()
+    assert (telemetry / "job.py").is_file()
+    assert (telemetry / "job_retry.py").is_file()
+    assert not (API_APP / "domain" / "telemetry_family.py").exists()
+    assert not (API_APP / "domain" / "telemetry_job.py").exists()
+    assert not (API_APP / "domain" / "telemetry_job_retry.py").exists()
+
+
 def test_telemetry_ports_are_grouped_by_context() -> None:
     from app.application.telemetry_ports import (
         TelemetryBatchUnitOfWork,
@@ -1838,7 +1849,7 @@ def test_sensor_health_collector_maps_batch_families_explicitly() -> None:
     )
     from app.domain.sensor_family import SensorFamily
     from app.domain.sensor_health_rules import SensorHealthDeltaName
-    from app.domain.telemetry_family import TELEMETRY_READING_FAMILIES
+    from app.domain.telemetry.family import TELEMETRY_READING_FAMILIES
 
     assert {batch for batch, _ in SENSOR_HEALTH_READING_FAMILIES} == (
         set(TELEMETRY_READING_FAMILIES) - {"battery"}
@@ -2084,7 +2095,7 @@ def test_telemetry_batch_family_keys_use_domain_catalog() -> None:
         TELEMETRY_READING_FAMILIES,
         TelemetryBatchCommand,
     )
-    from app.domain.telemetry_family import TelemetryInputFamily
+    from app.domain.telemetry.family import TelemetryInputFamily
 
     assert TELEMETRY_READING_FAMILIES == get_args(TelemetryInputFamily)
     assert (
@@ -2101,7 +2112,7 @@ def test_telemetry_ingest_result_families_use_domain_catalog() -> None:
         TELEMETRY_FAMILIES,
         empty_accepted_reading_counts,
     )
-    from app.domain.telemetry_family import TELEMETRY_RESULT_FAMILIES, TelemetryResultFamily
+    from app.domain.telemetry.family import TELEMETRY_RESULT_FAMILIES, TelemetryResultFamily
     from app.schemas.telemetry import TelemetryIngestResponse
 
     assert TELEMETRY_FAMILIES == TELEMETRY_RESULT_FAMILIES
@@ -2532,7 +2543,7 @@ def test_telemetry_router_maps_application_idempotency_error() -> None:
         for alias in node.names
     }
 
-    assert ("domain.telemetry_job", "TelemetryJobIdempotencyConflict") not in imports
+    assert ("domain.telemetry.job", "TelemetryJobIdempotencyConflict") not in imports
     assert ("application.telemetry_batch_ingestion", "TelemetryIdempotencyConflict") in imports
 
 

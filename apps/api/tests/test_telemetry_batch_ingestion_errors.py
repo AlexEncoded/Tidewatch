@@ -7,7 +7,7 @@ from app.application.telemetry_batch_ingestion import (
     TelemetryIdempotencyConflict,
     process_telemetry_batch,
 )
-from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
+from app.domain.telemetry.job import TelemetryJobIdempotencyConflict
 
 
 def test_batch_use_case_translates_idempotency_conflict_from_job_store() -> None:

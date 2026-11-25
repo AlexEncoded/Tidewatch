@@ -7,7 +7,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from ...domain.telemetry_job import (
+from ...domain.telemetry.job import (
     TelemetryIngestionJobSnapshot,
     TelemetryJobIdempotencyConflict,
 )

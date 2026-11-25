@@ -1,6 +1,6 @@
 """Application queries for durable telemetry-ingestion jobs."""
 
-from ..domain.telemetry_job import TelemetryIngestionJobSnapshot
+from ..domain.telemetry.job import TelemetryIngestionJobSnapshot
 from .telemetry_ports import TelemetryIngestionJobStore
 
 

@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from ..domain.telemetry_job import TelemetryJobStatus
+from ..domain.telemetry.job import TelemetryJobStatus
 
 
 class TelemetryJobAcceptedResponse(BaseModel):

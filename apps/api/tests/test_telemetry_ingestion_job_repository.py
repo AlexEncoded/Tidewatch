@@ -17,7 +17,7 @@ from app.adapters.postgres.telemetry_ingestion import TelemetryIngestionReposito
 from app.adapters.postgres.telemetry_entities import TelemetryIngestionJobEntity
 from app.adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
 from app.application.telemetry_ports import TelemetryQueueMetricsUnavailable
-from app.domain.telemetry_job import TelemetryJobIdempotencyConflict
+from app.domain.telemetry.job import TelemetryJobIdempotencyConflict
 from app.workers.telemetry_job_worker import process_next_telemetry_job
 
 

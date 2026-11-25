@@ -16,7 +16,7 @@ from ..domain.sensor_family import SensorFamily
 from ..domain.sensor_health_analysis import calculate_sensor_health_deltas
 from ..domain.sensor_health_rules import SensorHealthDeltaName
 from ..domain.sensor_telemetry import SensorTelemetrySnapshot
-from ..domain.telemetry_family import TelemetryInputFamily
+from ..domain.telemetry.family import TelemetryInputFamily
 from .sensor_health_ports import (
     SensorHealthCheckGateway,
     SensorHealthCheckWriter,

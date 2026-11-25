@@ -39,8 +39,8 @@ from .telemetry_ingestion import (
     empty_accepted_reading_counts,
 )
 from ..domain.devices import DeviceOwnershipError
-from ..domain.telemetry_family import TelemetryResultFamily
-from ..domain.telemetry_job import TelemetryJobIdempotencyConflict, TelemetryJobStatus
+from ..domain.telemetry.family import TelemetryResultFamily
+from ..domain.telemetry.job import TelemetryJobIdempotencyConflict, TelemetryJobStatus
 
 
 class TelemetryBuoyNotFound(LookupError):

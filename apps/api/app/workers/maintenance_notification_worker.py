@@ -10,7 +10,7 @@ from ..application.maintenance_notifications import (
 from ..application.maintenance_notification_ports import (
     MaintenanceNotificationWorkerStore,
 )
-from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
+from ..domain.telemetry.job_retry import telemetry_job_retry_delay_seconds
 
 logger = logging.getLogger(__name__)
 

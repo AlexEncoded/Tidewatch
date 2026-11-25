@@ -11,7 +11,7 @@ from ..application.telemetry_ports import (
     TelemetryIngestionWorkerStore,
     TelemetryMetrics,
 )
-from ..domain.telemetry_job_retry import telemetry_job_retry_delay_seconds
+from ..domain.telemetry.job_retry import telemetry_job_retry_delay_seconds
 
 logger = logging.getLogger(__name__)
 

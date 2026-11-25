@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, Mapping
 
-from ..domain.telemetry_family import TELEMETRY_READING_FAMILIES, TelemetryInputFamily
+from ..domain.telemetry.family import TELEMETRY_READING_FAMILIES, TelemetryInputFamily
 
 
 def _json_compatible(value: Any) -> Any:
