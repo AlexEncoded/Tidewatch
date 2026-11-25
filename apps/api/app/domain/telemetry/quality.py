@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Mapping
 
+from ..sensors.reading_quality import ReadingQuality
+
 
 @dataclass(frozen=True)
 class QualitySummarySnapshot:
@@ -22,7 +24,7 @@ class QualitySummarySnapshot:
 
 def summarize_quality_counts(
     buoy_id: str,
-    counts: Mapping[str, int],
+    counts: Mapping[ReadingQuality, int],
 ) -> QualitySummarySnapshot:
     """Build a summary from the three recognized quality categories."""
     good = counts["good"]

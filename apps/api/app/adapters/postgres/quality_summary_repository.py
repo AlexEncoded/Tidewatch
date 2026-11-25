@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ...application.quality_ports import QualitySummaryReader
+from ...domain.sensors.reading_quality import ReadingQuality
 from .buoy_registry_repository import BuoyRegistryRepository
 from .sensor_entities import (
     AcousticAltimeterReadingEntity,
@@ -59,8 +60,8 @@ class QualitySummaryRepository(QualitySummaryReader):
     def buoy_exists(self, buoy_id: str) -> bool:
         return self.registry.buoy_exists(buoy_id)
 
-    def quality_counts(self, buoy_id: str) -> dict[str, int]:
-        counts = {"good": 0, "suspect": 0, "invalid": 0}
+    def quality_counts(self, buoy_id: str) -> dict[ReadingQuality, int]:
+        counts: dict[ReadingQuality, int] = {"good": 0, "suspect": 0, "invalid": 0}
         for entity in QUALITY_READING_ENTITIES:
             query = (
                 select(entity.quality, func.count())

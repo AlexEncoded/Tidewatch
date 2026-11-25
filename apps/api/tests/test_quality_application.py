@@ -1,14 +1,18 @@
+from app.application.quality_ports import QualitySummaryReader
 from app.application.quality_summary import summarize_quality
 from app.domain.telemetry.quality import QualitySummarySnapshot
 from app.domain.telemetry.quality import summarize_quality_counts
 import pytest
+from typing import get_args, get_type_hints
+
+from app.domain.sensors.reading_quality import ReadingQuality
 
 
 class FakeQualityReader:
     def buoy_exists(self, buoy_id: str) -> bool:
         return buoy_id == "buoy-1"
 
-    def quality_counts(self, buoy_id: str) -> dict[str, int]:
+    def quality_counts(self, buoy_id: str) -> dict[ReadingQuality, int]:
         assert buoy_id == "buoy-1"
         return {"good": 7, "suspect": 2, "invalid": 1}
 
@@ -51,3 +55,13 @@ def test_quality_summary_snapshot_rejects_invalid_invariants(
             suspect_readings=suspect,
             invalid_readings=invalid,
         )
+
+
+def test_quality_count_contract_uses_the_closed_reading_quality_type() -> None:
+    domain_keys = get_args(get_type_hints(summarize_quality_counts)["counts"])[0]
+    port_values = get_args(
+        get_type_hints(QualitySummaryReader.quality_counts)["return"]
+    )[0]
+
+    assert get_args(domain_keys) == ("good", "suspect", "invalid")
+    assert port_values is domain_keys
