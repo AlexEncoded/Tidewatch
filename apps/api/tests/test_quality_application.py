@@ -1,6 +1,6 @@
 from app.application.quality_summary import summarize_quality
-from app.domain.quality import QualitySummarySnapshot
-from app.domain.quality import summarize_quality_counts
+from app.domain.telemetry.quality import QualitySummarySnapshot
+from app.domain.telemetry.quality import summarize_quality_counts
 import pytest
 
 

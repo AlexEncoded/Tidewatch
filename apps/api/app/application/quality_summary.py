@@ -1,6 +1,6 @@
 """Application service for reading-quality summaries."""
 
-from ..domain.quality import QualitySummarySnapshot, summarize_quality_counts
+from ..domain.telemetry.quality import QualitySummarySnapshot, summarize_quality_counts
 from .quality_ports import QualitySummaryReader
 
 

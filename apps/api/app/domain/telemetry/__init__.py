@@ -12,6 +12,7 @@ from .job import (
     TelemetryJobStatus,
 )
 from .job_retry import telemetry_job_retry_delay_seconds
+from .quality import QualitySummarySnapshot, summarize_quality_counts
 
 __all__ = [
     "TELEMETRY_READING_FAMILIES",
@@ -22,4 +23,6 @@ __all__ = [
     "TelemetryJobIdempotencyConflict",
     "TelemetryJobStatus",
     "telemetry_job_retry_delay_seconds",
+    "QualitySummarySnapshot",
+    "summarize_quality_counts",
 ]

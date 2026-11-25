@@ -904,6 +904,8 @@ def test_telemetry_domain_contracts_are_grouped_by_context() -> None:
     assert (telemetry / "family.py").is_file()
     assert (telemetry / "job.py").is_file()
     assert (telemetry / "job_retry.py").is_file()
+    assert (telemetry / "quality.py").is_file()
+    assert not (API_APP / "domain" / "quality.py").exists()
     assert not (API_APP / "domain" / "telemetry_family.py").exists()
     assert not (API_APP / "domain" / "telemetry_job.py").exists()
     assert not (API_APP / "domain" / "telemetry_job_retry.py").exists()
