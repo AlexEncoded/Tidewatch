@@ -222,6 +222,16 @@ def test_empty_legacy_telemetry_domain_module_is_removed() -> None:
     assert not (API_APP / "domain" / "telemetry.py").exists()
 
 
+def test_maintenance_domain_types_are_grouped_by_context() -> None:
+    maintenance = API_APP / "domain" / "maintenance"
+
+    assert (maintenance / "policy.py").is_file()
+    assert (maintenance / "issues.py").is_file()
+    assert (maintenance / "notification_job.py").is_file()
+    assert not (API_APP / "domain" / "maintenance_issues.py").exists()
+    assert not (API_APP / "domain" / "maintenance_notification_job.py").exists()
+
+
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
     from app.adapters.postgres.fleet_entities import BuoyEntity
     from app.adapters.postgres.fleet_entities import (
@@ -1889,7 +1899,7 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
         MaintenanceIssueType,
         MaintenanceSeverity,
     )
-    from app.domain.maintenance_issues import (
+    from app.domain.maintenance.issues import (
         build_maintenance_issues_for_buoy,
         build_operational_maintenance_issues,
         build_sensor_health_maintenance_issues,

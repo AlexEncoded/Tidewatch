@@ -11,7 +11,7 @@ from app.application.maintenance_notifications import (
     maintenance_notification_idempotency_key,
 )
 from app.domain.maintenance import MaintenanceIssueSnapshot
-from app.domain.maintenance_issues import build_reading_quality_issues
+from app.domain.maintenance.issues import build_reading_quality_issues
 
 
 def test_callable_satisfies_notification_transport_port() -> None:

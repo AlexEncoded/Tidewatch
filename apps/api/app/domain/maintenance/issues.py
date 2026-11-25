@@ -1,17 +1,17 @@
-"""Application services for maintenance issue classification."""
+"""Domain services for maintenance issue classification."""
 
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
-from ..domain.battery_health import BatteryHealthSnapshot
-from ..domain.buoy import BuoyOperationalStatus
-from ..domain.sensor_health import SensorHealthSnapshot
-from ..domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
-from ..domain.maintenance import is_buoy_drifting, is_buoy_silent
-from ..domain.device_health import DeviceHealthSnapshot
-from ..domain.reading_quality import MeasuredReading, classify_latest_readings
-from ..domain.sensor_health import SensorHealthSnapshot
-from ..domain.maintenance import (
+from ..battery_health import BatteryHealthSnapshot
+from ..buoy import BuoyOperationalStatus
+from ..sensor_health import SensorHealthSnapshot
+from ..sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
+from .policy import is_buoy_drifting, is_buoy_silent
+from ..device_health import DeviceHealthSnapshot
+from ..reading_quality import MeasuredReading, classify_latest_readings
+from ..sensor_health import SensorHealthSnapshot
+from .policy import (
     MaintenanceIssueSnapshot,
     low_battery_severity,
     missing_redundant_battery_device,

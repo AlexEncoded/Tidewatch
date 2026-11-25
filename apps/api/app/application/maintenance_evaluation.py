@@ -11,7 +11,7 @@ from .sensor_health import evaluate_sensor_health_snapshot
 from ..domain.battery_health import BatteryHealthSnapshot
 from ..domain.buoy import BuoySnapshot
 from ..domain.maintenance import MaintenanceIssueSnapshot
-from ..domain.maintenance_issues import build_maintenance_issues_for_buoy
+from ..domain.maintenance.issues import build_maintenance_issues_for_buoy
 
 
 @dataclass(frozen=True)

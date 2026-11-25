@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Protocol
 
-from ..domain.maintenance_notification_job import MaintenanceNotificationJob
+from ..domain.maintenance.notification_job import MaintenanceNotificationJob
 
 
 class MaintenanceNotificationIdempotencyConflict(ValueError):

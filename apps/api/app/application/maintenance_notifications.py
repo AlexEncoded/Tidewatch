@@ -7,7 +7,7 @@ import json
 from typing import Protocol, Sequence, runtime_checkable
 
 from ..domain.maintenance import MaintenanceIssueSnapshot
-from ..domain.maintenance_notification_job import MaintenanceNotificationJob
+from ..domain.maintenance.notification_job import MaintenanceNotificationJob
 from .maintenance_evaluation import evaluate_maintenance_issues
 from .maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from .maintenance_notification_ports import MaintenanceNotificationJobStore

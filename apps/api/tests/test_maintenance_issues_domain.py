@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from importlib import import_module
 
 from app.application.sensor_health import SENSOR_HEALTH_READING_FAMILIES
-from app.domain.maintenance_issues import (
+from app.domain.maintenance.issues import (
     _SENSOR_READING_DETAILS,
     build_battery_maintenance_issues,
     build_device_maintenance_issues,

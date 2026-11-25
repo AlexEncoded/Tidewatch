@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from ...application.maintenance_notification_ports import (
     MaintenanceNotificationIdempotencyConflict,
 )
-from ...domain.maintenance_notification_job import MaintenanceNotificationJob
+from ...domain.maintenance.notification_job import MaintenanceNotificationJob
 from .maintenance_entities import MaintenanceNotificationJobEntity
 
 
