@@ -3,19 +3,29 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
+from ..sensors.battery import BatteryTelemetrySnapshot
 from ..sensors.battery_health import BatteryHealthSnapshot
 from ..fleet.buoy import BuoyOperationalStatus
+from ..fleet.devices import SensorChannel
 from ..sensors.sensor_health import SensorHealthSnapshot
 from ..sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from .policy import is_buoy_drifting, is_buoy_silent
 from ..fleet.device_health import DeviceHealthSnapshot
 from ..sensors.reading_quality import MeasuredReading, classify_latest_readings
+from ..sensors.sensor_family import SensorFamily
+from ..sensors.sensor_telemetry import SensorTelemetrySnapshot
 from ..sensors.sensor_health import SensorHealthSnapshot
 from .policy import (
     MaintenanceIssueSnapshot,
     low_battery_severity,
     missing_redundant_battery_device,
 )
+
+SensorReadingHistory = Mapping[SensorFamily, Sequence[MeasuredReading]]
+LastValidSensorReadings = Mapping[
+    SensorFamily, Mapping[SensorChannel, Sequence[SensorTelemetrySnapshot]]
+]
+LatestBatteryReadings = Mapping[SensorChannel, BatteryTelemetrySnapshot | None]
 
 _SENSOR_DELTA_DETAILS = {
     "temperature": ("temperature_delta_celsius", "°C", "temperature"),
@@ -107,7 +117,7 @@ _SENSOR_READING_DETAILS = {
 def _describe_degraded_sensors(
     health: SensorHealthSnapshot,
     last_valid_readings: (
-        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+        LastValidSensorReadings | None
     ) = None,
 ) -> str:
     degraded = health.degraded_sensors or []
@@ -179,7 +189,7 @@ def _describe_degraded_sensors(
 def build_reading_quality_issues(
     buoy_id: str,
     buoy_name: str,
-    latest_readings: Mapping[str, Sequence[MeasuredReading]],
+    latest_readings: SensorReadingHistory,
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for invalid or suspect latest readings."""
     invalid_sensors, suspect_sensors = classify_latest_readings(latest_readings)
@@ -213,7 +223,7 @@ def build_reading_quality_issues(
 def build_battery_maintenance_issues(
     buoy_id: str,
     buoy_name: str,
-    latest_batteries: Mapping[str, object | None],
+    latest_batteries: LatestBatteryReadings,
     health: BatteryHealthSnapshot,
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues from redundant battery readings and health."""
@@ -320,7 +330,7 @@ def build_sensor_health_maintenance_issues(
     buoy_name: str,
     health: SensorHealthSnapshot,
     last_valid_readings: (
-        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+        LastValidSensorReadings | None
     ) = None,
 ) -> list[MaintenanceIssueSnapshot]:
     """Build maintenance issues for degraded or missing sensor channels."""
@@ -388,13 +398,13 @@ def build_maintenance_issues_for_buoy(
     max_age_minutes: float,
     drift_speed_mps: float,
     sensor_health: SensorHealthSnapshot,
-    latest_readings: Mapping[str, Sequence[MeasuredReading]],
-    latest_batteries: Mapping[str, object | None],
+    latest_readings: SensorReadingHistory,
+    latest_batteries: LatestBatteryReadings,
     battery_health: BatteryHealthSnapshot,
     average_speed_mps: float | None,
     device_health: Sequence[DeviceHealthSnapshot] = (),
     last_valid_readings: (
-        Mapping[str, Mapping[str, Sequence[object | None]]] | None
+        LastValidSensorReadings | None
     ) = None,
 ) -> list[MaintenanceIssueSnapshot]:
     """Compose all maintenance issue types for one buoy snapshot."""

@@ -1,10 +1,14 @@
 from dataclasses import fields
 from datetime import datetime, timedelta, timezone
 from importlib import import_module
+from typing import get_args, get_type_hints
 
 from app.application.sensor_health import SENSOR_HEALTH_READING_FAMILIES
 from app.domain.maintenance.issues import (
     _SENSOR_READING_DETAILS,
+    LastValidSensorReadings,
+    LatestBatteryReadings,
+    SensorReadingHistory,
     build_battery_maintenance_issues,
     build_device_maintenance_issues,
     build_maintenance_issues_for_buoy,
@@ -223,3 +227,11 @@ def test_maintenance_issue_service_composes_buoy_snapshot() -> None:
     )
 
     assert [issue.issue_type for issue in issues] == ["degraded_sensor", "drift_detected"]
+
+
+def test_maintenance_builder_uses_typed_sensor_and_battery_inputs() -> None:
+    hints = get_type_hints(build_maintenance_issues_for_buoy)
+
+    assert hints["latest_readings"] == SensorReadingHistory
+    assert hints["latest_batteries"] == LatestBatteryReadings
+    assert get_args(hints["last_valid_readings"])[0] == LastValidSensorReadings
