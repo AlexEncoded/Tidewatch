@@ -1,7 +1,7 @@
 """Application queries for buoy-scoped battery telemetry."""
 
 from ..domain.fleet.devices import DeviceOwnershipError, validate_device_ownership
-from ..domain.battery import BatteryTelemetrySnapshot
+from ..domain.sensors.battery import BatteryTelemetrySnapshot
 from .battery_errors import BatteryBuoyNotFound, BatteryDeviceNotFound
 from .battery_ports import BatteryTelemetryReader
 

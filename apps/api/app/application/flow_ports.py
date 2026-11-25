@@ -3,8 +3,8 @@
 from typing import Protocol
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.marine_current import MarineCurrentTelemetrySnapshot
-from ..domain.wind import WindTelemetrySnapshot
+from ..domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
+from ..domain.sensors.wind import WindTelemetrySnapshot
 
 
 class WindTelemetryGateway(Protocol):

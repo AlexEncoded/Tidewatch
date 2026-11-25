@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.marine_current_ingestion import ingest_marine_current_reading
-from app.domain.marine_current import MarineCurrentTelemetrySnapshot
+from app.domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
 
 
 class FakeMetrics:

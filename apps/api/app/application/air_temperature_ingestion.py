@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
+from ..domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics
 from .weather_ports import AirTemperatureTelemetryGateway

@@ -6,7 +6,7 @@ import pytest
 from app.application.battery_ingestion import ingest_battery_reading, record_battery_reading
 from app.application.battery_errors import BatteryDeviceNotFound, BatteryTelemetryInvalid
 from app.domain.fleet.devices import DeviceOwnershipError, DeviceSnapshot
-from app.domain.battery import BatteryTelemetrySnapshot
+from app.domain.sensors.battery import BatteryTelemetrySnapshot
 
 
 MEASURED_AT = datetime(2026, 10, 9, 12, tzinfo=timezone.utc)

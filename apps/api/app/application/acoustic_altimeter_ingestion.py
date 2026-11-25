@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ..domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from .acoustic_sensor_ports import AcousticAltimeterTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

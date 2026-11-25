@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from .temperature import TemperatureAnalysisSnapshot
+from .sensors.temperature import TemperatureAnalysisSnapshot
 
 TemperatureAlertStatus = Literal["open", "resolved"]
 TemperatureAlertSeverity = Literal["warning"]

@@ -9,24 +9,24 @@ from ...domain.sensors.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
 )
-from ...domain.pressure import PressureTelemetrySnapshot
-from ...domain.temperature import TemperatureTelemetrySnapshot
-from ...domain.imu import ImuTelemetrySnapshot
-from ...domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from ...domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from ...domain.air_temperature import AirTemperatureTelemetrySnapshot
-from ...domain.humidity import HumidityTelemetrySnapshot
-from ...domain.rainfall import RainfallTelemetrySnapshot
-from ...domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from ...domain.conductivity import ConductivityTelemetrySnapshot
-from ...domain.ph import PHTelemetrySnapshot
-from ...domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from ...domain.turbidity import TurbidityTelemetrySnapshot
-from ...domain.salinity import SalinityTelemetrySnapshot
-from ...domain.marine_current import MarineCurrentTelemetrySnapshot
-from ...domain.wind import WindTelemetrySnapshot
-from ...domain.ambient_light import AmbientLightTelemetrySnapshot
+from ...domain.sensors.pressure import PressureTelemetrySnapshot
+from ...domain.sensors.temperature import TemperatureTelemetrySnapshot
+from ...domain.sensors.imu import ImuTelemetrySnapshot
+from ...domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from ...domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ...domain.sensors.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from ...domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
+from ...domain.sensors.humidity import HumidityTelemetrySnapshot
+from ...domain.sensors.rainfall import RainfallTelemetrySnapshot
+from ...domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from ...domain.sensors.conductivity import ConductivityTelemetrySnapshot
+from ...domain.sensors.ph import PHTelemetrySnapshot
+from ...domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from ...domain.sensors.turbidity import TurbidityTelemetrySnapshot
+from ...domain.sensors.salinity import SalinityTelemetrySnapshot
+from ...domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
+from ...domain.sensors.wind import WindTelemetrySnapshot
+from ...domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
 
 from .sensor_entities import SensorHealthCheckEntity
 from .sensor_telemetry_repositories import SensorTelemetryRepositories

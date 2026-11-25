@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ...domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from ...domain.fleet.devices import SensorChannel
 from .sensor_entities import AcousticAltimeterReadingEntity
 

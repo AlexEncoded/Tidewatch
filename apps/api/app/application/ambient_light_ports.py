@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.ambient_light import AmbientLightTelemetrySnapshot
+from ..domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.fleet.devices import SensorChannel
 
 

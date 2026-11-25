@@ -5,7 +5,7 @@ from typing import Protocol
 
 from ..domain.fleet.buoy import BuoyIdentitySnapshot
 from ..domain.fleet.devices import SensorChannel
-from ..domain.temperature import TemperatureTelemetrySnapshot
+from ..domain.sensors.temperature import TemperatureTelemetrySnapshot
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,

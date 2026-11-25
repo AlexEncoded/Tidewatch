@@ -3,9 +3,9 @@
 from typing import Protocol
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.pressure import PressureTelemetrySnapshot
-from ..domain.salinity import SalinityTelemetrySnapshot
-from ..domain.temperature import TemperatureTelemetrySnapshot
+from ..domain.sensors.pressure import PressureTelemetrySnapshot
+from ..domain.sensors.salinity import SalinityTelemetrySnapshot
+from ..domain.sensors.temperature import TemperatureTelemetrySnapshot
 
 
 class TemperatureTelemetryReader(Protocol):

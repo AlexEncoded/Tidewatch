@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.domain.temperature import TemperatureAnalysisSnapshot
+from app.domain.sensors.temperature import TemperatureAnalysisSnapshot
 from app.domain.temperature_alert import build_temperature_anomaly
 
 

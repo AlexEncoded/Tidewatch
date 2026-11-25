@@ -7,7 +7,7 @@ from ..domain.fleet.devices import (
     validate_device_ownership,
     validate_telemetry_device_channel,
 )
-from ..domain.battery import BatteryTelemetrySnapshot
+from ..domain.sensors.battery import BatteryTelemetrySnapshot
 from .battery_errors import BatteryDeviceNotFound, BatteryTelemetryInvalid
 from .battery_ports import BatteryMetrics, BatteryTelemetryReader
 

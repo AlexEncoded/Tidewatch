@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.pressure import PressureTelemetrySnapshot
+from ..domain.sensors.pressure import PressureTelemetrySnapshot
 from .marine_water_ports import PressureTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

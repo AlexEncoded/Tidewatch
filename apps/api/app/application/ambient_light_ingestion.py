@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.ambient_light import AmbientLightTelemetrySnapshot
+from ..domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
 from .ambient_light_ports import AmbientLightTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

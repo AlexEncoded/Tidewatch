@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.temperature_ingestion import ingest_temperature_reading
-from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 
 
 class FakeMetrics:

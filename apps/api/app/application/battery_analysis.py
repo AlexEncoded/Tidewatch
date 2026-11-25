@@ -1,6 +1,6 @@
 """Application service for historical battery analysis."""
 
-from ..domain.battery_analysis import (
+from ..domain.sensors.battery_analysis import (
     BatteryAnalysisSnapshot,
     BatterySample,
     estimate_battery_discharge,

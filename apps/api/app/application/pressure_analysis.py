@@ -1,6 +1,6 @@
 """Application service for the pressure-analysis use case."""
 
-from ..domain.pressure import PressureAnalysisSnapshot, estimate_pressure
+from ..domain.sensors.pressure import PressureAnalysisSnapshot, estimate_pressure
 from .marine_water_ports import PressureTelemetryReader
 
 

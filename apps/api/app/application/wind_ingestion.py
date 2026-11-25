@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.wind import WindTelemetrySnapshot
+from ..domain.sensors.wind import WindTelemetrySnapshot
 from .flow_ports import WindTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

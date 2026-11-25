@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.rainfall import RainfallTelemetrySnapshot
+from ..domain.sensors.rainfall import RainfallTelemetrySnapshot
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics
 from .weather_ports import RainfallTelemetryGateway

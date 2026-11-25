@@ -9,54 +9,54 @@ from ..domain.fleet.devices import (
     SensorChannel,
 )
 from ..domain.sensors.reading_quality import ReadingQuality
-from ..domain.dissolved_oxygen import (
+from ..domain.sensors.dissolved_oxygen import (
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,
 )
-from ..domain.ph import PH_MAX, PH_MIN
-from ..domain.rainfall import RAINFALL_MAX_MM_H, RAINFALL_MIN_MM_H
-from ..domain.salinity import SALINITY_MAX_PSU, SALINITY_MIN_PSU
-from ..domain.humidity import HUMIDITY_MAX_PERCENT, HUMIDITY_MIN_PERCENT
-from ..domain.temperature import (
+from ..domain.sensors.ph import PH_MAX, PH_MIN
+from ..domain.sensors.rainfall import RAINFALL_MAX_MM_H, RAINFALL_MIN_MM_H
+from ..domain.sensors.salinity import SALINITY_MAX_PSU, SALINITY_MIN_PSU
+from ..domain.sensors.humidity import HUMIDITY_MAX_PERCENT, HUMIDITY_MIN_PERCENT
+from ..domain.sensors.temperature import (
     SEA_TEMPERATURE_MAX_CELSIUS,
     SEA_TEMPERATURE_MIN_CELSIUS,
 )
-from ..domain.turbidity import TURBIDITY_MAX_NTU, TURBIDITY_MIN_NTU
-from ..domain.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
-from ..domain.acoustic_altimeter import (
+from ..domain.sensors.turbidity import TURBIDITY_MAX_NTU, TURBIDITY_MIN_NTU
+from ..domain.sensors.pressure import WATER_PRESSURE_MAX_KPA, WATER_PRESSURE_MIN_KPA
+from ..domain.sensors.acoustic_altimeter import (
     ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS,
     ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS,
 )
-from ..domain.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
-from ..domain.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
+from ..domain.sensors.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
+from ..domain.sensors.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
 from ..domain.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
-from ..domain.marine_current import (
+from ..domain.sensors.marine_current import (
     MARINE_CURRENT_SPEED_MAX_MPS,
     MARINE_CURRENT_SPEED_MIN_MPS,
 )
-from ..domain.imu import (
+from ..domain.sensors.imu import (
     IMU_ACCELERATION_MAX_MPS2,
     IMU_ACCELERATION_MIN_MPS2,
     IMU_ANGULAR_VELOCITY_MAX_DPS,
     IMU_ANGULAR_VELOCITY_MIN_DPS,
 )
-from ..domain.underwater_acoustic import (
+from ..domain.sensors.underwater_acoustic import (
     UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB,
     UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB,
 )
-from ..domain.air_temperature import (
+from ..domain.sensors.air_temperature import (
     AIR_TEMPERATURE_MAX_CELSIUS,
     AIR_TEMPERATURE_MIN_CELSIUS,
 )
-from ..domain.atmospheric_pressure import (
+from ..domain.sensors.atmospheric_pressure import (
     ATMOSPHERIC_PRESSURE_MAX_KPA,
     ATMOSPHERIC_PRESSURE_MIN_KPA,
 )
-from ..domain.chlorophyll_a import (
+from ..domain.sensors.chlorophyll_a import (
     CHLOROPHYLL_A_MAX_UG_L,
     CHLOROPHYLL_A_MIN_UG_L,
 )
-from ..domain.conductivity import (
+from ..domain.sensors.conductivity import (
     CONDUCTIVITY_MAX_US_CM,
     CONDUCTIVITY_MIN_US_CM,
 )

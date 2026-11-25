@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.turbidity_ingestion import ingest_turbidity_reading
-from app.domain.turbidity import TurbidityTelemetrySnapshot
+from app.domain.sensors.turbidity import TurbidityTelemetrySnapshot
 
 
 class FakeMetrics:

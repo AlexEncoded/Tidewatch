@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.conductivity import ConductivityTelemetrySnapshot
+from ..domain.sensors.conductivity import ConductivityTelemetrySnapshot
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics
 from .water_quality_ports import ConductivityTelemetryGateway

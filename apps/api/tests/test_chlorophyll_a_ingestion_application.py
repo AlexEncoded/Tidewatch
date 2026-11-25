@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.chlorophyll_a_ingestion import ingest_chlorophyll_a_reading
-from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from app.domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
 
 
 class FakeMetrics:

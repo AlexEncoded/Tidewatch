@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.acoustic_altimeter_ingestion import ingest_acoustic_altimeter_reading
-from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from app.domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 
 
 class FakeMetrics:

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from ..domain.fleet.devices import DeviceSnapshot, SensorChannel
-from ..domain.battery import BatteryTelemetrySnapshot
+from ..domain.sensors.battery import BatteryTelemetrySnapshot
 
 
 class BatteryTelemetryReader(Protocol):

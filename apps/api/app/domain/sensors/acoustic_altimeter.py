@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensors.sensor_telemetry import SensorTelemetrySnapshot
-from .sensors.reading_quality import ReadingQuality
-from .fleet.devices import SensorChannel
+from .sensor_telemetry import SensorTelemetrySnapshot
+from .reading_quality import ReadingQuality
+from ..fleet.devices import SensorChannel
 
 ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS = 0
 ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS = 20000

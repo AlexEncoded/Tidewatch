@@ -3,7 +3,7 @@
 from typing import Protocol
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.imu import ImuTelemetrySnapshot
+from ..domain.sensors.imu import ImuTelemetrySnapshot
 
 
 class ImuTelemetryReader(Protocol):

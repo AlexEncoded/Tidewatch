@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from ..domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from .acoustic_sensor_ports import UnderwaterAcousticTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

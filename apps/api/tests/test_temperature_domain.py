@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from app.domain.temperature import (
+from app.domain.sensors.temperature import (
     TemperatureTelemetrySnapshot,
     analyze_temperature_samples,
     estimate_temperature,

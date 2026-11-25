@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from ..domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics
 from .water_quality_ports import DissolvedOxygenTelemetryGateway

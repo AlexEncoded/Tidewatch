@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_location_repository import BuoyLocationRepository
 from ...domain.fleet.devices import SensorChannel
-from ...domain.imu import ImuTelemetrySnapshot
+from ...domain.sensors.imu import ImuTelemetrySnapshot
 from ...domain.fleet.location import LocationTelemetrySnapshot
 from .imu_repository import ImuRepository
 

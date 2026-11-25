@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .analysis import AnalysisConfidence
+from ..analysis import AnalysisConfidence
 from .battery import validate_battery_percentage
 
 

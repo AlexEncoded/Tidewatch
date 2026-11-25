@@ -11,10 +11,10 @@ from app.domain.maintenance.issues import (
     build_operational_maintenance_issues,
     build_sensor_health_maintenance_issues,
 )
-from app.domain.battery_health import BatteryHealthSnapshot
+from app.domain.sensors.battery_health import BatteryHealthSnapshot
 from app.domain.fleet.device_health import DeviceHealthSnapshot
 from app.domain.sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
-from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth
 
 
@@ -57,7 +57,7 @@ def test_degraded_sensor_reading_details_cover_every_health_delta() -> None:
     for sensor, (family, value_attributes, _) in _SENSOR_READING_DETAILS.items():
         assert family in supported_families
         module_name, class_name = snapshot_types[family]
-        snapshot_type = getattr(import_module(f"app.domain.{module_name}"), class_name)
+        snapshot_type = getattr(import_module(f"app.domain.sensors.{module_name}"), class_name)
         available_fields = {field.name for field in fields(snapshot_type)}
         attributes = (
             value_attributes

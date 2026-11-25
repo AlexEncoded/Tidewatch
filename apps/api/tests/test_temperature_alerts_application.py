@@ -4,7 +4,7 @@ from app.application.temperature_alerts import (
     find_temperature_anomalies,
 )
 from app.domain.fleet.buoy import BuoyIdentitySnapshot
-from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 from app.domain.temperature_alert import TemperatureAlertSnapshot
 
 

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Literal
 
-from ..battery import validate_battery_percentage
+from ..sensors.battery import validate_battery_percentage
 from ..fleet.buoy import BuoyOperationalStatus
 from ..time_rules import require_positive_finite_seconds
 

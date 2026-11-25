@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
-from ..battery_health import BatteryHealthSnapshot
+from ..sensors.battery_health import BatteryHealthSnapshot
 from ..fleet.buoy import BuoyOperationalStatus
 from ..sensors.sensor_health import SensorHealthSnapshot
 from ..sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS

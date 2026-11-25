@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.air_temperature import AirTemperatureTelemetrySnapshot
+from ...domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
 from ...domain.fleet.devices import SensorChannel
 from .sensor_entities import AirTemperatureReadingEntity
 

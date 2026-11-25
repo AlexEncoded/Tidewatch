@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.salinity import SalinityTelemetrySnapshot
+from ..domain.sensors.salinity import SalinityTelemetrySnapshot
 from .marine_water_ports import SalinityTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

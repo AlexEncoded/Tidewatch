@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.marine_current import MarineCurrentTelemetrySnapshot
+from ...domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
 from ...domain.fleet.devices import SensorChannel
 from .sensor_entities import MarineCurrentReadingEntity
 

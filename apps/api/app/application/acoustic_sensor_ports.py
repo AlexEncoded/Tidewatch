@@ -2,9 +2,9 @@
 
 from typing import Protocol
 
-from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ..domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from ..domain.fleet.devices import SensorChannel
-from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from ..domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 
 
 class AcousticAltimeterTelemetryGateway(Protocol):

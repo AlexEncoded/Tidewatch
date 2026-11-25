@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.battery_health import BatteryHealthSnapshot, estimate_battery_health
+from ..domain.sensors.battery_health import BatteryHealthSnapshot, estimate_battery_health
 from .battery_ports import BatteryMetrics, BatteryTelemetryReader
 
 

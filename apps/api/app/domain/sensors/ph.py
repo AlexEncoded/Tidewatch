@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensors.sensor_telemetry import SensorTelemetrySnapshot
-from .sensors.reading_quality import ReadingQuality
-from .fleet.devices import SensorChannel
+from .sensor_telemetry import SensorTelemetrySnapshot
+from .reading_quality import ReadingQuality
+from ..fleet.devices import SensorChannel
 
 PH_MIN = 0
 PH_MAX = 14

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.underwater_acoustic_ingestion import ingest_underwater_acoustic_reading
-from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from app.domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 
 
 class FakeMetrics:

@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensors.sensor_telemetry import SensorTelemetrySnapshot
-from .sensors.reading_quality import ReadingQuality
-from .fleet.devices import SensorChannel
+from .sensor_telemetry import SensorTelemetrySnapshot
+from .reading_quality import ReadingQuality
+from ..fleet.devices import SensorChannel
 
 DISSOLVED_OXYGEN_MIN_MG_L = 0
 DISSOLVED_OXYGEN_MAX_MG_L = 20

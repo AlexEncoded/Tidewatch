@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.conductivity_ingestion import ingest_conductivity_reading
-from app.domain.conductivity import ConductivityTelemetrySnapshot
+from app.domain.sensors.conductivity import ConductivityTelemetrySnapshot
 
 
 class FakeMetrics:

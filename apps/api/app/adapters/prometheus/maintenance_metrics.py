@@ -1,7 +1,7 @@
 """Prometheus adapter for maintenance evaluation results."""
 
 from ...application.maintenance_ports import MaintenanceMetrics
-from ...domain.battery_health import BatteryHealthSnapshot
+from ...domain.sensors.battery_health import BatteryHealthSnapshot
 from .instruments import (
     battery_delta_percent,
     battery_device_percent,

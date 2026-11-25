@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.sensor_reading_queries import list_sensor_readings
-from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 
 
 def test_sensor_reading_query_checks_buoy_and_forwards_filters() -> None:

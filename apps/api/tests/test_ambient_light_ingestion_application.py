@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.ambient_light_ingestion import ingest_ambient_light_reading
-from app.domain.ambient_light import AmbientLightTelemetrySnapshot
+from app.domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
 
 
 class FakeMetrics:

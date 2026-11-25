@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.motion_ingestion import ingest_imu_reading
-from app.domain.imu import ImuTelemetrySnapshot
+from app.domain.sensors.imu import ImuTelemetrySnapshot
 
 
 class FakeMetrics:

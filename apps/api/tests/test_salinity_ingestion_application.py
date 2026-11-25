@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.salinity_ingestion import ingest_salinity_reading
-from app.domain.salinity import SalinityTelemetrySnapshot
+from app.domain.sensors.salinity import SalinityTelemetrySnapshot
 
 
 class FakeMetrics:

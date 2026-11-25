@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.humidity_ingestion import ingest_humidity_reading
-from app.domain.humidity import HumidityTelemetrySnapshot
+from app.domain.sensors.humidity import HumidityTelemetrySnapshot
 
 
 class FakeMetrics:

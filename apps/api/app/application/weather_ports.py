@@ -2,11 +2,11 @@
 
 from typing import Protocol
 
-from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
-from ..domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from ..domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
+from ..domain.sensors.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from ..domain.fleet.devices import SensorChannel
-from ..domain.humidity import HumidityTelemetrySnapshot
-from ..domain.rainfall import RainfallTelemetrySnapshot
+from ..domain.sensors.humidity import HumidityTelemetrySnapshot
+from ..domain.sensors.rainfall import RainfallTelemetrySnapshot
 
 
 class RainfallTelemetryGateway(Protocol):

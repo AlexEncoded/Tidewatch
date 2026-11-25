@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.pressure_ingestion import ingest_pressure_reading
-from app.domain.pressure import PressureTelemetrySnapshot
+from app.domain.sensors.pressure import PressureTelemetrySnapshot
 
 
 class FakeMetrics:

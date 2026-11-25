@@ -9,29 +9,29 @@ from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.fleet.buoy import BuoySnapshot
 from ...domain.fleet.devices import DeviceSnapshot, SensorChannel
-from ...domain.battery import BatteryTelemetrySnapshot
+from ...domain.sensors.battery import BatteryTelemetrySnapshot
 from ...domain.fleet.location import LocationTelemetrySnapshot
 from .sensor_health_repository import SensorHealthRepository
 from ...application.maintenance_ports import MaintenanceReader
-from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from ...domain.air_temperature import AirTemperatureTelemetrySnapshot
-from ...domain.ambient_light import AmbientLightTelemetrySnapshot
-from ...domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from ...domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from ...domain.conductivity import ConductivityTelemetrySnapshot
-from ...domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from ...domain.humidity import HumidityTelemetrySnapshot
-from ...domain.imu import ImuTelemetrySnapshot
-from ...domain.marine_current import MarineCurrentTelemetrySnapshot
-from ...domain.ph import PHTelemetrySnapshot
-from ...domain.pressure import PressureTelemetrySnapshot
-from ...domain.rainfall import RainfallTelemetrySnapshot
-from ...domain.salinity import SalinityTelemetrySnapshot
+from ...domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from ...domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
+from ...domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
+from ...domain.sensors.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from ...domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from ...domain.sensors.conductivity import ConductivityTelemetrySnapshot
+from ...domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from ...domain.sensors.humidity import HumidityTelemetrySnapshot
+from ...domain.sensors.imu import ImuTelemetrySnapshot
+from ...domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
+from ...domain.sensors.ph import PHTelemetrySnapshot
+from ...domain.sensors.pressure import PressureTelemetrySnapshot
+from ...domain.sensors.rainfall import RainfallTelemetrySnapshot
+from ...domain.sensors.salinity import SalinityTelemetrySnapshot
 from ...domain.sensors.sensor_health import SensorHealthCheckSnapshot
-from ...domain.temperature import TemperatureTelemetrySnapshot
-from ...domain.turbidity import TurbidityTelemetrySnapshot
-from ...domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from ...domain.wind import WindTelemetrySnapshot
+from ...domain.sensors.temperature import TemperatureTelemetrySnapshot
+from ...domain.sensors.turbidity import TurbidityTelemetrySnapshot
+from ...domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from ...domain.sensors.wind import WindTelemetrySnapshot
 
 
 class MaintenanceRepository(MaintenanceReader):

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.dissolved_oxygen_ingestion import ingest_dissolved_oxygen_reading
-from app.domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from app.domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 
 
 class FakeMetrics:

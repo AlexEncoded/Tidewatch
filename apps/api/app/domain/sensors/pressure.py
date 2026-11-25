@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
-from .analysis import AnalysisConfidence, SeaState
-from .sensors.sensor_telemetry import SensorTelemetrySnapshot
-from .sensors.reading_quality import ReadingQuality
-from .fleet.devices import SensorChannel
+from ..analysis import AnalysisConfidence, SeaState
+from .sensor_telemetry import SensorTelemetrySnapshot
+from .reading_quality import ReadingQuality
+from ..fleet.devices import SensorChannel
 
 KPA_TO_METRES_OF_WATER = 0.102
 WATER_PRESSURE_MIN_KPA = 80

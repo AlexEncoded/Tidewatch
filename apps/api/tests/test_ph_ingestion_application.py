@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.ph_ingestion import ingest_ph_reading
-from app.domain.ph import PHTelemetrySnapshot
+from app.domain.sensors.ph import PHTelemetrySnapshot
 
 
 class FakeMetrics:

@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensors.sensor_telemetry import SensorTelemetrySnapshot
-from .sensors.reading_quality import ReadingQuality
-from .fleet.devices import SensorChannel
+from .sensor_telemetry import SensorTelemetrySnapshot
+from .reading_quality import ReadingQuality
+from ..fleet.devices import SensorChannel
 
 IMU_ACCELERATION_MIN_MPS2 = -200
 IMU_ACCELERATION_MAX_MPS2 = 200

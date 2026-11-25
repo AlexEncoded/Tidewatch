@@ -2,12 +2,12 @@
 
 from typing import Protocol
 
-from ..domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from ..domain.conductivity import ConductivityTelemetrySnapshot
+from ..domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from ..domain.sensors.conductivity import ConductivityTelemetrySnapshot
 from ..domain.fleet.devices import SensorChannel
-from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from ..domain.ph import PHTelemetrySnapshot
-from ..domain.turbidity import TurbidityTelemetrySnapshot
+from ..domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from ..domain.sensors.ph import PHTelemetrySnapshot
+from ..domain.sensors.turbidity import TurbidityTelemetrySnapshot
 
 
 class TurbidityTelemetryGateway(Protocol):

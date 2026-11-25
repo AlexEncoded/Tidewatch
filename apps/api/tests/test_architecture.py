@@ -4,26 +4,26 @@ from typing import get_type_hints
 
 from app.domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
 from app.domain.sensors.reading_quality import latest_usable_reading
-from app.domain.pressure import PressureTelemetrySnapshot
-from app.domain.temperature import TemperatureTelemetrySnapshot
-from app.domain.battery import BatteryTelemetrySnapshot, validate_battery_percentage
+from app.domain.sensors.pressure import PressureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.battery import BatteryTelemetrySnapshot, validate_battery_percentage
 from app.domain.fleet.location import LocationTelemetrySnapshot
-from app.domain.imu import ImuTelemetrySnapshot
-from app.domain.ambient_light import AmbientLightTelemetrySnapshot
-from app.domain.wind import WindTelemetrySnapshot
-from app.domain.marine_current import MarineCurrentTelemetrySnapshot
-from app.domain.salinity import SalinityTelemetrySnapshot
-from app.domain.turbidity import TurbidityTelemetrySnapshot
-from app.domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from app.domain.ph import PHTelemetrySnapshot
-from app.domain.conductivity import ConductivityTelemetrySnapshot
-from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from app.domain.rainfall import RainfallTelemetrySnapshot
-from app.domain.humidity import HumidityTelemetrySnapshot
-from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
-from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from app.domain.sensors.imu import ImuTelemetrySnapshot
+from app.domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
+from app.domain.sensors.wind import WindTelemetrySnapshot
+from app.domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
+from app.domain.sensors.salinity import SalinityTelemetrySnapshot
+from app.domain.sensors.turbidity import TurbidityTelemetrySnapshot
+from app.domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from app.domain.sensors.ph import PHTelemetrySnapshot
+from app.domain.sensors.conductivity import ConductivityTelemetrySnapshot
+from app.domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from app.domain.sensors.rainfall import RainfallTelemetrySnapshot
+from app.domain.sensors.humidity import HumidityTelemetrySnapshot
+from app.domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
+from app.domain.sensors.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from app.domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from app.domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from app.domain.sensors.reading_quality import ReadingQuality
 from app.domain.fleet.devices import SensorChannel
 from app.schemas import telemetry as telemetry_schemas
@@ -260,6 +260,27 @@ def test_sensor_health_domain_types_are_grouped_by_context() -> None:
         "sensor_selection.py",
         "sensor_status.py",
         "sensor_telemetry.py",
+        "battery.py",
+        "battery_analysis.py",
+        "battery_health.py",
+        "acoustic_altimeter.py",
+        "air_temperature.py",
+        "ambient_light.py",
+        "atmospheric_pressure.py",
+        "chlorophyll_a.py",
+        "conductivity.py",
+        "dissolved_oxygen.py",
+        "humidity.py",
+        "imu.py",
+        "marine_current.py",
+        "ph.py",
+        "pressure.py",
+        "rainfall.py",
+        "salinity.py",
+        "temperature.py",
+        "turbidity.py",
+        "underwater_acoustic.py",
+        "wind.py",
     ):
         assert (sensors / module).is_file()
         assert not (API_APP / "domain" / module).exists()
@@ -1648,25 +1669,25 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
         assert model.model_fields["quality"].annotation is ReadingQuality
 
     assert BatteryReadingCreate.model_fields["device_id"].annotation is SensorChannel
-    assert BatteryTelemetrySnapshot.__module__ == "app.domain.battery"
-    assert validate_battery_percentage.__module__ == "app.domain.battery"
+    assert BatteryTelemetrySnapshot.__module__ == "app.domain.sensors.battery"
+    assert validate_battery_percentage.__module__ == "app.domain.sensors.battery"
     assert LocationTelemetrySnapshot.__module__ == "app.domain.fleet.location"
-    assert ImuTelemetrySnapshot.__module__ == "app.domain.imu"
-    assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.ambient_light"
-    assert WindTelemetrySnapshot.__module__ == "app.domain.wind"
-    assert MarineCurrentTelemetrySnapshot.__module__ == "app.domain.marine_current"
-    assert SalinityTelemetrySnapshot.__module__ == "app.domain.salinity"
-    assert TurbidityTelemetrySnapshot.__module__ == "app.domain.turbidity"
-    assert DissolvedOxygenTelemetrySnapshot.__module__ == "app.domain.dissolved_oxygen"
-    assert PHTelemetrySnapshot.__module__ == "app.domain.ph"
-    assert ConductivityTelemetrySnapshot.__module__ == "app.domain.conductivity"
-    assert ChlorophyllATelemetrySnapshot.__module__ == "app.domain.chlorophyll_a"
-    assert RainfallTelemetrySnapshot.__module__ == "app.domain.rainfall"
-    assert HumidityTelemetrySnapshot.__module__ == "app.domain.humidity"
-    assert AirTemperatureTelemetrySnapshot.__module__ == "app.domain.air_temperature"
-    assert AtmosphericPressureTelemetrySnapshot.__module__ == "app.domain.atmospheric_pressure"
-    assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.acoustic_altimeter"
-    assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.underwater_acoustic"
+    assert ImuTelemetrySnapshot.__module__ == "app.domain.sensors.imu"
+    assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.sensors.ambient_light"
+    assert WindTelemetrySnapshot.__module__ == "app.domain.sensors.wind"
+    assert MarineCurrentTelemetrySnapshot.__module__ == "app.domain.sensors.marine_current"
+    assert SalinityTelemetrySnapshot.__module__ == "app.domain.sensors.salinity"
+    assert TurbidityTelemetrySnapshot.__module__ == "app.domain.sensors.turbidity"
+    assert DissolvedOxygenTelemetrySnapshot.__module__ == "app.domain.sensors.dissolved_oxygen"
+    assert PHTelemetrySnapshot.__module__ == "app.domain.sensors.ph"
+    assert ConductivityTelemetrySnapshot.__module__ == "app.domain.sensors.conductivity"
+    assert ChlorophyllATelemetrySnapshot.__module__ == "app.domain.sensors.chlorophyll_a"
+    assert RainfallTelemetrySnapshot.__module__ == "app.domain.sensors.rainfall"
+    assert HumidityTelemetrySnapshot.__module__ == "app.domain.sensors.humidity"
+    assert AirTemperatureTelemetrySnapshot.__module__ == "app.domain.sensors.air_temperature"
+    assert AtmosphericPressureTelemetrySnapshot.__module__ == "app.domain.sensors.atmospheric_pressure"
+    assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.sensors.acoustic_altimeter"
+    assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.sensors.underwater_acoustic"
     assert SensorTelemetrySnapshot.__module__ == "app.domain.sensors.sensor_telemetry"
     assert latest_usable_reading.__module__ == "app.domain.sensors.reading_quality"
 
@@ -1898,7 +1919,7 @@ def test_sensor_health_collector_maps_batch_families_explicitly() -> None:
 
 
 def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
-    from app.domain.battery_health import (
+    from app.domain.sensors.battery_health import (
         BatteryHealthEstimate,
         BatteryHealthSnapshot,
         BatteryHealthStatus,
@@ -1972,12 +1993,12 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
 
 def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
     from app.domain.analysis import AnalysisConfidence, SeaState
-    from app.domain.battery_analysis import (
+    from app.domain.sensors.battery_analysis import (
         BatteryAnalysisSnapshot,
         BatteryDischargeEstimate,
     )
     from app.domain.fleet.movement import MovementAnalysisSnapshot, MovementEstimate
-    from app.domain.pressure import PressureAnalysisSnapshot, PressureEstimate
+    from app.domain.sensors.pressure import PressureAnalysisSnapshot, PressureEstimate
 
     for model in (
         BatteryAnalysisSnapshot,
@@ -2026,14 +2047,14 @@ def test_sensor_family_catalog_matches_metric_adapters() -> None:
 
 def test_http_schemas_preserve_domain_value_types() -> None:
     from app.domain.analysis import AnalysisConfidence, SeaState
-    from app.domain.battery_health import BatteryHealthStatus
+    from app.domain.sensors.battery_health import BatteryHealthStatus
     from app.domain.fleet.buoy import BuoyOperationalStatus
     from app.domain.maintenance import MaintenanceIssueType, MaintenanceSeverity
     from app.domain.sensors.sensor_family import SensorFamily
     from app.domain.sensors.sensor_health import ChannelDecision
     from app.domain.sensors.sensor_health_rules import DegradedSensorName
     from app.domain.sensors.sensor_status import SensorHealthStatus
-    from app.domain.temperature import TemperatureTrend
+    from app.domain.sensors.temperature import TemperatureTrend
     from app.domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
     from app.domain.wave import WaveConfidence
     from app.schemas.analytics import (

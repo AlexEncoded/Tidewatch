@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from ..domain.battery_health import BatteryHealthSnapshot
+from ..domain.sensors.battery_health import BatteryHealthSnapshot
 from ..domain.fleet.buoy import BuoySnapshot
 from .battery_ports import BatteryTelemetryReader
 from .device_ports import DeviceHealthReader

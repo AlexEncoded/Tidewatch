@@ -3,26 +3,26 @@ from datetime import datetime, timezone
 import pytest
 
 
-from app.domain.battery import BatteryTelemetrySnapshot
+from app.domain.sensors.battery import BatteryTelemetrySnapshot
 from app.domain.fleet.location import LocationTelemetrySnapshot
-from app.domain.imu import ImuTelemetrySnapshot
-from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
-from app.domain.humidity import HumidityTelemetrySnapshot
-from app.domain.rainfall import RainfallTelemetrySnapshot
-from app.domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
-from app.domain.conductivity import ConductivityTelemetrySnapshot
-from app.domain.ph import PHTelemetrySnapshot
-from app.domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
-from app.domain.turbidity import TurbidityTelemetrySnapshot
-from app.domain.salinity import SalinityTelemetrySnapshot
-from app.domain.marine_current import MarineCurrentTelemetrySnapshot
-from app.domain.wind import WindTelemetrySnapshot
-from app.domain.ambient_light import AmbientLightTelemetrySnapshot
-from app.domain.pressure import PressureTelemetrySnapshot
-from app.domain.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.imu import ImuTelemetrySnapshot
+from app.domain.sensors.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
+from app.domain.sensors.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
+from app.domain.sensors.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
+from app.domain.sensors.air_temperature import AirTemperatureTelemetrySnapshot
+from app.domain.sensors.humidity import HumidityTelemetrySnapshot
+from app.domain.sensors.rainfall import RainfallTelemetrySnapshot
+from app.domain.sensors.chlorophyll_a import ChlorophyllATelemetrySnapshot
+from app.domain.sensors.conductivity import ConductivityTelemetrySnapshot
+from app.domain.sensors.ph import PHTelemetrySnapshot
+from app.domain.sensors.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
+from app.domain.sensors.turbidity import TurbidityTelemetrySnapshot
+from app.domain.sensors.salinity import SalinityTelemetrySnapshot
+from app.domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
+from app.domain.sensors.wind import WindTelemetrySnapshot
+from app.domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
+from app.domain.sensors.pressure import PressureTelemetrySnapshot
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 from app.domain.fleet.devices import resolve_telemetry_device_id
 
 

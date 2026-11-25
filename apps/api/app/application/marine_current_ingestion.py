@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.marine_current import MarineCurrentTelemetrySnapshot
+from ..domain.sensors.marine_current import MarineCurrentTelemetrySnapshot
 from .flow_ports import MarineCurrentTelemetryGateway
 from .sensor_reading_metrics import record_sensor_reading_metrics
 from .telemetry_ports import TelemetryMetrics

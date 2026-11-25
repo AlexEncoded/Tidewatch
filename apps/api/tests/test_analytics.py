@@ -7,11 +7,11 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from app.domain.fleet.movement import distance_between_points, estimate_movement
-from app.domain.battery_health import estimate_battery_health
-from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
-from app.domain.battery_analysis import BatteryAnalysisSnapshot
-from app.domain.temperature import estimate_temperature
-from app.domain.pressure import estimate_pressure
+from app.domain.sensors.battery_health import estimate_battery_health
+from app.domain.sensors.battery_analysis import BatterySample, estimate_battery_discharge
+from app.domain.sensors.battery_analysis import BatteryAnalysisSnapshot
+from app.domain.sensors.temperature import estimate_temperature
+from app.domain.sensors.pressure import estimate_pressure
 from app.domain.wave import (
     estimate_fused_wave_period,
     estimate_wave,
@@ -30,19 +30,19 @@ from app.domain.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
 from app.domain.fleet.movement import MovementAnalysisSnapshot
 from app.application.pressure_analysis import analyze_pressure_for_buoy
-from app.domain.pressure import PressureAnalysisSnapshot
+from app.domain.sensors.pressure import PressureAnalysisSnapshot
 from app.application.battery_analysis import analyze_battery_for_buoy
 from app.application.temperature_analysis import (
     analyze_temperature_for_buoy,
     analyze_temperature_readings,
     list_valid_temperature_readings,
 )
-from app.domain.temperature import TemperatureAnalysisSnapshot
+from app.domain.sensors.temperature import TemperatureAnalysisSnapshot
 from app.application.battery_health import (
     analyze_battery_health_for_buoy,
     evaluate_battery_health_for_buoy,
 )
-from app.domain.battery_health import BatteryHealthSnapshot
+from app.domain.sensors.battery_health import BatteryHealthSnapshot
 from app.domain.sensors.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
 from app.domain.sensors.reading_quality import classify_latest_readings

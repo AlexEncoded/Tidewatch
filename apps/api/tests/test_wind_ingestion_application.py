@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.wind_ingestion import ingest_wind_reading
-from app.domain.wind import WindTelemetrySnapshot
+from app.domain.sensors.wind import WindTelemetrySnapshot
 
 
 class FakeMetrics:

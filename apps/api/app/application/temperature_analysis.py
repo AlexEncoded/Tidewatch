@@ -1,6 +1,6 @@
 """Application service for historical temperature analysis."""
 
-from ..domain.temperature import (
+from ..domain.sensors.temperature import (
     TemperatureAnalysisSnapshot,
     analyze_temperature_samples,
     valid_temperature_readings,

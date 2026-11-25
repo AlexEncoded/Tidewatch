@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.application.rainfall_ingestion import ingest_rainfall_reading
-from app.domain.rainfall import RainfallTelemetrySnapshot
+from app.domain.sensors.rainfall import RainfallTelemetrySnapshot
 
 
 class FakeMetrics:
