@@ -149,6 +149,13 @@ def test_background_workers_are_grouped_under_the_workers_package() -> None:
     assert not (API_APP / "maintenance_notification_worker.py").exists()
 
 
+def test_maintenance_webhook_transport_is_grouped_as_an_outbound_adapter() -> None:
+    adapters = API_APP / "adapters"
+
+    assert (adapters / "webhook" / "maintenance_notifications.py").is_file()
+    assert not (adapters / "http" / "maintenance_notifications.py").exists()
+
+
 def test_maintenance_worker_uses_the_application_transport_port() -> None:
     source = (API_APP / "workers" / "maintenance_notification_worker.py").read_text(
         encoding="utf-8"

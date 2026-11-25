@@ -1,4 +1,4 @@
-"""HTTPX adapter for maintenance notification delivery."""
+"""HTTPX outbound adapter for maintenance notification delivery."""
 
 import httpx
 

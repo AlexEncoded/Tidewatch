@@ -1,4 +1,4 @@
-from app.adapters.http.maintenance_notifications import (
+from app.adapters.webhook.maintenance_notifications import (
     HttpxMaintenanceNotificationTransport,
 )
 
@@ -11,7 +11,7 @@ def test_httpx_transport_forwards_the_notification_request(monkeypatch) -> None:
         calls.append((url, json, timeout))
         return response
 
-    monkeypatch.setattr("app.adapters.http.maintenance_notifications.httpx.post", post)
+    monkeypatch.setattr("app.adapters.webhook.maintenance_notifications.httpx.post", post)
 
     result = HttpxMaintenanceNotificationTransport()(
         "https://example.test/hook",

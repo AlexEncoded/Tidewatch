@@ -13,7 +13,7 @@ from ..adapters.postgres.telemetry_jobs import TelemetryIngestionJobRepository
 from ..adapters.postgres.telemetry_unit_of_work import (
     SQLAlchemyTelemetryBatchUnitOfWork,
 )
-from ..adapters.http.maintenance_notifications import (
+from ..adapters.webhook.maintenance_notifications import (
     HttpxMaintenanceNotificationTransport,
 )
 from ..adapters.prometheus.telemetry_metrics import PrometheusTelemetryMetrics
