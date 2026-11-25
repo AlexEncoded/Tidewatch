@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from ..domain.location import LocationTelemetrySnapshot
+from ..domain.fleet.location import LocationTelemetrySnapshot
 from .fleet_ports import FleetLocationReader
 from .location_queries import validate_location_time_range
 

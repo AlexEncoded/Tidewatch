@@ -4,7 +4,7 @@ from typing import Protocol
 
 from ..domain.air_temperature import AirTemperatureTelemetrySnapshot
 from ..domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.humidity import HumidityTelemetrySnapshot
 from ..domain.rainfall import RainfallTelemetrySnapshot
 

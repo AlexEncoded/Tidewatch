@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 ATMOSPHERIC_PRESSURE_MIN_KPA = 80
 ATMOSPHERIC_PRESSURE_MAX_KPA = 120

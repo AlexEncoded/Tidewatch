@@ -6,7 +6,7 @@ from app.application.buoy_registration import (
     register_buoy,
     register_buoy_and_publish_heartbeat,
 )
-from app.domain.buoy import BuoyRegistrationCommand
+from app.domain.fleet.buoy import BuoyRegistrationCommand
 
 
 class FakeBuoyRegistrar:

@@ -7,8 +7,8 @@ from app.application.buoy_location_update import (
     update_buoy_location,
     update_buoy_location_and_publish_movement,
 )
-from app.domain.buoy import BuoyLocationCommand, BuoySnapshot
-from app.domain.location import LocationTelemetrySnapshot
+from app.domain.fleet.buoy import BuoyLocationCommand, BuoySnapshot
+from app.domain.fleet.location import LocationTelemetrySnapshot
 
 
 class FakeBuoyLocationUpdater:

@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import Protocol, TypeVar
 
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.sensor_telemetry import SensorTelemetrySnapshot
 
 

@@ -31,7 +31,7 @@ from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 from .sensor_entities import SensorHealthCheckEntity
 from .sensor_telemetry_repositories import SensorTelemetryRepositories
 from .persistence_mappers import sensor_health_check_snapshot
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class SensorHealthRepository(SensorHealthCheckGateway):

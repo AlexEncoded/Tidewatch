@@ -6,7 +6,7 @@ from app.application.buoy_locations import (
     InvalidBuoyLocationTimeRange,
     list_buoy_locations,
 )
-from app.domain.location import LocationTelemetrySnapshot
+from app.domain.fleet.location import LocationTelemetrySnapshot
 
 
 class FakeBuoyLocationHistoryReader:

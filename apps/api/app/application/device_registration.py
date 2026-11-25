@@ -1,6 +1,6 @@
 """Application service for registering physical buoy devices."""
 
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceSnapshot,

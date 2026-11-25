@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import Protocol
 
-from ..domain.buoy import BuoyIdentitySnapshot
-from ..domain.devices import SensorChannel
+from ..domain.fleet.buoy import BuoyIdentitySnapshot
+from ..domain.fleet.devices import SensorChannel
 from ..domain.temperature import TemperatureTelemetrySnapshot
 from ..domain.temperature_alert import (
     TemperatureAlertSnapshot,

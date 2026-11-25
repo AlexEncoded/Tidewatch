@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from ..domain.device_health import DeviceHealthSnapshot, summarize_device_health
+from ..domain.fleet.device_health import DeviceHealthSnapshot, summarize_device_health
 from .device_ports import DeviceHealthReader
 
 

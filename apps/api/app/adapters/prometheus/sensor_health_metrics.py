@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 from ...domain.sensor_family import SensorFamily
 from ...domain.sensor_health import ChannelDecision
 from ...domain.sensor_health_rules import DegradedSensorName

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 ACOUSTIC_ALTIMETER_MIN_DEPTH_METERS = 0
 ACOUSTIC_ALTIMETER_MAX_DEPTH_METERS = 20000

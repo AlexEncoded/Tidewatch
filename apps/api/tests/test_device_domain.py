@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.domain.device_health import assess_device_liveness
-from app.domain.devices import (
+from app.domain.fleet.device_health import assess_device_liveness
+from app.domain.fleet.devices import (
     DeviceRegistrationCommand,
     DeviceStatusCommand,
     DeviceOwnershipError,
@@ -13,7 +13,7 @@ from app.domain.devices import (
     validate_device_registration,
     validate_telemetry_device_channel,
 )
-from app.domain.staleness import stale_age_seconds
+from app.domain.fleet.staleness import stale_age_seconds
 from app.application.device_registration import register_device, register_device_for_buoy
 from app.application.device_listing import list_devices_for_buoy
 from app.application.device_status import update_device_status, update_device_status_for_buoy
@@ -22,7 +22,7 @@ from app.application.device_errors import (
     DeviceNotFound,
     DeviceRegistrationConflictError,
 )
-from app.domain.devices import DeviceSnapshot
+from app.domain.fleet.devices import DeviceSnapshot
 
 
 def test_device_liveness_marks_active_device_without_heartbeat_stale() -> None:

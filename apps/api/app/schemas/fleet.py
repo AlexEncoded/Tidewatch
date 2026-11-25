@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
-from ..domain.buoy import (
+from ..domain.fleet.buoy import (
     BUOY_NAME_MAX_LENGTH,
     BUOY_NAME_MIN_LENGTH,
     LATITUDE_MAX,
@@ -13,8 +13,8 @@ from ..domain.buoy import (
     LONGITUDE_MIN,
     BuoyOperationalStatus,
 )
-from ..domain.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
-from ..domain.location import (
+from ..domain.fleet.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
+from ..domain.fleet.location import (
     GNSS_ALTITUDE_MAX_METERS,
     GNSS_ALTITUDE_MIN_METERS,
     GNSS_HDOP_MAX,

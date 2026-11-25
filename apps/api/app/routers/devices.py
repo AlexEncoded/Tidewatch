@@ -14,7 +14,7 @@ from ..adapters.http.fleet_dependencies import (
 from ..application.device_registration import register_device_for_buoy
 from ..application.device_listing import list_devices_for_buoy
 from ..application.device_status import update_device_status_for_buoy
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DeviceRegistrationCommand,
     DeviceStatusCommand,
 )

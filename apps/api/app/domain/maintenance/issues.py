@@ -4,11 +4,11 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
 from ..battery_health import BatteryHealthSnapshot
-from ..buoy import BuoyOperationalStatus
+from ..fleet.buoy import BuoyOperationalStatus
 from ..sensor_health import SensorHealthSnapshot
 from ..sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from .policy import is_buoy_drifting, is_buoy_silent
-from ..device_health import DeviceHealthSnapshot
+from ..fleet.device_health import DeviceHealthSnapshot
 from ..reading_quality import MeasuredReading, classify_latest_readings
 from ..sensor_health import SensorHealthSnapshot
 from .policy import (

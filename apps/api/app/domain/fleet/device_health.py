@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from collections.abc import Sequence
 
 from .devices import DeviceOperationalStatus, DeviceSensorChannel, DeviceSnapshot
-from .time_rules import require_positive_finite_seconds
+from ..time_rules import require_positive_finite_seconds
 
 
 @dataclass(frozen=True)

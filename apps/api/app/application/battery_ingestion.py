@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DeviceOwnershipError,
     validate_device_ownership,
     validate_telemetry_device_channel,

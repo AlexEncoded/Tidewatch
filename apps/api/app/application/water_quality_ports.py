@@ -4,7 +4,7 @@ from typing import Protocol
 
 from ..domain.chlorophyll_a import ChlorophyllATelemetrySnapshot
 from ..domain.conductivity import ConductivityTelemetrySnapshot
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.dissolved_oxygen import DissolvedOxygenTelemetrySnapshot
 from ..domain.ph import PHTelemetrySnapshot
 from ..domain.turbidity import TurbidityTelemetrySnapshot

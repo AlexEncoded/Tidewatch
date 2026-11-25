@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...application.alert_ports import TemperatureAlertStore
-from ...domain.buoy import BuoyIdentitySnapshot
+from ...domain.fleet.buoy import BuoyIdentitySnapshot
 from ...domain.temperature import TemperatureTelemetrySnapshot
 from ...domain.temperature_alert import (
     TemperatureAlertSnapshot,
@@ -16,7 +16,7 @@ from ...domain.temperature_alert import (
 from .alert_entities import TemperatureAlertEntity
 from .fleet_entities import BuoyEntity
 from .temperature_repository import TemperatureRepository
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class TemperatureAlertRepository(TemperatureAlertStore):

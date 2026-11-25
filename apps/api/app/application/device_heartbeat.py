@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from collections.abc import Iterable
 from typing import Protocol
 
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DeviceSnapshot,
     DeviceOwnershipError,
     SensorChannel,

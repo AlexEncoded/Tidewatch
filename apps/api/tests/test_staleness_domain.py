@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from app.domain.buoy import BuoyActivitySnapshot
-from app.domain.staleness import classify_stale_buoy
+from app.domain.fleet.buoy import BuoyActivitySnapshot
+from app.domain.fleet.staleness import classify_stale_buoy
 
 
 def test_stale_buoy_classification_builds_snapshot_and_normalizes_naive_time() -> None:

@@ -1,6 +1,6 @@
 """Application query for buoy fleet summaries."""
 
-from ..domain.buoy import BuoySummarySnapshot
+from ..domain.fleet.buoy import BuoySummarySnapshot
 from ..domain.sensor_selection import select_summary_reading
 from .fleet_ports import BuoySummaryReader
 

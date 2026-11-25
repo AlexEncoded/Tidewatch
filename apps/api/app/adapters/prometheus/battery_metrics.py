@@ -10,7 +10,7 @@ from .instruments import (
     buoy_last_seen_timestamp_seconds,
     device_last_seen_timestamp_seconds,
 )
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class PrometheusBatteryMetrics(BatteryMetrics):

@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.imu import ImuTelemetrySnapshot
 
 

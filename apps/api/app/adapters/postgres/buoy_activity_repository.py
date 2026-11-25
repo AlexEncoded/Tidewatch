@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ...domain.buoy import BuoyActivitySnapshot
+from ...domain.fleet.buoy import BuoyActivitySnapshot
 from .fleet_entities import BuoyEntity
 
 

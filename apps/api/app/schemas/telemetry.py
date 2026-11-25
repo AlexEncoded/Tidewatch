@@ -1,7 +1,7 @@
 """HTTP contracts for core sensor telemetry and ingestion responses."""
 
 from datetime import datetime, timezone
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DEVICE_FIRMWARE_MAX_LENGTH,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,

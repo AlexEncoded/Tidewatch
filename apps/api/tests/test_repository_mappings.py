@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from app.domain.buoy import BuoySnapshot
-from app.domain.devices import DeviceSnapshot
+from app.domain.fleet.buoy import BuoySnapshot
+from app.domain.fleet.devices import DeviceSnapshot
 from app.adapters.postgres.persistence_mappers import (
     buoy_snapshot,
     device_snapshot,

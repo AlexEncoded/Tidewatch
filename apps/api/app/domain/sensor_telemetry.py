@@ -1,6 +1,6 @@
 """Shared invariants for physical sensor telemetry snapshots."""
 
-from .devices import (
+from .fleet.devices import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     SENSOR_ID_MAX_LENGTH,

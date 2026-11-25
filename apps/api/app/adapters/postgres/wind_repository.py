@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.wind import WindTelemetrySnapshot
 from .sensor_entities import WindReadingEntity
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class WindRepository:

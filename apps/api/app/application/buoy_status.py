@@ -1,6 +1,6 @@
 """Application use case for changing a buoy's operational status."""
 
-from ..domain.buoy import BuoySnapshot, BuoyStatusCommand
+from ..domain.fleet.buoy import BuoySnapshot, BuoyStatusCommand
 from .fleet_ports import BuoyStatusRegistry
 
 

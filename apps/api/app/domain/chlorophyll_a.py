@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 CHLOROPHYLL_A_MIN_UG_L = 0
 CHLOROPHYLL_A_MAX_UG_L = 1000

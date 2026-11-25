@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Session
 
-from ...domain.buoy import BuoySummarySnapshot
+from ...domain.fleet.buoy import BuoySummarySnapshot
 from .buoy_registry_repository import BuoyRegistryRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository

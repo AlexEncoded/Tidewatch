@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from app.domain.movement import distance_between_points, estimate_movement
+from app.domain.fleet.movement import distance_between_points, estimate_movement
 from app.domain.battery_health import estimate_battery_health
 from app.domain.battery_analysis import BatterySample, estimate_battery_discharge
 from app.domain.battery_analysis import BatteryAnalysisSnapshot
@@ -28,7 +28,7 @@ from app.application.wave_analysis import (
 )
 from app.domain.wave import WaveAnalysisSnapshot
 from app.application.movement_analysis import analyze_movement_for_buoy
-from app.domain.movement import MovementAnalysisSnapshot
+from app.domain.fleet.movement import MovementAnalysisSnapshot
 from app.application.pressure_analysis import analyze_pressure_for_buoy
 from app.domain.pressure import PressureAnalysisSnapshot
 from app.application.battery_analysis import analyze_battery_for_buoy

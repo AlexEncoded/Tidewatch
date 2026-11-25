@@ -2,8 +2,8 @@
 
 from datetime import datetime, timezone
 
-from ..domain.buoy import StaleBuoySnapshot
-from ..domain.staleness import classify_stale_buoy
+from ..domain.fleet.buoy import StaleBuoySnapshot
+from ..domain.fleet.staleness import classify_stale_buoy
 from .fleet_ports import StaleBuoyReader
 
 

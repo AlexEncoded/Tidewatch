@@ -9,7 +9,7 @@ from .instruments import (
     buoy_movement_speed_mps,
     device_last_seen_timestamp_seconds,
 )
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class PrometheusFleetMetrics(FleetMetrics, AvailabilityMetrics):

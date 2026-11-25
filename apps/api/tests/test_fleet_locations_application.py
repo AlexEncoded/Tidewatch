@@ -4,7 +4,7 @@ import pytest
 
 from app.application.fleet_locations import list_fleet_locations
 from app.application.location_queries import InvalidLocationTimeRange
-from app.domain.location import LocationTelemetrySnapshot
+from app.domain.fleet.location import LocationTelemetrySnapshot
 
 
 class FakeFleetLocationReader:

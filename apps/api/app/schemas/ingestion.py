@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from ..domain.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
+from ..domain.fleet.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH
 from .battery import BatteryReadingCreate
 from .devices import DeviceCommunicationTelemetry, DeviceRuntimeTelemetry
 from .fleet import BuoyLocationReadingCreate

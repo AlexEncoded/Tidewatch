@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from app.application.stale_buoys import find_stale_buoys
-from app.domain.buoy import BuoyActivitySnapshot
+from app.domain.fleet.buoy import BuoyActivitySnapshot
 
 
 class FakeStaleBuoyReader:

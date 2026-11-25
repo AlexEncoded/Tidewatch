@@ -83,7 +83,7 @@ from ..application.sensor_reading_queries import (
     SensorReadingReader,
     list_sensor_readings as query_sensor_readings,
 )
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.sensor_telemetry import SensorTelemetrySnapshot
 from ..application.sensor_health import (
     evaluate_and_persist_sensor_health_check,

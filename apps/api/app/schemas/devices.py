@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field, model_validator
 
-from ..domain.devices import (
+from ..domain.fleet.devices import (
     DEVICE_FIRMWARE_MAX_LENGTH,
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,

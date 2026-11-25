@@ -7,7 +7,7 @@ from typing import Literal
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 SEA_TEMPERATURE_MIN_CELSIUS = -5
 SEA_TEMPERATURE_MAX_CELSIUS = 45

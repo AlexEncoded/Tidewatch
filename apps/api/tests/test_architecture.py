@@ -7,7 +7,7 @@ from app.domain.reading_quality import latest_usable_reading
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.battery import BatteryTelemetrySnapshot, validate_battery_percentage
-from app.domain.location import LocationTelemetrySnapshot
+from app.domain.fleet.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.wind import WindTelemetrySnapshot
@@ -25,7 +25,7 @@ from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from app.domain.reading_quality import ReadingQuality
-from app.domain.devices import SensorChannel
+from app.domain.fleet.devices import SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
 
@@ -230,6 +230,21 @@ def test_maintenance_domain_types_are_grouped_by_context() -> None:
     assert (maintenance / "notification_job.py").is_file()
     assert not (API_APP / "domain" / "maintenance_issues.py").exists()
     assert not (API_APP / "domain" / "maintenance_notification_job.py").exists()
+
+
+def test_fleet_domain_types_are_grouped_by_context() -> None:
+    fleet = API_APP / "domain" / "fleet"
+
+    for module in (
+        "buoy.py",
+        "devices.py",
+        "device_health.py",
+        "location.py",
+        "movement.py",
+        "staleness.py",
+    ):
+        assert (fleet / module).is_file()
+        assert not (API_APP / "domain" / module).exists()
 
 
 def test_fleet_persistence_entities_are_grouped_by_context() -> None:
@@ -1567,7 +1582,7 @@ def imports_package(modules: set[str], package: str) -> bool:
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
-    assert "app.domain.devices" in modules
+    assert "app.domain.fleet.devices" in modules
     assert "app.domain.reading_quality" in modules
     assert "app.domain.telemetry_types" not in modules
     assert not any(
@@ -1617,7 +1632,7 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert BatteryReadingCreate.model_fields["device_id"].annotation is SensorChannel
     assert BatteryTelemetrySnapshot.__module__ == "app.domain.battery"
     assert validate_battery_percentage.__module__ == "app.domain.battery"
-    assert LocationTelemetrySnapshot.__module__ == "app.domain.location"
+    assert LocationTelemetrySnapshot.__module__ == "app.domain.fleet.location"
     assert ImuTelemetrySnapshot.__module__ == "app.domain.imu"
     assert AmbientLightTelemetrySnapshot.__module__ == "app.domain.ambient_light"
     assert WindTelemetrySnapshot.__module__ == "app.domain.wind"
@@ -1674,7 +1689,7 @@ def test_sensor_application_ports_use_the_domain_channel_type() -> None:
     from app.application.flow_ports import WindTelemetryGateway
     from app.application.system_ports import AvailabilityMetrics
     from app.application.sensor_reading_metrics import record_sensor_reading_metrics
-    from app.domain.devices import validate_device_registration
+    from app.domain.fleet.devices import validate_device_registration
 
     assert get_type_hints(WindTelemetryGateway.list_wind)["sensor_channel"] == (
         SensorChannel | None
@@ -1770,7 +1785,7 @@ def test_temperature_alert_status_uses_domain_type() -> None:
 def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     from collections.abc import Mapping
 
-    from app.domain.devices import SensorChannel
+    from app.domain.fleet.devices import SensorChannel
     from app.domain.sensor_family import SensorFamily
     from app.domain.sensor_health import (
         ChannelDecision,
@@ -1810,7 +1825,7 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
 def test_sensor_health_calculations_use_explicit_key_types() -> None:
     from collections.abc import Mapping
 
-    from app.domain.devices import SensorChannel
+    from app.domain.fleet.devices import SensorChannel
     from app.domain.sensor_completeness import missing_sensor_channels
     from app.domain.sensor_family import SensorFamily
     from app.domain.sensor_health_analysis import calculate_sensor_health_deltas
@@ -1871,7 +1886,7 @@ def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
         BatteryHealthStatus,
         estimate_battery_health,
     )
-    from app.domain.devices import SensorChannel
+    from app.domain.fleet.devices import SensorChannel
 
     assert get_type_hints(BatteryHealthSnapshot)["status"] is BatteryHealthStatus
     assert get_type_hints(BatteryHealthEstimate)["status"] is BatteryHealthStatus
@@ -1887,14 +1902,14 @@ def test_battery_health_results_keep_domain_status_and_channel_types() -> None:
 
 
 def test_buoy_status_uses_domain_operational_type() -> None:
-    from app.domain.buoy import (
+    from app.domain.fleet.buoy import (
         BuoyOperationalStatus,
         BuoySnapshot,
         BuoyStatusCommand,
         StaleBuoySnapshot,
     )
     from app.domain.maintenance import is_buoy_silent
-    from app.domain.staleness import stale_age_seconds
+    from app.domain.fleet.staleness import stale_age_seconds
 
     assert get_type_hints(BuoySnapshot)["status"] is BuoyOperationalStatus
     assert get_type_hints(StaleBuoySnapshot)["status"] is BuoyOperationalStatus
@@ -1904,7 +1919,7 @@ def test_buoy_status_uses_domain_operational_type() -> None:
 
 
 def test_maintenance_issue_contracts_use_domain_value_types() -> None:
-    from app.domain.buoy import BuoyOperationalStatus
+    from app.domain.fleet.buoy import BuoyOperationalStatus
     from app.domain.maintenance import (
         MaintenanceIssueSnapshot,
         MaintenanceIssueType,
@@ -1943,7 +1958,7 @@ def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
         BatteryAnalysisSnapshot,
         BatteryDischargeEstimate,
     )
-    from app.domain.movement import MovementAnalysisSnapshot, MovementEstimate
+    from app.domain.fleet.movement import MovementAnalysisSnapshot, MovementEstimate
     from app.domain.pressure import PressureAnalysisSnapshot, PressureEstimate
 
     for model in (
@@ -1994,7 +2009,7 @@ def test_sensor_family_catalog_matches_metric_adapters() -> None:
 def test_http_schemas_preserve_domain_value_types() -> None:
     from app.domain.analysis import AnalysisConfidence, SeaState
     from app.domain.battery_health import BatteryHealthStatus
-    from app.domain.buoy import BuoyOperationalStatus
+    from app.domain.fleet.buoy import BuoyOperationalStatus
     from app.domain.maintenance import MaintenanceIssueType, MaintenanceSeverity
     from app.domain.sensor_family import SensorFamily
     from app.domain.sensor_health import ChannelDecision
@@ -3032,7 +3047,7 @@ def test_device_registration_route_delegates_heartbeat_to_application() -> None:
     domain_imports = {
         alias.name
         for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom) and node.module == "domain.devices"
+        if isinstance(node, ast.ImportFrom) and node.module == "domain.fleet.devices"
         for alias in node.names
     }
     application_imports = {
@@ -3271,7 +3286,7 @@ def test_battery_routes_use_injected_telemetry_port():
     assert "adapters.http.sensor_dependencies" in imported_modules
     assert all("BuoyRepository" not in calls for calls in routes.values())
     assert "ingest_battery_reading" in routes["record_battery"]
-    assert "domain.devices" not in imported_modules
+    assert "domain.fleet.devices" not in imported_modules
     assert "get_latest_battery" in routes["latest_battery"]
     assert "list_battery_history" in routes["battery_history"]
     assert "ensure_buoy_exists" not in routes["latest_battery"]

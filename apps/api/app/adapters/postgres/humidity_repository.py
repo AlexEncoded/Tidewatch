@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .buoy_registry_repository import BuoyRegistryRepository
 from ...domain.humidity import HumidityTelemetrySnapshot
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 from .sensor_entities import HumidityReadingEntity
 
 

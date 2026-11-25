@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 
 
 @runtime_checkable

@@ -3,7 +3,7 @@
 from typing import Protocol, runtime_checkable
 from collections.abc import Mapping
 
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.sensor_family import SensorFamily
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot

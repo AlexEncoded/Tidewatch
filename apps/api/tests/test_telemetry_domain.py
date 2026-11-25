@@ -4,7 +4,7 @@ import pytest
 
 
 from app.domain.battery import BatteryTelemetrySnapshot
-from app.domain.location import LocationTelemetrySnapshot
+from app.domain.fleet.location import LocationTelemetrySnapshot
 from app.domain.imu import ImuTelemetrySnapshot
 from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
@@ -23,7 +23,7 @@ from app.domain.wind import WindTelemetrySnapshot
 from app.domain.ambient_light import AmbientLightTelemetrySnapshot
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
-from app.domain.devices import resolve_telemetry_device_id
+from app.domain.fleet.devices import resolve_telemetry_device_id
 
 
 def test_telemetry_device_resolution_uses_batch_device_as_fallback() -> None:

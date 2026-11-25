@@ -1,7 +1,7 @@
 """Translate persistence entities into immutable application/domain snapshots."""
 
-from ...domain.buoy import BuoySnapshot
-from ...domain.devices import DeviceSnapshot
+from ...domain.fleet.buoy import BuoySnapshot
+from ...domain.fleet.devices import DeviceSnapshot
 from ...domain.sensor_health import SensorHealthCheckSnapshot
 from .fleet_entities import BuoyEntity, DeviceEntity
 from .sensor_entities import SensorHealthCheckEntity

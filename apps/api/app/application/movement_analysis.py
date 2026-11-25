@@ -1,6 +1,6 @@
 """Application service for the movement-analysis use case."""
 
-from ..domain.movement import MovementAnalysisSnapshot, estimate_movement
+from ..domain.fleet.movement import MovementAnalysisSnapshot, estimate_movement
 from .fleet_ports import LocationTelemetryReader
 
 

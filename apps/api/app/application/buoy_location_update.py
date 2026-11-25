@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from ..domain.buoy import BuoyLocationCommand, BuoySnapshot
-from ..domain.movement import MovementAnalysisSnapshot
+from ..domain.fleet.buoy import BuoyLocationCommand, BuoySnapshot
+from ..domain.fleet.movement import MovementAnalysisSnapshot
 from .movement_analysis import analyze_movement_for_buoy
 from .fleet_ports import BuoyLocationUpdater, FleetMetrics, LocationTelemetryReader
 

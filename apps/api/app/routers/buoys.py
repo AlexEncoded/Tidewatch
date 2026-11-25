@@ -35,8 +35,8 @@ from ..application.fleet_ports import (
 )
 from ..application.buoy_status import update_buoy_status as change_buoy_status
 from ..application.buoy_summaries import list_buoy_summaries
-from ..domain.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
-from ..domain.location import LocationTelemetrySnapshot
+from ..domain.fleet.buoy import BuoyLocationCommand, BuoyRegistrationCommand, BuoyStatusCommand
+from ..domain.fleet.location import LocationTelemetrySnapshot
 from ..application.stale_buoys import find_stale_buoys
 from ..schemas.fleet_summary import BuoySummary
 from ..schemas.fleet import (

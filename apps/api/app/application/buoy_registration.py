@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from ..domain.buoy import BuoyRegistrationCommand, BuoySnapshot
+from ..domain.fleet.buoy import BuoyRegistrationCommand, BuoySnapshot
 from .fleet_ports import BuoyRegistrar, FleetMetrics
 
 

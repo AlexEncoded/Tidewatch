@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from ..domain.analysis import AnalysisConfidence
 from ..domain.battery import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
 from ..domain.battery_health import BatteryHealthStatus
-from ..domain.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH, SensorChannel
+from ..domain.fleet.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH, SensorChannel
 
 from pydantic import BaseModel, Field
 

@@ -1,6 +1,6 @@
 """Application service for listing devices assigned to a buoy."""
 
-from ..domain.devices import DeviceSnapshot
+from ..domain.fleet.devices import DeviceSnapshot
 from .device_ports import DeviceHealthReader, DeviceListingReader
 
 

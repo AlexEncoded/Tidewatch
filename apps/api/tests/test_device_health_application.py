@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 from app.application.device_health import get_device_health_for_buoy, summarize_device_health_for_buoy
-from app.domain.device_health import summarize_device_health
-from app.domain.devices import DeviceSnapshot
+from app.domain.fleet.device_health import summarize_device_health
+from app.domain.fleet.devices import DeviceSnapshot
 
 
 def test_device_health_marks_missing_and_old_active_heartbeats_stale() -> None:

@@ -3,7 +3,7 @@
 from typing import Protocol
 
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 
 

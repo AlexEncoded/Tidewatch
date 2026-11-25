@@ -3,15 +3,15 @@
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from ..domain.buoy import (
+from ..domain.fleet.buoy import (
     BuoyActivitySnapshot,
     BuoyLocationCommand,
     BuoySnapshot,
     BuoyStatusCommand,
     BuoySummarySnapshot,
 )
-from ..domain.devices import SensorChannel
-from ..domain.location import LocationTelemetrySnapshot
+from ..domain.fleet.devices import SensorChannel
+from ..domain.fleet.location import LocationTelemetrySnapshot
 
 
 class FleetLocationReader(Protocol):

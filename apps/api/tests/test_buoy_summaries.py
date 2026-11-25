@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from app.application.buoy_summaries import list_buoy_summaries
-from app.domain.buoy import BuoySnapshot, BuoySummarySnapshot
+from app.domain.fleet.buoy import BuoySnapshot, BuoySummarySnapshot
 
 
 def test_buoy_summary_query_returns_snapshots_from_reader_port() -> None:

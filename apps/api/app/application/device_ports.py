@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.devices import DeviceRegistrationCommand, DeviceSnapshot, DeviceStatusCommand
+from ..domain.fleet.devices import DeviceRegistrationCommand, DeviceSnapshot, DeviceStatusCommand
 
 
 class DeviceListingReader(Protocol):

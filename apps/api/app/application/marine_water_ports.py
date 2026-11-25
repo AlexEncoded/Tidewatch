@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.salinity import SalinityTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot

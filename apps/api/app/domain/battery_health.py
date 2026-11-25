@@ -4,7 +4,7 @@ from math import isfinite
 from typing import Literal
 
 from .battery import validate_battery_percentage
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 BatteryHealthStatus = Literal["insufficient_data", "consistent", "degraded"]
 

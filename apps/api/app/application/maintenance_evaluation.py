@@ -9,7 +9,7 @@ from .movement_analysis import analyze_movement_for_buoy
 from .maintenance_ports import MaintenanceMetrics, MaintenanceReader
 from .sensor_health import evaluate_sensor_health_snapshot
 from ..domain.battery_health import BatteryHealthSnapshot
-from ..domain.buoy import BuoySnapshot
+from ..domain.fleet.buoy import BuoySnapshot
 from ..domain.maintenance import MaintenanceIssueSnapshot
 from ..domain.maintenance.issues import build_maintenance_issues_for_buoy
 

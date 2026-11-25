@@ -6,7 +6,7 @@ from app.application.maintenance_evaluation import (
     evaluate_maintenance_fleet,
     evaluate_maintenance_issues,
 )
-from app.domain.buoy import BuoySnapshot
+from app.domain.fleet.buoy import BuoySnapshot
 
 
 def test_maintenance_evaluation_coordinates_application_services() -> None:

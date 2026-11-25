@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ...domain.devices import (
+from ...domain.fleet.devices import (
     DeviceRegistrationCommand,
     DeviceRegistrationConflict,
     DeviceSnapshot,

@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ...domain.buoy import BuoyLocationCommand, BuoySnapshot
-from ...domain.location import LocationTelemetrySnapshot
+from ...domain.fleet.buoy import BuoyLocationCommand, BuoySnapshot
+from ...domain.fleet.location import LocationTelemetrySnapshot
 from .fleet_entities import BuoyEntity, BuoyLocationReadingEntity
 from .persistence_mappers import buoy_snapshot
 

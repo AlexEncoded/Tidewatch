@@ -6,7 +6,7 @@ from typing import Callable, TypeVar, cast
 
 from .telemetry_ports import TelemetryBatchUnitOfWork
 from ..domain.battery import BatteryTelemetrySnapshot
-from ..domain.location import LocationTelemetrySnapshot
+from ..domain.fleet.location import LocationTelemetrySnapshot
 from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
@@ -26,7 +26,7 @@ from ..domain.ambient_light import AmbientLightTelemetrySnapshot
 
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.temperature import TemperatureTelemetrySnapshot
-from ..domain.devices import resolve_telemetry_device_id
+from ..domain.fleet.devices import resolve_telemetry_device_id
 from ..domain.telemetry.family import TELEMETRY_RESULT_FAMILIES, TelemetryResultFamily
 
 F = TypeVar("F", bound=Callable)

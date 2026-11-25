@@ -38,7 +38,7 @@ from .telemetry_ingestion import (
     build_temperature_snapshot,
     empty_accepted_reading_counts,
 )
-from ..domain.devices import DeviceOwnershipError
+from ..domain.fleet.devices import DeviceOwnershipError
 from ..domain.telemetry.family import TelemetryResultFamily
 from ..domain.telemetry.job import TelemetryJobIdempotencyConflict, TelemetryJobStatus
 

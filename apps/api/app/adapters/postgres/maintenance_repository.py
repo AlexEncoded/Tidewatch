@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from .battery_repository import BatteryRepository
 from .buoy_location_repository import BuoyLocationRepository
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.buoy import BuoySnapshot
-from ...domain.devices import DeviceSnapshot, SensorChannel
+from ...domain.fleet.buoy import BuoySnapshot
+from ...domain.fleet.devices import DeviceSnapshot, SensorChannel
 from ...domain.battery import BatteryTelemetrySnapshot
-from ...domain.location import LocationTelemetrySnapshot
+from ...domain.fleet.location import LocationTelemetrySnapshot
 from .sensor_health_repository import SensorHealthRepository
 from ...application.maintenance_ports import MaintenanceReader
 from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot

@@ -6,7 +6,7 @@ from datetime import datetime
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from .reading_quality import ReadingQuality
-from .devices import SensorChannel
+from .fleet.devices import SensorChannel
 
 MARINE_CURRENT_SPEED_MIN_MPS = 0
 MARINE_CURRENT_SPEED_MAX_MPS = 20

@@ -3,8 +3,8 @@
 from datetime import datetime, timezone
 from typing import Iterable
 
-from ..domain.buoy import BuoySnapshot
-from ..domain.devices import DeviceSnapshot
+from ..domain.fleet.buoy import BuoySnapshot
+from ..domain.fleet.devices import DeviceSnapshot
 from .system_ports import AvailabilityMetrics
 
 

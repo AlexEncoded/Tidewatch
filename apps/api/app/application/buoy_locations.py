@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from ..domain.location import LocationTelemetrySnapshot
+from ..domain.fleet.location import LocationTelemetrySnapshot
 from .fleet_ports import BuoyLocationHistoryReader
 from .location_queries import (
     InvalidLocationTimeRange as InvalidBuoyLocationTimeRange,

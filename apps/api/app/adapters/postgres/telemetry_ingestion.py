@@ -8,7 +8,7 @@ from .buoy_location_repository import BuoyLocationRepository
 from ...domain.pressure import PressureTelemetrySnapshot
 from ...domain.temperature import TemperatureTelemetrySnapshot
 from ...domain.battery import BatteryTelemetrySnapshot
-from ...domain.location import LocationTelemetrySnapshot
+from ...domain.fleet.location import LocationTelemetrySnapshot
 from ...domain.imu import ImuTelemetrySnapshot
 from ...domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ...domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
@@ -26,12 +26,12 @@ from ...domain.marine_current import MarineCurrentTelemetrySnapshot
 from ...domain.wind import WindTelemetrySnapshot
 from ...domain.ambient_light import AmbientLightTelemetrySnapshot
 
-from ...domain.devices import DeviceSnapshot
-from ...domain.buoy import BuoySnapshot
+from ...domain.fleet.devices import DeviceSnapshot
+from ...domain.fleet.buoy import BuoySnapshot
 from .sensor_telemetry_repositories import SensorTelemetryRepositories
 from .battery_repository import BatteryRepository
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.devices import SensorChannel
+from ...domain.fleet.devices import SensorChannel
 
 
 class TelemetryIngestionRepository:

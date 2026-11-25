@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 
 from .buoy import BuoyActivitySnapshot, BuoyOperationalStatus, StaleBuoySnapshot
-from .time_rules import require_positive_finite_seconds
+from ..time_rules import require_positive_finite_seconds
 
 
 def stale_age_seconds(

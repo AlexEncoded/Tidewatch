@@ -1,6 +1,6 @@
 """Application service for changing the operational state of a device."""
 
-from ..domain.devices import DeviceSnapshot, DeviceStatusCommand
+from ..domain.fleet.devices import DeviceSnapshot, DeviceStatusCommand
 from .device_errors import DeviceNotFound
 from .device_ports import DeviceStatusRegistry
 

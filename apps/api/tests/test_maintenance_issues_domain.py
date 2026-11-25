@@ -12,7 +12,7 @@ from app.domain.maintenance.issues import (
     build_sensor_health_maintenance_issues,
 )
 from app.domain.battery_health import BatteryHealthSnapshot
-from app.domain.device_health import DeviceHealthSnapshot
+from app.domain.fleet.device_health import DeviceHealthSnapshot
 from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth

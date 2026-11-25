@@ -3,7 +3,7 @@
 from typing import Protocol
 
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
-from ..domain.devices import SensorChannel
+from ..domain.fleet.devices import SensorChannel
 
 
 class AmbientLightTelemetryGateway(Protocol):

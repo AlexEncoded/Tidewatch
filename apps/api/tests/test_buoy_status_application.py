@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from app.application.buoy_status import update_buoy_status
-from app.domain.buoy import BuoySnapshot, BuoyStatusCommand
+from app.domain.fleet.buoy import BuoySnapshot, BuoyStatusCommand
 
 
 class FakeBuoyStatusRegistry:
