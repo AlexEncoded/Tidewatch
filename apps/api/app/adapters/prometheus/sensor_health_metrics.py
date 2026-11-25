@@ -3,9 +3,9 @@
 from collections.abc import Mapping
 
 from ...domain.fleet.devices import SensorChannel
-from ...domain.sensor_family import SensorFamily
-from ...domain.sensor_health import ChannelDecision
-from ...domain.sensor_health_rules import DegradedSensorName
+from ...domain.sensors.sensor_family import SensorFamily
+from ...domain.sensors.sensor_health import ChannelDecision
+from ...domain.sensors.sensor_health_rules import DegradedSensorName
 
 from ...application.sensor_health_ports import SensorHealthMetrics
 from .instruments import sensor_channel_missing, sensor_degraded, sensor_health_decision

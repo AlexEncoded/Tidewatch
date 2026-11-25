@@ -4,18 +4,18 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 
-from ..domain.sensor_health import (
+from ..domain.sensors.sensor_health import (
     SensorHealthEvaluation,
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot as DomainSensorHealthSnapshot,
     evaluate_sensor_health,
 )
 from ..domain.fleet.devices import SensorChannel
-from ..domain.reading_quality import latest_usable_reading
-from ..domain.sensor_family import SensorFamily
-from ..domain.sensor_health_analysis import calculate_sensor_health_deltas
-from ..domain.sensor_health_rules import SensorHealthDeltaName
-from ..domain.sensor_telemetry import SensorTelemetrySnapshot
+from ..domain.sensors.reading_quality import latest_usable_reading
+from ..domain.sensors.sensor_family import SensorFamily
+from ..domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
+from ..domain.sensors.sensor_health_rules import SensorHealthDeltaName
+from ..domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
 from ..domain.telemetry.family import TelemetryInputFamily
 from .sensor_health_ports import (
     SensorHealthCheckGateway,

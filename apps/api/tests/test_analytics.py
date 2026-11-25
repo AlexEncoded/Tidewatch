@@ -43,17 +43,17 @@ from app.application.battery_health import (
     evaluate_battery_health_for_buoy,
 )
 from app.domain.battery_health import BatteryHealthSnapshot
-from app.domain.sensor_health import decide_channel, evaluate_sensor_health
+from app.domain.sensors.sensor_health import decide_channel, evaluate_sensor_health
 from app.domain.maintenance import is_buoy_silent
-from app.domain.reading_quality import classify_latest_readings
-from app.domain.sensor_selection import select_summary_reading
-from app.domain.sensor_completeness import missing_sensor_channels
-from app.domain.reading_quality import latest_usable_reading
+from app.domain.sensors.reading_quality import classify_latest_readings
+from app.domain.sensors.sensor_selection import select_summary_reading
+from app.domain.sensors.sensor_completeness import missing_sensor_channels
+from app.domain.sensors.reading_quality import latest_usable_reading
 from app.domain.directions import circular_difference_degrees
 from app.domain.vectors import euclidean_difference
 from app.domain.deltas import absolute_difference
-from app.domain.sensor_health_rules import degraded_sensor_names
-from app.domain.sensor_status import sensor_health_status
+from app.domain.sensors.sensor_health_rules import degraded_sensor_names
+from app.domain.sensors.sensor_status import sensor_health_status
 
 
 def test_distance_between_points_is_zero_for_same_coordinates() -> None:

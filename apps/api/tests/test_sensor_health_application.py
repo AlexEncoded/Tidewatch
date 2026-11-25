@@ -12,7 +12,7 @@ from app.application.sensor_health import (
     list_sensor_health_check_history,
     persist_sensor_health_check,
 )
-from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
+from app.domain.sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.schemas.sensors import SensorHealth, SensorHealthCheck
 

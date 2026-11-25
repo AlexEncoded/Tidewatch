@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.sensor_health_rules import (
+from app.domain.sensors.sensor_health_rules import (
     SENSOR_DEGRADATION_THRESHOLDS,
     degraded_sensor_names,
 )

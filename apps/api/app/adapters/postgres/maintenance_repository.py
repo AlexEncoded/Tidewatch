@@ -27,7 +27,7 @@ from ...domain.ph import PHTelemetrySnapshot
 from ...domain.pressure import PressureTelemetrySnapshot
 from ...domain.rainfall import RainfallTelemetrySnapshot
 from ...domain.salinity import SalinityTelemetrySnapshot
-from ...domain.sensor_health import SensorHealthCheckSnapshot
+from ...domain.sensors.sensor_health import SensorHealthCheckSnapshot
 from ...domain.temperature import TemperatureTelemetrySnapshot
 from ...domain.turbidity import TurbidityTelemetrySnapshot
 from ...domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot

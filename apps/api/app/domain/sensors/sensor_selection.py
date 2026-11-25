@@ -2,7 +2,7 @@
 
 from typing import TypeVar
 
-from .fleet.devices import SensorChannel
+from ..fleet.devices import SensorChannel
 from .reading_quality import ReadingQuality
 
 ReadingT = TypeVar("ReadingT")

@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from .fleet.devices import SensorChannel
+from ..fleet.devices import SensorChannel
 from .sensor_family import SensorFamily
 
 

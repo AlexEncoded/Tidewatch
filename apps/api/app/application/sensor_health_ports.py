@@ -4,15 +4,15 @@ from typing import Protocol, runtime_checkable
 from collections.abc import Mapping
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.sensor_family import SensorFamily
+from ..domain.sensors.sensor_family import SensorFamily
 from ..domain.pressure import PressureTelemetrySnapshot
 from ..domain.ambient_light import AmbientLightTelemetrySnapshot
-from ..domain.sensor_health import (
+from ..domain.sensors.sensor_health import (
     ChannelDecision,
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
 )
-from ..domain.sensor_health_rules import DegradedSensorName
+from ..domain.sensors.sensor_health_rules import DegradedSensorName
 from ..domain.imu import ImuTelemetrySnapshot
 from ..domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
 from ..domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot

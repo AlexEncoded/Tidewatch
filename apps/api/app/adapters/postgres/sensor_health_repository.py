@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ...application.sensor_health_ports import SensorHealthCheckGateway
 from .buoy_registry_repository import BuoyRegistryRepository
-from ...domain.sensor_health import (
+from ...domain.sensors.sensor_health import (
     SensorHealthCheckSnapshot,
     SensorHealthSnapshot,
 )

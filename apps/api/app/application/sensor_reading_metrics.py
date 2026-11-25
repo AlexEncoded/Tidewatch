@@ -3,8 +3,8 @@
 from collections.abc import Mapping
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.reading_quality import ReadingQuality
-from ..domain.sensor_family import SensorFamily
+from ..domain.sensors.reading_quality import ReadingQuality
+from ..domain.sensors.sensor_family import SensorFamily
 from .telemetry_ports import TelemetryMetrics
 
 

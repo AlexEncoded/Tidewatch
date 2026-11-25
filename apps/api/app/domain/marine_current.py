@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensor_telemetry import SensorTelemetrySnapshot
+from .sensors.sensor_telemetry import SensorTelemetrySnapshot
 from .directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
-from .reading_quality import ReadingQuality
+from .sensors.reading_quality import ReadingQuality
 from .fleet.devices import SensorChannel
 
 MARINE_CURRENT_SPEED_MIN_MPS = 0

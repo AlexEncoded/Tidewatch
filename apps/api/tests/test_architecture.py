@@ -2,8 +2,8 @@ import ast
 from pathlib import Path
 from typing import get_type_hints
 
-from app.domain.sensor_telemetry import SensorTelemetrySnapshot
-from app.domain.reading_quality import latest_usable_reading
+from app.domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
+from app.domain.sensors.reading_quality import latest_usable_reading
 from app.domain.pressure import PressureTelemetrySnapshot
 from app.domain.temperature import TemperatureTelemetrySnapshot
 from app.domain.battery import BatteryTelemetrySnapshot, validate_battery_percentage
@@ -24,7 +24,7 @@ from app.domain.air_temperature import AirTemperatureTelemetrySnapshot
 from app.domain.atmospheric_pressure import AtmosphericPressureTelemetrySnapshot
 from app.domain.acoustic_altimeter import AcousticAltimeterTelemetrySnapshot
 from app.domain.underwater_acoustic import UnderwaterAcousticTelemetrySnapshot
-from app.domain.reading_quality import ReadingQuality
+from app.domain.sensors.reading_quality import ReadingQuality
 from app.domain.fleet.devices import SensorChannel
 from app.schemas import telemetry as telemetry_schemas
 from app.schemas.battery import BatteryReadingCreate
@@ -244,6 +244,24 @@ def test_fleet_domain_types_are_grouped_by_context() -> None:
         "staleness.py",
     ):
         assert (fleet / module).is_file()
+        assert not (API_APP / "domain" / module).exists()
+
+
+def test_sensor_health_domain_types_are_grouped_by_context() -> None:
+    sensors = API_APP / "domain" / "sensors"
+
+    for module in (
+        "reading_quality.py",
+        "sensor_completeness.py",
+        "sensor_family.py",
+        "sensor_health.py",
+        "sensor_health_analysis.py",
+        "sensor_health_rules.py",
+        "sensor_selection.py",
+        "sensor_status.py",
+        "sensor_telemetry.py",
+    ):
+        assert (sensors / module).is_file()
         assert not (API_APP / "domain" / module).exists()
 
 
@@ -1583,7 +1601,7 @@ def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
     assert "app.domain.fleet.devices" in modules
-    assert "app.domain.reading_quality" in modules
+    assert "app.domain.sensors.reading_quality" in modules
     assert "app.domain.telemetry_types" not in modules
     assert not any(
         module == "app"
@@ -1649,8 +1667,8 @@ def test_telemetry_schemas_and_domain_snapshots_share_channel_and_quality_types(
     assert AtmosphericPressureTelemetrySnapshot.__module__ == "app.domain.atmospheric_pressure"
     assert AcousticAltimeterTelemetrySnapshot.__module__ == "app.domain.acoustic_altimeter"
     assert UnderwaterAcousticTelemetrySnapshot.__module__ == "app.domain.underwater_acoustic"
-    assert SensorTelemetrySnapshot.__module__ == "app.domain.sensor_telemetry"
-    assert latest_usable_reading.__module__ == "app.domain.reading_quality"
+    assert SensorTelemetrySnapshot.__module__ == "app.domain.sensors.sensor_telemetry"
+    assert latest_usable_reading.__module__ == "app.domain.sensors.reading_quality"
 
     sensor_snapshots = (
         PressureTelemetrySnapshot,
@@ -1786,13 +1804,13 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     from collections.abc import Mapping
 
     from app.domain.fleet.devices import SensorChannel
-    from app.domain.sensor_family import SensorFamily
-    from app.domain.sensor_health import (
+    from app.domain.sensors.sensor_family import SensorFamily
+    from app.domain.sensors.sensor_health import (
         ChannelDecision,
         SensorHealthEvaluation,
         SensorHealthSnapshot,
     )
-    from app.domain.sensor_status import SensorHealthStatus, sensor_health_status
+    from app.domain.sensors.sensor_status import SensorHealthStatus, sensor_health_status
     from app.application.sensor_health_ports import SensorHealthMetrics
     from app.adapters.prometheus.sensor_health_metrics import PrometheusSensorHealthMetrics
 
@@ -1826,10 +1844,10 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
     from collections.abc import Mapping
 
     from app.domain.fleet.devices import SensorChannel
-    from app.domain.sensor_completeness import missing_sensor_channels
-    from app.domain.sensor_family import SensorFamily
-    from app.domain.sensor_health_analysis import calculate_sensor_health_deltas
-    from app.domain.sensor_health_rules import (
+    from app.domain.sensors.sensor_completeness import missing_sensor_channels
+    from app.domain.sensors.sensor_family import SensorFamily
+    from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
+    from app.domain.sensors.sensor_health_rules import (
         DegradedSensorName,
         SensorHealthDeltaName,
         degraded_sensor_names,
@@ -1862,8 +1880,8 @@ def test_sensor_health_collector_maps_batch_families_explicitly() -> None:
         SensorHealthSnapshot,
         collect_sensor_readings,
     )
-    from app.domain.sensor_family import SensorFamily
-    from app.domain.sensor_health_rules import SensorHealthDeltaName
+    from app.domain.sensors.sensor_family import SensorFamily
+    from app.domain.sensors.sensor_health_rules import SensorHealthDeltaName
     from app.domain.telemetry.family import TELEMETRY_READING_FAMILIES
 
     assert {batch for batch, _ in SENSOR_HEALTH_READING_FAMILIES} == (
@@ -1930,7 +1948,7 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
         build_operational_maintenance_issues,
         build_sensor_health_maintenance_issues,
     )
-    from app.domain.sensor_health import SensorHealthSnapshot
+    from app.domain.sensors.sensor_health import SensorHealthSnapshot
 
     assert get_type_hints(MaintenanceIssueSnapshot)["issue_type"] is MaintenanceIssueType
     assert get_type_hints(MaintenanceIssueSnapshot)["severity"] is MaintenanceSeverity
@@ -1995,7 +2013,7 @@ def test_sensor_family_catalog_matches_metric_adapters() -> None:
         _SENSOR_METRICS,
         record_sensor_reading_metrics,
     )
-    from app.domain.sensor_family import SensorFamily, VALID_SENSOR_FAMILIES
+    from app.domain.sensors.sensor_family import SensorFamily, VALID_SENSOR_FAMILIES
 
     catalog = set(get_args(SensorFamily))
     assert catalog == set(VALID_SENSOR_FAMILIES)
@@ -2011,10 +2029,10 @@ def test_http_schemas_preserve_domain_value_types() -> None:
     from app.domain.battery_health import BatteryHealthStatus
     from app.domain.fleet.buoy import BuoyOperationalStatus
     from app.domain.maintenance import MaintenanceIssueType, MaintenanceSeverity
-    from app.domain.sensor_family import SensorFamily
-    from app.domain.sensor_health import ChannelDecision
-    from app.domain.sensor_health_rules import DegradedSensorName
-    from app.domain.sensor_status import SensorHealthStatus
+    from app.domain.sensors.sensor_family import SensorFamily
+    from app.domain.sensors.sensor_health import ChannelDecision
+    from app.domain.sensors.sensor_health_rules import DegradedSensorName
+    from app.domain.sensors.sensor_status import SensorHealthStatus
     from app.domain.temperature import TemperatureTrend
     from app.domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
     from app.domain.wave import WaveConfidence

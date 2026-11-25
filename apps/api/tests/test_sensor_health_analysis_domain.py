@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from app.domain.sensor_health_analysis import calculate_sensor_health_deltas
-from app.domain.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
+from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
+from app.domain.sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 
 
 SENSOR_FAMILIES = (

@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Protocol, TypeVar
 
 from ..domain.fleet.devices import SensorChannel
-from ..domain.sensor_telemetry import SensorTelemetrySnapshot
+from ..domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
 
 
 class SensorReadingReader(Protocol):

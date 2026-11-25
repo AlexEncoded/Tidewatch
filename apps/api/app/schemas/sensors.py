@@ -4,10 +4,10 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from ..domain.sensor_family import SensorFamily
-from ..domain.sensor_health import ChannelDecision
-from ..domain.sensor_health_rules import DegradedSensorName
-from ..domain.sensor_status import SensorHealthStatus
+from ..domain.sensors.sensor_family import SensorFamily
+from ..domain.sensors.sensor_health import ChannelDecision
+from ..domain.sensors.sensor_health_rules import DegradedSensorName
+from ..domain.sensors.sensor_status import SensorHealthStatus
 
 
 class SensorHealth(BaseModel):

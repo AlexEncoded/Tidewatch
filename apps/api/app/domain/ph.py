@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .sensor_telemetry import SensorTelemetrySnapshot
-from .reading_quality import ReadingQuality
+from .sensors.sensor_telemetry import SensorTelemetrySnapshot
+from .sensors.reading_quality import ReadingQuality
 from .fleet.devices import SensorChannel
 
 PH_MIN = 0

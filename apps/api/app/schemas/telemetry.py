@@ -8,7 +8,7 @@ from ..domain.fleet.devices import (
     SENSOR_ID_MAX_LENGTH,
     SensorChannel,
 )
-from ..domain.reading_quality import ReadingQuality
+from ..domain.sensors.reading_quality import ReadingQuality
 from ..domain.dissolved_oxygen import (
     DISSOLVED_OXYGEN_MAX_MG_L,
     DISSOLVED_OXYGEN_MIN_MG_L,
