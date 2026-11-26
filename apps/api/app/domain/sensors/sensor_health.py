@@ -97,16 +97,17 @@ def evaluate_sensor_health(
     missing_sensors = missing_sensor_channels(sensor_readings)
     available = any(value is not None for value in deltas.values())
     degraded_sensors = degraded_sensor_names(deltas)
-    decisions = {
-        sensor: decide_channel(
-            bool(channels.get("A")),
-            bool(channels.get("B")),
+    decisions = {}
+    for sensor, channels in sensor_readings.items():
+        reading_a = channels.get("A")
+        reading_b = channels.get("B")
+        decisions[sensor] = decide_channel(
+            reading_a is not None,
+            reading_b is not None,
             sensor in degraded_sensors,
-            getattr(channels.get("A"), "quality", "good"),
-            getattr(channels.get("B"), "quality", "good"),
+            reading_a.quality if reading_a is not None else "good",
+            reading_b.quality if reading_b is not None else "good",
         )
-        for sensor, channels in sensor_readings.items()
-    }
     return SensorHealthEvaluation(
         status=sensor_health_status(
             available,

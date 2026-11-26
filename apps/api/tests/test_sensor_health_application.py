@@ -47,7 +47,12 @@ def test_sensor_health_history_query_skips_unknown_buoy() -> None:
 def test_sensor_health_application_service_delegates_snapshot_evaluation() -> None:
     evaluation = assess_sensor_health(
         {"temperature": 0.2},
-        {"temperature": {"A": object(), "B": object()}},
+        {
+            "temperature": {
+                "A": SimpleNamespace(quality="good"),
+                "B": SimpleNamespace(quality="good"),
+            }
+        },
     )
 
     assert evaluation.status == "consistent"

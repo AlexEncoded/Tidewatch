@@ -643,7 +643,7 @@ def test_sensor_health_invalidates_missing_channels() -> None:
 def test_sensor_health_evaluation_composes_domain_rules() -> None:
     evaluation = evaluate_sensor_health(
         {"temperature": 0.6},
-        {"temperature": {"A": object(), "B": None}},
+        {"temperature": {"A": SimpleNamespace(quality="good"), "B": None}},
     )
 
     assert evaluation.status == "degraded"
@@ -751,7 +751,8 @@ def test_sensor_completeness_treats_an_omitted_channel_as_missing() -> None:
 
 def test_sensor_health_evaluation_accepts_an_omitted_redundant_channel() -> None:
     evaluation = evaluate_sensor_health(
-        {"temperature": None}, {"temperature": {"A": object()}}
+        {"temperature": None},
+        {"temperature": {"A": SimpleNamespace(quality="good")}}
     )
 
     assert evaluation.status == "degraded"

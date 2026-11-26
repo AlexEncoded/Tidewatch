@@ -230,7 +230,7 @@ def build_battery_maintenance_issues(
     issues: list[MaintenanceIssueSnapshot] = []
     for device_id in ("A", "B"):
         battery = latest_batteries.get(device_id)
-        battery_percent = getattr(battery, "battery_percent", None)
+        battery_percent = battery.battery_percent if battery is not None else None
         severity = (
             low_battery_severity(battery_percent)
             if battery_percent is not None
