@@ -7,6 +7,9 @@ from math import isfinite
 from statistics import fmean, median
 from typing import Literal
 
+from ..fleet.location import LocationTelemetrySnapshot
+from ..sensors.imu import ImuTelemetrySnapshot
+
 
 DEFAULT_IMU_WAVE_HEIGHT_FACTOR = 0.1
 MIN_IMU_WAVE_HEIGHT_FACTOR = 0.0
@@ -54,9 +57,9 @@ class WaveAnalysisSnapshot:
 
 
 def synchronize_wave_readings(
-    imu_readings: Sequence[object],
-    locations: Sequence[object],
-) -> tuple[list[object], list[object]]:
+    imu_readings: Sequence[ImuTelemetrySnapshot],
+    locations: Sequence[LocationTelemetrySnapshot],
+) -> tuple[list[ImuTelemetrySnapshot], list[LocationTelemetrySnapshot]]:
     """Filter unusable readings and align both streams to their shared time span.
 
     A single available modality remains usable as a partial estimate. When both
@@ -130,8 +133,8 @@ def _utc_timestamp(value: datetime | None) -> datetime | None:
 
 def analyze_wave_samples(
     buoy_id: str,
-    imu_readings: Sequence[object],
-    locations: Sequence[object],
+    imu_readings: Sequence[ImuTelemetrySnapshot],
+    locations: Sequence[LocationTelemetrySnapshot],
     imu_wave_height_factor: float = DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
 ) -> WaveAnalysisSnapshot:
     """Apply synchronization, height, and period rules to a buoy's samples."""

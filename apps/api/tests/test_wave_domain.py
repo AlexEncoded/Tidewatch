@@ -1,6 +1,8 @@
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from math import inf, nan, pi, sin
 from random import Random
+from typing import get_type_hints
 from types import SimpleNamespace
 
 import pytest
@@ -307,3 +309,13 @@ def test_fused_wave_period_handles_independent_irregular_sensor_cadences() -> No
 
     assert estimate.estimated_period_seconds == pytest.approx(8.0, abs=0.02)
     assert estimate.confidence == "experimental"
+
+
+def test_wave_input_contract_uses_imu_and_gnss_snapshots() -> None:
+    from app.domain.fleet.location import LocationTelemetrySnapshot
+    from app.domain.sensors.imu import ImuTelemetrySnapshot
+
+    hints = get_type_hints(analyze_wave_samples)
+
+    assert hints["imu_readings"] == Sequence[ImuTelemetrySnapshot]
+    assert hints["locations"] == Sequence[LocationTelemetrySnapshot]
