@@ -4,10 +4,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, get_args
 
+from ..fleet.devices import SensorChannel
+from ..sensors.battery import BatteryTelemetrySnapshot
+from ..sensors.sensor_family import SensorFamily
+from ..sensors.sensor_telemetry import SensorTelemetrySnapshot
+
 BuoyOperationalStatus = Literal["active", "maintenance", "inactive"]
 BUOY_STATUSES = frozenset(get_args(BuoyOperationalStatus))
 BUOY_NAME_MIN_LENGTH = 1
 BUOY_NAME_MAX_LENGTH = 100
+
+BuoySummaryFamily = SensorFamily | Literal["battery"]
+BuoySummaryChannel = SensorChannel | Literal["latest"]
+BuoySummaryReading = SensorTelemetrySnapshot | BatteryTelemetrySnapshot | None
+BuoySummaryReadings = dict[
+    BuoySummaryFamily, dict[BuoySummaryChannel, BuoySummaryReading]
+]
 LATITUDE_MIN = -90
 LATITUDE_MAX = 90
 LONGITUDE_MIN = -180
@@ -61,7 +73,7 @@ class BuoySummarySnapshot:
     """Fleet overview with latest telemetry grouped by family and channel."""
 
     buoy: BuoySnapshot
-    latest_readings: dict[str, dict[str, object | None]]
+    latest_readings: BuoySummaryReadings
 
 
 @dataclass(frozen=True)

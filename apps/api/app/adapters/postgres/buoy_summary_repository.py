@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Session
 
-from ...domain.fleet.buoy import BuoySummarySnapshot
+from ...domain.fleet.buoy import BuoySummaryReadings, BuoySummarySnapshot
 from .buoy_registry_repository import BuoyRegistryRepository
 from .temperature_repository import TemperatureRepository
 from .pressure_repository import PressureRepository
@@ -75,7 +75,7 @@ class BuoySummaryRepository:
         }
         buoys = self.registry.list_buoy_snapshots()
         for buoy in buoys:
-            latest_readings = {}
+            latest_readings: BuoySummaryReadings = {}
             for family, get_latest in telemetry_readers.items():
                 channel_a = get_latest(buoy.buoy_id, "A")
                 latest_readings[family] = {
