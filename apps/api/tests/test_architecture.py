@@ -1638,6 +1638,16 @@ def imports_package(modules: set[str], package: str) -> bool:
     return any(module == package or module.startswith(f"{package}.") for module in modules)
 
 
+def test_shared_domain_primitives_do_not_depend_on_bounded_contexts() -> None:
+    modules = imported_modules(API_APP / "domain" / "shared")
+
+    assert not any(
+        module.startswith("app.domain.")
+        and not module.startswith("app.domain.shared.")
+        for module in modules
+    )
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
