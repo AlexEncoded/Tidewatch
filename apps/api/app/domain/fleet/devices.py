@@ -80,9 +80,9 @@ class DeviceSnapshot:
     last_seen_at: datetime | None = None
 
 
-def validate_device_ownership(device: object | None, buoy_id: str) -> None:
+def validate_device_ownership(device: DeviceSnapshot | None, buoy_id: str) -> None:
     """Ensure a telemetry device belongs to the buoy receiving the data."""
-    if device is None or getattr(device, "buoy_id", None) != buoy_id:
+    if device is None or device.buoy_id != buoy_id:
         raise DeviceOwnershipError("Device not found")
 
 
@@ -102,14 +102,17 @@ def validate_telemetry_device_channel(
 def validate_device_registration(
     device_id: str,
     sensor_channel: SensorChannel,
-    existing_devices: Iterable[object],
-    existing_registered_device: object | None = None,
+    existing_devices: Iterable[DeviceSnapshot],
+    existing_registered_device: DeviceSnapshot | None = None,
 ) -> None:
     """Validate uniqueness of a device and its redundant sensor channel."""
-    if getattr(existing_registered_device, "device_id", None) == device_id:
+    if (
+        existing_registered_device is not None
+        and existing_registered_device.device_id == device_id
+    ):
         raise DeviceRegistrationConflict("Device already registered")
     devices = list(existing_devices)
-    if any(getattr(device, "device_id", None) == device_id for device in devices):
+    if any(device.device_id == device_id for device in devices):
         raise DeviceRegistrationConflict("Device already registered")
-    if any(getattr(device, "sensor_channel", None) == sensor_channel for device in devices):
+    if any(device.sensor_channel == sensor_channel for device in devices):
         raise DeviceRegistrationConflict("Sensor channel already registered")

@@ -1,5 +1,7 @@
+from collections.abc import Iterable
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
+from typing import get_type_hints
 
 import pytest
 
@@ -7,6 +9,8 @@ from app.domain.fleet.device_health import assess_device_liveness
 from app.domain.fleet.devices import (
     DeviceRegistrationCommand,
     DeviceStatusCommand,
+    DeviceSnapshot,
+    SensorChannel,
     DeviceOwnershipError,
     DeviceRegistrationConflict,
     validate_device_ownership,
@@ -22,7 +26,17 @@ from app.application.device_errors import (
     DeviceNotFound,
     DeviceRegistrationConflictError,
 )
-from app.domain.fleet.devices import DeviceSnapshot
+
+
+def _device(
+    device_id: str, sensor_channel: SensorChannel, buoy_id: str = "buoy-1"
+) -> DeviceSnapshot:
+    return DeviceSnapshot(
+        buoy_id=buoy_id,
+        device_id=device_id,
+        sensor_channel=sensor_channel,
+        registered_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    )
 
 
 def test_device_liveness_marks_active_device_without_heartbeat_stale() -> None:
@@ -137,15 +151,24 @@ def test_device_registration_accepts_the_other_redundant_channel() -> None:
     validate_device_registration(
         "device-b",
         "B",
-        [SimpleNamespace(device_id="device-a", sensor_channel="A")],
+        [_device("device-a", "A")],
     )
 
 
+def test_device_validators_use_device_snapshot_contracts() -> None:
+    ownership = get_type_hints(validate_device_ownership)
+    registration = get_type_hints(validate_device_registration)
+
+    assert ownership["device"] == DeviceSnapshot | None
+    assert registration["existing_devices"] == Iterable[DeviceSnapshot]
+    assert registration["existing_registered_device"] == DeviceSnapshot | None
+
+
 def test_device_ownership_accepts_device_from_target_buoy() -> None:
-    validate_device_ownership(SimpleNamespace(buoy_id="buoy-1"), "buoy-1")
+    validate_device_ownership(_device("device-a", "A"), "buoy-1")
 
 
-@pytest.mark.parametrize("device", [None, SimpleNamespace(buoy_id="other-buoy")])
+@pytest.mark.parametrize("device", [None, _device("device-a", "A", "other-buoy")])
 def test_device_ownership_rejects_unknown_or_foreign_device(device) -> None:
     with pytest.raises(DeviceOwnershipError, match="Device not found"):
         validate_device_ownership(device, "buoy-1")
@@ -186,12 +209,12 @@ def test_device_registration_rejects_conflicts(device_id: str, sensor_channel: s
         validate_device_registration(
             device_id,
             sensor_channel,
-            [SimpleNamespace(device_id="device-a", sensor_channel="A")],
+            [_device("device-a", "A")],
         )
 
 
 def test_device_registration_rejects_id_registered_to_another_buoy() -> None:
-    registered_elsewhere = SimpleNamespace(device_id="device-a", buoy_id="buoy-2")
+    registered_elsewhere = _device("device-a", "A", "buoy-2")
 
     with pytest.raises(DeviceRegistrationConflict, match="Device already registered"):
         validate_device_registration(
