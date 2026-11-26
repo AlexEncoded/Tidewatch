@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.domain.sensors.temperature import TemperatureAnalysisSnapshot
-from app.domain.temperature_alert import build_temperature_anomaly
+from app.domain.maintenance.temperature_alert import build_temperature_anomaly
 
 
 def test_temperature_anomaly_builder_preserves_zero_average():

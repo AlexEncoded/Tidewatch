@@ -1,6 +1,6 @@
 """Application use cases and mappings for temperature alerts."""
 
-from ..domain.temperature_alert import (
+from ..domain.maintenance.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAlertStatus,
     TemperatureAnomalySnapshot,

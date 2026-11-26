@@ -5,7 +5,7 @@ from app.application.temperature_alerts import (
 )
 from app.domain.fleet.buoy import BuoyIdentitySnapshot
 from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
-from app.domain.temperature_alert import TemperatureAlertSnapshot
+from app.domain.maintenance.temperature_alert import TemperatureAlertSnapshot
 
 
 class FakeTemperatureAlertsReader:

@@ -228,8 +228,10 @@ def test_maintenance_domain_types_are_grouped_by_context() -> None:
     assert (maintenance / "policy.py").is_file()
     assert (maintenance / "issues.py").is_file()
     assert (maintenance / "notification_job.py").is_file()
+    assert (maintenance / "temperature_alert.py").is_file()
     assert not (API_APP / "domain" / "maintenance_issues.py").exists()
     assert not (API_APP / "domain" / "maintenance_notification_job.py").exists()
+    assert not (API_APP / "domain" / "temperature_alert.py").exists()
 
 
 def test_fleet_domain_types_are_grouped_by_context() -> None:
@@ -1797,7 +1799,7 @@ def test_sensor_channel_adapters_use_domain_type_outside_http_boundary() -> None
 def test_temperature_alert_status_uses_domain_type() -> None:
     from app.application.alert_ports import TemperatureAlertStore
     from app.application.temperature_alerts import list_stored_temperature_alerts
-    from app.domain.temperature_alert import (
+    from app.domain.maintenance.temperature_alert import (
         TemperatureAlertSnapshot,
         TemperatureAlertSeverity,
         TemperatureAlertStatus,
@@ -2072,7 +2074,7 @@ def test_http_schemas_preserve_domain_value_types() -> None:
     from app.domain.sensors.sensor_health_rules import DegradedSensorName
     from app.domain.sensors.sensor_status import SensorHealthStatus
     from app.domain.sensors.temperature import TemperatureTrend
-    from app.domain.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
+    from app.domain.maintenance.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
     from app.domain.analytics.wave import WaveConfidence
     from app.schemas.analytics import (
         MovementAnalysis,

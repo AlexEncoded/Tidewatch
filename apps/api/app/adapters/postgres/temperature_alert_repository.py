@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from ...application.alert_ports import TemperatureAlertStore
 from ...domain.fleet.buoy import BuoyIdentitySnapshot
 from ...domain.sensors.temperature import TemperatureTelemetrySnapshot
-from ...domain.temperature_alert import (
+from ...domain.maintenance.temperature_alert import (
     TemperatureAlertSnapshot,
     TemperatureAnomalySnapshot,
     TemperatureAlertStatus,

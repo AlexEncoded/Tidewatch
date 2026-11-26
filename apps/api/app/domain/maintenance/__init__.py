@@ -1,5 +1,12 @@
 """Maintenance domain policies and issue contracts."""
 
+from .temperature_alert import (
+    TemperatureAlertSeverity,
+    TemperatureAlertSnapshot,
+    TemperatureAlertStatus,
+    TemperatureAnomalySnapshot,
+    build_temperature_anomaly,
+)
 from .policy import (
     BatterySeverity,
     MaintenanceIssueSnapshot,
@@ -12,6 +19,11 @@ from .policy import (
 )
 
 __all__ = [
+    "TemperatureAlertSeverity",
+    "TemperatureAlertSnapshot",
+    "TemperatureAlertStatus",
+    "TemperatureAnomalySnapshot",
+    "build_temperature_anomaly",
     "BatterySeverity",
     "MaintenanceIssueSnapshot",
     "MaintenanceIssueType",
