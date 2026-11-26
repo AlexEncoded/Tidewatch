@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 from ...domain.fleet.devices import SensorChannel
 from ...domain.sensors.sensor_family import SensorFamily
+from ...domain.sensors.reading_quality import MeasuredReading
 from ...domain.sensors.sensor_health import ChannelDecision
 from ...domain.sensors.sensor_health_rules import DegradedSensorName
 
@@ -17,7 +18,7 @@ class PrometheusSensorHealthMetrics(SensorHealthMetrics):
     def record_evaluation(
         self,
         buoy_id: str,
-        readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+        readings: Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]],
         degraded_sensors: list[DegradedSensorName],
         missing_sensors: list[str],
         decisions: Mapping[SensorFamily, ChannelDecision],

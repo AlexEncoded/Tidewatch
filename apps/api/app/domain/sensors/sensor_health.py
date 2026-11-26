@@ -13,7 +13,7 @@ from .sensor_health_rules import (
 )
 from .sensor_status import SensorHealthStatus, sensor_health_status
 from .sensor_selection import preferred_sensor_channel
-from .reading_quality import ReadingQuality
+from .reading_quality import MeasuredReading, ReadingQuality
 
 
 ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
@@ -91,7 +91,7 @@ def decide_channel(
 
 def evaluate_sensor_health(
     deltas: Mapping[SensorHealthDeltaName, float | None],
-    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]],
 ) -> SensorHealthEvaluation:
     """Compose redundant-sensor rules into one domain evaluation."""
     missing_sensors = missing_sensor_channels(sensor_readings)

@@ -1834,6 +1834,7 @@ def test_temperature_alert_status_uses_domain_type() -> None:
 def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     from collections.abc import Mapping
 
+    from app.domain.sensors.reading_quality import MeasuredReading
     from app.domain.fleet.devices import SensorChannel
     from app.domain.sensors.sensor_family import SensorFamily
     from app.domain.sensors.sensor_health import (
@@ -1863,11 +1864,11 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
     )
     assert (
         get_type_hints(SensorHealthMetrics.record_evaluation)["readings"]
-        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+        == Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]]
     )
     assert (
         get_type_hints(PrometheusSensorHealthMetrics.record_evaluation)["readings"]
-        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+        == Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]]
     )
 
 
@@ -1877,6 +1878,7 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
     from app.domain.fleet.devices import SensorChannel
     from app.domain.sensors.sensor_completeness import missing_sensor_channels
     from app.domain.sensors.sensor_family import SensorFamily
+    from app.domain.sensors.reading_quality import MeasuredReading
     from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
     from app.domain.sensors.sensor_health_rules import (
         DegradedSensorName,
@@ -1894,7 +1896,7 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
     )
     assert (
         get_type_hints(missing_sensor_channels)["sensor_readings"]
-        == Mapping[SensorFamily, Mapping[SensorChannel, object | None]]
+        == Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]]
     )
     assert (
         get_type_hints(degraded_sensor_names)["return"]

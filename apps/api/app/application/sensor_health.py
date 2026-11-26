@@ -11,7 +11,7 @@ from ..domain.sensors.sensor_health import (
     evaluate_sensor_health,
 )
 from ..domain.fleet.devices import SensorChannel
-from ..domain.sensors.reading_quality import latest_usable_reading
+from ..domain.sensors.reading_quality import MeasuredReading, latest_usable_reading
 from ..domain.sensors.sensor_family import SensorFamily
 from ..domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
 from ..domain.sensors.sensor_health_rules import SensorHealthDeltaName
@@ -65,7 +65,7 @@ class SensorHealthSnapshot:
 
 def assess_sensor_health(
     deltas: Mapping[SensorHealthDeltaName, float | None],
-    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]],
 ) -> SensorHealthEvaluation:
     """Evaluate a sensor snapshot through the sensor-health domain rules."""
     return evaluate_sensor_health(deltas, sensor_readings)

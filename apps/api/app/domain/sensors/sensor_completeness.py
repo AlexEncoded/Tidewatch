@@ -2,10 +2,11 @@ from collections.abc import Mapping
 
 from ..fleet.devices import SensorChannel
 from .sensor_family import SensorFamily
+from .reading_quality import MeasuredReading
 
 
 def missing_sensor_channels(
-    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, object | None]],
+    sensor_readings: Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]],
 ) -> list[str]:
     """List missing redundant channels when a sensor has partial telemetry."""
     missing: list[str] = []
