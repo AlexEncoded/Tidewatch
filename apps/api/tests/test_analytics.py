@@ -49,9 +49,9 @@ from app.domain.sensors.reading_quality import classify_latest_readings
 from app.domain.sensors.sensor_selection import select_summary_reading
 from app.domain.sensors.sensor_completeness import missing_sensor_channels
 from app.domain.sensors.reading_quality import latest_usable_reading
-from app.domain.directions import circular_difference_degrees
-from app.domain.vectors import euclidean_difference
-from app.domain.deltas import absolute_difference
+from app.domain.shared.directions import circular_difference_degrees
+from app.domain.shared.vectors import euclidean_difference
+from app.domain.shared.deltas import absolute_difference
 from app.domain.sensors.sensor_health_rules import degraded_sensor_names
 from app.domain.sensors.sensor_status import sensor_health_status
 

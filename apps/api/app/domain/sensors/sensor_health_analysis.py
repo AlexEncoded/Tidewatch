@@ -2,13 +2,13 @@
 
 from collections.abc import Mapping, Sequence
 
-from ..deltas import absolute_difference
-from ..directions import circular_difference_degrees
+from ..shared.deltas import absolute_difference
+from ..shared.directions import circular_difference_degrees
 from ..fleet.devices import SensorChannel
 from .sensor_family import SensorFamily
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .sensor_health_rules import SensorHealthDeltaName
-from ..vectors import euclidean_difference
+from ..shared.vectors import euclidean_difference
 
 
 def calculate_sensor_health_deltas(

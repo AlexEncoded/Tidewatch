@@ -1,7 +1,7 @@
 """HTTP contracts for buoy battery telemetry and health."""
 
 from datetime import datetime, timezone
-from ..domain.analysis import AnalysisConfidence
+from ..domain.shared.analysis import AnalysisConfidence
 from ..domain.sensors.battery import BATTERY_MAX_PERCENT, BATTERY_MIN_PERCENT
 from ..domain.sensors.battery_health import BatteryHealthStatus
 from ..domain.fleet.devices import DEVICE_ID_MAX_LENGTH, DEVICE_ID_MIN_LENGTH, SensorChannel

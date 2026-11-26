@@ -5,7 +5,7 @@ from typing import Literal
 
 from ..sensors.battery import validate_battery_percentage
 from ..fleet.buoy import BuoyOperationalStatus
-from ..time_rules import require_positive_finite_seconds
+from ..shared.time_rules import require_positive_finite_seconds
 
 
 MaintenanceSeverity = Literal["warning", "critical"]

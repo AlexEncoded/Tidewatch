@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import timezone
 from math import asin, cos, radians, sin, sqrt
 
-from ..analysis import AnalysisConfidence
+from ..shared.analysis import AnalysisConfidence
 
 
 EARTH_RADIUS_M = 6_371_000

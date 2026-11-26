@@ -234,6 +234,14 @@ def test_maintenance_domain_types_are_grouped_by_context() -> None:
     assert not (API_APP / "domain" / "temperature_alert.py").exists()
 
 
+def test_shared_domain_primitives_are_grouped_under_shared() -> None:
+    shared = API_APP / "domain" / "shared"
+
+    for module in ("analysis.py", "deltas.py", "directions.py", "time_rules.py", "vectors.py"):
+        assert (shared / module).is_file()
+        assert not (API_APP / "domain" / module).exists()
+
+
 def test_fleet_domain_types_are_grouped_by_context() -> None:
     fleet = API_APP / "domain" / "fleet"
 
@@ -2011,7 +2019,7 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
 
 
 def test_basic_analytics_use_domain_confidence_and_sea_state_types() -> None:
-    from app.domain.analysis import AnalysisConfidence, SeaState
+    from app.domain.shared.analysis import AnalysisConfidence, SeaState
     from app.domain.sensors.battery_analysis import (
         BatteryAnalysisSnapshot,
         BatteryDischargeEstimate,
@@ -2065,7 +2073,7 @@ def test_sensor_family_catalog_matches_metric_adapters() -> None:
 
 
 def test_http_schemas_preserve_domain_value_types() -> None:
-    from app.domain.analysis import AnalysisConfidence, SeaState
+    from app.domain.shared.analysis import AnalysisConfidence, SeaState
     from app.domain.sensors.battery_health import BatteryHealthStatus
     from app.domain.fleet.buoy import BuoyOperationalStatus
     from app.domain.maintenance import MaintenanceIssueType, MaintenanceSeverity

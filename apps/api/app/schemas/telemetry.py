@@ -29,7 +29,7 @@ from ..domain.sensors.acoustic_altimeter import (
 )
 from ..domain.sensors.ambient_light import AMBIENT_LIGHT_MAX_LUX, AMBIENT_LIGHT_MIN_LUX
 from ..domain.sensors.wind import WIND_SPEED_MAX_MPS, WIND_SPEED_MIN_MPS
-from ..domain.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
+from ..domain.shared.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from ..domain.sensors.marine_current import (
     MARINE_CURRENT_SPEED_MAX_MPS,
     MARINE_CURRENT_SPEED_MIN_MPS,

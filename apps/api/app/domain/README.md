@@ -64,3 +64,7 @@ Current rules include:
 
 Adapters in the application layer map these results to API response models.
 Domain code should remain deterministic and independently testable.
+
+
+Cross-context primitives are grouped under `shared/`: analysis confidence and
+sea-state types, scalar/vector/circular differences, and shared time rules.

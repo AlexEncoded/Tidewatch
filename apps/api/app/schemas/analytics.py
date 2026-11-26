@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from ..domain.analysis import AnalysisConfidence, SeaState
+from ..domain.shared.analysis import AnalysisConfidence, SeaState
 from ..domain.sensors.temperature import TemperatureTrend
 from ..domain.maintenance.temperature_alert import TemperatureAlertSeverity, TemperatureAlertStatus
 from ..domain.analytics.wave import WaveConfidence

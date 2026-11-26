@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
-from ..directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
+from ..shared.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from .reading_quality import ReadingQuality
 from ..fleet.devices import SensorChannel
 

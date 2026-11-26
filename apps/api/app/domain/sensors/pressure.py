@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from statistics import fmean
 
-from ..analysis import AnalysisConfidence, SeaState
+from ..shared.analysis import AnalysisConfidence, SeaState
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
 from ..fleet.devices import SensorChannel
