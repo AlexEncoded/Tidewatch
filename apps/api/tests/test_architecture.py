@@ -1873,13 +1873,14 @@ def test_sensor_health_results_keep_domain_status_and_decision_types() -> None:
 
 
 def test_sensor_health_calculations_use_explicit_key_types() -> None:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from app.domain.fleet.devices import SensorChannel
     from app.domain.sensors.sensor_completeness import missing_sensor_channels
     from app.domain.sensors.sensor_family import SensorFamily
     from app.domain.sensors.reading_quality import MeasuredReading
     from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
+    from app.domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
     from app.domain.sensors.sensor_health_rules import (
         DegradedSensorName,
         SensorHealthDeltaName,
@@ -1888,7 +1889,7 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
 
     assert (
         get_type_hints(calculate_sensor_health_deltas)["readings"]
-        == Mapping[SensorFamily, Mapping[SensorChannel, list[object]]]
+        == Mapping[SensorFamily, Mapping[SensorChannel, Sequence[SensorTelemetrySnapshot]]]
     )
     assert (
         get_type_hints(calculate_sensor_health_deltas)["return"]

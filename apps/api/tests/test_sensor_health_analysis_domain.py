@@ -1,6 +1,9 @@
-from types import SimpleNamespace
+from datetime import datetime, timezone
 
+from app.domain.sensors.imu import ImuTelemetrySnapshot
 from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
+from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
+from app.domain.sensors.wind import WindTelemetrySnapshot
 from app.domain.sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 
 
@@ -33,12 +36,12 @@ def _empty_families():
 def test_sensor_health_domain_calculates_scalar_and_circular_deltas():
     families = _empty_families()
     families["temperature"] = {
-        "A": [SimpleNamespace(temperature_celsius=20.0)],
-        "B": [SimpleNamespace(temperature_celsius=18.5)],
+        "A": [TemperatureTelemetrySnapshot("buoy-1", 20.0, datetime.now(timezone.utc))],
+        "B": [TemperatureTelemetrySnapshot("buoy-1", 18.5, datetime.now(timezone.utc))],
     }
     families["wind"] = {
-        "A": [SimpleNamespace(wind_speed_mps=2.0, wind_direction_degrees=359.0)],
-        "B": [SimpleNamespace(wind_speed_mps=1.0, wind_direction_degrees=1.0)],
+        "A": [WindTelemetrySnapshot("buoy-1", 2.0, 359.0, datetime.now(timezone.utc))],
+        "B": [WindTelemetrySnapshot("buoy-1", 1.0, 1.0, datetime.now(timezone.utc))],
     }
 
     deltas = calculate_sensor_health_deltas(families)
@@ -52,17 +55,15 @@ def test_sensor_health_domain_calculates_vector_delta():
     families = _empty_families()
     families["imu"] = {
         "A": [
-            SimpleNamespace(
-                acceleration_x_mps2=1.0,
-                acceleration_y_mps2=2.0,
-                acceleration_z_mps2=2.0,
+            ImuTelemetrySnapshot(
+                "buoy-1", 1.0, 2.0, 2.0, 0.0, 0.0, 0.0,
+                datetime.now(timezone.utc),
             )
         ],
         "B": [
-            SimpleNamespace(
-                acceleration_x_mps2=0.0,
-                acceleration_y_mps2=0.0,
-                acceleration_z_mps2=0.0,
+            ImuTelemetrySnapshot(
+                "buoy-1", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                datetime.now(timezone.utc),
             )
         ],
     }
