@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from ..domain.fleet.devices import SensorChannel
 from ..domain.sensors.sensor_family import SensorFamily
 from ..domain.sensors.reading_quality import MeasuredReading
+from ..domain.sensors.sensor_completeness import MissingSensorChannelLabel
 from ..domain.sensors.pressure import PressureTelemetrySnapshot
 from ..domain.sensors.ambient_light import AmbientLightTelemetrySnapshot
 from ..domain.sensors.sensor_health import (
@@ -41,7 +42,7 @@ class SensorHealthMetrics(Protocol):
         buoy_id: str,
         readings: Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]],
         degraded_sensors: list[DegradedSensorName],
-        missing_sensors: list[str],
+        missing_sensors: list[MissingSensorChannelLabel],
         decisions: Mapping[SensorFamily, ChannelDecision],
     ) -> None:
         ...

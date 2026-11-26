@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from ..domain.sensors.sensor_family import SensorFamily
+from ..domain.sensors.sensor_completeness import MissingSensorChannelLabel
 from ..domain.sensors.sensor_health import ChannelDecision
 from ..domain.sensors.sensor_health_rules import DegradedSensorName
 from ..domain.sensors.sensor_status import SensorHealthStatus
@@ -34,7 +35,7 @@ class SensorHealth(BaseModel):
     acoustic_altimeter_delta_meters: float | None = None
     underwater_acoustic_delta_db: float | None = None
     degraded_sensors: list[DegradedSensorName] = []
-    missing_sensors: list[str] = []
+    missing_sensors: list[MissingSensorChannelLabel] = []
     decisions: dict[SensorFamily, ChannelDecision] = Field(default_factory=dict)
     checked_at: datetime
 

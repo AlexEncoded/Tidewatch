@@ -1876,7 +1876,10 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
     from collections.abc import Mapping, Sequence
 
     from app.domain.fleet.devices import SensorChannel
-    from app.domain.sensors.sensor_completeness import missing_sensor_channels
+    from app.domain.sensors.sensor_completeness import (
+        MissingSensorChannelLabel,
+        missing_sensor_channels,
+    )
     from app.domain.sensors.sensor_family import SensorFamily
     from app.domain.sensors.reading_quality import MeasuredReading
     from app.domain.sensors.sensor_health_analysis import calculate_sensor_health_deltas
@@ -1895,6 +1898,7 @@ def test_sensor_health_calculations_use_explicit_key_types() -> None:
         get_type_hints(calculate_sensor_health_deltas)["return"]
         == dict[SensorHealthDeltaName, float | None]
     )
+    assert get_type_hints(missing_sensor_channels)["return"] == list[MissingSensorChannelLabel]
     assert (
         get_type_hints(missing_sensor_channels)["sensor_readings"]
         == Mapping[SensorFamily, Mapping[SensorChannel, MeasuredReading | None]]

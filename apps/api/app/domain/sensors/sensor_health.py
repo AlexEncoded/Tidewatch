@@ -5,7 +5,7 @@ from typing import Literal
 
 from ..fleet.devices import SensorChannel
 from .sensor_family import SensorFamily
-from .sensor_completeness import missing_sensor_channels
+from .sensor_completeness import MissingSensorChannelLabel, missing_sensor_channels
 from .sensor_health_rules import (
     DegradedSensorName,
     SensorHealthDeltaName,
@@ -23,7 +23,7 @@ ChannelDecision = Literal["average", "fallback_a", "fallback_b", "invalid"]
 class SensorHealthEvaluation:
     status: SensorHealthStatus
     degraded_sensors: list[DegradedSensorName]
-    missing_sensors: list[str]
+    missing_sensors: list[MissingSensorChannelLabel]
     decisions: dict[SensorFamily, ChannelDecision]
 
 
@@ -55,7 +55,7 @@ class SensorHealthSnapshot:
     acoustic_altimeter_delta_meters: float | None = None
     underwater_acoustic_delta_db: float | None = None
     degraded_sensors: list[DegradedSensorName] | None = None
-    missing_sensors: list[str] | None = None
+    missing_sensors: list[MissingSensorChannelLabel] | None = None
     decisions: dict[SensorFamily, ChannelDecision] | None = None
 
 

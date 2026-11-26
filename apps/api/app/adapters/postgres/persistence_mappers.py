@@ -2,6 +2,7 @@
 
 from ...domain.fleet.buoy import BuoySnapshot
 from ...domain.fleet.devices import DeviceSnapshot
+from ...domain.sensors.sensor_completeness import MissingSensorChannelLabel
 from ...domain.sensors.sensor_health import SensorHealthCheckSnapshot
 from .fleet_entities import BuoyEntity, DeviceEntity
 from .sensor_entities import SensorHealthCheckEntity
@@ -37,7 +38,7 @@ def sensor_health_check_snapshot(
         acoustic_altimeter_delta_meters=entity.acoustic_altimeter_delta_meters,
         underwater_acoustic_delta_db=entity.underwater_acoustic_delta_db,
         degraded_sensors=entity.degraded_sensors,
-        missing_sensors=entity.missing_sensors,
+        missing_sensors=[MissingSensorChannelLabel(label) for label in entity.missing_sensors],
         decisions=entity.decisions,
     )
 
