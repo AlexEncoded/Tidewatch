@@ -131,6 +131,8 @@ def test_wave_analysis_can_filter_high_hdop_and_keeps_missing_hdop() -> None:
     )
 
     assert analysis.rejected_gnss_sample_count == 1
+    assert analysis.rejected_gnss_satellite_sample_count == 0
+    assert analysis.rejected_gnss_hdop_sample_count == 1
     assert analysis.gnss_vertical_range_m == 1.0
 
 
@@ -165,6 +167,8 @@ def test_wave_analysis_without_hdop_ceiling_keeps_existing_gnss_behavior() -> No
     analysis = analyze_wave_samples("buoy-1", imu, locations)
 
     assert analysis.rejected_gnss_sample_count == 0
+    assert analysis.rejected_gnss_satellite_sample_count == 0
+    assert analysis.rejected_gnss_hdop_sample_count == 0
     assert analysis.gnss_vertical_range_m == 3.0
 
 

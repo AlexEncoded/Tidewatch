@@ -8,6 +8,7 @@ from .instruments import (
     current_estimated_wave_height_m,
     current_estimated_wave_period_seconds,
     wave_analysis_last_run_timestamp_seconds,
+    wave_analysis_rejected_gnss_samples,
     wave_period_sensor_disagreement,
 )
 
@@ -19,6 +20,12 @@ class PrometheusWaveAnalysisMetrics(WaveAnalysisMetrics):
         wave_analysis_last_run_timestamp_seconds.labels(
             buoy_id=result.buoy_id
         ).set(time())
+        wave_analysis_rejected_gnss_samples.labels(
+            buoy_id=result.buoy_id, reason="satellite_count"
+        ).set(result.rejected_gnss_satellite_sample_count)
+        wave_analysis_rejected_gnss_samples.labels(
+            buoy_id=result.buoy_id, reason="hdop"
+        ).set(result.rejected_gnss_hdop_sample_count)
         self._set_or_remove(
             current_estimated_wave_height_m,
             result.buoy_id,

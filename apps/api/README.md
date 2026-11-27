@@ -151,7 +151,9 @@ número máximo de muestras. El factor IMU se puede ajustar con
 la calibración con datos reales sigue pendiente.
 Si el receptor GNSS aporta HDOP, se puede establecer `WAVE_MAX_GNSS_HDOP` para
 excluir fixes por encima de ese valor; por defecto el filtro está desactivado y
-los fixes sin HDOP se conservan.
+los fixes sin HDOP se conservan. La respuesta informa los descartes totales y
+los separados por satélites insuficientes o HDOP alto; Prometheus expone el
+último conteo por boya y motivo.
 When timestamps are available, the response also includes the experimental
 `estimated_period_seconds` derived from consecutive upward GNSS crossings.
 

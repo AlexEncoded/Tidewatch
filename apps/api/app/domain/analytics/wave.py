@@ -45,6 +45,8 @@ class WaveAnalysisSnapshot:
     buoy_id: str
     sample_count: int
     rejected_gnss_sample_count: int = 0
+    rejected_gnss_satellite_sample_count: int = 0
+    rejected_gnss_hdop_sample_count: int = 0
     gnss_vertical_range_m: float | None = None
     imu_vertical_acceleration_range_mps2: float | None = None
     estimated_wave_height_m: float | None = None

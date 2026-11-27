@@ -40,15 +40,7 @@ def synchronize_wave_readings(
         reading
         for reading in locations
         if getattr(reading, "quality", "good") == "good"
-        and (
-            getattr(reading, "satellites", None) is None
-            or reading.satellites >= MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
-        )
-        and (
-            max_gnss_hdop is None
-            or getattr(reading, "hdop", None) is None
-            or reading.hdop <= max_gnss_hdop
-        )
+        and _gnss_rejection_reason(reading, max_gnss_hdop) is None
     ]
     if not usable_imu or not usable_locations:
         return usable_imu, usable_locations
@@ -93,6 +85,22 @@ def synchronize_wave_readings(
     )
 
 
+def _gnss_rejection_reason(
+    reading: LocationTelemetrySnapshot,
+    max_gnss_hdop: float | None,
+) -> str | None:
+    satellites = getattr(reading, "satellites", None)
+    if (
+        satellites is not None
+        and satellites < MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+    ):
+        return "satellite_count"
+    hdop = getattr(reading, "hdop", None)
+    if max_gnss_hdop is not None and hdop is not None and hdop > max_gnss_hdop:
+        return "hdop"
+    return None
+
+
 def _utc_timestamp(value: datetime | None) -> datetime | None:
     if value is None:
         return None
@@ -109,22 +117,17 @@ def analyze_wave_samples(
     max_gnss_hdop: float | None = None,
 ) -> WaveAnalysisSnapshot:
     """Apply synchronization, height, and period rules to a buoy's samples."""
-    rejected_gnss_sample_count = sum(
-        1
-        for reading in locations
-        if getattr(reading, "quality", "good") == "good"
-        and (
-            (
-                getattr(reading, "satellites", None) is not None
-                and reading.satellites < MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
-            )
-            or (
-                max_gnss_hdop is not None
-                and getattr(reading, "hdop", None) is not None
-                and reading.hdop > max_gnss_hdop
-            )
-        )
-    )
+    rejected_satellite_count = 0
+    rejected_hdop_count = 0
+    for reading in locations:
+        if getattr(reading, "quality", "good") != "good":
+            continue
+        rejection_reason = _gnss_rejection_reason(reading, max_gnss_hdop)
+        if rejection_reason == "satellite_count":
+            rejected_satellite_count += 1
+        elif rejection_reason == "hdop":
+            rejected_hdop_count += 1
+    rejected_gnss_sample_count = rejected_satellite_count + rejected_hdop_count
     synchronized_imu, synchronized_locations = synchronize_wave_readings(
         imu_readings, locations, max_gnss_hdop
     )
@@ -157,6 +160,8 @@ def analyze_wave_samples(
             buoy_id=buoy_id,
             sample_count=sample_count,
             rejected_gnss_sample_count=rejected_gnss_sample_count,
+            rejected_gnss_satellite_sample_count=rejected_satellite_count,
+            rejected_gnss_hdop_sample_count=rejected_hdop_count,
             estimated_period_seconds=period_estimate.estimated_period_seconds,
             period_confidence=period_estimate.confidence,
         )
@@ -164,6 +169,8 @@ def analyze_wave_samples(
         buoy_id=buoy_id,
         sample_count=sample_count,
         rejected_gnss_sample_count=rejected_gnss_sample_count,
+        rejected_gnss_satellite_sample_count=rejected_satellite_count,
+        rejected_gnss_hdop_sample_count=rejected_hdop_count,
         gnss_vertical_range_m=(
             round(estimate.gnss_vertical_range_m, 3)
             if estimate.gnss_vertical_range_m is not None

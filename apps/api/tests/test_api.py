@@ -1565,7 +1565,45 @@ def test_wave_analysis_reports_gnss_samples_rejected_for_satellite_count() -> No
 
     assert analysis.status_code == 200
     assert analysis.json()["rejected_gnss_sample_count"] == 2
+    assert analysis.json()["rejected_gnss_satellite_sample_count"] == 2
+    assert analysis.json()["rejected_gnss_hdop_sample_count"] == 0
     assert analysis.json()["estimated_wave_height_m"] is None
+
+
+def test_wave_analysis_reports_hdop_rejections_and_prometheus_metric(monkeypatch) -> None:
+    from app.adapters.prometheus.instruments import wave_analysis_rejected_gnss_samples
+
+    monkeypatch.setenv("WAVE_MAX_GNSS_HDOP", "2")
+    buoy_id = client.post(
+        "/api/v1/buoys", json={"name": "HDOP Filter Wave Buoy"}
+    ).json()["id"]
+    measured_at = datetime.now(timezone.utc)
+    for index, (altitude, hdop) in enumerate(((0.0, 1.0), (1.0, 1.5), (10.0, 8.0))):
+        response = client.post(
+            f"/api/v1/buoys/{buoy_id}/telemetry",
+            json={
+                "location": {
+                    "latitude": 36.7,
+                    "longitude": 3.1,
+                    "altitude_meters": altitude,
+                    "satellites": 8,
+                    "hdop": hdop,
+                    "measured_at": (measured_at + timedelta(minutes=index)).isoformat(),
+                },
+            },
+        )
+        assert response.status_code == 200
+
+    analysis = client.get(f"/api/v1/buoys/{buoy_id}/wave-analysis")
+
+    assert analysis.status_code == 200
+    assert analysis.json()["rejected_gnss_sample_count"] == 1
+    assert analysis.json()["rejected_gnss_satellite_sample_count"] == 0
+    assert analysis.json()["rejected_gnss_hdop_sample_count"] == 1
+    metric_value = wave_analysis_rejected_gnss_samples.labels(
+        buoy_id=buoy_id, reason="hdop"
+    )._value.get()
+    assert metric_value == 1
 
 
 def test_wave_period_sensor_disagreement_is_exported_as_metric() -> None:
