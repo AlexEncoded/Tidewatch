@@ -7,12 +7,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.domain.analytics.wave import (
+from app.application.wave_analysis import (
     analyze_wave_samples,
+    synchronize_wave_readings,
+)
+from app.domain.analytics.wave import (
     estimate_fused_wave_period,
     estimate_wave,
     estimate_wave_period,
-    synchronize_wave_readings,
 )
 
 

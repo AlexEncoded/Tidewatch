@@ -1666,6 +1666,13 @@ def test_telemetry_domain_does_not_depend_on_sensor_context() -> None:
     assert not imports_package(modules, "app.domain.sensors")
 
 
+def test_analytics_domain_does_not_depend_on_fleet_or_sensor_contexts() -> None:
+    modules = imported_modules(API_APP / "domain" / "analytics")
+
+    assert not imports_package(modules, "app.domain.fleet")
+    assert not imports_package(modules, "app.domain.sensors")
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
