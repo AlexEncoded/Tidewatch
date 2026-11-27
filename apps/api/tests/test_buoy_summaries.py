@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 from typing import get_type_hints
 
 from app.application.buoy_summaries import list_buoy_summaries
-from app.domain.fleet.buoy import (
-    BuoySnapshot,
+from app.application.fleet_ports import (
     BuoySummaryReadings,
     BuoySummarySnapshot,
 )
+from app.domain.fleet.buoy import BuoySnapshot
 from app.domain.sensors.temperature import TemperatureTelemetrySnapshot
 
 

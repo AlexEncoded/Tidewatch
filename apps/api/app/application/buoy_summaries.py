@@ -1,8 +1,7 @@
 """Application query for buoy fleet summaries."""
 
-from ..domain.fleet.buoy import BuoySummarySnapshot
 from ..domain.sensors.sensor_selection import select_summary_reading
-from .fleet_ports import BuoySummaryReader
+from .fleet_ports import BuoySummaryReader, BuoySummarySnapshot
 
 
 def list_buoy_summaries(reader: BuoySummaryReader) -> list[BuoySummarySnapshot]:

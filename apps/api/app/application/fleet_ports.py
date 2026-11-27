@@ -1,17 +1,35 @@
 """Application ports for fleet identity, status, and location operations."""
 
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
+from ..domain.fleet.devices import SensorChannel
 from ..domain.fleet.buoy import (
     BuoyActivitySnapshot,
     BuoyLocationCommand,
     BuoySnapshot,
     BuoyStatusCommand,
-    BuoySummarySnapshot,
 )
-from ..domain.fleet.devices import SensorChannel
 from ..domain.fleet.location import LocationTelemetrySnapshot
+from ..domain.sensors.battery import BatteryTelemetrySnapshot
+from ..domain.sensors.sensor_family import SensorFamily
+from ..domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
+
+BuoySummaryFamily = SensorFamily | Literal["battery"]
+BuoySummaryChannel = SensorChannel | Literal["latest"]
+BuoySummaryReading = SensorTelemetrySnapshot | BatteryTelemetrySnapshot | None
+BuoySummaryReadings = dict[
+    BuoySummaryFamily, dict[BuoySummaryChannel, BuoySummaryReading]
+]
+
+
+@dataclass(frozen=True)
+class BuoySummarySnapshot:
+    """Application read model joining buoy identity and sensor readings."""
+
+    buoy: BuoySnapshot
+    latest_readings: BuoySummaryReadings
 
 
 class FleetLocationReader(Protocol):

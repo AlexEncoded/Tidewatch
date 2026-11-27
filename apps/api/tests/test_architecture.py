@@ -1648,6 +1648,12 @@ def test_shared_domain_primitives_do_not_depend_on_bounded_contexts() -> None:
     )
 
 
+def test_fleet_domain_does_not_depend_on_sensor_context() -> None:
+    modules = imported_modules(API_APP / "domain" / "fleet")
+
+    assert not imports_package(modules, "app.domain.sensors")
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
