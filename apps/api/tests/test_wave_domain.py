@@ -16,6 +16,8 @@ from app.domain.analytics.wave import (
     estimate_wave,
     estimate_wave_period,
 )
+from app.domain.fleet.location import LocationTelemetrySnapshot
+from app.domain.sensors.imu import ImuTelemetrySnapshot
 
 
 def test_estimate_wave_requires_two_samples_per_signal() -> None:
@@ -92,6 +94,84 @@ def test_wave_synchronization_excludes_gnss_fixes_with_too_few_satellites() -> N
     _, synchronized_locations = synchronize_wave_readings(imu, locations)
 
     assert [reading.satellites for reading in synchronized_locations] == [4]
+
+
+def test_wave_analysis_can_filter_high_hdop_and_keeps_missing_hdop() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        ImuTelemetrySnapshot(
+            buoy_id="buoy-1",
+            acceleration_x_mps2=0.0,
+            acceleration_y_mps2=0.0,
+            measured_at=start + timedelta(seconds=index),
+            acceleration_z_mps2=value,
+            angular_velocity_x_dps=0.0,
+            angular_velocity_y_dps=0.0,
+            angular_velocity_z_dps=0.0,
+        )
+        for index, value in enumerate((9.8, 10.2, 10.0))
+    ]
+    locations = [
+        LocationTelemetrySnapshot(
+            buoy_id="buoy-1",
+            latitude=0.0,
+            longitude=0.0,
+            measured_at=start + timedelta(seconds=index),
+            altitude_meters=value,
+            satellites=8,
+            hdop=hdop,
+        )
+        for index, (value, hdop) in enumerate(
+            ((1.0, 1.0), (50.0, 8.0), (2.0, None))
+        )
+    ]
+
+    analysis = analyze_wave_samples(
+        "buoy-1", imu, locations, max_gnss_hdop=2.0
+    )
+
+    assert analysis.rejected_gnss_sample_count == 1
+    assert analysis.gnss_vertical_range_m == 1.0
+
+
+def test_wave_analysis_without_hdop_ceiling_keeps_existing_gnss_behavior() -> None:
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    imu = [
+        ImuTelemetrySnapshot(
+            buoy_id="buoy-1",
+            acceleration_x_mps2=0.0,
+            acceleration_y_mps2=0.0,
+            measured_at=start + timedelta(seconds=index),
+            acceleration_z_mps2=value,
+            angular_velocity_x_dps=0.0,
+            angular_velocity_y_dps=0.0,
+            angular_velocity_z_dps=0.0,
+        )
+        for index, value in enumerate((9.8, 10.2))
+    ]
+    locations = [
+        LocationTelemetrySnapshot(
+            buoy_id="buoy-1",
+            latitude=0.0,
+            longitude=0.0,
+            measured_at=start + timedelta(seconds=index),
+            altitude_meters=value,
+            satellites=8,
+            hdop=12.0,
+        )
+        for index, value in enumerate((1.0, 4.0))
+    ]
+
+    analysis = analyze_wave_samples("buoy-1", imu, locations)
+
+    assert analysis.rejected_gnss_sample_count == 0
+    assert analysis.gnss_vertical_range_m == 3.0
+
+
+@pytest.mark.parametrize("max_hdop", (0, -1, nan, inf))
+def test_wave_synchronization_rejects_invalid_hdop_ceiling(max_hdop: float) -> None:
+    with pytest.raises(ValueError, match="finite and positive"):
+        synchronize_wave_readings([], [], max_hdop)
 
 
 def test_wave_analysis_uses_imu_when_all_gnss_fixes_have_too_few_satellites() -> None:

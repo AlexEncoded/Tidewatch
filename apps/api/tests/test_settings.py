@@ -1,5 +1,6 @@
 from app.settings import (
     configured_maintenance_webhook_url,
+    configured_wave_max_gnss_hdop,
     maintenance_notification_lease_seconds,
     maintenance_notification_max_attempts,
     telemetry_job_lease_seconds,
@@ -37,6 +38,18 @@ def test_maintenance_webhook_url_returns_configured_value(monkeypatch) -> None:
     monkeypatch.setenv("MAINTENANCE_WEBHOOK_URL", "https://hooks.example.test/tidewatch")
 
     assert configured_maintenance_webhook_url() == "https://hooks.example.test/tidewatch"
+
+
+def test_wave_gnss_hdop_filter_is_optional_and_validated(monkeypatch) -> None:
+    monkeypatch.delenv("WAVE_MAX_GNSS_HDOP", raising=False)
+    assert configured_wave_max_gnss_hdop() is None
+
+    monkeypatch.setenv("WAVE_MAX_GNSS_HDOP", "2.5")
+    assert configured_wave_max_gnss_hdop() == 2.5
+
+    for value in ("", "invalid", "nan", "inf", "0", "-1"):
+        monkeypatch.setenv("WAVE_MAX_GNSS_HDOP", value)
+        assert configured_wave_max_gnss_hdop() is None
 
 
 def test_maintenance_worker_settings_use_defaults_for_invalid_values(monkeypatch) -> None:

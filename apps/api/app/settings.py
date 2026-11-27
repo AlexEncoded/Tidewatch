@@ -26,6 +26,18 @@ def configured_wave_imu_factor() -> float:
     return max(MIN_IMU_WAVE_HEIGHT_FACTOR, min(MAX_IMU_WAVE_HEIGHT_FACTOR, value))
 
 
+def configured_wave_max_gnss_hdop() -> float | None:
+    """Return the optional positive HDOP ceiling for wave-analysis GNSS fixes."""
+    configured_value = os.getenv("WAVE_MAX_GNSS_HDOP", "").strip()
+    if not configured_value:
+        return None
+    try:
+        value = float(configured_value)
+    except ValueError:
+        return None
+    return value if isfinite(value) and value > 0 else None
+
+
 def telemetry_ingestion_is_queued() -> bool:
     """Return whether telemetry ingestion is configured to use the queue."""
     return os.getenv("TELEMETRY_INGESTION_MODE", "sync").lower() == "queued"

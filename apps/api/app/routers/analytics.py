@@ -39,7 +39,7 @@ from ..schemas.analytics import (
     TemperatureAnalysis,
     WaveAnalysis,
 )
-from ..settings import configured_wave_imu_factor
+from ..settings import configured_wave_imu_factor, configured_wave_max_gnss_hdop
 router = APIRouter()
 AnalysisT = TypeVar("AnalysisT")
 
@@ -94,6 +94,7 @@ def buoy_wave_analysis(
         buoy_id,
         window,
         configured_wave_imu_factor(),
+        configured_wave_max_gnss_hdop(),
     )
     if result is None:
         raise HTTPException(

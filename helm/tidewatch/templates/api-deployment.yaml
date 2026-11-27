@@ -51,6 +51,10 @@ spec:
             {{- end }}
             - name: WAVE_IMU_WAVE_HEIGHT_FACTOR
               value: {{ .Values.api.waveImuHeightFactor | quote }}
+            {{- with .Values.api.waveMaxGnssHdop }}
+            - name: WAVE_MAX_GNSS_HDOP
+              value: {{ . | quote }}
+            {{- end }}
             - name: TELEMETRY_INGESTION_MODE
               value: {{ .Values.api.telemetryIngestionMode | quote }}
           volumeMounts:

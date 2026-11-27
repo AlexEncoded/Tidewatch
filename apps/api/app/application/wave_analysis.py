@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from datetime import datetime, timezone
+from math import isfinite
 
 from ..domain.analytics.wave import (
     DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
@@ -18,6 +19,7 @@ from .analysis_ports import WaveAnalysisMetrics, WaveAnalysisReader
 def synchronize_wave_readings(
     imu_readings: Sequence[ImuTelemetrySnapshot],
     locations: Sequence[LocationTelemetrySnapshot],
+    max_gnss_hdop: float | None = None,
 ) -> tuple[list[ImuTelemetrySnapshot], list[LocationTelemetrySnapshot]]:
     """Filter unusable readings and align both streams to their shared time span.
 
@@ -25,6 +27,10 @@ def synchronize_wave_readings(
     modalities are present, timestamps are required and disjoint ranges yield
     no synchronized readings.
     """
+    if max_gnss_hdop is not None and (
+        not isfinite(max_gnss_hdop) or max_gnss_hdop <= 0
+    ):
+        raise ValueError("Maximum GNSS HDOP must be finite and positive")
     usable_imu = [
         reading
         for reading in imu_readings
@@ -37,6 +43,11 @@ def synchronize_wave_readings(
         and (
             getattr(reading, "satellites", None) is None
             or reading.satellites >= MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+        )
+        and (
+            max_gnss_hdop is None
+            or getattr(reading, "hdop", None) is None
+            or reading.hdop <= max_gnss_hdop
         )
     ]
     if not usable_imu or not usable_locations:
@@ -95,17 +106,27 @@ def analyze_wave_samples(
     imu_readings: Sequence[ImuTelemetrySnapshot],
     locations: Sequence[LocationTelemetrySnapshot],
     imu_wave_height_factor: float = DEFAULT_IMU_WAVE_HEIGHT_FACTOR,
+    max_gnss_hdop: float | None = None,
 ) -> WaveAnalysisSnapshot:
     """Apply synchronization, height, and period rules to a buoy's samples."""
     rejected_gnss_sample_count = sum(
         1
         for reading in locations
         if getattr(reading, "quality", "good") == "good"
-        and getattr(reading, "satellites", None) is not None
-        and reading.satellites < MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+        and (
+            (
+                getattr(reading, "satellites", None) is not None
+                and reading.satellites < MIN_GNSS_SATELLITES_FOR_WAVE_ANALYSIS
+            )
+            or (
+                max_gnss_hdop is not None
+                and getattr(reading, "hdop", None) is not None
+                and reading.hdop > max_gnss_hdop
+            )
+        )
     )
     synchronized_imu, synchronized_locations = synchronize_wave_readings(
-        imu_readings, locations
+        imu_readings, locations, max_gnss_hdop
     )
     estimate = estimate_wave(
         [
@@ -165,6 +186,7 @@ def analyze_wave_for_buoy(
     buoy_id: str,
     window: int,
     imu_wave_height_factor: float,
+    max_gnss_hdop: float | None = None,
 ) -> WaveAnalysisSnapshot:
     """Compose fleet and sensor samples, then delegate numeric estimates."""
     return analyze_wave_samples(
@@ -172,6 +194,7 @@ def analyze_wave_for_buoy(
         reader.list_imu(buoy_id, window, None),
         reader.list_locations(buoy_id, window),
         imu_wave_height_factor=imu_wave_height_factor,
+        max_gnss_hdop=max_gnss_hdop,
     )
 
 
@@ -181,12 +204,13 @@ def analyze_and_publish_wave_for_buoy(
     buoy_id: str,
     window: int,
     imu_wave_height_factor: float,
+    max_gnss_hdop: float | None = None,
 ) -> WaveAnalysisSnapshot | None:
     """Validate, analyze, and publish one buoy's wave analysis."""
     if not reader.buoy_exists(buoy_id):
         return None
     result = analyze_wave_for_buoy(
-        reader, buoy_id, window, imu_wave_height_factor
+        reader, buoy_id, window, imu_wave_height_factor, max_gnss_hdop
     )
     metrics.record_analysis(result)
     return result

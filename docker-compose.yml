@@ -22,6 +22,7 @@ services:
       DATABASE_URL: postgresql+psycopg://tidewatch:tidewatch@postgres:5432/tidewatch
       TELEMETRY_INGESTION_MODE: queued
       WAVE_IMU_WAVE_HEIGHT_FACTOR: 0.1
+      WAVE_MAX_GNSS_HDOP: ${WAVE_MAX_GNSS_HDOP:-}
     ports:
       - "8000:8000"
     depends_on:
