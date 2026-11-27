@@ -131,6 +131,7 @@ def test_wave_analysis_can_filter_high_hdop_and_keeps_missing_hdop() -> None:
     )
 
     assert analysis.rejected_gnss_sample_count == 1
+    assert analysis.gnss_quality_eligible_sample_count == 3
     assert analysis.rejected_gnss_satellite_sample_count == 0
     assert analysis.rejected_gnss_hdop_sample_count == 1
     assert analysis.gnss_vertical_range_m == 1.0

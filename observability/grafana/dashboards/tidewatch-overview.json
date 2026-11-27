@@ -508,6 +508,16 @@
       "targets": [{"expr": "tidewatch_wave_analysis_rejected_gnss_samples", "legendFormat": "{{buoy_id}} / {{reason}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+    },
+    {
+      "id": 57,
+      "title": "GNSS rejection rate in wave analysis",
+      "type": "timeseries",
+      "description": "Percentage of good-quality GNSS fixes rejected by satellite-count or HDOP filters in the latest wave-analysis window.",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 272},
+      "targets": [{"expr": "100 * sum by (buoy_id) (tidewatch_wave_analysis_rejected_gnss_samples) / clamp_min(tidewatch_wave_analysis_gnss_quality_eligible_samples, 1)", "legendFormat": "{{buoy_id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "decimals": 1}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
     }
   ],
   "schemaVersion": 39,
@@ -516,5 +526,5 @@
   "time": {"from": "now-6h", "to": "now"},
   "title": "Tidewatch overview",
   "uid": "tidewatch-overview",
-  "version": 8
+  "version": 10
 }

@@ -326,6 +326,12 @@ wave_analysis_rejected_gnss_samples = Gauge(
     ["buoy_id", "reason"],
 )
 
+wave_analysis_gnss_quality_eligible_samples = Gauge(
+    "tidewatch_wave_analysis_gnss_quality_eligible_samples",
+    "Good-quality GNSS samples considered by the latest wave analysis, by buoy.",
+    ["buoy_id"],
+)
+
 sensor_degraded = Gauge(
     "tidewatch_sensor_degraded",
     "Whether a sensor family is currently degraded (1) or healthy (0).",

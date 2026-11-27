@@ -153,7 +153,8 @@ Si el receptor GNSS aporta HDOP, se puede establecer `WAVE_MAX_GNSS_HDOP` para
 excluir fixes por encima de ese valor; por defecto el filtro está desactivado y
 los fixes sin HDOP se conservan. La respuesta informa los descartes totales y
 los separados por satélites insuficientes o HDOP alto; Prometheus expone el
-último conteo por boya y motivo.
+último conteo por boya y motivo, y Grafana muestra su porcentaje sobre los
+fixes GNSS de calidad válida.
 When timestamps are available, the response also includes the experimental
 `estimated_period_seconds` derived from consecutive upward GNSS crossings.
 

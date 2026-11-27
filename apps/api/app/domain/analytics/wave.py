@@ -44,6 +44,7 @@ class WaveAnalysisSnapshot:
 
     buoy_id: str
     sample_count: int
+    gnss_quality_eligible_sample_count: int = 0
     rejected_gnss_sample_count: int = 0
     rejected_gnss_satellite_sample_count: int = 0
     rejected_gnss_hdop_sample_count: int = 0

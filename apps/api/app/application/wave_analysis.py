@@ -117,6 +117,11 @@ def analyze_wave_samples(
     max_gnss_hdop: float | None = None,
 ) -> WaveAnalysisSnapshot:
     """Apply synchronization, height, and period rules to a buoy's samples."""
+    gnss_quality_eligible_sample_count = sum(
+        1
+        for reading in locations
+        if getattr(reading, "quality", "good") == "good"
+    )
     rejected_satellite_count = 0
     rejected_hdop_count = 0
     for reading in locations:
@@ -159,6 +164,7 @@ def analyze_wave_samples(
         return WaveAnalysisSnapshot(
             buoy_id=buoy_id,
             sample_count=sample_count,
+            gnss_quality_eligible_sample_count=gnss_quality_eligible_sample_count,
             rejected_gnss_sample_count=rejected_gnss_sample_count,
             rejected_gnss_satellite_sample_count=rejected_satellite_count,
             rejected_gnss_hdop_sample_count=rejected_hdop_count,
@@ -168,6 +174,7 @@ def analyze_wave_samples(
     return WaveAnalysisSnapshot(
         buoy_id=buoy_id,
         sample_count=sample_count,
+        gnss_quality_eligible_sample_count=gnss_quality_eligible_sample_count,
         rejected_gnss_sample_count=rejected_gnss_sample_count,
         rejected_gnss_satellite_sample_count=rejected_satellite_count,
         rejected_gnss_hdop_sample_count=rejected_hdop_count,

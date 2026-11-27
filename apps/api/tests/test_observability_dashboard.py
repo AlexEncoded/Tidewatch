@@ -42,3 +42,11 @@ def test_wave_gnss_rejection_metrics_are_visible_in_grafana_dashboard() -> None:
 
     assert panel["targets"][0]["expr"] == "tidewatch_wave_analysis_rejected_gnss_samples"
     assert panel["targets"][0]["legendFormat"] == "{{buoy_id}} / {{reason}}"
+    rate_panel = next(
+        panel
+        for panel in panels
+        if panel["title"] == "GNSS rejection rate in wave analysis"
+    )
+    assert "tidewatch_wave_analysis_gnss_quality_eligible_samples" in rate_panel[
+        "targets"
+    ][0]["expr"]
