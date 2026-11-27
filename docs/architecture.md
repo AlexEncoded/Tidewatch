@@ -91,6 +91,8 @@ Cross-context primitives such as redundant sensor channels, physical-device
 identity limits, and measured-reading quality labels live under
 `domain/shared`; bounded contexts depend on these shared rules instead of
 importing each other's domain modules.
+Architecture tests enforce that domain contexts import only their own context
+and `shared`.
 Prometheus adapters that implement application metric ports are grouped under
 `apps/api/app/adapters/prometheus/`, including the shared instrument definitions
 and metric publication. Availability-series restoration is coordinated by the

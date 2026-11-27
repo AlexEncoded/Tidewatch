@@ -1649,6 +1649,25 @@ def test_shared_domain_primitives_do_not_depend_on_bounded_contexts() -> None:
     )
 
 
+def test_bounded_contexts_depend_only_on_themselves_and_shared() -> None:
+    contexts = ("fleet", "telemetry", "sensors", "maintenance", "analytics")
+
+    for context in contexts:
+        modules = imported_modules(API_APP / "domain" / context)
+        external_context_imports = {
+            module
+            for module in modules
+            if module.startswith("app.domain.")
+            and not module.startswith(f"app.domain.{context}.")
+            and not module.startswith("app.domain.shared.")
+        }
+
+        assert not external_context_imports, (
+            f"domain/{context} imports another bounded context: "
+            f"{sorted(external_context_imports)}"
+        )
+
+
 def test_fleet_domain_does_not_depend_on_sensor_context() -> None:
     modules = imported_modules(API_APP / "domain" / "fleet")
 
