@@ -1,9 +1,8 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
-from typing import Literal, Protocol, TypeVar, get_args
+from typing import Protocol, TypeVar
 
-ReadingQuality = Literal["good", "suspect", "invalid"]
-VALID_READING_QUALITIES = frozenset(get_args(ReadingQuality))
+from ..shared.reading_quality import ReadingQuality, VALID_READING_QUALITIES
 
 
 class MeasuredReading(Protocol):

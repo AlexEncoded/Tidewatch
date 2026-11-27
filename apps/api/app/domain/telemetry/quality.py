@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Mapping
 
-from ..sensors.reading_quality import ReadingQuality
+from ..shared.reading_quality import ReadingQuality
 
 
 @dataclass(frozen=True)
