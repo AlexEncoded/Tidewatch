@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 CONDUCTIVITY_MIN_US_CM = 0
 CONDUCTIVITY_MAX_US_CM = 200000

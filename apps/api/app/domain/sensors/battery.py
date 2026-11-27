@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
 
-from ..fleet.devices import (
+from ..shared.device import (
     DEVICE_ID_MAX_LENGTH,
     DEVICE_ID_MIN_LENGTH,
     SensorChannel,

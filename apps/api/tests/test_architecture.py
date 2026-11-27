@@ -1654,6 +1654,12 @@ def test_fleet_domain_does_not_depend_on_sensor_context() -> None:
     assert not imports_package(modules, "app.domain.sensors")
 
 
+def test_sensor_domain_does_not_depend_on_fleet_context() -> None:
+    modules = imported_modules(API_APP / "domain" / "sensors")
+
+    assert not imports_package(modules, "app.domain.fleet")
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 

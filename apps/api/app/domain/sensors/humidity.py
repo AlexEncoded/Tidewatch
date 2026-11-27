@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 HUMIDITY_MIN_PERCENT = 0
 HUMIDITY_MAX_PERCENT = 100

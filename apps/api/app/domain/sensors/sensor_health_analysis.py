@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 
 from ..shared.deltas import absolute_difference
 from ..shared.directions import circular_difference_degrees
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 from .sensor_family import SensorFamily
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .sensor_health_rules import SensorHealthDeltaName

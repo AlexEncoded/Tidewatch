@@ -6,7 +6,7 @@ from datetime import datetime
 from .sensor_telemetry import SensorTelemetrySnapshot
 from ..shared.directions import DIRECTION_MAX_DEGREES, DIRECTION_MIN_DEGREES
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 WIND_SPEED_MIN_MPS = 0
 WIND_SPEED_MAX_MPS = 100

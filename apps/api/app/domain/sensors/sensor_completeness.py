@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from typing import NewType
 
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 from .sensor_family import SensorFamily
 from .reading_quality import MeasuredReading
 

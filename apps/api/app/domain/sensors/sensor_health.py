@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 from .sensor_family import SensorFamily
 from .sensor_completeness import MissingSensorChannelLabel, missing_sensor_channels
 from .sensor_health_rules import (

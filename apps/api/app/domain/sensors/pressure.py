@@ -5,7 +5,7 @@ from statistics import fmean
 from ..shared.analysis import AnalysisConfidence, SeaState
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 KPA_TO_METRES_OF_WATER = 0.102
 WATER_PRESSURE_MIN_KPA = 80

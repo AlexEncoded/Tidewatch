@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 AMBIENT_LIGHT_MIN_LUX = 0
 AMBIENT_LIGHT_MAX_LUX = 150000

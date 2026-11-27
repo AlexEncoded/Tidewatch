@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 TURBIDITY_MIN_NTU = 0
 TURBIDITY_MAX_NTU = 5000

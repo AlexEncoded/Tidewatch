@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 PH_MIN = 0
 PH_MAX = 14

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from ..sensors.battery import BatteryTelemetrySnapshot
 from ..sensors.battery_health import BatteryHealthSnapshot
 from ..fleet.buoy import BuoyOperationalStatus
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 from ..sensors.sensor_health import SensorHealthSnapshot
 from ..sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
 from .policy import is_buoy_drifting, is_buoy_silent

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 UNDERWATER_ACOUSTIC_MIN_ECHO_INTENSITY_DB = -200
 UNDERWATER_ACOUSTIC_MAX_ECHO_INTENSITY_DB = 100

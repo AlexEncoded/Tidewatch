@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .sensor_telemetry import SensorTelemetrySnapshot
 from .reading_quality import ReadingQuality
-from ..fleet.devices import SensorChannel
+from ..shared.device import SensorChannel
 
 AIR_TEMPERATURE_MIN_CELSIUS = -60
 AIR_TEMPERATURE_MAX_CELSIUS = 60
