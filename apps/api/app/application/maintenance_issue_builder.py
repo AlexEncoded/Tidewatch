@@ -1,21 +1,20 @@
-"""Domain services for maintenance issue classification."""
+"""Application mapping from fleet and sensor snapshots to maintenance issues."""
 
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
-from ..sensors.battery import BatteryTelemetrySnapshot
-from ..sensors.battery_health import BatteryHealthSnapshot
-from ..fleet.buoy import BuoyOperationalStatus
-from ..shared.device import SensorChannel
-from ..sensors.sensor_health import SensorHealthSnapshot
-from ..sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
-from .policy import is_buoy_drifting, is_buoy_silent
-from ..fleet.device_health import DeviceHealthSnapshot
-from ..sensors.reading_quality import MeasuredReading, classify_latest_readings
-from ..sensors.sensor_family import SensorFamily
-from ..sensors.sensor_telemetry import SensorTelemetrySnapshot
-from ..sensors.sensor_health import SensorHealthSnapshot
-from .policy import (
+from ..domain.sensors.battery import BatteryTelemetrySnapshot
+from ..domain.sensors.battery_health import BatteryHealthSnapshot
+from ..domain.sensors.sensor_health import SensorHealthSnapshot
+from ..domain.fleet.buoy import BuoyOperationalStatus
+from ..domain.shared.device import SensorChannel
+from ..domain.sensors.sensor_health_rules import SENSOR_DEGRADATION_THRESHOLDS
+from ..domain.maintenance.policy import is_buoy_drifting, is_buoy_silent
+from ..domain.fleet.device_health import DeviceHealthSnapshot
+from ..domain.sensors.reading_quality import MeasuredReading, classify_latest_readings
+from ..domain.sensors.sensor_family import SensorFamily
+from ..domain.sensors.sensor_telemetry import SensorTelemetrySnapshot
+from ..domain.maintenance.policy import (
     MaintenanceIssueSnapshot,
     low_battery_severity,
     missing_redundant_battery_device,

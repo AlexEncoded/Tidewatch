@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal, get_args
+from typing import get_args
 
-BuoyOperationalStatus = Literal["active", "maintenance", "inactive"]
+from ..shared.buoy_status import BuoyOperationalStatus
+
 BUOY_STATUSES = frozenset(get_args(BuoyOperationalStatus))
 BUOY_NAME_MIN_LENGTH = 1
 BUOY_NAME_MAX_LENGTH = 100

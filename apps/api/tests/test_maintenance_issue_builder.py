@@ -4,7 +4,7 @@ from importlib import import_module
 from typing import get_args, get_type_hints
 
 from app.application.sensor_health import SENSOR_HEALTH_READING_FAMILIES
-from app.domain.maintenance.issues import (
+from app.application.maintenance_issue_builder import (
     _SENSOR_READING_DETAILS,
     LastValidSensorReadings,
     LatestBatteryReadings,

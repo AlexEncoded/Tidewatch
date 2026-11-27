@@ -226,9 +226,10 @@ def test_maintenance_domain_types_are_grouped_by_context() -> None:
     maintenance = API_APP / "domain" / "maintenance"
 
     assert (maintenance / "policy.py").is_file()
-    assert (maintenance / "issues.py").is_file()
     assert (maintenance / "notification_job.py").is_file()
     assert (maintenance / "temperature_alert.py").is_file()
+    assert (API_APP / "application" / "maintenance_issue_builder.py").is_file()
+    assert not (maintenance / "issues.py").exists()
     assert not (API_APP / "domain" / "maintenance_issues.py").exists()
     assert not (API_APP / "domain" / "maintenance_notification_job.py").exists()
     assert not (API_APP / "domain" / "temperature_alert.py").exists()
@@ -1673,6 +1674,13 @@ def test_analytics_domain_does_not_depend_on_fleet_or_sensor_contexts() -> None:
     assert not imports_package(modules, "app.domain.sensors")
 
 
+def test_maintenance_domain_does_not_depend_on_fleet_or_sensor_contexts() -> None:
+    modules = imported_modules(API_APP / "domain" / "maintenance")
+
+    assert not imports_package(modules, "app.domain.fleet")
+    assert not imports_package(modules, "app.domain.sensors")
+
+
 def test_domain_does_not_depend_on_api_or_persistence_frameworks() -> None:
     modules = imported_modules(API_APP / "domain")
 
@@ -2026,7 +2034,7 @@ def test_maintenance_issue_contracts_use_domain_value_types() -> None:
         MaintenanceIssueType,
         MaintenanceSeverity,
     )
-    from app.domain.maintenance.issues import (
+    from app.application.maintenance_issue_builder import (
         build_maintenance_issues_for_buoy,
         build_operational_maintenance_issues,
         build_sensor_health_maintenance_issues,

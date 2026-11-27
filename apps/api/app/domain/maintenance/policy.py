@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Literal
 
-from ..sensors.battery import validate_battery_percentage
-from ..fleet.buoy import BuoyOperationalStatus
+from ..shared.buoy_status import BuoyOperationalStatus
+from ..shared.percentages import validate_percentage
 from ..shared.time_rules import require_positive_finite_seconds
 
 
@@ -41,9 +41,9 @@ def missing_redundant_battery_device(
 ) -> Literal["A", "B"] | None:
     """Return the missing redundant unit when exactly one unit has telemetry."""
     if device_a_percent is not None:
-        validate_battery_percentage(device_a_percent, "Device A battery percentage")
+        validate_percentage(device_a_percent, "Device A battery percentage")
     if device_b_percent is not None:
-        validate_battery_percentage(device_b_percent, "Device B battery percentage")
+        validate_percentage(device_b_percent, "Device B battery percentage")
     if device_a_percent is not None and device_b_percent is None:
         return "B"
     if device_b_percent is not None and device_a_percent is None:
@@ -63,7 +63,7 @@ def is_buoy_drifting(average_speed_mps: float | None, limit_mps: float) -> bool:
 
 def low_battery_severity(battery_percent: float) -> MaintenanceSeverity | None:
     """Return the maintenance severity for a battery reading, if it is low."""
-    validate_battery_percentage(battery_percent)
+    validate_percentage(battery_percent, "Battery percentage")
     if battery_percent < 10:
         return "critical"
     if battery_percent < 20:

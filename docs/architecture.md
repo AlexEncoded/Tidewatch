@@ -82,9 +82,11 @@ ports are separate from worker lifecycle ports for claim, completion, and retry.
 Domain rules remain in `apps/api/app/domain/`, while application services in
 `apps/api/app/application/` coordinate use cases and ports. Maintenance
 notifications use an application transport port, and `maintenance_evaluation`
-coordinates the per-buoy issue snapshot. HTTP boundaries and persistence
-adapters are isolated so use cases can be evolved and validated by the API and
-worker test suites.
+coordinates the per-buoy issue snapshot. The application issue builder maps
+fleet, sensor, and maintenance results into the maintenance response contract;
+the maintenance domain keeps its policies independent of those contexts. HTTP
+boundaries and persistence adapters are isolated so use cases can be evolved
+and validated by the API and worker test suites.
 Cross-context primitives such as redundant sensor channels, physical-device
 identity limits, and measured-reading quality labels live under
 `domain/shared`; bounded contexts depend on these shared rules instead of

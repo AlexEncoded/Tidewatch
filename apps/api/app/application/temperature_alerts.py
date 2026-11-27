@@ -24,7 +24,10 @@ def find_temperature_anomalies(
             anomaly = build_temperature_anomaly(
                 buoy.buoy_id,
                 buoy.name,
-                analysis,
+                analysis.is_anomaly,
+                analysis.latest_temperature,
+                analysis.average_temperature,
+                analysis.anomaly_reason,
                 readings[0].measured_at,
             )
             if anomaly is not None:

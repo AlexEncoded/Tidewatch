@@ -4,8 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from ..sensors.temperature import TemperatureAnalysisSnapshot
-
 TemperatureAlertStatus = Literal["open", "resolved"]
 TemperatureAlertSeverity = Literal["warning"]
 
@@ -42,22 +40,25 @@ class TemperatureAlertSnapshot:
 def build_temperature_anomaly(
     buoy_id: str,
     buoy_name: str,
-    analysis: TemperatureAnalysisSnapshot,
+    is_anomaly: bool,
+    latest_temperature: float | None,
+    average_temperature: float | None,
+    anomaly_reason: str | None,
     created_at: datetime,
 ) -> TemperatureAnomalySnapshot | None:
     """Build an alert snapshot only when analysis has a complete anomaly."""
     if (
-        not analysis.is_anomaly
-        or analysis.latest_temperature is None
-        or analysis.average_temperature is None
+        not is_anomaly
+        or latest_temperature is None
+        or average_temperature is None
     ):
         return None
     return TemperatureAnomalySnapshot(
         buoy_id=buoy_id,
         buoy_name=buoy_name,
         severity="warning",
-        temperature_celsius=analysis.latest_temperature,
-        average_temperature=analysis.average_temperature,
+        temperature_celsius=latest_temperature,
+        average_temperature=average_temperature,
         created_at=created_at,
-        message=analysis.anomaly_reason or "Temperature anomaly detected",
+        message=anomaly_reason or "Temperature anomaly detected",
     )
